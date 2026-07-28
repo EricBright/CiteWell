@@ -155,16 +155,14 @@ export class HiddenBrowser {
 		Zotero.debug(`Loading ${uri} in hidden browser`);
 		// Next bit adapted from Mozilla's HeadlessShell.jsm
 		try {
-			// Figure out whether the browser should be remote
-			let oa = E10SUtils.predictOriginAttributes({ browser: this });
-			let remoteType = E10SUtils.getRemoteTypeForURI(
-				uri,
-				true,
-				false,
-				E10SUtils.DEFAULT_REMOTE_TYPE,
-				null,
-				oa
-			);
+			// Figure out whether the browser should be remote. We actually
+			// perform the load in PageDataChild, but remoteness changes
+			// need to happen here.
+			let remoteType = ChromeUtils.predictRemoteTypeForURI(uri, {
+				preferredRemoteType: E10SUtils.DEFAULT_REMOTE_TYPE,
+				useRemoteTabs: true,
+				useRemoteSubframes: false
+			});
 			if (this.remoteType !== remoteType) {
 				// The following functions need to be called on the <browser> directly,
 				// not through our proxy (aka 'this')
