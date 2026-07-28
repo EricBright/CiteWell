@@ -36,7 +36,7 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 	Zotero.defineProperty(this, 'enabled', {
 		get: () => {
 			return ZOTERO_CONFIG.ONLINE_SYNC
-				&& (_apiKey || Zotero.Sync.Data.Local.hasCredentials());
+				&& (!!_apiKey || Zotero.Sync.Data.Local.hasCachedCredentials);
 		}
 	});
 	Zotero.defineProperty(this, 'syncInProgress', { get: () => _syncInProgress });

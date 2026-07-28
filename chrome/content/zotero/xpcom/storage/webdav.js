@@ -342,7 +342,7 @@ Zotero.Sync.Storage.Mode.WebDAV.prototype = {
 		for (let i = 0; i < logins.length; i++) {
 			if (logins[i].httpRealm == this._loginManagerRealmLegacy) {
 				try {
-					Services.logins.removeLogin(logins[i]);
+					await Services.logins.removeLoginAsync(logins[i]);
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -359,7 +359,7 @@ Zotero.Sync.Storage.Mode.WebDAV.prototype = {
 			Zotero.debug('Clearing old WebDAV passwords');
 			if (logins[i].formSubmitURL == "Zotero Storage Server") {
 				try {
-					Services.logins.removeLogin(logins[i]);
+					await Services.logins.removeLoginAsync(logins[i]);
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -385,7 +385,7 @@ Zotero.Sync.Storage.Mode.WebDAV.prototype = {
 		}
 		// If the write failed because the key database was unusable, reset the login manager
 		// and retry
-		if (Zotero.Sync.Data.Local.repairLoginManager()) {
+		if (await Zotero.Sync.Data.Local.repairLoginManager()) {
 			try {
 				await this._writeEncryptedPassword(username, password);
 				return;
@@ -418,7 +418,7 @@ Zotero.Sync.Storage.Mode.WebDAV.prototype = {
 		});
 		for (let i = 0; i < logins.length; i++) {
 			if (logins[i].username == username) {
-				Services.logins.removeLogin(logins[i]);
+				await Services.logins.removeLoginAsync(logins[i]);
 			}
 		}
 		
