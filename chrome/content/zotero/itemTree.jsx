@@ -1933,21 +1933,13 @@ var ItemTree = class ItemTree extends LibraryTree {
 	 * Base implementation - override in subclasses for full functionality.
 	 */
 	onDragStart(event, index) {
-		// Propagate selection before we set the drag image if dragging not one of the selected rows
-		if (!this.selection.isSelected(index)) {
-			this.selection.select(index);
-		}
-		// Set drag image
-		const dragElems = this.domEl.querySelectorAll('.selected');
-		for (let elem of dragElems) {
-			elem = elem.cloneNode(true);
-			elem.style.position = "initial";
-			this._dragImageContainer.appendChild(elem);
-		}
-
-		let itemIDs = this.getSelectedItems(true);
-		// Get selected item IDs in the item tree order
-		itemIDs = this.getSortedItems(true).filter(id => itemIDs.includes(id));
+		super.onDragStart(event, index);
+		
+		// Get dragged item IDs in the item tree order
+		let itemIDs = this._dragIndices
+			.map(i => this.getRow(i).ref)
+			.filter(o => o instanceof Zotero.Item)
+			.map(o => o.id);
 
 		Zotero.Utilities.Internal.onDragItems(event, itemIDs, this._dragImageContainer);
 	};
@@ -1963,8 +1955,8 @@ var ItemTree = class ItemTree extends LibraryTree {
 		return false;
 	};
 
-	onDragEnd() {
-		this._dragImageContainer.innerHTML = "";
+	onDragEnd(event, index) {
+		super.onDragEnd(event, index);
 		this._dropRow = null;
 		this.tree.invalidate();
 	};
