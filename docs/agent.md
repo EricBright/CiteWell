@@ -11,7 +11,7 @@ can see the result.
 |---|---|---|
 | Data API | **Exists** | Zotero's local API on `127.0.0.1:23119/api/`: items, collections, tags, searches, notes as items; writes need an in-app key |
 | CLI | **Exists** | `citewell status/search/item/api/authorize`; raw HTTP with errors and exit codes ([cli.md](cli.md)) |
-| App bridge | **Phase 1 built** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: item creation, notes, collections, selection, tabs; translators and attachments are Phase 2 |
+| App bridge | **Phases 1–2 built** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: item creation, notes, collections, selection, tabs, translators, file and URL attachments |
 | MCP adapter | **R23 Phase 3** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |
 
 The local API is a data CRUD surface. It cannot run a translator, import a file from disk, or
@@ -74,9 +74,9 @@ without a trip through the UI.
 | `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
 | `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
 | `item.addNote` | Child note (Markdown or HTML) | `Zotero.Item` note |
-| `item.attachFile` *(Phase 2)* | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
-| `item.attachURL` *(Phase 2)* | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
-| `translate.save` *(Phase 2)* | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
+| `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
+| `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
+| `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
 | `tag.list` / `add` / `remove` | Tag operations | `Zotero.Tags` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
@@ -107,11 +107,12 @@ Example tools: `search_library`, `get_item`, `create_item`, `update_item`, `save
 A person tells an agent: "Add the DOI 10.1234/example, attach the PDF in Downloads, put it in my
 Reading collection, and show me."
 
-1. `save_identifier { doi, collections: ["READING"] }` → translator creates the item and metadata.
-2. `attach_file { key, path: "/home/me/Downloads/example.pdf" }` → child attachment, indexed.
-3. `add_note { key, text: "Read for the methods section." }`.
-4. `select_items { keys: [key] }` and `open_item { key }` → the window selects the row and opens
-   the PDF.
+1. `translate.save { identifier: "10.1234/example", collections: ["READING"] }` → translator
+   creates the item and metadata.
+2. `item.attachFile { key, path: "/home/me/Downloads/example.pdf" }` → child attachment, indexed.
+3. `item.addNote { key, text: "Read for the methods section." }`.
+4. `ui.select { keys: [key] }` and `ui.open { key }` → the window selects the row and opens the
+   PDF.
 5. `agent-actions.log` records four lines; the item is visible and editable like any other.
 
 ## Phases
@@ -119,7 +120,7 @@ Reading collection, and show me."
 | Phase | Outcome | Exit criterion |
 |---|---|---|
 | 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
-| 2 | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
+| 2 **built** | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
 | 3 | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
 | 4 | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
 

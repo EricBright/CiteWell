@@ -48,6 +48,42 @@ describe("Agent bridge", function () {
 		assert.include(item.item.notes, note.key);
 	});
 
+	it("should attach a file and a URL, and reject an unknown identifier", async function () {
+		let created = await Zotero.Server.Agent.dispatch("item.create", {
+			itemType: "book",
+			fields: { title: "Attachment test" }
+		});
+		let path = OS.Path.join(Zotero.DataDirectory.dir, "agent-test.txt");
+		await Zotero.File.putContentsAsync(path, "hello from the agent test");
+		let file = await Zotero.Server.Agent.dispatch("item.attachFile", {
+			key: created.key,
+			path
+		});
+		assert.ok(file.key);
+		assert.equal(file.parentKey, created.key);
+
+		let link = await Zotero.Server.Agent.dispatch("item.attachURL", {
+			key: created.key,
+			url: "https://example.com/article"
+		});
+		assert.ok(link.key);
+		assert.equal(link.parentKey, created.key);
+
+		let item = await Zotero.Server.Agent.dispatch("item.get", { key: created.key });
+		assert.include(item.item.attachments, file.key);
+		assert.include(item.item.attachments, link.key);
+
+		let error;
+		try {
+			await Zotero.Server.Agent.dispatch("translate.save", { identifier: "not an identifier" });
+		}
+		catch (e) {
+			error = e;
+		}
+		assert.ok(error);
+		assert.equal(error.status, 400);
+	});
+
 	it("should register and load the preferences pane", async function () {
 		let pane = Zotero.PreferencePanes.builtInPanes.find(p => p.id == 'zotero-prefpane-agent');
 		assert.ok(pane);

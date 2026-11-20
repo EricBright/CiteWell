@@ -143,6 +143,7 @@ Zotero.Server.Agent = {
 					dataDir: Zotero.DataDirectory.dir,
 					capabilities: [
 						'ping', 'search', 'item.get', 'item.create', 'item.update', 'item.addNote',
+						'item.attachFile', 'item.attachURL', 'translate.save',
 						'collection.list', 'collection.create', 'collection.addItems',
 						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
 					],
@@ -162,6 +163,15 @@ Zotero.Server.Agent = {
 
 			case 'item.addNote':
 				return this._addNote(params);
+
+			case 'item.attachFile':
+				return this._attachFile(params);
+
+			case 'item.attachURL':
+				return this._attachURL(params);
+
+			case 'translate.save':
+				return this._translateSave(params);
 
 			case 'collection.list':
 				return this._listCollections();
@@ -260,6 +270,137 @@ Zotero.Server.Agent = {
 		note.setNote(text);
 		await note.saveTx();
 		return { key: note.key, parentKey: parent.key };
+	},
+
+	_attachFile: async function ({ key, path, title, move = false }) {
+		if (!path || typeof path != 'string') {
+			throw new AgentError(400, 'path is required');
+		}
+		let parent = this._requireParent(key);
+		let file = Zotero.File.pathToFile(path);
+		if (!file.exists()) {
+			throw new AgentError(404, `File not found: ${path}`);
+		}
+		let attachment = await Zotero.Attachments.importFromFile({
+			file: path,
+			parentItemID: parent.id,
+			title: title || undefined,
+			moveFile: !!move,
+		});
+		return {
+			key: attachment.key,
+			parentKey: parent.key,
+			title: attachment.getField('title'),
+		};
+	},
+
+	_attachURL: async function ({ key, url, title }) {
+		if (!url || typeof url != 'string') {
+			throw new AgentError(400, 'url is required');
+		}
+		let parent = this._requireParent(key);
+		let attachment = await Zotero.Attachments.linkFromURL({
+			url,
+			parentItemID: parent.id,
+			title: title || undefined,
+		});
+		return {
+			key: attachment.key,
+			parentKey: parent.key,
+			title: attachment.getField('title'),
+		};
+	},
+
+	_translateSave: async function ({ identifier, type, collections = [], saveAttachments = true }) {
+		if (!identifier || typeof identifier != 'string') {
+			throw new AgentError(400, 'identifier is required');
+		}
+		identifier = identifier.trim();
+		let collectionIDs = await this._resolveCollections(collections);
+		let collectionsParam = collectionIDs.length ? collectionIDs : false;
+
+		if (type == 'url' || /^https?:\/\//i.test(identifier)) {
+			return this._translateURL(identifier, collectionsParam, saveAttachments);
+		}
+
+		let identifiers = Zotero.Utilities.extractIdentifiers(identifier);
+		if (!identifiers.length && type) {
+			let value = identifier;
+			if (type == 'doi') {
+				value = Zotero.Utilities.cleanDOI(value);
+				if (value) identifiers = [{ DOI: value }];
+			}
+			else if (type == 'isbn') {
+				value = Zotero.Utilities.cleanISBN(value);
+				if (value) identifiers = [{ ISBN: value }];
+			}
+			else if (type == 'pmid') {
+				value = value.replace(/^pmid:\s*/i, '');
+				if (/^\d+$/.test(value)) identifiers = [{ PMID: value }];
+			}
+		}
+		if (!identifiers.length) {
+			throw new AgentError(400, 'No DOI, ISBN or PMID found in identifier');
+		}
+
+		let created = [];
+		for (let itemIdentifier of identifiers) {
+			let translate = new Zotero.Translate.Search();
+			translate.setIdentifier(itemIdentifier);
+			let translators = await translate.getTranslators();
+			if (!translators.length) {
+				throw new AgentError(404, `No translator found for ${JSON.stringify(itemIdentifier)}`);
+			}
+			translate.setTranslator(translators);
+			let items = await translate.translate({
+				libraryID: 1,
+				collections: collectionsParam,
+				saveAttachments: !!saveAttachments,
+			});
+			created.push(...items);
+		}
+		return {
+			count: created.length,
+			items: created.map(item => this._summary(item)),
+		};
+	},
+
+	_translateURL: async function (url, collections, saveAttachments) {
+		const { HiddenBrowser } = ChromeUtils.importESModule(
+			"chrome://zotero/content/HiddenBrowser.mjs"
+		);
+		let browser = new HiddenBrowser({ blockRemoteResources: false });
+		try {
+			await browser.load(url);
+			let document = await browser.getDocument();
+			let translate = new Zotero.Translate.Web();
+			translate.setDocument(document);
+			let translators = await translate.getTranslators();
+			if (!translators.length) {
+				throw new AgentError(404, `No web translator found for ${url}`);
+			}
+			translate.setTranslator(translators);
+			let items = await translate.translate({
+				libraryID: 1,
+				collections,
+				saveAttachments: !!saveAttachments,
+			});
+			return {
+				count: items.length,
+				items: items.map(item => this._summary(item)),
+			};
+		}
+		finally {
+			browser.destroy();
+		}
+	},
+
+	_requireParent: function (key) {
+		let item = this._requireItem(key);
+		if (item.isAttachment() || item.isNote()) {
+			throw new AgentError(400, 'Attachments and notes cannot have child attachments');
+		}
+		return item;
 	},
 
 	_listCollections: function () {
@@ -493,6 +634,7 @@ Zotero.Server.Agent.Endpoint.prototype = {
 		if (params.key) return { key: params.key };
 		if (params.keys) return { keys: params.keys };
 		if (params.itemType) return { itemType: params.itemType };
+		if (params.identifier) return { identifier: params.identifier };
 		return null;
 	},
 };

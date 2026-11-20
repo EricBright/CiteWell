@@ -6,7 +6,7 @@ library without clicking. It has two back ends:
 | Surface | Endpoint | What it is for |
 |---|---|---|
 | Local API | `127.0.0.1:23119/api/` | Data: search, items, collections, tags, notes-as-items |
-| Agent bridge | `127.0.0.1:23119/agent/v1` | Actions: validated item creation, notes, collections, selection, opening items |
+| Agent bridge | `127.0.0.1:23119/agent/v1` | Actions: validated item creation, translators, attachments, notes, collections, selection, opening items |
 
 Both are loopback-only. The app stays the source of truth; the CLI never opens `zotero.sqlite`.
 
@@ -65,6 +65,12 @@ citewell agent item.create --params '{
 citewell agent item.addNote --params '{"key":"ABCD1234","text":"Read chapter 2."}'
 citewell agent ui.select --params '{"keys":["ABCD1234"]}'
 citewell agent ui.open   --params '{"key":"ABCD1234"}'
+
+# DOI/ISBN/PMID or a page URL → item with metadata and attachments
+citewell agent translate.save --params '{"identifier":"10.1038/nphys1170"}'
+
+# Import a PDF already on disk
+citewell agent item.attachFile --params '{"key":"ABCD1234","path":"/home/me/Downloads/paper.pdf"}'
 ```
 
 The bridge authenticates with a token that **Preferences → Agent access** generates and shows. The
@@ -105,8 +111,8 @@ profile. The CLI fetches the server ID itself for writes.
 
 - The bridge has no arbitrary JavaScript execution and no destructive verbs: delete moves to the
   trash, emptying it is not exposed.
-- Translators (DOI/ISBN), file attachments and reader annotations are Phase 2 (see
-  [agent.md](agent.md)).
+- Reader annotations and export verbs are Phase 4 (see [agent.md](agent.md)); translators and
+  attachments are available now.
 - No HTTPS: both surfaces are loopback-only by design. Never expose port 23119 to a network.
 - Reads on the local API are available to any process running as the same user; the bridge
   requires its token for both reads and writes.
