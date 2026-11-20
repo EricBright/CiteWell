@@ -43,6 +43,7 @@ citewell agent ping --data-dir "$HOME/CiteWellData"
 | `api METHOD PATH` | Raw local-API request; `--body JSON` for writes |
 | `authorize` | Asks the app for a local-API write key |
 | `agent METHOD` | Calls the agent bridge; `--params JSON` (or `@file`) |
+| `mcp` | Runs an MCP server on stdio, exposing the bridge as tools |
 
 Global options may go before or after the command: `--url URL`, `--data-dir DIR`,
 `--pretty`. The agent token is read from `<data-dir>/agent-token`; set `CITEWELL_DATA_DIR` or pass
@@ -117,6 +118,23 @@ profile. The CLI fetches the server ID itself for writes.
 - Reads on the local API are available to any process running as the same user; the bridge
   requires its token for both reads and writes.
 
-An MCP adapter (`citewell mcp`) is R23 Phase 3 on the [roadmap](../roadmap.md).
+## MCP
+
+`citewell mcp --data-dir "$CITEWELL_DATA_DIR"` starts a stdio MCP server. It exposes 16 tools
+(`search_library`, `create_item`, `save_identifier`, `attach_file`, `select_items`, `open_item`,
+`notify`, and the rest of the bridge). Add it to an MCP client as:
+
+```json
+{
+  "mcpServers": {
+    "citewell": {
+      "command": "citewell",
+      "args": ["mcp", "--data-dir", "/home/me/CiteWell"]
+    }
+  }
+}
+```
+
+stdout carries only JSON-RPC; logs never mix into the protocol stream.
 
 *For the full documentation index, see [../README.md](../README.md).*

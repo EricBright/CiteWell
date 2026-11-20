@@ -11,12 +11,14 @@
 //! logic: the app remains the single source of truth.
 
 use std::env;
-use std::io::{Read, Write};
 use std::fs;
+use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::Duration;
+
+mod mcp;
 
 const DEFAULT_URL: &str = "http://127.0.0.1:23120";
 const USER_AGENT: &str = concat!("citewell-cli/", env!("CARGO_PKG_VERSION"));
@@ -47,7 +49,8 @@ fn usage() -> CliError {
              api METHOD PATH [--body JSON] [--key KEY] [--server-id ID]\n        \
              send a raw local-API request\n  \
              authorize [--app-name NAME]         ask the app for a write key\n  \
-             agent METHOD [--params JSON]        call the agent bridge (/agent/v1)\n\n\
+             agent METHOD [--params JSON]        call the agent bridge (/agent/v1)\n  \
+             mcp                                 run an MCP server on stdio for local agents\n\n\
              Options:\n  \
              --url URL        local API origin (default http://127.0.0.1:23120 or $CITEWELL_URL)\n  \
              --data-dir DIR   library data dir for the agent token (default $CITEWELL_DATA_DIR)\n  \
@@ -108,6 +111,7 @@ fn run() -> Result<(), CliError> {
         "api" => cmd_api(&client, rest, pretty),
         "authorize" => cmd_authorize(&client, rest, pretty),
         "agent" => cmd_agent(&client, rest, pretty, data_dir),
+        "mcp" => mcp::run(&client, data_dir),
         _ => Err(usage()),
     }
 }
@@ -174,6 +178,36 @@ impl Client {
             .read_to_end(&mut raw)
             .map_err(|e| (3, format!("citewell: read failed: {e}")))?;
         parse_response(&raw).map_err(|e| (1, format!("citewell: malformed response: {e}")))
+    }
+
+    fn agent_call(
+        &self,
+        token: &str,
+        method: &str,
+        params: serde_json::Value,
+    ) -> Result<serde_json::Value, CliError> {
+        let body = serde_json::json!({ "method": method, "params": params }).to_string();
+        let headers = vec![
+            ("Authorization".to_string(), format!("Bearer {token}")),
+            ("X-CiteWell-Agent".to_string(), "1".to_string()),
+        ];
+        let response = self.request("POST", "/agent/v1", Some(&body), &headers)?;
+        if !response.is_success() {
+            return Err(http_error(&response, false));
+        }
+        let value: serde_json::Value = serde_json::from_slice(&response.body)
+            .map_err(|e| (1, format!("citewell: malformed agent response: {e}")))?;
+        if value.get("ok").and_then(|ok| ok.as_bool()) != Some(true) {
+            let message = value
+                .pointer("/error/message")
+                .and_then(|message| message.as_str())
+                .unwrap_or("agent request failed");
+            return Err((1, format!("citewell: {message}")));
+        }
+        Ok(value
+            .get("result")
+            .cloned()
+            .unwrap_or(serde_json::Value::Null))
     }
 
     fn get_json(&self, path: &str) -> Result<Response, CliError> {
@@ -348,8 +382,7 @@ fn cmd_agent(
                 params = if let Some(path) = value.strip_prefix('@') {
                     fs::read_to_string(path)
                         .map_err(|e| (2, format!("citewell: cannot read {path}: {e}")))?
-                }
-                else {
+                } else {
                     value.clone()
                 };
             }
@@ -357,9 +390,14 @@ fn cmd_agent(
         }
         i += 1;
     }
-    serde_json::from_str::<serde_json::Value>(&params)
+    let params = serde_json::from_str::<serde_json::Value>(&params)
         .map_err(|e| (2, format!("citewell: --params is not valid JSON: {e}")))?;
+    let token = read_agent_token(data_dir)?;
+    let result = client.agent_call(&token, &method, params)?;
+    print_json_value(&result, pretty)
+}
 
+fn read_agent_token(data_dir: Option<PathBuf>) -> Result<String, CliError> {
     let data_dir = data_dir.ok_or_else(|| {
         (
             2,
@@ -381,19 +419,24 @@ fn cmd_agent(
         .trim()
         .to_string();
     if token.is_empty() {
-        return Err((2, format!("citewell: agent token at {} is empty", token_path.display())));
+        return Err((
+            2,
+            format!("citewell: agent token at {} is empty", token_path.display()),
+        ));
     }
+    Ok(token)
+}
 
-    let body = serde_json::json!({ "method": method, "params": serde_json::from_str::<serde_json::Value>(&params).unwrap() }).to_string();
-    let headers = vec![
-        ("Authorization".to_string(), format!("Bearer {token}")),
-        ("X-CiteWell-Agent".to_string(), "1".to_string()),
-    ];
-    let response = client.request("POST", "/agent/v1", Some(&body), &headers)?;
-    if !response.is_success() {
-        return Err(http_error(&response, false));
+fn print_json_value(value: &serde_json::Value, pretty: bool) -> Result<(), CliError> {
+    if pretty {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(value).unwrap_or_default()
+        );
+    } else {
+        println!("{}", serde_json::to_string(value).unwrap_or_default());
     }
-    print_body(response.body, pretty)
+    Ok(())
 }
 
 fn key_is_missing(response: &Response) -> bool {

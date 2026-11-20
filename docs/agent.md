@@ -12,7 +12,7 @@ can see the result.
 | Data API | **Exists** | Zotero's local API on `127.0.0.1:23120/api/`: items, collections, tags, searches, notes as items; writes need an in-app key |
 | CLI | **Exists** | `citewell status/search/item/api/authorize`; raw HTTP with errors and exit codes ([cli.md](cli.md)) |
 | App bridge | **Phases 1–2 built** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: item creation, notes, collections, selection, tabs, translators, file and URL attachments |
-| MCP adapter | **R23 Phase 3** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |
+| MCP adapter | **Phase 3 built** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |
 
 The local API is a data CRUD surface. It cannot run a translator, import a file from disk, or
 move the selection. Those live in the app, so the bridge calls the same JavaScript APIs the UI
@@ -102,6 +102,21 @@ protocol code and lets the same bridge serve CLI scripts, MCP agents, and a futu
 Example tools: `search_library`, `get_item`, `create_item`, `update_item`, `save_identifier`,
 `attach_file`, `add_note`, `add_to_collection`, `select_items`, `open_item`, `get_selection`.
 
+`citewell mcp --data-dir <library>` reads the same token file and speaks newline-delimited
+JSON-RPC on stdin/stdout. It never prints anything else to stdout; diagnostics go to stderr. A
+typical client entry is:
+
+```json
+{
+  "mcpServers": {
+    "citewell": {
+      "command": "citewell",
+      "args": ["mcp", "--data-dir", "/home/me/CiteWell"]
+    }
+  }
+}
+```
+
 ## Worked example
 
 A person tells an agent: "Add the DOI 10.1234/example, attach the PDF in Downloads, put it in my
@@ -121,7 +136,7 @@ Reading collection, and show me."
 |---|---|---|
 | 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
 | 2 **built** | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
-| 3 | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
+| 3 **built** | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
 | 4 | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
 
 ## Non-goals

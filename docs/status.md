@@ -34,8 +34,8 @@ Artifacts are local and gitignored:
    an empty library first, then a batched merge. Source is read-only throughout.
 7. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
-8. **R23 Phase 3 — the MCP adapter**: `citewell mcp`, mapping the bridge verbs to MCP tools.
-   Phases 1–2 (items, notes, translators, attachments, selection, settings pane) are built.
+8. **R23 — complete**: Phases 1–3 are built (items, notes, translators, attachments,
+   selection, settings pane, `citewell mcp`). Next is R24 import/merge.
 
 ## Commands
 
@@ -107,6 +107,8 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
 - `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
   `item.attachFile` / `item.attachURL` create child attachments. Both were verified end to end
   on Firefox 153.
+- `citewell mcp` exposes 16 bridge tools over stdio and was verified with initialize,
+  tools/list and tools/call against a live app.
 - The connector's identity lives in `connectors/brand.json`; source strings use tokens that
   `xtask` substitutes, and the build fails on hardcoded English product names.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched.
