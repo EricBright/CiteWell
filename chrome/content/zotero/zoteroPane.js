@@ -145,17 +145,28 @@ var ZoteroPane = new function () {
 			document.getElementById('zotero-pane-stack').setAttribute('platform', 'win');
 		}
 		
-		// Set the sync tooltip label
-		let syncLabel = document.getElementById('zotero-tb-sync-label');
-		syncLabel.value = Zotero.getString('sync.syncWith', ZOTERO_CONFIG.DOMAIN_NAME);
-		let syncButton = document.querySelector("#zotero-tb-sync");
-		syncButton.setAttribute("aria-label", syncLabel.value);
-		// Update the aria-description on focus
-		syncButton.addEventListener("focus", function (_) {
-			Zotero.Sync.Runner.registerSyncStatus(this.firstChild);
-			let lastSync = document.querySelector("#zotero-tb-sync-last-sync").value;
-			this.setAttribute("aria-description", lastSync || "");
-		});
+		if (ZOTERO_CONFIG.ONLINE_SYNC) {
+			// Set the sync tooltip label
+			let syncLabel = document.getElementById('zotero-tb-sync-label');
+			syncLabel.value = Zotero.getString('sync.syncWith', ZOTERO_CONFIG.DOMAIN_NAME);
+			let syncButton = document.querySelector("#zotero-tb-sync");
+			syncButton.setAttribute("aria-label", syncLabel.value);
+			// Update the aria-description on focus
+			syncButton.addEventListener("focus", function (_) {
+				Zotero.Sync.Runner.registerSyncStatus(this.firstChild);
+				let lastSync = document.querySelector("#zotero-tb-sync-last-sync").value;
+				this.setAttribute("aria-description", lastSync || "");
+			});
+		}
+		else {
+			// CiteWell: online sync is disabled, so remove every entry point.
+			for (let id of ['zotero-tb-sync', 'zotero-tb-sync-error']) {
+				document.getElementById(id)?.setAttribute('hidden', 'true');
+			}
+			for (let item of document.querySelectorAll('.zotero-menuitem-sync')) {
+				item.setAttribute('hidden', 'true');
+			}
+		}
 		
 		// register an observer for Zotero reload
 		observerService = Components.classes["@mozilla.org/observer-service;1"]
@@ -3217,6 +3228,7 @@ var ZoteroPane = new function () {
 	
 	
 	this.sync = function () {
+		if (!ZOTERO_CONFIG.ONLINE_SYNC) return;
 		if (Zotero.Sync.Runner.syncInProgress) {
 			Zotero.Sync.Runner.stop();
 		}

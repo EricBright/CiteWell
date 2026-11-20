@@ -90,7 +90,8 @@ Zotero.PreferencePanes = {
 			defaultXUL: true,
 			helpURL: 'https://www.zotero.org/support/preferences/sync#reset',
 		}
-	]),
+	].filter(pane => ZOTERO_CONFIG.ONLINE_SYNC
+		|| !['zotero-prefpane-account', 'zotero-subpane-reset-sync'].includes(pane.id))),
 
 	pluginPanes: [],
 

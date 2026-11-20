@@ -25,6 +25,8 @@
 
 const ZOTERO_CONFIG = {
 	CLIENT_NAME: '{{brand}}',
+	// CiteWell: Zotero's online library is part of the sync service; off.
+	ONLINE_LIBRARY: false,
 	DOMAIN_NAME: 'zotero.org',
 	SETTINGS_URL: 'https://repo.zotero.org/settings',
 	REPOSITORY_URL: 'https://repo.zotero.org/repo/',

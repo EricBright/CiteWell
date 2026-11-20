@@ -96,7 +96,7 @@ ItemSaver.prototype = {
 			return await this._saveToZotero(items, attachmentCallback, itemsDoneCallback);
 		}
 		catch (e) {
-			if (e.status == 0) {
+			if (e.status == 0 && ZOTERO_CONFIG.ONLINE_LIBRARY) {
 				return this._saveToServer(items, attachmentCallback, itemsDoneCallback);
 			}
   			throw e;
@@ -379,6 +379,9 @@ ItemSaver.prototype = {
 	 *     attachmentCallback() will be called with all attachments that will be saved
 	 */
 	_saveToServer: async function (items, attachmentCallback, itemsDoneCallback=()=>0) {
+		if (!ZOTERO_CONFIG.ONLINE_LIBRARY) {
+			throw new Error('Saving to the online library is disabled in this build');
+		}
 		Zotero.debug(`ItemSaver._saveToServer: Saving ${items.length} items to server`);
 		var newItems = [], itemIndices = [];
 		const automaticTags = await Zotero.Prefs.getAsync("automaticTags");

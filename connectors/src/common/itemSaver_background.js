@@ -135,6 +135,10 @@ Zotero.ItemSaver.saveStandaloneAttachmentToZotero = async function(attachment, s
 }
 
 Zotero.ItemSaver.saveAttachmentToServer = async function(attachment, tab) {
+	if (!ZOTERO_CONFIG.ONLINE_LIBRARY) {
+		throw new Error('Saving to the online library is disabled in this build');
+	}
+
 	let promises = []
 	promises.push(this._createServerAttachmentItem(attachment));
 

@@ -155,23 +155,29 @@ same AppDir.
 
 Rejected: deleting `app/win` and `app/mac` — guaranteed conflicts on every upstream change.
 
-## D14 — Zotero's online sync stays, for personal builds only
+## D14 — Zotero's online sync is disabled and hidden
 
-**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (re-enable the switch)
 
 Zotero's code is AGPLv3; its sync service is not part of that grant. The Terms of Service govern
-zotero.org, and the sync protocol is internal rather than the documented Web API. Using it with
-the owner's own account is low risk; distributing a client that drives other people's accounts
-through it is the case that needs permission or a sync-free build.
+zotero.org, and the sync protocol is internal rather than the documented Web API. Syncing a
+modified client against it is therefore not something to ship, so it is off everywhere:
 
-The feature therefore stays, with a single switch: `ONLINE_SYNC` in
-[resource/config.mjs](../resource/config.mjs), true today. Enforcement (hiding the sync UI and
-refusing connections when false) is roadmap R18, not done yet.
+| Surface | Behaviour |
+|---|---|
+| `ZOTERO_CONFIG.ONLINE_SYNC` | `false` in [resource/config.mjs](../resource/config.mjs) |
+| Sync runner | `enabled` is false, `sync()` returns immediately, event listeners are not started |
+| Preferences | Account/Sync pane and Reset Sync subpane are filtered out |
+| Toolbar and menus | sync button, error indicator and library-context sync item are hidden |
+| Connector | online-library saving and Google Docs integration are disabled and hidden |
 
-Rejected: deleting the sync subsystem — it is large, upstream changes it constantly, and every
-merge would conflict; the loss of web and group libraries is also real. Rejected: self-hosting
-the sync server — Zotero does not publish one. Rejected: syncing `zotero.sqlite` through cloud
-storage — SQLite over a network mount corrupts, and Zotero's own documentation warns against it.
+Removal of the subsystem is R19. A folder-based replacement (Google Drive, rclone) is not
+implemented: Zotero's sync protocol has no folder backend, WebDAV covers only attachment files,
+and storing `zotero.sqlite` in a cloud folder corrupts it.
+
+Rejected: leaving sync enabled for personal builds — the owner does not want the dependency.
+Rejected: deleting the subsystem now — it should be removed deliberately, in one pass, once the
+replacement story is clear.
 
 ## Dead ends
 

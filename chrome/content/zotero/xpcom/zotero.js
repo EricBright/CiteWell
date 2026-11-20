@@ -747,7 +747,9 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			Zotero.Sync.Storage.Local.init();
 			Zotero.Sync.Storage.FileChangeWatcher.init();
 			Zotero.Sync.Runner = new Zotero.Sync.Runner_Module;
-			Zotero.Sync.EventListeners.init();
+			if (ZOTERO_CONFIG.ONLINE_SYNC) {
+				Zotero.Sync.EventListeners.init();
+			}
 			Zotero.Streamer = new Zotero.Streamer_Module;
 			Zotero.Streamer.init();
 			

@@ -49,6 +49,12 @@ var Zotero_Preferences = {
 		await Zotero.i18n.init();
 		Zotero.i18n.translateFragment(document);
 
+		if (!ZOTERO_CONFIG.ONLINE_LIBRARY) {
+			for (let id of ['general-online-library', 'advanced-google-docs']) {
+				document.getElementById(id)?.setAttribute('hidden', 'true');
+			}
+		}
+
 		await Zotero.Prefs.loadNamespace(['interceptKnownFileTypes', 'allowedInterceptHosts']);
 		
 		var panesDiv = document.getElementById("panes");

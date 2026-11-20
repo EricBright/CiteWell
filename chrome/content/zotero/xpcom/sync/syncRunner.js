@@ -35,7 +35,8 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 	
 	Zotero.defineProperty(this, 'enabled', {
 		get: () => {
-			return _apiKey || Zotero.Sync.Data.Local.hasCredentials();
+			return ZOTERO_CONFIG.ONLINE_SYNC
+				&& (_apiKey || Zotero.Sync.Data.Local.hasCredentials());
 		}
 	});
 	Zotero.defineProperty(this, 'syncInProgress', { get: () => _syncInProgress });
@@ -116,6 +117,10 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 	 *                                                handling internally (used for testing)
 	 */
 	this.sync = Zotero.serial(function (options = {}) {
+		if (!ZOTERO_CONFIG.ONLINE_SYNC) {
+			Zotero.debug("Sync is disabled in this build");
+			return false;
+		}
 		return this._sync(options);
 	});
 

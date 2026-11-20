@@ -59,6 +59,7 @@ Zotero.GoogleDocs = {
 	updateBatchSize: 32,
 
 	init: async function() {
+		if (!ZOTERO_CONFIG.ONLINE_LIBRARY) return;
 		if (!await Zotero.Prefs.getAsync('integration.googleDocs.enabled')) return;
 		
 		await this.initClient();
