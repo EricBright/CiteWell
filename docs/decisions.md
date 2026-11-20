@@ -168,7 +168,7 @@ modified client against it is therefore not something to ship, so it is off ever
 | `ZOTERO_CONFIG.ONLINE_SYNC` | `false` in [resource/config.mjs](../resource/config.mjs) |
 | Sync runner | `enabled` is false, `sync()` returns immediately, event listeners are not started |
 | Preferences | Account/Sync pane and Reset Sync subpane are filtered out |
-| Toolbar and menus | sync button, error indicator and library-context sync item are hidden |
+| Toolbar and menus | sync button, error indicator and library-context sync item are hidden; the "back up" and auto-sync reminder banners are never registered |
 | Connector | online-library saving and Google Docs integration are disabled and hidden |
 
 Removal of the subsystem is R19.

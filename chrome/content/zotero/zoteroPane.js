@@ -3244,6 +3244,12 @@ var ZoteroPane = new function () {
 
 	var _syncRemindersObserverID = null;
 	this.initSyncReminders = function (startup) {
+		// CiteWell never syncs, so the "Set up syncing" and "Enable auto-sync" banners would
+		// only advertise a feature that is hidden everywhere else
+		if (!ZOTERO_CONFIG.ONLINE_SYNC) {
+			return;
+		}
+
 		if (startup) {
 			Zotero.Notifier.registerObserver(
 				{
@@ -3361,6 +3367,10 @@ var ZoteroPane = new function () {
 	 * @param {String} [options.learnMoreURL] - Show "Learn More" link to this URL
 	 */
 	this.showSyncReminder = function (reminderType, options = {}) {
+		if (!ZOTERO_CONFIG.ONLINE_SYNC) {
+			return;
+		}
+
 		if (!['setUp', 'autoSync'].includes(reminderType)) {
 			throw new Error(`Invalid reminder type: ${reminderType}`);
 		}
