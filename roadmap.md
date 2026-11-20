@@ -9,11 +9,10 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R1 | Documentation foundation: README, AGENTS.md, NOTICE, `docs/`, Rust docs check | A fork without a naming rule and a merge procedure produces breakage that looks like progress | `tools/docs-check` green; every doc registered |
-| R2 | One-paragraph product statement: what CiteWell is for, beyond a different look | Determines which UI work is worth doing and which is churn | Paragraph recorded in [docs/decisions.md](docs/decisions.md) |
-| R3 | CI baseline: docs workflow green; decide the fate of upstream `ci.yml` (Zotero's full matrix is expensive and partly broken on a fork) | Every push currently triggers work nobody reads | Only workflows that can fail meaningfully remain |
+| R4 | Visible rename of product surfaces: window title, About, installer, desktop entry, launcher icons | Brand text is in place; the logo and launcher art still say Zotero | Staged build shows CiteWell in the title and About panel; desktop entry updated |
+| R5 | Icon system refresh: inventory, replacement, high-DPI and dark-mode check | The main reason for the fork, and the last thing blocking a coherent identity | Full icon set renders correctly on Linux at 1x and 2x |
+| R3 | CI baseline: docs workflow is green; decide the fate of upstream `ci.yml` (it did not run on the fork push) | Workflows that cannot fail meaningfully train you to ignore CI | Only workflows that can fail meaningfully remain |
 
-## Next
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|

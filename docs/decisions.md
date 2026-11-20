@@ -89,6 +89,24 @@ destination also means `README.md` can answer "where do I report this?" in one l
 
 Rejected: no tracker — leaves the README's reporting section empty.
 
+## D9 — CiteWell is a personal tool, not a distribution
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+> CiteWell is my Zotero. Same library, same sync, same plugins; an interface I don't have to
+> fight, and behaviour that matches how I actually work.
+
+The author is the only user: no support obligation, no compatibility promise beyond the author's
+own machines, and no release cadence. License obligations still apply because the repository is
+public — modifications are stated in [NOTICE](../NOTICE) and the source *is* the distribution.
+
+Rejected: a craft-focused product statement — it implies a quality bar and promises to users this
+project does not intend to keep. Rejected: "conservative interface fork" — accurate, but it makes
+promises to users who do not exist.
+
+Consequence: roadmap R11 (distribution) stays Later, and plugin compatibility matters only as far
+as the author's own plugins.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
