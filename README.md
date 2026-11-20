@@ -71,6 +71,7 @@ to answer one question, not to get oriented.
 | `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
 | `docs/connectors.md` | on-demand | changing the browser connector | Import, patch list, XPI build, rebranding gaps |
+| `docs/export.md` | on-demand | planning or running a vault export | Obsidian/Markdown export design and safety rules |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License
