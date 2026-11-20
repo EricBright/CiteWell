@@ -46,6 +46,25 @@ Other languages carry the same strings. A full sweep across `chrome/locale/*` is
 diff that conflicts on every merge; prefer adding an override layer, and decide the approach in
 roadmap item R7 before editing any of them.
 
+## Rasterising the SVGs
+
+ImageMagick in this environment has no SVG delegate: it silently mis-renders viewBoxes
+(negative origins get clipped, `context-fill` renders blank). Generate PNGs with librsvg
+instead:
+
+```python
+import gi; gi.require_version("Rsvg", "2.0")
+from gi.repository import Rsvg
+import cairo
+h = Rsvg.Handle.new_from_file("chrome/skin/default/zotero/zotero.svg")
+s = cairo.ImageSurface(cairo.FORMAT_ARGB32, 2048, 2048)
+c = cairo.Context(s); c.scale(2048/980.0, 2048/980.0); h.render_cairo(c)
+s.write_to_png("mark-2048.png")
+```
+
+Then trim to content, pad, and resize to exact square sizes — launcher icons must be
+square (32, 64, 128), and `.ico` frames are built with `icotool`.
+
 ## Update channel
 
 The build reports `app.update.channel = "source"`. A fork must not check Zotero's update servers,

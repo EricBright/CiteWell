@@ -107,6 +107,19 @@ promises to users who do not exist.
 Consequence: roadmap R11 (distribution) stays Later, and plugin compatibility matters only as far
 as the author's own plugins.
 
+## D10 — Mark: owner's CW + quill, with a schematic quill for the toolbar
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+The mark is the owner's CW + quill artwork, converted to outlines so it carries no font
+dependency, and kept at `#cc2936`. The About panel and launcher use the full mark. The
+toolbar (16–32px) uses a schematic quill drawn for that size, because the fine plume
+reduces to an unreadable leaf below ~48px; a two-tier mark is the only way to keep the
+toolbar legible without abandoning the motif.
+
+Rejected: shrinking the full mark to 16px — it reads as a red smudge. Rejected: a bold "C"
+for the toolbar — legible, but drops the quill exactly where users look most.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
