@@ -216,7 +216,7 @@ four weeks. Rejected: staying on 140 — still maintained, but an engine two ESR
 **Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (one pref)
 
 CiteWell enables Zotero's local API by default (`httpServer.localAPI.enabled`) so a local agent
-can talk to the running app. The server binds `127.0.0.1:23119` only. Reads are unauthenticated,
+can talk to the running app. The server binds `127.0.0.1:23120` only. Reads are unauthenticated,
 following Zotero's design; writes require a key granted through the app's Allow / Always Allow
 dialog, and every write must echo the instance's server ID.
 
@@ -280,6 +280,30 @@ CSS/JS branch plus one environment variable.
 Rejected: an internal browser for web links — it hides the person's real browser, history and
 extensions. Rejected: keeping the Firefox-style titlebar on KDE — its button detection reports
 only Close, so it either loses Minimize/Maximize or draws controls that ignore Plasma's theme.
+
+## D19 — CiteWell owns its profile, data directory and port
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+CiteWell must be installable next to Zotero without touching anything Zotero created. Four things
+are therefore separate:
+
+| Surface | Value |
+|---|---|
+| Profile | `~/.config/citewell/profile`, passed explicitly with `-profile` |
+| Data directory | `~/CiteWell` (`CLIENT_NAME`), never `~/Zotero` |
+| Local API and connector server | port **23120**; Zotero keeps 23119 |
+| Import | explicit, read-only, from the Library preferences pane ([import.md](import.md)) |
+
+The application id stays `zotero@zotero.org` (D3) so plugins and the schema keep working; the
+profile separation comes from the launcher, not from a new identity. The first run creates a blank
+database. Sharing Zotero's profile would share prefs, plugins, local-API keys and the sync-account
+state, and a shared port would let the CLI talk to whichever application started first.
+
+Rejected: auto-detecting and adopting `~/Zotero` on first run — it looks convenient but turns
+"try CiteWell" into a migration of the person's real library. Rejected: keeping port 23119 —
+it collides with Zotero and can route an agent to the wrong library. Rejected: a shared profile
+to reuse plugins — plugins can be installed separately; shared state is the larger risk.
 
 ## Dead ends
 

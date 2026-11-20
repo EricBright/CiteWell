@@ -159,7 +159,7 @@ pref("extensions.zotero.integration.citationPreviewShown", true);
 
 // Connector settings
 pref("extensions.zotero.httpServer.enabled", true);
-pref("extensions.zotero.httpServer.port", 23119);	// ascii "ZO"
+pref("extensions.zotero.httpServer.port", 23120);	// CiteWell; Zotero owns 23119
 // CiteWell enables the loopback local API so the `citewell` CLI and local agents can read
 // the library; writes still require a key granted through an in-app dialog (D16).
 pref("extensions.zotero.httpServer.localAPI.enabled", true);

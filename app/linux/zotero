@@ -23,4 +23,11 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* || "${XDG_CURRENT_DESKTOP:-}" == *Plas
 fi
 
 CALLDIR="$(dirname "$(readlink -f "$0")")"
-"$CALLDIR/zotero-bin" -app "$CALLDIR/app/application.ini" "$@"
+
+# Keep CiteWell's profile out of Zotero's profile. Zotero and CiteWell share the
+# same Gecko application id, so without an explicit profile they would use the
+# same prefs, plugins and local-API keys.
+PROFILE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/citewell/profile"
+mkdir -p "$PROFILE_DIR"
+
+"$CALLDIR/zotero-bin" -app "$CALLDIR/app/application.ini" -profile "$PROFILE_DIR" "$@"

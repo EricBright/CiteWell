@@ -26,7 +26,7 @@
 /*
 
 This file provides a reasonably complete local implementation of the Zotero API (api.zotero.org).
-Endpoints are accessible on the local server (localhost:23119 by default) under /api/.
+Endpoints are accessible on the local server (localhost:23120 by default) under /api/.
 
 Limitations compared to api.zotero.org:
 

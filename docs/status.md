@@ -30,9 +30,11 @@ Artifacts are local and gitignored:
    inert and should be set from AMO when a listing exists.
 4. **R19 — remove the sync subsystem** now that R18 hides it.
 5. **R7 — non-English locales** still contain upstream Zotero translations.
-6. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
+6. **R24 — import/merge a Zotero library** (design in [import.md](import.md)): adopt a copy for
+   an empty library first, then a batched merge. Source is read-only throughout.
+7. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
-7. **R23 Phase 3 — the MCP adapter**: `citewell mcp`, mapping the bridge verbs to MCP tools.
+8. **R23 Phase 3 — the MCP adapter**: `citewell mcp`, mapping the bridge verbs to MCP tools.
    Phases 1–2 (items, notes, translators, attachments, selection, settings pane) are built.
 
 ## Commands
@@ -93,13 +95,15 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
   in the connector. Both hide UI and block network paths; the code still exists (R19).
 - SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
   file-based store is recorded as *not doing*; export is the portability answer.
-- The local API listens on `127.0.0.1:23119` by default in CiteWell (D16). The CLI does not
+- The local API listens on `127.0.0.1:23120` by default in CiteWell (D16). The CLI does not
   touch SQLite; reads are local-unauthenticated, writes need an in-app key.
 - The agent bridge (`/agent/v1`, D17) needs a 0600 token from the data directory and the
   `X-CiteWell-Agent: 1` header, audits every call, and has no destructive verbs. Token and
   setup instructions are in **Preferences → Agent access**.
 - On KDE, KWin draws the window frame and its buttons (D18); external links go through
   `xdg-open` with the Mozilla launcher environment cleared, so they open in the default browser.
+- CiteWell has its own profile (`~/.config/citewell/profile`), data dir (`~/CiteWell`) and
+  port (23120); it never opens Zotero's profile or library (D19). Import is explicit only.
 - `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
   `item.attachFile` / `item.attachURL` create child attachments. Both were verified end to end
   on Firefox 153.

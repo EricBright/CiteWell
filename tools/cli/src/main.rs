@@ -5,7 +5,7 @@
 
 //! `citewell` — a small command-line client for CiteWell's local API.
 //!
-//! The app already exposes Zotero's local API on loopback (`http://127.0.0.1:23119/api/`).
+//! The app already exposes Zotero's local API on loopback (`http://127.0.0.1:23120/api/`).
 //! This binary is a thin, dependency-light wrapper so that a person or an agent can query and
 //! write the library without composing HTTP by hand. It deliberately contains no business
 //! logic: the app remains the single source of truth.
@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::Duration;
 
-const DEFAULT_URL: &str = "http://127.0.0.1:23119";
+const DEFAULT_URL: &str = "http://127.0.0.1:23120";
 const USER_AGENT: &str = concat!("citewell-cli/", env!("CARGO_PKG_VERSION"));
 
 fn main() -> ExitCode {
@@ -49,7 +49,7 @@ fn usage() -> CliError {
              authorize [--app-name NAME]         ask the app for a write key\n  \
              agent METHOD [--params JSON]        call the agent bridge (/agent/v1)\n\n\
              Options:\n  \
-             --url URL        local API origin (default http://127.0.0.1:23119 or $CITEWELL_URL)\n  \
+             --url URL        local API origin (default http://127.0.0.1:23120 or $CITEWELL_URL)\n  \
              --data-dir DIR   library data dir for the agent token (default $CITEWELL_DATA_DIR)\n  \
              --pretty         pretty-print JSON responses\n\n\
              The local API must be enabled in CiteWell's Advanced preferences. Reads are open to\n\
@@ -461,7 +461,7 @@ fn parse_origin(base: &str) -> Result<(String, u16), CliError> {
             Some(port) if !port.is_empty() => port
                 .parse()
                 .map_err(|_| (2, format!("citewell: invalid port in URL: {base}")))?,
-            _ => 23119,
+            _ => 23120,
         };
         return Ok((host, port));
     }
@@ -472,7 +472,7 @@ fn parse_origin(base: &str) -> Result<(String, u16), CliError> {
             port.parse()
                 .map_err(|_| (2, format!("citewell: invalid port in URL: {base}")))?,
         )),
-        _ => Ok((authority.to_string(), 23119)),
+        _ => Ok((authority.to_string(), 23120)),
     }
 }
 
@@ -598,15 +598,15 @@ mod tests {
     fn parses_origins() {
         assert_eq!(
             parse_origin(DEFAULT_URL).unwrap(),
-            ("127.0.0.1".into(), 23119)
+            ("127.0.0.1".into(), 23120)
         );
         assert_eq!(
             parse_origin("http://localhost:23120").unwrap(),
             ("localhost".into(), 23120)
         );
         assert_eq!(
-            parse_origin("http://[::1]:23119").unwrap(),
-            ("::1".into(), 23119)
+            parse_origin("http://[::1]:23120").unwrap(),
+            ("::1".into(), 23120)
         );
         assert!(parse_origin("https://127.0.0.1").is_err());
         assert!(parse_origin("127.0.0.1").is_err());

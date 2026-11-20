@@ -117,7 +117,7 @@ and [Safari](https://github.com/zotero/zotero-connectors/blob/master/src/safari/
 ##### c) Connector server in Zotero
 
 When Zotero is open it runs a [connector HTTP server](https://www.zotero.org/support/dev/client_coding/connector_http_server)
-on port 23119. The HTTP server API accommodates interactions between the Connectors and Zotero client. Calls to
+on port 23120. The HTTP server API accommodates interactions between the Connectors and Zotero client. Calls to
 [*Zotero.Connector.callMethod(endpoint)*](https://github.com/zotero/zotero-connectors/blob/e1a16c8ad2e17c6893554c3f376384e18182202d/src/common/connector.js#L150) 
 in this codebase are translated to HTTP requests to the connector server.
 

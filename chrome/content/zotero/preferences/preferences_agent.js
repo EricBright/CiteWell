@@ -63,7 +63,7 @@ Zotero_Preferences.Agent = {
 			"citewell agent ping",
 			"",
 			"# HTTP equivalent (the CLI reads the token for you)",
-			"curl -s http://127.0.0.1:23119/agent/v1 \\",
+			"curl -s http://127.0.0.1:23120/agent/v1 \\",
 			'  -H "Authorization: Bearer <token>" \\',
 			'  -H "X-CiteWell-Agent: 1" \\',
 			'  -H "Content-Type: application/json" \\',

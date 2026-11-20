@@ -9,7 +9,7 @@ can see the result.
 
 | Layer | Status | What it can do |
 |---|---|---|
-| Data API | **Exists** | Zotero's local API on `127.0.0.1:23119/api/`: items, collections, tags, searches, notes as items; writes need an in-app key |
+| Data API | **Exists** | Zotero's local API on `127.0.0.1:23120/api/`: items, collections, tags, searches, notes as items; writes need an in-app key |
 | CLI | **Exists** | `citewell status/search/item/api/authorize`; raw HTTP with errors and exit codes ([cli.md](cli.md)) |
 | App bridge | **Phases 1–2 built** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: item creation, notes, collections, selection, tabs, translators, file and URL attachments |
 | MCP adapter | **R23 Phase 3** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |

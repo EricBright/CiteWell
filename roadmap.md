@@ -13,6 +13,7 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 | R17 | Connector rebrand: name, extension id, `update_url`, and the book-section icon in light and dark | The XPI still identifies as Zotero and would auto-update to Zotero's connector; all item badges are already unified on `book-section` | Branded XPI loads in `about:debugging` and saves a page against CiteWell |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
 | R9 | Plugin compatibility check after branding | Plugins target `Zotero.*`; accidental identifier changes surface here | One plugin installs and works against a branded build |
+| R24 | Import/merge a Zotero library without touching it (design in [docs/import.md](docs/import.md)) | A fork must not trap an existing library, but must also never write Zotero's data | Adopt a copy for an empty library; merge 1k items with attachments into a non-empty one; source checksum unchanged |
 | R22 | Agent interface: the `citewell` CLI over the loopback local API | A local or generic agent needs a stable way in without hand-composed HTTP | `status`, `search`, `item` and one authorized write are documented and tested; [docs/cli.md](docs/cli.md) is registered |
 
 ## Next

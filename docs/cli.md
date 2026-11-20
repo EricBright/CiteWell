@@ -5,8 +5,8 @@ library without clicking. It has two back ends:
 
 | Surface | Endpoint | What it is for |
 |---|---|---|
-| Local API | `127.0.0.1:23119/api/` | Data: search, items, collections, tags, notes-as-items |
-| Agent bridge | `127.0.0.1:23119/agent/v1` | Actions: validated item creation, translators, attachments, notes, collections, selection, opening items |
+| Local API | `127.0.0.1:23120/api/` | Data: search, items, collections, tags, notes-as-items |
+| Agent bridge | `127.0.0.1:23120/agent/v1` | Actions: validated item creation, translators, attachments, notes, collections, selection, opening items |
 
 Both are loopback-only. The app stays the source of truth; the CLI never opens `zotero.sqlite`.
 
@@ -77,7 +77,7 @@ The bridge authenticates with a token that **Preferences → Agent access** gene
 CLI reads the same file; a raw request needs both headers:
 
 ```bash
-curl -s http://127.0.0.1:23119/agent/v1 \
+curl -s http://127.0.0.1:23120/agent/v1 \
   -H "Authorization: Bearer <token>" \
   -H "X-CiteWell-Agent: 1" \
   -H "Content-Type: application/json" \
@@ -113,7 +113,7 @@ profile. The CLI fetches the server ID itself for writes.
   trash, emptying it is not exposed.
 - Reader annotations and export verbs are Phase 4 (see [agent.md](agent.md)); translators and
   attachments are available now.
-- No HTTPS: both surfaces are loopback-only by design. Never expose port 23119 to a network.
+- No HTTPS: both surfaces are loopback-only by design. Never expose port 23120 to a network.
 - Reads on the local API are available to any process running as the same user; the bridge
   requires its token for both reads and writes.
 
