@@ -68,6 +68,28 @@ Workflows are taken from the branch being pushed, so configuration meant to run 
 `citewell` must exist on `citewell` — not only on `main`. `main` stays a mirror; workflow
 changes belong to the product branch.
 
+## Firefox ESR upgrades
+
+CiteWell's Linux build is on **153.7.0esr** (D15), while `upstream/10.0` stays on 140.x. The
+runtime is therefore our own port, not something a routine merge brings in. When upstream `main`
+moves to the next ESR, or when a new ESR patch needs the same treatment:
+
+```bash
+git log --oneline main --grep=fx153          # the port series to adapt for the new branch
+# bump GECKO_VERSION_LINUX and application.ini Min/Max
+app/scripts/fetch_xulrunner -p l -a x86_64   # downloads and patches the runtime in place
+rm -rf build .signatures.json
+node js-build/build.js
+app/scripts/dir_build -p l
+cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
+```
+
+`fetch_xulrunner` aborts on the first pattern that the new Gecko moved or removed; each abort names
+the file and the missing line. Take the replacement from the matching upstream `fxN` commit rather
+than inventing one, and port the app-side commits in the same series. Then run
+`test/runtests.sh searchTest.js advancedSearchTest.js pluginAPITest.js` and open the AppImage
+before committing.
+
 ## Conflict policy
 
 | File | Resolution |

@@ -185,6 +185,32 @@ Rejected: leaving sync enabled for personal builds — the owner does not want t
 Rejected: deleting the subsystem now — it should be removed deliberately, in one pass, once the
 replacement story is clear.
 
+## D15 — Firefox ESR 153.7.0esr, not the release channel
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+The Linux build moved from Firefox 140.17.0esr to **153.7.0esr**, the current ESR branch. The
+release channel is at 160.0.1, but Zotero upstream builds against ESR and its compatibility work
+lives in the `fx153` series on `main`. Taking that series is a supported path; taking 160.0.1
+would put CiteWell ahead of every Zotero port with no upstream testing.
+
+What changed:
+
+| Area | Change |
+|---|---|
+| Build config | `GECKO_VERSION_LINUX` in `app/config.sh`; `MinVersion`/`MaxVersion` in `app/assets/application.ini` |
+| Runtime preparation | `app/scripts/fetch_xulrunner` adapted to 153: anchored actor removal, about:addons module split, removed `<search-textbox>` patch, autocomplete sizing |
+| App code | Upstream `fx153` commits ported: chrome CSP and DTD prefs, async `nsILoginManager`, `ownerGlobal` removal, XUL boolean attributes, `<search-textbox>` taken over by Zotero, toolbarbutton dropmarkers, menu icons, transparent panels/menulists, hidden-browser remoteness, multiple-file drops |
+
+Windows and macOS pins stay at 140.17.0esr: those platforms are not built (D13), and moving them
+would require their own launcher and installer work.
+
+Verified on the new runtime: clean build and AppImage run; `searchTest.js` 125/125;
+`advancedSearchTest.js` + `pluginAPITest.js` 107/107.
+
+Rejected: 160.0.1 — newest release, but no Zotero port exists past 153 and it is replaced every
+four weeks. Rejected: staying on 140 — still maintained, but an engine two ESR branches behind.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

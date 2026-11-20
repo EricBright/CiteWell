@@ -32,6 +32,7 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 | R19 | Remove the sync subsystem: `xpcom/sync`, `preferences_account`, WebDAV storage, connector online code | The switch hides it now; deletion should be deliberate | No sync code remains and the build has no dead paths |
 | R20 | Obsidian/Markdown export: one-way first, design in [docs/export.md](docs/export.md) | Portability without giving up SQLite | 10k-item export under a minute, vault opens with working links, second run changes nothing |
 | R13 | Build CI: npm + `js-build` on pull requests | Needs recursive submodules, which makes the runner slow and network-heavy | A build workflow that fails on a broken bundle |
+| R21 | Update metadata: SHA-256 checksums and `.zsync` files beside the AppImage | Gear Lever and AppImageUpdate need a checksum for verification and a zsync file for incremental fetches | A release publishes `.AppImage`, `.sha256` and `.zsync`; Gear Lever offers the update and AppImageUpdate downloads only the changed blocks |
 
 ## Not doing
 

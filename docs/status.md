@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-20 · branch `citewell` @ `b545945cf` · companion to
+Last updated 2026-11-20 · branch `citewell` @ `0488494c3` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start working without re-deriving it.
 
@@ -8,15 +8,15 @@ This page holds only what a fresh session needs to start working without re-deri
 
 | Area | State |
 |---|---|
-| App | Builds and runs as a Linux AppImage; CiteWell naming; sync disabled and hidden |
+| App | Builds and runs as a Linux AppImage on Firefox **153.7.0esr**; CiteWell naming; sync disabled and hidden |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | Imported at `connectors/`, Firefox XPI builds, branded, identity swapped |
-| Docs | README index, Rust docs gate, decisions, roadmap, export design |
-| CI | `docs` and `CodeQL` workflows, both green on `b545945cf` |
+| Docs | README index, Rust docs gate, decisions (D1–D15), roadmap, export design |
+| CI | `docs` and `CodeQL` workflows; rerun after the Firefox port before trusting the badge |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (≈131 MB)
+- `dist/CiteWell-x86_64.AppImage` (≈141 MB)
 - `build/dist/CiteWell-Connector.xpi` (≈1.7 MB)
 
 ## Pick up here
@@ -29,10 +29,18 @@ Artifacts are local and gitignored:
    inert and should be set from AMO when a listing exists.
 4. **R19 — remove the sync subsystem** now that R18 hides it.
 5. **R7 — non-English locales** still contain upstream Zotero translations.
+6. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
+   verify and fetch incrementally. Needs a release host and stable filenames first.
 
 ## Commands
 
-Clean rebuild after touching assets or deleting `build/`:
+Fetch the Gecko runtime once per version (gitignored):
+
+```bash
+app/scripts/fetch_xulrunner -p l -a x86_64
+```
+
+Clean rebuild after touching assets, deleting `build/`, or changing the runtime:
 
 ```bash
 rm -rf build .signatures.json
@@ -52,7 +60,7 @@ Connector, docs gate, tests:
 ```bash
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 cargo run --manifest-path tools/docs-check/Cargo.toml
-test/runtests.sh
+test/runtests.sh searchTest.js advancedSearchTest.js pluginAPITest.js
 ```
 
 ## Pitfalls learned the hard way
@@ -63,13 +71,18 @@ test/runtests.sh
 | Putting working files under `build/` | Zotero zips everything there into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
 | Rebuilding while the AppImage runs | The output file is mounted and cannot be replaced; quit it first |
 | `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
-| `-datadir "~/…"` | Quoted `~` is not expanded and is rejected; use `"$HOME/…"` |
+| `-datadir "~/…"` | Quoted `~` is not expanded; use `"$HOME/…"` |
+| `-datadir` with no value | Gecko ignored it and opened `~/Zotero`. The Rust `AppRun` now refuses it with exit 2 |
+| Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series. Procedure in [sync.md](sync.md) |
 | Constrained environments | `MOZ_FORCE_DISABLE_E10S=1` before launch; `--appimage-extract-and-run` if FUSE is absent |
 | `gh` in this repo | Defaults to the fork now; `gh` once resolved to `zotero/zotero` |
 | Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
 
 ## Facts worth not re-litigating
 
+- Linux uses Firefox **153.7.0esr**, the current ESR (D15). The release channel is newer, but
+  Zotero upstream has no port past 153. Mac and Windows pins stay at 140.17.0esr because those
+  platforms are not built (D13).
 - `ONLINE_SYNC: false` in [resource/config.mjs](../resource/config.mjs); `ONLINE_LIBRARY: false`
   in the connector. Both hide UI and block network paths; the code still exists (R19).
 - SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A

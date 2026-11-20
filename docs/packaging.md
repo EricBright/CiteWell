@@ -20,7 +20,11 @@ app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
 
-Output: `dist/CiteWell-x86_64.AppImage` (about 130 MB).
+Output: `dist/CiteWell-x86_64.AppImage` (about 141 MB).
+
+The Gecko runtime is Firefox **153.7.0esr**, fetched by `app/scripts/fetch_xulrunner -p l -a
+x86_64` and ignored by git. It is prepared in place, so a later rebuild needs no re-download while
+the tarball stays in `app/xulrunner/`.
 
 Scratch space lives in `tmp/appimage/`, deliberately **not** under `build/`: Zotero's packaging
 zips the contents of `build/` into `app/omni.ja`, so an AppDir or a previous AppImage left there
@@ -61,6 +65,8 @@ Use an explicit data directory, with `$HOME` expanded by the shell:
 
 Without `-datadir`, the app opens `~/Zotero`, which is the same library the installed Zotero
 uses. `-datadir` must be absolute; `"~/CiteWellData"` in quotes is not expanded and is rejected.
+A `-datadir` with no value is refused by the Rust `AppRun` (exit 2) instead of being silently
+ignored, because Gecko would otherwise fall back to `~/Zotero`.
 
 
 ```bash
@@ -76,7 +82,9 @@ interact badly under some sandbox configurations; test on a clean profile before
 
 - **Flatpak**: a later option. The same `AppDir` content can feed `flatpak-builder`; nothing is
   implemented.
-- **Updates**: no AppImage update channel. Replacing the file is the update mechanism.
+- **Updates**: no AppImage update channel. Replacing the file is the update mechanism. R21 adds
+  SHA-256 checksums and `.zsync` files so Gear Lever and AppImageUpdate can verify and fetch
+  incrementally; that needs a release host and stable filenames first.
 - **Signing**: no signing key is configured.
 
 *For the full documentation index, see [../README.md](../README.md).*
