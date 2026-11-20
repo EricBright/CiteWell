@@ -11,7 +11,8 @@ This page holds only what a fresh session needs to start working without re-deri
 | App | Builds and runs as a Linux AppImage on Firefox **153.7.0esr**; CiteWell naming; sync disabled and hidden |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | Imported at `connectors/`, Firefox XPI builds, branded, identity swapped |
-| Docs | README index, Rust docs gate, decisions (D1–D15), roadmap, export design |
+| Agent access | Loopback local API on by default plus the Rust `citewell` CLI ([cli.md](cli.md)) |
+| Docs | README index, Rust docs gate, decisions (D1–D16), roadmap, export design |
 | CI | `docs` and `CodeQL` workflows; rerun after the Firefox port before trusting the badge |
 
 Artifacts are local and gitignored:
@@ -31,6 +32,8 @@ Artifacts are local and gitignored:
 5. **R7 — non-English locales** still contain upstream Zotero translations.
 6. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
+7. **R23 — UI verbs** (select/open/read selection) and an MCP adapter around the CLI. The
+   read/write CLI is in place (R22).
 
 ## Commands
 
@@ -61,6 +64,8 @@ Connector, docs gate, tests:
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 cargo run --manifest-path tools/docs-check/Cargo.toml
 test/runtests.sh searchTest.js advancedSearchTest.js pluginAPITest.js
+cargo build --manifest-path tools/Cargo.toml -p citewell-cli
+tools/target/debug/citewell status
 ```
 
 ## Pitfalls learned the hard way
@@ -87,6 +92,8 @@ test/runtests.sh searchTest.js advancedSearchTest.js pluginAPITest.js
   in the connector. Both hide UI and block network paths; the code still exists (R19).
 - SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
   file-based store is recorded as *not doing*; export is the portability answer.
+- The local API listens on `127.0.0.1:23119` by default in CiteWell (D16). The CLI does not
+  touch SQLite; reads are local-unauthenticated, writes need an in-app key.
 - The connector's identity lives in `connectors/brand.json`; source strings use tokens that
   `xtask` substitutes, and the build fails on hardcoded English product names.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched.

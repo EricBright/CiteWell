@@ -211,6 +211,25 @@ Verified on the new runtime: clean build and AppImage run; `searchTest.js` 125/1
 Rejected: 160.0.1 — newest release, but no Zotero port exists past 153 and it is replaced every
 four weeks. Rejected: staying on 140 — still maintained, but an engine two ESR branches behind.
 
+## D16 — The loopback local API is on, and the CLI is a thin client
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (one pref)
+
+CiteWell enables Zotero's local API by default (`httpServer.localAPI.enabled`) so a local agent
+can talk to the running app. The server binds `127.0.0.1:23119` only. Reads are unauthenticated,
+following Zotero's design; writes require a key granted through the app's Allow / Always Allow
+dialog, and every write must echo the instance's server ID.
+
+The `citewell` CLI is a separate Rust binary that speaks HTTP to that API. It deliberately holds
+no library logic and never opens `zotero.sqlite`: a second writer to the database would bypass the
+app's transaction and notification layers. Being a plain CLI, it also gives generic agents a
+stable interface that does not need this repository's source or an MCP client.
+
+Rejected: a custom socket protocol — it would duplicate the local API and drift from it. Rejected:
+leaving the API off by default — the owner's stated use is agent access, and the loopback binding
+keeps reads on the same trust boundary as the database file. Rejected: having the CLI read SQLite
+directly — stale reads and no live state.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

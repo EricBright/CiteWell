@@ -58,16 +58,12 @@ fn missing_datadir_value<S: AsRef<str>>(args: &[S]) -> bool {
 
 fn main() {
     let exe = env::current_exe().expect("cannot resolve the AppRun path");
-    let base = exe
-        .parent()
-        .expect("AppRun has no parent directory");
+    let base = exe.parent().expect("AppRun has no parent directory");
     let app = base.join("usr/lib/citewell/zotero");
 
     let args: Vec<String> = env::args().skip(1).collect();
     if missing_datadir_value(&args) {
-        let name = env::args()
-            .next()
-            .unwrap_or_else(|| "CiteWell".to_string());
+        let name = env::args().next().unwrap_or_else(|| "CiteWell".to_string());
         eprintln!(
             "CiteWell: -datadir needs a directory.\n\n  \
              {name} -datadir \"$HOME/CiteWellData\"\n\n\
