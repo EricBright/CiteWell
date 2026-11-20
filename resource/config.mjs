@@ -2,6 +2,9 @@ export var ZOTERO_CONFIG = {
 	GUID: 'zotero@zotero.org',
 	ID: 'zotero', // used for db filename, etc.
 	CLIENT_NAME: 'Zotero',
+	// Personal builds keep Zotero's online sync. A distributed build must set this
+	// to false once the enforcement in roadmap R18 exists.
+	ONLINE_SYNC: true,
 	DOMAIN_NAME: 'zotero.org',
 	PRODUCER: 'Digital Scholar',
 	PRODUCER_URL: 'https://www.zotero.org',

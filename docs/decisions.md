@@ -155,6 +155,24 @@ same AppDir.
 
 Rejected: deleting `app/win` and `app/mac` — guaranteed conflicts on every upstream change.
 
+## D14 — Zotero's online sync stays, for personal builds only
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+Zotero's code is AGPLv3; its sync service is not part of that grant. The Terms of Service govern
+zotero.org, and the sync protocol is internal rather than the documented Web API. Using it with
+the owner's own account is low risk; distributing a client that drives other people's accounts
+through it is the case that needs permission or a sync-free build.
+
+The feature therefore stays, with a single switch: `ONLINE_SYNC` in
+[resource/config.mjs](../resource/config.mjs), true today. Enforcement (hiding the sync UI and
+refusing connections when false) is roadmap R18, not done yet.
+
+Rejected: deleting the sync subsystem — it is large, upstream changes it constantly, and every
+merge would conflict; the loss of web and group libraries is also real. Rejected: self-hosting
+the sync server — Zotero does not publish one. Rejected: syncing `zotero.sqlite` through cloud
+storage — SQLite over a network mount corrupts, and Zotero's own documentation warns against it.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

@@ -29,6 +29,7 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 |---|---|---|---|
 | R11 | Distribution decision: publish Linux builds or stay source-only | Requires a source-offer plan and a signing story | Either published artifacts, or an explicit "source only" note |
 | R16 | Rust services: sidecars or WASM for a first real workload | Needs S3 groundwork in [docs/rust.md](docs/rust.md) | One service runs in production behind a versioned protocol |
+| R18 | Enforce `ONLINE_SYNC = false`: hide sync UI, refuse sync connections, disable connector online saving | Needed before any distributed build | A build with the flag false exposes no sync controls and makes no sync requests |
 | R13 | Build CI: npm + `js-build` on pull requests | Needs recursive submodules, which makes the runner slow and network-heavy | A build workflow that fails on a broken bundle |
 
 ## Not doing
