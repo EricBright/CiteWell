@@ -34,7 +34,9 @@ if (!isTopWindow) return;
 
 let darkMode = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
 let zoteroIconURL = Zotero.getExtensionURL(darkMode ? 'images/book-section-dark@2x.svg' : 'images/book-section@2x.svg');
-let citationsUnlinkedIconURL = Zotero.getExtensionURL('images/citations-unlinked.png');
+let citationsUnlinkedIconURL = Zotero.getExtensionURL(darkMode
+	? 'images/toolbar/book-section-error-dark.png'
+	: 'images/toolbar/book-section-error.png');
 
 const TEXT_INPUT_SELECTORS = ['.docs-link-insertlinkbubble-text', '.docs-link-smartinsertlinkbubble-text',
 	'.appsElementsLinkInsertionLinkTextInput input'];
