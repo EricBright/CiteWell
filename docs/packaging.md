@@ -20,7 +20,11 @@ app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
 
-Output: `build/dist/CiteWell-x86_64.AppImage` (about 131 MB).
+Output: `dist/CiteWell-x86_64.AppImage` (about 126 MB).
+
+Scratch space lives in `tmp/appimage/`, deliberately **not** under `build/`: Zotero's packaging
+zips the contents of `build/` into `app/omni.ja`, so an AppDir or a previous AppImage left there
+gets copied into the application itself (the bundle once grew to 532 MB this way).
 
 ## What goes inside
 

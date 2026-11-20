@@ -476,7 +476,9 @@ fn appimage_inner() -> Result<PathBuf, String> {
         ));
     }
 
-    let work = root.join("build/appimage");
+    // Never under build/: Zotero's packaging zips everything there into omni.ja,
+    // which would sweep previous AppImages into the application.
+    let work = root.join("tmp/appimage");
     let appdir = work.join("AppDir");
     if appdir.exists() {
         fs::remove_dir_all(&appdir).map_err(|e| format!("clearing {}: {e}", appdir.display()))?;
@@ -507,7 +509,7 @@ fn appimage_inner() -> Result<PathBuf, String> {
 
     // 4. Package. appimagetool and mksquashfs are build tools, not code of ours.
     let tool = env::var("APPIMAGETOOL").unwrap_or_else(|_| "appimagetool".to_string());
-    let output = root.join("build/dist/CiteWell-x86_64.AppImage");
+    let output = root.join("dist/CiteWell-x86_64.AppImage");
     if let Some(parent) = output.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("creating {}: {e}", parent.display()))?;
     }
