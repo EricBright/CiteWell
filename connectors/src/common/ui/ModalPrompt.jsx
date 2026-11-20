@@ -165,7 +165,7 @@ Zotero.UI.ModalPrompt = class ModalPrompt extends React.Component {
 };
 
 Zotero.UI.ModalPrompt.defaultProps = {
-	title: "Zotero Connector",
+	title: "{{connector}}",
 	checkbox: false,
 	checkboxText: "",
 	checkboxBlock: false,

@@ -136,23 +136,36 @@ Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a
 A temporary add-on disappears when Firefox restarts. An unsigned XPI cannot be installed
 permanently; signing needs an AMO account and is out of scope.
 
-## Identity
+## Identity and brand values
 
-| Field | Value | State |
-|---|---|---|
-| `name` | `CiteWell Connector` | done |
-| `applications.gecko.id` | `citewell-connector@sophy.ca` | done |
-| `update_url` | `https://zotero.org/AUTOFILLED` | **deliberately unchanged** |
-| `description` | "Save references to Zotero from your web browser" | still Zotero-branded |
-| `browser_action.default_title` | "Save to Zotero" | still Zotero-branded |
+One file holds every product name: `connectors/brand.json`.
+
+| Key | Value |
+|---|---|
+| `name` | CiteWell |
+| `connector` | CiteWell Connector |
+| `description` | Save references to CiteWell from your web browser |
+| `defaultTitle` | Save to CiteWell |
+| `extensionId` | `citewell-connector@sophy.ca` |
+| `homepage`, `issues` | this repository |
+
+Source strings carry tokens — `{{brand}}`, `{{connector}}`, `{{description}}`,
+`{{defaultTitle}}`, `{{extensionId}}`, `{{homepage}}`, `{{issues}}` — including
+`CLIENT_NAME` in `zotero_config.js`, which is substituted into dozens of messages at runtime.
+`xtask` replaces the tokens in the packaged extension after the build, so the welcome screen,
+settings tabs, permission prompts and the OAuth application name all come from the same values.
+
+It then **fails the build** if an English UI message still hardcodes `Zotero Connector` or
+`Save to Zotero`. Code comments, test fixtures and non-English translations are exempt; the last
+is upstream translation work, tracked by R7.
 
 The id is what makes this a separate add-on: it installs alongside the real Zotero Connector,
 gets its own storage, and cannot be mistaken for it. Changing the id later creates a *new*
 add-on rather than updating this one, so settle it before submitting to AMO.
 
-The unchanged `update_url` is now inert, not dangerous: Firefox asks that URL for updates to
+`update_url` remains `https://zotero.org/AUTOFILLED` and is inert: Firefox asks it about
 `citewell-connector@sophy.ca`, and Zotero's update manifest only lists `zotero@chnm.gmu.edu`.
-No update will ever match. When an AMO listing exists, point this field at the URL AMO provides.
+Point it at the URL AMO provides once a listing exists.
 
 ## Updating from upstream
 

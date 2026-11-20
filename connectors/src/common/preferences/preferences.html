@@ -20,7 +20,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<link rel="stylesheet" type="text/css" media="screen" href="preferences.css" />
-		<title data-l10n-id="preferences_title" data-l10n-client-name>Zotero Connector Preferences</title>
+		<title data-l10n-id="preferences_title" data-l10n-client-name>{{connector}} Preferences</title>
 	</head>
 	<body>
 		<div id="panes">
@@ -39,14 +39,14 @@
 		</div>
 		<div id="content-general" class="content">
 			<div class="group">
-				<div class="group-title" data-l10n-id="preferences_zoteroStatus" data-l10n-client-name>Zotero Status</div>
+				<div class="group-title" data-l10n-id="preferences_zoteroStatus" data-l10n-client-name>{{brand}} Status</div>
 				<div class="group-content" id="client-status"></div>
 			</div>
 			<div class="group">
-				<div class="group-title" data-l10n-id="preferences_saveToOnlineLibrary">Save to Zotero.org</div>
+				<div class="group-title" data-l10n-id="preferences_saveToOnlineLibrary">Save to Online Library</div>
 				<div class="group-content">
 					<div id="general-authorization-not-authorized">
-						<p data-l10n-id="preferences_onlineLibrary_notAuthorized" data-l10n-client-name>Zotero Connector is not currently authorized to save items to zotero.org. You will be prompted for authorization if you try to save items while Zotero is not open.</p>
+						<p data-l10n-id="preferences_onlineLibrary_notAuthorized" data-l10n-client-name>{{connector}} is not currently authorized to save items to zotero.org. You will be prompted for authorization if you try to save items while Zotero is not open.</p>
 					</div>
 					<div id="general-authorization-authorized" style="display:none">
 						<p id="general-authorization-authorized-message"></p>
@@ -77,7 +77,7 @@
 						<span data-l10n-id="preferences_reportErrors_none">No errors have been logged.</span>
 					</div>
 					<div id="advanced-have-errors" style="display:none">
-						<p data-l10n-id="preferences_reportErrors_subtitle" data-l10n-client-name>The following errors have occurred since the Zotero Connector was started:</p>
+						<p data-l10n-id="preferences_reportErrors_subtitle" data-l10n-client-name>The following errors have occurred since the {{connector}} was started:</p>
 						<p><textarea id="advanced-textarea-errors" style="width:100%; height:10em;" readonly="true"></textarea></p>
 					</div>
 					<p><input type="button" id="advanced-button-report-errors" value="Submit Report" data-l10n-id="preferences_reportErrors_submit"/></p>

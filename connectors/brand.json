@@ -1,0 +1,9 @@
+{
+  "name": "CiteWell",
+  "connector": "CiteWell Connector",
+  "description": "Save references to CiteWell from your web browser",
+  "defaultTitle": "Save to CiteWell",
+  "extensionId": "citewell-connector@sophy.ca",
+  "homepage": "https://github.com/EricBright/CiteWell",
+  "issues": "https://github.com/EricBright/CiteWell/issues"
+}

@@ -61,10 +61,10 @@
 	},
 
 	"extension_description": {
-		"message": "Save references to Zotero from your web browser"
+		"message": "{{description}}"
 	},
 	"extension_defaultTitle": {
-		"message": "Save to Zotero"
+		"message": "{{defaultTitle}}"
 	},
 	"browserAction_status_online": {
 		"message": "$1 is Online",
@@ -296,7 +296,7 @@
 		"message": "Update Status"
 	},
 	"preferences_saveToOnlineLibrary": {
-		"message": "Save to Zotero.org"
+		"message": "Save to Online Library"
 	},
 	"preferences_onlineLibrary_notAuthorized": {
 		"message": "$1 Connector is not currently authorized to save items to zotero.org. You will be prompted for authorization if you try to save items while $1 is not open.",
@@ -566,7 +566,7 @@
 	},
 	
 	"reports_report_submitted": {
-		"message": "Your error report has been submitted.\n\nReport ID: $1\n\nPlease post a message to the Zotero Forums with this Report ID, a description of the problem, and any steps necessary to reproduce it.\n\nError reports are not reviewed unless referred to in the forums."
+		"message": "Your error report has been submitted.\n\nReport ID: $1\n\nPlease post a message to {{issues}} with this Report ID, a description of the problem, and any steps necessary to reproduce it.\n\nError reports are not reviewed unless referred to in the forums."
 	},
 	
 	"reports_debug_output_submitted": {
@@ -574,7 +574,7 @@
 	},
 
 	"reports_submission_failed": {
-		"message": "An error occurred submitting your report.\n\n$1\n\nPlease check your internet connection. If the problem persists, post a message to the Zotero Forums.",
+		"message": "An error occurred submitting your report.\n\n$1\n\nPlease check your internet connection. If the problem persists, post a message to {{issues}}.",
 		"description": "$1 will be the error message sent to the Zotero servers"
 	},
 	
@@ -587,10 +587,10 @@
 	},
 	
 	"integration_googleDocs_unlinkBeforeSaving_warning": {
-		"message": "This document contains active Zotero citations that will appear as zotero.org links in a downloaded copy."
+		"message": "This document contains active {{brand}} citations that will appear as zotero.org links in a downloaded copy."
 	},
 	"integration_googleDocs_unlinkBeforeSaving_instructions": {
-		"message": "To generate a version suitable for sharing, select <b>Make a copy…</b> from the File menu, select <b>Unlink Citations</b> from the Zotero menu in the new document, and then download the unlinked version. Keep this original linked document in case you need to make further changes."
+		"message": "To generate a version suitable for sharing, select <b>Make a copy…</b> from the File menu, select <b>Unlink Citations</b> from the {{brand}} menu in the new document, and then download the unlinked version. Keep this original linked document in case you need to make further changes."
 	},
 	"integration_googleDocs_unlinkBeforeSaving_downloadAnyway": {
 		"message": "Download Linked Version Anyway"
@@ -603,7 +603,7 @@
 		"description": "$1 is the client name (e.g., Zotero)"
 	},
 	"integration_googleDocs_uiChanged": {
-		"message": "Google Docs has changed in a way that affects Zotero integration. Please submit a <a href=\"https://www.zotero.org/support/reporting_problems\">Report ID</a> from the Zotero Connector on the <a href=\"https://forums.zotero.org\">Zotero Forums</a>."
+		"message": "Google Docs has changed in a way that affects {{brand}} integration. Submit a Report ID from the {{connector}} and report the problem at <a href=\"{{issues}}\">{{issues}}</a>."
 	},
 	"integration_googleDocs_unexpectedError": {
 		"message": "An unexpected error occurred while working with your document. Please try again. If the problem persists, restart your browser and $1.",
@@ -686,26 +686,26 @@
 		"message": "Open Extension Preferences"
 	},
 	"permissions_siteAccess_message_intro": {
-		"message": "<p>Zotero Connector requires permission to run on all websites to function properly.</p>"
+		"message": "<p>{{connector}} requires permission to run on all websites to function properly.</p>"
 	},
 	"permissions_siteAccess_message": {
 		"message": "<p>To enable this, change the \"Site Access\" setting to \"On all sites\" in the Extension Preferences page.</p>"
 	},
 	"permissions_siteAccess_message_safari_functionality": {
-		"message": "<p>For full Zotero Connector functionality, including updating of the save button for each webpage, more reliable saving, and proxy redirection, allow Zotero Connector to run on all websites.</p>"
+		"message": "<p>For full {{connector}} functionality, including updating of the save button for each webpage, more reliable saving, and proxy redirection, allow {{connector}} to run on all websites.</p>"
 	},
 	"permissions_siteAccess_message_safari": {
 		"message": "<p>To enable this, open Safari Settings, select <b>Websites</b> at the top, select <b>$1</b> in the sidebar, and change the <b>For other websites</b> option to <b>Allow</b>.</p>",
 		"description": "$1 is the connector name (e.g., Zotero Connector)"
 	},
 	"permissions_siteAccess_message_localhost_required": {
-		"message": "<p>To communicate with Zotero, Zotero Connector requires access to <b>127.0.0.1</b>, an address that refers to your own computer.</p>"
+		"message": "<p>To communicate with {{brand}}, {{connector}} requires access to <b>127.0.0.1</b>, an address that refers to your own computer.</p>"
 	},
 	"permissions_siteAccess_message_repo_required": {
-		"message": "<p>Access to <b>repo.zotero.org</b> is required to download translators when Zotero is unavailable.</p>"
+		"message": "<p>Access to <b>repo.zotero.org</b> is required to download translators when {{brand}} is unavailable.</p>"
 	},
 	"permissions_siteAccess_message_api_required": {
-		"message": "<p>Access to <b>api.zotero.org</b> is required to save to your online Zotero library when Zotero is unavailable.</p>"
+		"message": "<p>Access to <b>api.zotero.org</b> is required to save to your online library when {{brand}} is unavailable.</p>"
 	},
 	"permissions_siteAccess_message_domain_safari": {
 		"message": "<p>To enable this, open Safari Settings, select <b>Websites</b> at the top, select <b>$1</b> in the sidebar, and set $2 to <b>Allow</b>.</p>",
@@ -723,7 +723,7 @@
 		"message": "<p>Safari may now ask whether to allow this access. Choose <b>Always Allow</b> to continue.</p>"
 	},
 	"permissions_siteAccess_message_allHosts_nativePrompt_safari": {
-		"message": "<p>For full Zotero Connector functionality, including updating of the save button for each webpage, more reliable saving, and proxy redirection, allow Zotero Connector to run on all websites by checking <b>Remember for other websites</b> in the same dialog.</p>",
+		"message": "<p>For full {{connector}} functionality, including updating of the save button for each webpage, more reliable saving, and proxy redirection, allow {{connector}} to run on all websites by checking <b>Remember for other websites</b> in the same dialog.</p>",
 		"description": "All-websites recommendation shown when Safari's own permission dialog is expected to follow"
 	},
 	"permissions_siteAccess_message_saveToServer": {

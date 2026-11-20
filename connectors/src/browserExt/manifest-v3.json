@@ -1,5 +1,5 @@
 {
-	"name": "CiteWell Connector",
+	"name": "{{connector}}",
 	"manifest_version": 3,
 	"version": "AUTOFILLED",
 	"description": "__MSG_extension_description__",

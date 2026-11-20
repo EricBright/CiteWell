@@ -24,7 +24,7 @@
 */
 
 const ZOTERO_CONFIG = {
-	CLIENT_NAME: 'Zotero',
+	CLIENT_NAME: '{{brand}}',
 	DOMAIN_NAME: 'zotero.org',
 	SETTINGS_URL: 'https://repo.zotero.org/settings',
 	REPOSITORY_URL: 'https://repo.zotero.org/repo/',

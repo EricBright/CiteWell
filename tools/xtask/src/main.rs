@@ -114,6 +114,7 @@ fn connectors_inner() -> Result<PathBuf, String> {
     render_connector_dark_icons(&root, &firefox)?;
     apply_connector_icons(&root, &firefox)?;
     render_connector_state_icons(&root, &firefox)?;
+    apply_brand(&root, &firefox)?;
 
     let output = root.join("build/dist/CiteWell-Connector.xpi");
     if let Some(parent) = output.parent() {
@@ -308,6 +309,132 @@ fn with_corner_dot(base: &str, colour: &str, ring: &str) -> String {
          {inner}<circle cx='{centre:.2}' cy='{centre:.2}' r='{outer_r}' fill='{ring}'/>\
          <circle cx='{centre:.2}' cy='{centre:.2}' r='{inner_r}' fill='{colour}'/></svg>"
     )
+}
+
+/// Substitute the brand tokens in the packaged extension from one file, then
+/// fail if a hardcoded product name survived anywhere user-visible. Source
+/// strings carry `{{brand}}` and friends; only `connectors/brand.json` holds
+/// the actual values, so renaming happens in one place.
+fn apply_brand(root: &Path, firefox: &Path) -> Result<(), String> {
+    let brand_path = root.join("connectors/brand.json");
+    let text = fs::read_to_string(&brand_path)
+        .map_err(|e| format!("reading {}: {e}", brand_path.display()))?;
+    let brand: serde_json::Value =
+        serde_json::from_str(&text).map_err(|e| format!("parsing brand.json: {e}"))?;
+
+    let value = |key: &str| -> Result<String, String> {
+        brand
+            .get(key)
+            .and_then(|v| v.as_str())
+            .map(str::to_string)
+            .ok_or_else(|| format!("brand.json is missing '{key}'"))
+    };
+    let tokens = [
+        ("{{brand}}", value("name")?),
+        ("{{connector}}", value("connector")?),
+        ("{{description}}", value("description")?),
+        ("{{defaultTitle}}", value("defaultTitle")?),
+        ("{{extensionId}}", value("extensionId")?),
+        ("{{homepage}}", value("homepage")?),
+        ("{{issues}}", value("issues")?),
+    ];
+
+    let mut files = Vec::new();
+    collect_text_files(firefox, &mut files)?;
+    for path in files {
+        let body = fs::read_to_string(&path)
+            .map_err(|e| format!("reading {}: {e}", path.display()))?;
+        let mut updated = body.clone();
+        for (token, replacement) in &tokens {
+            updated = updated.replace(token, replacement);
+        }
+        if updated != body {
+            fs::write(&path, &updated)
+                .map_err(|e| format!("writing {}: {e}", path.display()))?;
+        }
+        for (token, _) in &tokens {
+            if updated.contains(token) {
+                return Err(format!("{} still contains {}", path.display(), token));
+            }
+        }
+    }
+
+    // Guard against drift: these phrases must not survive into the UI.
+    for forbidden in ["Zotero Connector", "Save to Zotero"] {
+        for path in text_files(firefox)? {
+            let relative = path.strip_prefix(firefox).unwrap_or(&path);
+            let name = relative.to_string_lossy();
+            if name.contains("translate/") || name.contains("utilities/") || name == "COPYING"
+                || name.starts_with("test/") || name.contains("/test/")
+            {
+                continue;
+            }
+            // Other locales are translated upstream and may still say Zotero;
+            // only the English strings are ours to police here.
+            if name.contains("_locales/") && !name.contains("_locales/en/") {
+                continue;
+            }
+            if let Ok(body) = fs::read_to_string(&path) {
+                // messages.json carries developer descriptions next to user text;
+                // only the message values matter for drift.
+                if name.ends_with("messages.json") {
+                    if let Ok(serde_json::Value::Object(entries)) =
+                        serde_json::from_str::<serde_json::Value>(&body)
+                    {
+                        let hit = entries.values().any(|entry| {
+                            entry
+                                .get("message")
+                                .and_then(|m| m.as_str())
+                                .map(|m| m.contains(forbidden))
+                                .unwrap_or(false)
+                        });
+                        if hit {
+                            return Err(format!(
+                                "'{forbidden}' is hardcoded in {name}; use a brand token instead"
+                            ));
+                        }
+                    }
+                    continue;
+                }
+                let offending = body.lines().find(|line| {
+                    let trimmed = line.trim_start();
+                    let is_comment = trimmed.starts_with("//")
+                        || trimmed.starts_with('*')
+                        || trimmed.starts_with("/*");
+                    !is_comment && line.contains(forbidden)
+                });
+                if offending.is_some() {
+                    return Err(format!(
+                        "'{forbidden}' is hardcoded in {name}; use a brand token instead"
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn text_files(dir: &Path) -> Result<Vec<PathBuf>, String> {
+    let mut files = Vec::new();
+    collect_text_files(dir, &mut files)?;
+    Ok(files)
+}
+
+fn collect_text_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {
+    let entries = fs::read_dir(dir).map_err(|e| format!("reading {}: {e}", dir.display()))?;
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("reading {}: {e}", dir.display()))?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_text_files(&path, files)?;
+            continue;
+        }
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        if matches!(extension, "js" | "jsx" | "html" | "json" | "css" | "svg" | "ftl") {
+            files.push(path);
+        }
+    }
+    Ok(())
 }
 
 fn run(command: &mut Command, what: &str) -> Result<bool, String> {
