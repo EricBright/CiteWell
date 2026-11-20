@@ -113,6 +113,7 @@ fn connectors_inner() -> Result<PathBuf, String> {
 
     render_connector_dark_icons(&root, &firefox)?;
     apply_connector_icons(&root, &firefox)?;
+    render_connector_state_icons(&root, &firefox)?;
 
     let output = root.join("build/dist/CiteWell-Connector.xpi");
     if let Some(parent) = output.parent() {
@@ -241,6 +242,64 @@ fn render(shim: &Path, source: &Path, width: u32, height: u32, target: &Path) ->
         return Err(format!("rendering {}", target.display()));
     }
     Ok(())
+}
+
+/// State is a corner dot on the same silhouette, never a different shape.
+/// Colour carries the state; the toolbar title (Saving / Saved / Save failed)
+/// is the accessible channel, since colour alone is not.
+fn render_connector_state_icons(root: &Path, firefox: &Path) -> Result<(), String> {
+    let light = root.join("chrome/skin/default/zotero/item-type/16/light/book-section.svg");
+    let dark = root.join("chrome/skin/default/zotero/item-type/16/dark/book-section.svg");
+    let toolbar = firefox.join("images/toolbar");
+    let shim = root.join("tools/target/debug/rsvg-convert");
+    fs::create_dir_all(&toolbar).map_err(|e| format!("creating {}: {e}", toolbar.display()))?;
+
+    let light_svg = fs::read_to_string(&light)
+        .map_err(|e| format!("reading {}: {e}", light.display()))?;
+    let dark_svg = fs::read_to_string(&dark)
+        .map_err(|e| format!("reading {}: {e}", dark.display()))?;
+
+    let states = [
+        ("saving", "#F0A020"),
+        ("saved", "#39BF68"),
+        ("error", "#DB2C3A"),
+        ("offline", "#8A8F98"),
+    ];
+
+    for (state, colour) in states {
+        for (theme, base, ring) in [
+            ("", &light_svg, "#FFFFFF"),
+            ("-dark", &dark_svg, "#1C1C1C"),
+        ] {
+            let composite = with_corner_dot(base, colour, ring);
+            let temp = toolbar.join("_state.svg");
+            fs::write(&temp, composite).map_err(|e| format!("writing {}: {e}", temp.display()))?;
+
+            for (size, suffix) in [(16u32, "@16"), (32, ""), (48, "@48")] {
+                let target = toolbar.join(format!("book-section-{state}{theme}{suffix}.png"));
+                render(&shim, &temp, size, size, &target)?;
+            }
+        }
+    }
+
+    let temp = toolbar.join("_state.svg");
+    fs::remove_file(&temp).ok();
+    Ok(())
+}
+
+/// Wrap the book-section artwork and put a ringed dot in the bottom-right corner.
+fn with_corner_dot(base: &str, colour: &str, ring: &str) -> String {
+    let start = base.find('>').map(|i| i + 1).unwrap_or(0);
+    let end = base.rfind("</svg>").unwrap_or(base.len());
+    let inner = &base[start..end];
+    let outer_r = 3.4;
+    let inner_r = 2.5;
+    let centre = 16.0 - outer_r - 0.3;
+    format!(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'>\
+         {inner}<circle cx='{centre:.2}' cy='{centre:.2}' r='{outer_r}' fill='{ring}'/>\
+         <circle cx='{centre:.2}' cy='{centre:.2}' r='{inner_r}' fill='{colour}'/></svg>"
+    )
 }
 
 fn run(command: &mut Command, what: &str) -> Result<bool, String> {

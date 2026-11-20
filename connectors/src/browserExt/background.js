@@ -868,16 +868,16 @@ Zotero.Connector_Browser = new function() {
 		Zotero.Connector.checkIsOnline().then(function(isOnline) {
 			var icon, title;
 			if (isOnline) {
-				icon = getHiDPIImagePaths("images/toolbar/z.png");
+				icon = getHiDPIImagePaths(Zotero.ItemTypes.getImageSrc("book-section"));
 				title = Zotero.getString('browserAction_status_online', ZOTERO_CONFIG.CLIENT_NAME);
 			}
 			else if (isOnline === null) {
 				// Zotero's status is unknown without localhost access, so don't claim it's offline
-				icon = getHiDPIImagePaths("images/toolbar/z.png");
+				icon = getHiDPIImagePaths(Zotero.ItemTypes.getImageSrc("book-section"));
 				title = Zotero.getString('appConnector', ZOTERO_CONFIG.CLIENT_NAME);
 			}
 			else {
-				icon = "images/zotero-z-32px-offline.png";
+				icon = getHiDPIImagePaths(Zotero.getStateIcon("offline"));
 				title = Zotero.getString('browserAction_status_offline', ZOTERO_CONFIG.CLIENT_NAME);
 			}
 			if (typeof message === 'string') {
@@ -919,9 +919,8 @@ Zotero.Connector_Browser = new function() {
 
 		browser.action.setIcon({
 			tabId: tab.id,
-			path: getHiDPIImagePaths(itemType === "multiple"
-				? "images/toolbar/collection.png"
-				: Zotero.ItemTypes.getImageSrc(itemType))
+			// CiteWell: one shape for every type, including multi-item saves.
+			path: getHiDPIImagePaths(Zotero.ItemTypes.getImageSrc(itemType))
 		});
 
 		browser.action.setTitle({
@@ -1073,7 +1072,7 @@ Zotero.Connector_Browser = new function() {
 	function _showMessageButton(tab) {
 		browser.action.setIcon({
 			tabId: tab.id,
-			path: getHiDPIImagePaths("images/toolbar/z.png")
+			path: getHiDPIImagePaths(Zotero.ItemTypes.getImageSrc("book-section"))
 		});
 		browser.action.setTitle({
 			tabId: tab.id,

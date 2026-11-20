@@ -95,6 +95,14 @@ Zotero.Connector_Types = new function() {
 			};
 		}
 		
+		// CiteWell: state never changes the shape. The toolbar icon is always
+		// book-section; saving/saved/error/offline add a coloured corner dot.
+		Zotero.getStateIcon = function(state) {
+			var dark = typeof matchMedia === 'function'
+				&& matchMedia('(prefers-color-scheme: dark)').matches;
+			return 'images/toolbar/book-section-' + state + (dark ? '-dark' : '') + '.png';
+		};
+		
 		Zotero.CreatorTypes = new function() {
 			this.schemaType = "creatorTypes";
 			Zotero.CachedTypes.call(this);

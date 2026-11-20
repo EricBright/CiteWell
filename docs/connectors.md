@@ -60,8 +60,22 @@ theme.
 | Toolbar, default and per tab | `images/toolbar/book-section*.png` for every item type |
 | Dark theme | `*-dark` variants of the same files, via `theme_icons` and `matchMedia` |
 
-State that is genuinely about state — saving, saved, error — still has its own badge; those
-convey progress, not type.
+State is a **corner dot on the same silhouette**, never a different shape:
+
+| State | Dot colour | Toolbar title |
+|---|---|---|
+| saving | amber `#F0A020` | Saving… |
+| saved | green `#39BF68` | Saved |
+| error | red `#DB2C3A` | Save failed |
+| offline | grey `#8A8F98` | Offline |
+
+Shape is constant; colour carries the state. Colour alone is not accessible, so the toolbar
+title states it in words — that is the channel that works for colour-blind users and screen
+readers.
+
+Multi-item translators (previously `collection.png`) and the connector status button
+(previously the Z) use the same icon. The one remaining non-book shape is the progress meter in
+the save popup, which reports percentage rather than identity.
 
 ## Build
 
