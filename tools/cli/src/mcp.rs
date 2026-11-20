@@ -143,6 +143,15 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
             }),
         ),
         "save_identifier" => ("translate.save", arguments),
+        "list_annotations" => (
+            "annotation.list",
+            json!({ "key": required(&arguments, "key")? }),
+        ),
+        "create_annotation" => ("annotation.create", arguments),
+        "export_note" => (
+            "export.note",
+            json!({ "key": required(&arguments, "key")? }),
+        ),
         "list_collections" => ("collection.list", json!({})),
         "create_collection" => (
             "collection.create",
@@ -238,7 +247,7 @@ fn tools() -> Value {
         ),
         tool(
             "add_note",
-            "Add a child note to an item.",
+            "Add a child note to an item. Text is HTML or plain text.",
             json!({ "key": { "type": "string" }, "text": { "type": "string" } }),
             &["key", "text"]
         ),
@@ -271,6 +280,33 @@ fn tools() -> Value {
                 "saveAttachments": { "type": "boolean" }
             }),
             &["identifier"]
+        ),
+        tool(
+            "list_annotations",
+            "List annotations on a PDF or EPUB attachment.",
+            json!({ "key": { "type": "string" } }),
+            &["key"]
+        ),
+        tool(
+            "create_annotation",
+            "Create a highlight, underline, note or text annotation on an attachment.",
+            json!({
+                "key": { "type": "string" },
+                "type": { "type": "string", "enum": ["highlight", "underline", "note", "text"] },
+                "text": { "type": "string" },
+                "comment": { "type": "string" },
+                "color": { "type": "string" },
+                "pageLabel": { "type": "string" },
+                "position": { "type": "object" },
+                "sortIndex": { "type": "string" }
+            }),
+            &["key", "position"]
+        ),
+        tool(
+            "export_note",
+            "Export a note as Markdown text.",
+            json!({ "key": { "type": "string" } }),
+            &["key"]
         ),
         tool("list_collections", "List collections.", json!({}), &[]),
         tool(
@@ -341,10 +377,13 @@ mod tests {
             .iter()
             .filter_map(|tool| tool.get("name").and_then(|name| name.as_str()))
             .collect();
+        assert_eq!(names.len(), 19);
         for expected in [
             "search_library",
             "create_item",
             "save_identifier",
+            "create_annotation",
+            "export_note",
             "attach_file",
             "select_items",
             "open_item",

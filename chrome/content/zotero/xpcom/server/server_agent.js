@@ -144,6 +144,7 @@ Zotero.Server.Agent = {
 					capabilities: [
 						'ping', 'search', 'item.get', 'item.create', 'item.update', 'item.addNote',
 						'item.attachFile', 'item.attachURL', 'translate.save',
+						'annotation.list', 'annotation.create', 'export.note',
 						'collection.list', 'collection.create', 'collection.addItems',
 						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
 					],
@@ -172,6 +173,15 @@ Zotero.Server.Agent = {
 
 			case 'translate.save':
 				return this._translateSave(params);
+
+			case 'annotation.list':
+				return this._listAnnotations(params);
+
+			case 'annotation.create':
+				return this._createAnnotation(params);
+
+			case 'export.note':
+				return this._exportNote(params);
 
 			case 'collection.list':
 				return this._listCollections();
@@ -399,6 +409,103 @@ Zotero.Server.Agent = {
 		let item = this._requireItem(key);
 		if (item.isAttachment() || item.isNote()) {
 			throw new AgentError(400, 'Attachments and notes cannot have child attachments');
+		}
+		return item;
+	},
+
+	_listAnnotations: async function ({ key }) {
+		let attachment = this._requireAttachment(key);
+		let ids = attachment.getAnnotations(false, true);
+		let items = await Zotero.Items.getAsync(ids);
+		let annotations = [];
+		for (let annotation of items) {
+			await annotation.loadDataType('annotation');
+			annotations.push({
+				key: annotation.key,
+				type: annotation.annotationType,
+				text: annotation.annotationText || '',
+				comment: annotation.annotationComment || '',
+				color: annotation.annotationColor,
+				pageLabel: annotation.annotationPageLabel || '',
+				position: annotation.annotationPosition,
+			});
+		}
+		return { annotations };
+	},
+
+	_createAnnotation: async function ({
+		key,
+		type = 'highlight',
+		text = '',
+		comment = '',
+		color = null,
+		pageLabel = '',
+		position,
+		sortIndex = '00001|000000|00000',
+	}) {
+		let attachment = this._requireAttachment(key);
+		if (!['highlight', 'underline', 'note', 'text'].includes(type)) {
+			throw new AgentError(400, `Unsupported annotation type: ${type}`);
+		}
+		if (!position || typeof position != 'object') {
+			throw new AgentError(400, 'position is required');
+		}
+		if (typeof position.pageIndex != 'number' || !Array.isArray(position.rects)) {
+			throw new AgentError(400, 'position must contain pageIndex and rects');
+		}
+		let json = {
+			key: Zotero.DataObjectUtilities.generateKey(),
+			type,
+			authorName: '',
+			text,
+			comment,
+			color: color || Zotero.Annotations.DEFAULT_COLOR,
+			pageLabel,
+			sortIndex,
+			position,
+		};
+		let annotation = await Zotero.Annotations.saveFromJSON(attachment, json);
+		return {
+			key: annotation.key,
+			parentKey: attachment.key,
+			type: annotation.annotationType,
+		};
+	},
+
+	_exportNote: async function ({ key }) {
+		let note = this._requireItem(key);
+		if (!note.isNote()) {
+			throw new AgentError(400, 'key must refer to a note item');
+		}
+		await Zotero.Translators.init();
+		let translator = Zotero.Translators.get(Zotero.Translators.TRANSLATOR_ID_NOTE_MARKDOWN);
+		if (!translator) {
+			throw new AgentError(500, 'Note Markdown translator is not available');
+		}
+		let translation = new Zotero.Translate.Export();
+		let markdown = '';
+		translation.setItems([note]);
+		translation.setTranslator(translator);
+		translation.setHandler('done', (obj, worked) => {
+			if (worked) {
+				markdown = obj.string.replace(/\r\n/g, '\n');
+			}
+		});
+		await translation.translate();
+		if (!markdown) {
+			throw new AgentError(500, 'Note export did not return Markdown');
+		}
+		return {
+			key: note.key,
+			filename: Zotero.Utilities.Item.noteToTitle(note.getNote()) || note.key,
+			markdown,
+		};
+	},
+
+	_requireAttachment: function (key) {
+		let item = this._requireItem(key);
+		if (!item.isAttachment() || !item.isFileAttachment() || !item.attachmentReaderType) {
+			throw new AgentError(400, 'key must refer to a PDF, EPUB or snapshot attachment');
 		}
 		return item;
 	},

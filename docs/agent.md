@@ -21,7 +21,7 @@ calls — never SQLite.
 ## Bundled skill
 
 [SKILL.md](../SKILL.md) is the short, self-contained version for an agent that has never seen
-CiteWell: prerequisites, MCP setup, the 16 tools, a working loop, and the rules that keep it out of
+CiteWell: prerequisites, MCP setup, the 19 tools, a working loop, and the rules that keep it out of
 Zotero's data.
 
 In the app, it is two clicks away: **Help → Agents and SKILL.md** opens **Preferences → Agent
@@ -85,12 +85,14 @@ without a trip through the UI.
 | `item.get` | Fields, creators, tags, notes, attachments | `Zotero.Items.get` |
 | `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
 | `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
-| `item.addNote` | Child note (Markdown or HTML) | `Zotero.Item` note |
+| `item.addNote` | Child note (HTML or plain text) | `Zotero.Item` note |
 | `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
 | `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
 | `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
+| `annotation.list` | Annotations on a PDF/EPUB attachment | `Zotero.Items.getAnnotations` |
+| `annotation.create` | Highlight, underline, note or text annotation from a position | `Zotero.Annotations.saveFromJSON` |
+| `export.note` | Note as Markdown text | Note Markdown translator |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
-| `tag.list` / `add` / `remove` | Tag operations | `Zotero.Tags` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
 | `ui.select` | Select items in the main window | `ZoteroPane.selectItems` |
 | `ui.open` | Open an item, note or PDF reader | `Zotero.Reader.open`, `Zotero_Tabs` |
@@ -149,7 +151,7 @@ Reading collection, and show me."
 | 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
 | 2 **built** | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
 | 3 **built** | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
-| 4 *(not built)* | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
+| 4 **built** | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
 
 ## Non-goals
 

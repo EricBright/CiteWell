@@ -34,9 +34,8 @@ Artifacts are local and gitignored:
    an empty library first, then a batched merge. Source is read-only throughout.
 7. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
-8. **R23 Phase 4 — reader annotations and export verbs** (`annotation.create`, export).
-   Phases 1–3 are built (items, notes, translators, attachments, selection, settings pane,
-   `citewell mcp`); Phase 4 is the remaining agent slice. R24 import/merge is next overall.
+8. **R23 — complete, including Phase 4** (annotations and `export.note`). R24 import/merge is
+   the next overall phase.
 
 ## Commands
 
@@ -108,11 +107,11 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
 - `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
   `item.attachFile` / `item.attachURL` create child attachments. Both were verified end to end
   on Firefox 153.
-- `citewell mcp` exposes 16 bridge tools over stdio and was verified with initialize,
+- `citewell mcp` exposes 19 bridge tools over stdio and was verified with initialize,
   tools/list and tools/call against a live app.
 - `SKILL.md` at the repo root is the downloadable agent skill; it mirrors the MCP tool list and
   is reachable from **Help → Agents and SKILL.md** and the **Agent skill** section of
-  Preferences → Agent access. Phase 4 (reader annotations, export) is not built yet.
+  Preferences → Agent access. Phase 4 (reader annotations, export) is built.
 - The connector's identity lives in `connectors/brand.json`; source strings use tokens that
   `xtask` substitutes, and the build fails on hardcoded English product names.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched.

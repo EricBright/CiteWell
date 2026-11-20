@@ -60,9 +60,12 @@ The server speaks newline-delimited JSON-RPC on stdio. Use the tools below; do n
 | `save_identifier` | `identifier`, `collections?`, `saveAttachments?` | DOI, ISBN, PMID or page URL → real metadata |
 | `create_item` | `itemType`, `fields`, `creators?`, `tags?`, `collections?` | Manual item when no identifier exists |
 | `update_item` | `key`, `fields?`, `creators?`, `tags?` | Fill or correct fields |
-| `add_note` | `key`, `text` | Child note (Markdown or HTML) |
+| `add_note` | `key`, `text` | Child note; text is HTML or plain text |
 | `attach_file` | `key`, `path`, `title?` | Import a PDF/file already on disk |
 | `attach_url` | `key`, `url`, `title?` | Linked URL attachment |
+| `list_annotations` | `key` | Annotations on a PDF/EPUB |
+| `create_annotation` | `key`, `position`, `type?`, `text?`, `comment?`, `color?` | Highlight/underline/note at a page position |
+| `export_note` | `key` | Note as Markdown text |
 | `list_collections` | — | Collection tree |
 | `create_collection` | `name`, `parentKey?` | New collection |
 | `add_to_collection` | `collectionKey`, `itemKeys` | File existing items |
@@ -106,7 +109,9 @@ Example: “Add 10.1038/nphys1170, attach ~/Downloads/paper.pdf, and show me.”
   app is not running.
 - **Do not batch blindly.** Create one item, check its key and fields, then continue. This keeps
   failures small and reversible.
-- Reader annotations and export are not available yet; do not promise them.
+- **Annotation positions** use `{ "pageIndex": 0, "rects": [[x1, y1, x2, y2]] }` in PDF
+  coordinates. Only create an annotation when you have a position; do not invent one.
+- **`export_note`** takes a note key and returns Markdown; it does not write a file.
 
 ## CLI fallback
 

@@ -112,17 +112,17 @@ profile. The CLI fetches the server ID itself for writes.
 
 - The bridge has no arbitrary JavaScript execution and no destructive verbs: delete moves to the
   trash, emptying it is not exposed.
-- Reader annotations and export verbs are Phase 4 (see [agent.md](agent.md)); translators and
-  attachments are available now.
+- Reader annotations (`annotation.list/create`) and `export.note` are available through the
+  bridge; see [agent.md](agent.md).
 - No HTTPS: both surfaces are loopback-only by design. Never expose port 23120 to a network.
 - Reads on the local API are available to any process running as the same user; the bridge
   requires its token for both reads and writes.
 
 ## MCP
 
-`citewell mcp --data-dir "$CITEWELL_DATA_DIR"` starts a stdio MCP server. It exposes 16 tools
-(`search_library`, `create_item`, `save_identifier`, `attach_file`, `select_items`, `open_item`,
-`notify`, and the rest of the bridge). Add it to an MCP client as:
+`citewell mcp --data-dir "$CITEWELL_DATA_DIR"` starts a stdio MCP server. It exposes 19 tools
+(`search_library`, `create_item`, `save_identifier`, `attach_file`, `create_annotation`,
+`export_note`, `select_items`, `open_item`, `notify`, and the rest of the bridge). Add it to an MCP client as:
 
 ```json
 {

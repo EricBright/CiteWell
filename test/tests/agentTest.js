@@ -84,6 +84,42 @@ describe("Agent bridge", function () {
 		assert.equal(error.status, 400);
 	});
 
+	it("should create an annotation and export a note as Markdown", async function () {
+		let created = await Zotero.Server.Agent.dispatch("item.create", {
+			itemType: "book",
+			fields: { title: "Annotation test" }
+		});
+		let parent = Zotero.Items.getByLibraryAndKey(1, created.key);
+		let pdf = OS.Path.join(getTestDataDirectory().path, "empty.pdf");
+		let attachment = await Zotero.Attachments.importFromFile({
+			file: pdf,
+			parentItemID: parent.id
+		});
+
+		let annotation = await Zotero.Server.Agent.dispatch("annotation.create", {
+			key: attachment.key,
+			type: "highlight",
+			text: "selected text",
+			comment: "why it matters",
+			position: { pageIndex: 0, rects: [[10, 10, 100, 20]] }
+		});
+		assert.ok(annotation.key);
+
+		let listed = await Zotero.Server.Agent.dispatch("annotation.list", {
+			key: attachment.key
+		});
+		assert.equal(listed.annotations.length, 1);
+		assert.equal(listed.annotations[0].text, "selected text");
+
+		let note = await Zotero.Server.Agent.dispatch("item.addNote", {
+			key: created.key,
+			text: "<h1>Heading</h1><p>Hello <strong>world</strong></p>"
+		});
+		let exported = await Zotero.Server.Agent.dispatch("export.note", { key: note.key });
+		assert.include(exported.markdown, "Hello");
+		assert.include(exported.markdown, "world");
+	});
+
 	it("should expose the skill from the Help menu", async function () {
 		let win = await loadZoteroPane();
 		try {
