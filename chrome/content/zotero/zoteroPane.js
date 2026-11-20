@@ -649,7 +649,8 @@ var ZoteroPane = new function () {
 		// another profile or if the DB is initialized erroneously (e.g. while
 		// switching data directory locations)
 		else if (Zotero.Prefs.get('firstRun2')) {
-			if (Zotero.Schema.dbInitialized || !Zotero.Sync.Server.enabled) {
+			if (ZOTERO_CONFIG.ONLINE_SYNC
+					&& (Zotero.Schema.dbInitialized || !Zotero.Sync.Server.enabled)) {
 				setTimeout(function () {
 					ZoteroPane_Local.loadURI(ZOTERO_CONFIG.START_URL);
 				}, 400);

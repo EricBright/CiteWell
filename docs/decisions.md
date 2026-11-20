@@ -171,7 +171,13 @@ modified client against it is therefore not something to ship, so it is off ever
 | Toolbar and menus | sync button, error indicator and library-context sync item are hidden |
 | Connector | online-library saving and Google Docs integration are disabled and hidden |
 
-Removal of the subsystem is R19. A folder-based replacement (Google Drive, rclone) is not
+Removal of the subsystem is R19.
+
+The empty-library welcome pane follows the same rule: it takes the name from `CLIENT_NAME`
+(now CiteWell), its links point at this project's documentation, and the "Set up syncing"
+sentence is omitted while sync is off. The first-run start page no longer points at
+`zotero.org/start`; a local page (`resource/citewellStart.html`) is kept for a future re-enable,
+and the first-run load is skipped while sync is disabled. A folder-based replacement (Google Drive, rclone) is not
 implemented: Zotero's sync protocol has no folder backend, WebDAV covers only attachment files,
 and storing `zotero.sqlite` in a cloud folder corrupts it.
 

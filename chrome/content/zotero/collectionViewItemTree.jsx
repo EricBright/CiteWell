@@ -2197,16 +2197,18 @@ class CollectionViewItemTree extends ItemTree {
 				p.innerHTML = html;
 				div.appendChild(p);
 
-				p = doc.createElement('p');
-				html = Zotero.getString('pane.items.intro.text3', [Zotero.clientName]);
-				// Encode special chars, which shouldn't exist
-				html = Zotero.Utilities.htmlSpecialChars(html);
-				html = html.replace(
-					/\[([^\]]+)]/,
-					'<span class="text-link" data-action="open-sync-prefs">$1</span>'
-				);
-				p.innerHTML = html;
-				div.appendChild(p);
+				if (ZOTERO_CONFIG.ONLINE_SYNC) {
+					p = doc.createElement('p');
+					html = Zotero.getString('pane.items.intro.text3', [Zotero.clientName]);
+					// Encode special chars, which shouldn't exist
+					html = Zotero.Utilities.htmlSpecialChars(html);
+					html = html.replace(
+						/\[([^\]]+)]/,
+						'<span class="text-link" data-action="open-sync-prefs">$1</span>'
+					);
+					p.innerHTML = html;
+					div.appendChild(p);
+				}
 
 				// Activate text links
 				for (let span of div.getElementsByTagName('span')) {

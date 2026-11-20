@@ -1,7 +1,7 @@
 export var ZOTERO_CONFIG = {
 	GUID: 'zotero@zotero.org',
 	ID: 'zotero', // used for db filename, etc.
-	CLIENT_NAME: 'Zotero',
+	CLIENT_NAME: 'CiteWell',
 	// Personal builds keep Zotero's online sync. A distributed build must set this
 	// to false once the enforcement in roadmap R18 exists.
 	ONLINE_SYNC: false,
@@ -21,14 +21,14 @@ export var ZOTERO_CONFIG = {
 	PREF_BRANCH: 'extensions.zotero.',
 	BOOKMARKLET_ORIGIN: 'https://www.zotero.org',
 	BOOKMARKLET_URL: 'https://www.zotero.org/bookmarklet/',
-	START_URL: "https://www.zotero.org/start",
-	QUICK_START_URL: "https://www.zotero.org/support/quick_start_guide",
+	START_URL: "resource://zotero/citewellStart.html",
+	QUICK_START_URL: "https://github.com/EricBright/CiteWell",
 	PDF_TOOLS_URL: "https://www.zotero.org/download/xpdf/",
 	SUPPORT_URL: "https://www.zotero.org/support/",
 	SYNC_INFO_URL: "https://www.zotero.org/support/sync",
 	TROUBLESHOOTING_URL: "https://www.zotero.org/support/getting_help",
 	FEEDBACK_URL: "https://forums.zotero.org/",
-	CONNECTORS_URL: "https://www.zotero.org/download/connectors",
+	CONNECTORS_URL: "https://github.com/EricBright/CiteWell/blob/citewell/docs/connectors.md",
 	CHANGELOG_URL: "https://github.com/EricBright/CiteWell/commits/citewell",
 	CREDITS_URL: 'https://www.zotero.org/support/credits_and_acknowledgments',
 	LICENSING_URL: 'https://www.zotero.org/support/licensing',
