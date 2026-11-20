@@ -478,6 +478,29 @@ fn appimage_inner() -> Result<PathBuf, String> {
 
     // Never under build/: Zotero's packaging zips everything there into omni.ja,
     // which would sweep previous AppImages into the application.
+    // A staged build can be missing assets if `build/` was deleted without
+    // clearing `.signatures.json`: the JS/Sass tasks then think everything is
+    // current and produce an incomplete bundle. Refuse to package that.
+    let omni = staged.join("app/omni.ja");
+    let listing = Command::new("unzip")
+        .arg("-l")
+        .arg(&omni)
+        .output()
+        .map_err(|e| format!("running unzip: {e}"))?;
+    let listing = String::from_utf8_lossy(&listing.stdout);
+    for required in [
+        "chrome/content/zotero-platform/unix/zotero.css",
+        "resource/note-editor/editor.html",
+    ] {
+        if !listing.contains(required) {
+            return Err(format!(
+                "staged build is incomplete (missing {required}).\n\
+                 Rebuild from scratch:\n  rm -rf build .signatures.json\n  \
+                 node js-build/build.js\n  app/scripts/dir_build -p l"
+            ));
+        }
+    }
+
     let work = root.join("tmp/appimage");
     let appdir = work.join("AppDir");
     if appdir.exists() {

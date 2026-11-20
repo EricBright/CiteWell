@@ -20,7 +20,7 @@ app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
 
-Output: `dist/CiteWell-x86_64.AppImage` (about 126 MB).
+Output: `dist/CiteWell-x86_64.AppImage` (about 130 MB).
 
 Scratch space lives in `tmp/appimage/`, deliberately **not** under `build/`: Zotero's packaging
 zips the contents of `build/` into `app/omni.ja`, so an AppDir or a previous AppImage left there
@@ -38,7 +38,30 @@ gets copied into the application itself (the bundle once grew to 532 MB this way
 `AppRun` is a Rust binary rather than a shell script, so the bundle needs no extra interpreter.
 It uses `exec`, not `spawn`, so signals and the process group behave as a direct launch would.
 
+## A clean rebuild
+
+Deleting `build/` alone is not enough: build signatures live in `.signatures.json` at the
+repository root, so the JS/Sass tasks conclude that missing outputs are current. The symptom is
+a bundle that starts but whose layout is broken (no platform CSS) and whose notes do not open (no
+note editor). `xtask` now refuses to package a staged build missing either asset; the fix is:
+
+```bash
+rm -rf build .signatures.json
+node js-build/build.js
+app/scripts/dir_build -p l
+```
+
 ## Running
+
+Use an explicit data directory, with `$HOME` expanded by the shell:
+
+```bash
+./dist/CiteWell-x86_64.AppImage -datadir "$HOME/CiteWellData"
+```
+
+Without `-datadir`, the app opens `~/Zotero`, which is the same library the installed Zotero
+uses. `-datadir` must be absolute; `"~/CiteWellData"` in quotes is not expanded and is rejected.
+
 
 ```bash
 chmod +x CiteWell-x86_64.AppImage
