@@ -111,6 +111,8 @@ fn connectors_inner() -> Result<PathBuf, String> {
         ));
     }
 
+    render_connector_dark_icons(&root, &firefox)?;
+
     let output = root.join("build/dist/CiteWell-Connector.xpi");
     if let Some(parent) = output.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("creating {}: {e}", parent.display()))?;
@@ -134,6 +136,41 @@ fn connectors_inner() -> Result<PathBuf, String> {
     }
 
     Ok(output)
+}
+
+/// Render the dark book-section variants the connector's build does not produce.
+/// Item icons come from the app skin, which ships light, dark and white artwork;
+/// only light reaches the build, so the dark set is rendered here.
+fn render_connector_dark_icons(root: &Path, firefox: &Path) -> Result<(), String> {
+    let skin = root.join("chrome/skin/default/zotero/item-type/16/dark");
+    let svg_16 = skin.join("book-section.svg");
+    let svg_32 = skin.join("book-section@2x.svg");
+    let images = firefox.join("images");
+    let toolbar = images.join("toolbar");
+    fs::create_dir_all(&toolbar).map_err(|e| format!("creating {}: {e}", toolbar.display()))?;
+
+    copy(&svg_16, &images.join("book-section-dark.svg"))?;
+    copy(&svg_32, &images.join("book-section-dark@2x.svg"))?;
+
+    let shim = root.join("tools/target/debug/rsvg-convert");
+    for (source, width, height, name) in [
+        (&svg_16, 16, 16, "book-section-dark@16.png"),
+        (&svg_32, 32, 32, "book-section-dark.png"),
+        (&svg_32, 48, 48, "book-section-dark@48.png"),
+    ] {
+        let target = toolbar.join(name);
+        let status = Command::new(&shim)
+            .arg(source)
+            .args(["-w", &width.to_string(), "-h", &height.to_string()])
+            .arg("-o")
+            .arg(&target)
+            .status()
+            .map_err(|e| format!("running {}: {e}", shim.display()))?;
+        if !status.success() {
+            return Err(format!("rendering {}", target.display()));
+        }
+    }
+    Ok(())
 }
 
 fn run(command: &mut Command, what: &str) -> Result<bool, String> {

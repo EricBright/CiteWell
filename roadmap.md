@@ -10,7 +10,7 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
-| R17 | Contract connector rebrand: name, extension id, `update_url`, icons and behaviour | The XPI still identifies as Zotero and would auto-update to Zotero's connector | Branded XPI loads in `about:debugging` and saves a page against CiteWell |
+| R17 | Connector rebrand: name, extension id, `update_url`, and the book-section icon in light and dark | The XPI still identifies as Zotero and would auto-update to Zotero's connector; all item badges are already unified on `book-section` | Branded XPI loads in `about:debugging` and saves a page against CiteWell |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
 | R9 | Plugin compatibility check after branding | Plugins target `Zotero.*`; accidental identifier changes surface here | One plugin installs and works against a branded build |
 

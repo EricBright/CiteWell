@@ -78,19 +78,20 @@ Zotero.Connector_Types = new function() {
 			Zotero.CachedTypes.call(this);
 			
 			this.getImageSrc = function(idOrName) {
-				var itemType = Zotero.Connector_Types["itemTypes"][idOrName];
-				var icon = itemType ? itemType[6]/* icon */ : idOrName + '@2x.svg';
+				// CiteWell: every item type renders the same icon — book-section and its
+				// 16/32/48 variants — no matter which type is being saved.
+				//
+				// Dark variants are separate artwork (not tinted), so pick by theme.
+				var base = 'book-section';
+				if (typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches) {
+					base += '-dark';
+				}
 				if (Zotero.isBackground) {
 					// SVG not supported in toolbar, we use pngs rendered at build time.
 					// See makeToolbarIcons in build.sh for the naming scheme
-					icon = icon.replace('@2x', '');
-					icon = 'images/toolbar/' + icon.replace('.svg', '.png');
+					return Zotero.getExtensionURL('images/toolbar/' + base + '.png');
 				}
-				else {
-					icon = 'images/' + icon;
-				}
-				
-				return Zotero.getExtensionURL(icon);
+				return Zotero.getExtensionURL('images/' + base + '@2x.svg');
 			};
 		}
 		

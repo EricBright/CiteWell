@@ -28,6 +28,22 @@ upstream pull mechanical.
 | `connectors/.gitmodules` | `src/zotero` entry removed | no nested app |
 | root `.gitmodules` | four entries for `connectors/src/*` | git only reads submodules from the root |
 | `connectors/images/toolbar` | regenerated at build time | produced by our Rust rasteriser, not committed |
+| `connectors/src/common/cachedTypes.js` | `getImageSrc` returns `book-section` for every item type | one icon for all types, per the design |
+| build output | dark set added: `book-section-dark.svg`, `book-section-dark@2x.svg`, toolbar PNGs | the connector ships no dark item icons |
+
+## One icon for every item type
+
+`getImageSrc` ignores the requested type: every badge is `book-section`. In dark mode it
+returns the `-dark` variant instead:
+
+| Context | Light | Dark |
+|---|---|---|
+| Toolbar (background) | `images/toolbar/book-section.png` (+ `@16`, `@48`) | `images/toolbar/book-section-dark.png` (+ `@16`, `@48`) |
+| In-page UI (content script) | `images/book-section@2x.svg` | `images/book-section-dark@2x.svg` |
+
+The dark assets are rendered by `xtask` from `chrome/skin/default/zotero/item-type/16/dark/`,
+because the connector's own build only copies the light set. Selection happens when the icon is
+set, so a theme change mid-session shows the new variant on the next state change, not instantly.
 
 ## Build
 
