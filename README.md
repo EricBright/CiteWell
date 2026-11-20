@@ -74,6 +74,7 @@ to answer one question, not to get oriented.
 | `docs/connectors.md` | on-demand | changing the browser connector | Import, patch list, XPI build, rebranding gaps |
 | `docs/export.md` | on-demand | planning or running a vault export | Obsidian/Markdown export design and safety rules |
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
+| `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License

@@ -32,8 +32,9 @@ Artifacts are local and gitignored:
 5. **R7 — non-English locales** still contain upstream Zotero translations.
 6. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
-7. **R23 — UI verbs** (select/open/read selection) and an MCP adapter around the CLI. The
-   read/write CLI is in place (R22).
+7. **R23 — agent bridge** (design in [agent.md](agent.md)): `/agent/v1` with translators,
+   attachments, notes and UI verbs, then `citewell mcp`. The read/write CLI is in place (R22);
+   Phase 1 is the next slice.
 
 ## Commands
 
