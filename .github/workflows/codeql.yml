@@ -1,0 +1,53 @@
+name: CodeQL
+
+# Only languages that exist in this repository are analysed. The generated
+# configuration also listed c-cpp and java-kotlin, which have no code here;
+# those jobs fail with "no code found" and turn the whole run red.
+#
+# Zotero's own ci.yml is disabled by GitHub on forks ("disabled_fork"), so it
+# is not part of this workflow set. See docs/sync.md.
+
+on:
+  push:
+    branches: [main, citewell]
+  pull_request:
+    branches: [main, citewell]
+  schedule:
+    - cron: '43 5 * * 4'
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  packages: read
+  actions: read
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: python
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{matrix.language}}"
