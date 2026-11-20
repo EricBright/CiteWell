@@ -256,6 +256,14 @@ fn render_connector_state_icons(root: &Path, firefox: &Path) -> Result<(), Strin
 
     let light_svg = fs::read_to_string(&light)
         .map_err(|e| format!("reading {}: {e}", light.display()))?;
+    // The light base icon used to be rendered from icons/badged/book-section.svg,
+    // which is deleted; render it from the app skin like everything else.
+    let light_16 = root.join("chrome/skin/default/zotero/item-type/16/light/book-section.svg");
+    let light_32 = root.join("chrome/skin/default/zotero/item-type/16/light/book-section@2x.svg");
+    render(&shim, &light_16, 16, 16, &toolbar.join("book-section@16.png"))?;
+    render(&shim, &light_32, 32, 32, &toolbar.join("book-section.png"))?;
+    render(&shim, &light_32, 48, 48, &toolbar.join("book-section@48.png"))?;
+
     let dark_svg = fs::read_to_string(&dark)
         .map_err(|e| format!("reading {}: {e}", dark.display()))?;
 

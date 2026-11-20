@@ -105,6 +105,17 @@ one per item type, plus four `Icon-*.png` marks. After unification nothing refer
 The folder is deleted, `build.sh` no longer tries to render or copy it, and every icon in the
 bundle is produced from the app skin at build time.
 
+The build now copies exactly what the UI asks for:
+
+| Copied | Files |
+|---|---|
+| `book-section@2x.svg` (light content icon) | 1 |
+| `progress_arcs.png`, `csl-style.png`, `prefs-*.png`, `zotero-app-*.png` | 8 |
+| toolbar `book-section*` (base, dark, 4 states × 3 sizes) | 30 |
+
+`copyResources` excludes `common/images` so a wholesale rsync cannot re-add the Z marks, and
+`xtask` renders the light base icon that previously came from `icons/badged/book-section.svg`.
+
 ## Build
 
 ```bash
