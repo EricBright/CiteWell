@@ -22,6 +22,11 @@ violate.
 The name `CLAUDE.md` is upstream's, not this project's agent contract. It is kept verbatim as an
 architecture reference for all tools.
 
+5. **Never push to `zotero/zotero`.** This is a personal fork and contributes nothing
+   upstream — not a branch, not a pull request, not an issue comment. `upstream` is fetch-only
+   (`pushurl = DISABLED`), `remote.pushDefault` is `origin`, and `gh`'s default repository is the
+   fork. `tools/docs-check` fails if any remote can push to upstream.
+
 ## Where to look
 
 | Question | File |

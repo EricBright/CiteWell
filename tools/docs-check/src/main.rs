@@ -89,6 +89,58 @@ fn documentation_files(root: &Path) -> Vec<String> {
     files
 }
 
+/// True when a URL points at the upstream Zotero repository, which this fork
+/// must never push to. `DISABLED` (our fetch-only marker) is not such a URL.
+fn is_upstream_zotero(url: &str) -> bool {
+    let normalized = url
+        .trim()
+        .trim_end_matches('/')
+        .trim_end_matches(".git")
+        .to_lowercase();
+    normalized.ends_with("zotero/zotero")
+}
+
+/// Effective push targets from `.git/config`: a remote without an explicit
+/// `pushurl` pushes to its fetch `url`.
+fn push_targets(config: &str) -> Vec<(String, String)> {
+    let mut fetch: BTreeMap<String, String> = BTreeMap::new();
+    let mut push: BTreeMap<String, String> = BTreeMap::new();
+    let mut current: Option<String> = None;
+
+    for line in config.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('[') {
+            current = trimmed
+                .strip_prefix("[remote \"")
+                .and_then(|rest| rest.strip_suffix("\"]"))
+                .map(str::to_string);
+            continue;
+        }
+        let Some(remote) = current.clone() else { continue };
+        if let Some(value) = trimmed.strip_prefix("url = ") {
+            fetch.insert(remote, value.trim().to_string());
+        } else if let Some(value) = trimmed.strip_prefix("pushurl = ") {
+            push.insert(remote, value.trim().to_string());
+        }
+    }
+
+    let mut targets: Vec<(String, String)> = fetch
+        .iter()
+        .map(|(remote, url)| {
+            (
+                remote.clone(),
+                push.get(remote).cloned().unwrap_or_else(|| url.clone()),
+            )
+        })
+        .collect();
+    for (remote, url) in push {
+        if !fetch.contains_key(&remote) {
+            targets.push((remote, url));
+        }
+    }
+    targets
+}
+
 fn read(root: &Path, relative: &str) -> Option<String> {
     fs::read_to_string(root.join(relative)).ok()
 }
@@ -153,6 +205,16 @@ fn main() -> ExitCode {
         }
     }
 
+    if let Some(config) = read(&root, ".git/config") {
+        for (remote, url) in push_targets(&config) {
+            if is_upstream_zotero(&url) {
+                errors.push(format!(
+                    ".git/config: remote '{remote}' can push to upstream zotero/zotero ({url}); make it fetch-only with `git remote set-url --push {remote} DISABLED`"
+                ));
+            }
+        }
+    }
+
     println!(
         "docs-check: {README} {readme_words}/{README_CAP} words, {AGENTS} {agents_words}/{AGENTS_CAP} words, {} registered paths, {} documents required",
         registry.len(),
@@ -184,6 +246,24 @@ mod tests {
         assert!(!entries.contains_key("not-in-registry.md"));
         assert!(!entries.contains_key("ignored.md"));
         assert_eq!(entries.len(), 2);
+    }
+
+    #[test]
+    fn upstream_push_target_is_detected() {
+        let config = "[remote \"origin\"]\n\turl = https://github.com/EricBright/CiteWell\n\
+                      [remote \"upstream\"]\n\turl = https://github.com/zotero/zotero.git\n";
+        let targets = push_targets(config);
+        assert_eq!(targets.len(), 2);
+        assert!(targets.iter().any(|(remote, url)| remote == "upstream" && is_upstream_zotero(url)));
+    }
+
+    #[test]
+    fn disabled_push_url_is_accepted() {
+        let config = "[remote \"upstream\"]\n\turl = https://github.com/zotero/zotero.git\n\tpushurl = DISABLED\n";
+        let targets = push_targets(config);
+        assert_eq!(targets.len(), 1);
+        assert_eq!(targets[0].1, "DISABLED");
+        assert!(!is_upstream_zotero(&targets[0].1));
     }
 
     #[test]

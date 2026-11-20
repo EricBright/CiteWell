@@ -77,6 +77,28 @@ changes belong to the product branch.
 | `.github/workflows/**` | Decide per change. Upstream CI targets their infrastructure; keep only jobs that make sense here |
 | Code | Resolve toward upstream function + our change, then run the tests. If a conflict is structural, record the reasoning in [decisions.md](decisions.md) |
 
+## Push safety
+
+`zotero/zotero` is a source of changes, never a destination. The clone is configured so that a
+mistake fails loudly rather than silently aiming at upstream:
+
+| Setting | Value | Why |
+|---|---|---|
+| `remote.upstream.pushurl` | `DISABLED` | `git push upstream` fails immediately; fetching still works |
+| `remote.pushDefault` | `origin` | A bare `git push` can only reach the fork |
+| `gh` default repository | `EricBright/CiteWell` | `gh pr create` cannot target upstream by accident |
+| Branch tracking | `citewell` → `origin/citewell` | `git push` and `git pull` stay on the fork |
+
+`tools/docs-check` reads `.git/config` and fails if any remote's effective push target points at
+`zotero/zotero`. To restore a fetch-only upstream after a clone:
+
+```bash
+git remote add upstream https://github.com/zotero/zotero.git
+git remote set-url --push upstream DISABLED
+git config remote.pushDefault origin
+gh repo set-default EricBright/CiteWell
+```
+
 ## Cadence
 
 Monthly is enough for the 10.0 line — it receives fixes, not churn. Also merge immediately
