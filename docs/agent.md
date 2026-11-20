@@ -18,6 +18,14 @@ The local API is a data CRUD surface. It cannot run a translator, import a file 
 move the selection. Those live in the app, so the bridge calls the same JavaScript APIs the UI
 calls — never SQLite.
 
+## Bundled skill
+
+[SKILL.md](../SKILL.md) is the short, self-contained version for an agent that has never seen
+CiteWell: prerequisites, MCP setup, the 16 tools, a working loop, and the rules that keep it out of
+Zotero's data. Download it from
+`https://raw.githubusercontent.com/EricBright/CiteWell/citewell/SKILL.md` and place it in the
+agent's skill directory as `citewell/SKILL.md`.
+
 ## Architecture
 
 ```
@@ -137,7 +145,7 @@ Reading collection, and show me."
 | 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
 | 2 **built** | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
 | 3 **built** | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
-| 4 | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
+| 4 *(not built)* | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
 
 ## Non-goals
 
