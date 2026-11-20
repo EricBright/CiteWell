@@ -1,0 +1,83 @@
+# Keeping CiteWell in sync with Zotero
+
+CiteWell tracks a stable upstream line and keeps one branch clean, so that "bring in Zotero's
+fixes" is a fast-forward plus a merge, not a festival of conflicts.
+
+## Branch model
+
+| Branch | Tracks | Purpose | Rule |
+|---|---|---|---|
+| `main` | `upstream/main` | Reference mirror of Zotero's development line (11.0) | Fast-forward only; never commit |
+| `citewell` | `upstream/10.0` | The product: CiteWell's changes live here | All work happens here; merge upstream into it |
+
+`main` exists so you can read what upstream is doing without switching your working branch.
+`citewell` is cut from the stable line because that is what you actually run; see
+[decisions.md](decisions.md) D1.
+
+## One-time setup
+
+```bash
+git remote add upstream https://github.com/zotero/zotero.git   # already configured in this clone
+git fetch upstream 10.0 main
+git switch -c citewell upstream/10.0
+git submodule update --init --recursive
+```
+
+## Routine merge
+
+```bash
+git fetch upstream
+git switch citewell
+git merge upstream/10.0
+git submodule update --init --recursive     # upstream moves submodule pointers constantly
+npm i                                        # only if package.json or package-lock.json changed
+node js-build/build.js
+app/scripts/build_and_run -n                 # verify
+test/runtests.sh -f item collections         # or the relevant subset
+git push origin citewell
+```
+
+Merging (not rebasing) keeps published history intact. Do not force-push a branch that GitHub
+Issues or a build reference.
+
+## Submodules
+
+Fourteen submodules, several with nested ones. Upstream updates their pinned commits often, and a
+merge that changes a pointer without updating the checkout leaves the tree inconsistent in a way
+that only fails at runtime.
+
+```bash
+git submodule status                        # entries starting with '-' are not initialized
+git submodule update --init --recursive     # after every merge
+```
+
+Never edit files inside a submodule from this repo: commit there, or the change is invisible to
+everyone else.
+
+## Conflict policy
+
+| File | Resolution |
+|---|---|
+| `README.md`, `AGENTS.md`, `NOTICE`, `docs/**`, `roadmap.md` | Ours. They are CiteWell's; upstream has no equivalent. Re-check whether upstream's README gained a fact worth copying |
+| `COPYING`, `CLAUDE.md`, `CONTRIBUTING.md` | Theirs, untouched. If upstream changes them, take upstream |
+| `.github/workflows/**` | Decide per change. Upstream CI targets their infrastructure; keep only jobs that make sense here |
+| Code | Resolve toward upstream function + our change, then run the tests. If a conflict is structural, record the reasoning in [decisions.md](decisions.md) |
+
+## Cadence
+
+Monthly is enough for the 10.0 line — it receives fixes, not churn. Also merge immediately
+before starting work that touches a file upstream is likely to touch, because an early merge
+turns one large conflict into several small ones.
+
+## When something goes wrong
+
+```bash
+git merge --abort            # before committing a merge
+git reset --hard ORIG_HEAD   # undo a completed but unverified merge
+git reflog                   # find the pre-merge state
+```
+
+Verify with a build before deleting the backup branch; a merge that compiles is not the same as a
+merge that runs.
+
+*For the full documentation index, see [../README.md](../README.md).*

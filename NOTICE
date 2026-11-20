@@ -1,0 +1,25 @@
+CiteWell — notice of modification and attribution
+=================================================
+
+CiteWell is a modified version of Zotero.
+
+Zotero is Copyright © 2018 Corporation for Digital Scholarship, Vienna, Virginia, USA
+(http://digitalscholar.org), and was previously Copyright © 2006–2017 the Roy Rosenzweig
+Center for History and New Media, George Mason University.
+
+Modifications for CiteWell are Copyright © 2026 Eric Bright and are made available under the
+same license as the work they modify: the GNU Affero General Public License, version 3 or (at
+your option) any later version (AGPL-3.0-or-later). The full license text is in COPYING. The
+files modified for CiteWell, with dates, are recorded in the repository's git history, and
+modified source files carry a modification notice in their license header.
+
+CiteWell is free software: you can redistribute it and/or modify it under the terms of the
+GNU Affero General Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version. CiteWell is distributed in the hope
+that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See COPYING for details.
+
+"Zotero" and the Zotero logo are registered trademarks of the Corporation for Digital
+Scholarship. They are used in this project only to describe the origin of the software.
+CiteWell is not produced, endorsed, or supported by the Corporation for Digital Scholarship or
+by the Zotero project, and must not be presented as such.

@@ -1,0 +1,17 @@
+name: docs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unit-test the documentation gate
+        run: cargo test --quiet --manifest-path tools/docs-check/Cargo.toml
+
+      - name: Check documentation invariants
+        run: cargo run --quiet --manifest-path tools/docs-check/Cargo.toml
