@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-20 · branch `citewell` @ `cdbaace20` · companion to
+Last updated 2026-11-20 · branch `citewell` @ `f75fe749a` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start working without re-deriving it.
 
