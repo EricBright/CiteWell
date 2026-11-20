@@ -22,7 +22,11 @@ calls — never SQLite.
 
 [SKILL.md](../SKILL.md) is the short, self-contained version for an agent that has never seen
 CiteWell: prerequisites, MCP setup, the 16 tools, a working loop, and the rules that keep it out of
-Zotero's data. Download it from
+Zotero's data.
+
+In the app, it is two clicks away: **Help → Agents and SKILL.md** opens **Preferences → Agent
+access**, whose **Agent skill** section shows the download URL, a Copy button and an Open button.
+Download from
 `https://raw.githubusercontent.com/EricBright/CiteWell/citewell/SKILL.md` and place it in the
 agent's skill directory as `citewell/SKILL.md`.
 

@@ -25,6 +25,9 @@
 Zotero_Preferences.Agent = {
 	_enabledCheckbox: null,
 
+	SKILL_URL: "https://raw.githubusercontent.com/EricBright/CiteWell/citewell/SKILL.md",
+	SKILL_VIEW_URL: "https://github.com/EricBright/CiteWell/blob/citewell/SKILL.md",
+
 	init: function () {
 		this._enabledCheckbox = document.getElementById('agent-enabled');
 		this._enabledCheckbox.addEventListener('command', () => this._refresh());
@@ -48,6 +51,7 @@ Zotero_Preferences.Agent = {
 		document.getElementById('agent-audit-path').textContent
 			= Zotero.Server.Agent.auditPath;
 		document.getElementById('agent-setup').value = this._setupText();
+		document.getElementById('agent-skill-url').textContent = this.SKILL_URL;
 	},
 
 	_setupText: function () {
@@ -83,6 +87,14 @@ Zotero_Preferences.Agent = {
 
 	copySetup: function () {
 		Zotero.Utilities.Internal.copyTextToClipboard(document.getElementById('agent-setup').value);
+	},
+
+	copySkillLink: function () {
+		Zotero.Utilities.Internal.copyTextToClipboard(this.SKILL_URL);
+	},
+
+	openSkill: function () {
+		Zotero.launchURL(this.SKILL_VIEW_URL);
 	},
 
 	rotateToken: async function () {

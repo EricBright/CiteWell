@@ -84,6 +84,16 @@ describe("Agent bridge", function () {
 		assert.equal(error.status, 400);
 	});
 
+	it("should expose the skill from the Help menu", async function () {
+		let win = await loadZoteroPane();
+		try {
+			assert.ok(win.document.getElementById('menu_agentSkill'));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("should register and load the preferences pane", async function () {
 		let pane = Zotero.PreferencePanes.builtInPanes.find(p => p.id == 'zotero-prefpane-agent');
 		assert.ok(pane);
@@ -98,6 +108,10 @@ describe("Agent bridge", function () {
 			}
 			assert.ok(field, "token field was not rendered");
 			assert.equal(field.value, await Zotero.Server.Agent.getToken());
+
+			let skillURL = win.document.getElementById('agent-skill-url');
+			assert.ok(skillURL);
+			assert.include(skillURL.textContent, 'SKILL.md');
 		}
 		finally {
 			win.close();

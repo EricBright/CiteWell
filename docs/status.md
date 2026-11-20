@@ -111,7 +111,8 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
 - `citewell mcp` exposes 16 bridge tools over stdio and was verified with initialize,
   tools/list and tools/call against a live app.
 - `SKILL.md` at the repo root is the downloadable agent skill; it mirrors the MCP tool list and
-  is linked from [agent.md](agent.md). Phase 4 (reader annotations, export) is not built yet.
+  is reachable from **Help → Agents and SKILL.md** and the **Agent skill** section of
+  Preferences → Agent access. Phase 4 (reader annotations, export) is not built yet.
 - The connector's identity lives in `connectors/brand.json`; source strings use tokens that
   `xtask` substitutes, and the build fails on hardcoded English product names.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched.

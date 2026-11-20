@@ -70,6 +70,20 @@
 			</description>
 		</groupbox>
 
+		<groupbox aria-label="Agent skill">
+			<label><html:h2>Agent skill</html:h2></label>
+			<description>
+				Give an agent a ready-made <html:code>SKILL.md</html:code> that explains the app, the
+				MCP tools and the safety rules. Save it as <html:code>citewell/SKILL.md</html:code>
+				in the agent's skill directory.
+			</description>
+			<hbox>
+				<button id="agent-skill-copy" label="Copy download link" oncommand="Zotero_Preferences.Agent.copySkillLink()"/>
+				<button id="agent-skill-open" label="Open in browser" oncommand="Zotero_Preferences.Agent.openSkill()"/>
+			</hbox>
+			<description id="agent-skill-url" class="agent-path"/>
+		</groupbox>
+
 		<groupbox aria-label="Audit">
 			<label><html:h2>Audit</html:h2></label>
 			<description>
