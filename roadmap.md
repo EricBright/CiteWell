@@ -9,27 +9,24 @@ they live in [docs/sync.md](docs/sync.md). Anything deliberately out of scope is
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R4 | Visible rename of product surfaces: window title, About, installer, desktop entry, launcher icons | Brand text is in place; the logo and launcher art still say Zotero | Staged build shows CiteWell in the title and About panel; desktop entry updated |
-| R5 | Icon system refresh: inventory, replacement, high-DPI and dark-mode check | The main reason for the fork, and the last thing blocking a coherent identity | Full icon set renders correctly on Linux at 1x and 2x |
-| R3 | CI baseline: docs workflow is green; decide the fate of upstream `ci.yml` (it did not run on the fork push) | Workflows that cannot fail meaningfully train you to ignore CI | Only workflows that can fail meaningfully remain |
+| R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
+| R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
+| R9 | Plugin compatibility check after branding | Plugins target `Zotero.*`; accidental identifier changes surface here | One plugin installs and works against a branded build |
 
+## Next
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R4 | Visible rename of product surfaces: window title, About panel, installer, desktop entry, launcher icons | The app still calls itself Zotero in the places a user sees first | Staged build shows CiteWell in all five surfaces |
-| R5 | Icon system refresh: inventory, replacement, high-DPI and dark-mode check | The main reason for the fork; depends on R4's asset paths | Full icon set renders correctly on Linux at 1x and 2x |
-| R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
-| R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/en-US` guarantees conflicts on every merge | Written strategy; first string renamed without touching upstream files |
-| R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
-| R9 | Plugin compatibility check after branding | Plugins target `Zotero.*`; accidental identifier changes surface here | One plugin installs and works against a branded build |
+| R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` guarantees conflicts on every merge | Written strategy; first string renamed without touching upstream files |
+| R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |
+| R12 | Test coverage for the changed behaviour | Meaningful only once R6 exists | New behaviour has failing-before, passing-after tests |
 
 ## Later
 
 | ID | Outcome | Why later | Exit criterion |
 |---|---|---|---|
-| R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |
 | R11 | Distribution decision: publish Linux builds or stay source-only | Requires a source-offer plan and a signing story | Either published artifacts, or an explicit "source only" note |
-| R12 | Test coverage for the changed behaviour | Meaningful only once R6 exists | New behaviour has failing-before, passing-after tests |
+| R13 | Build CI: npm + `js-build` on pull requests | Needs recursive submodules, which makes the runner slow and network-heavy | A build workflow that fails on a broken bundle |
 
 ## Not doing
 

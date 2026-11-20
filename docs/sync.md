@@ -54,6 +54,20 @@ git submodule update --init --recursive     # after every merge
 Never edit files inside a submodule from this repo: commit there, or the change is invisible to
 everyone else.
 
+## CI on a fork
+
+GitHub marks Zotero's `ci.yml` as `disabled_fork` on forked repositories, so it never runs
+here and no longer needs to be defended against. What runs instead:
+
+| Workflow | Trigger | What it proves |
+|---|---|---|
+| `docs.yml` | every push | README budget, index completeness, back-references (Rust gate) |
+| `codeql.yml` | push to `main` or `citewell` | static analysis for actions, JS/TS and Python |
+
+Workflows are taken from the branch being pushed, so configuration meant to run on
+`citewell` must exist on `citewell` — not only on `main`. `main` stays a mirror; workflow
+changes belong to the product branch.
+
 ## Conflict policy
 
 | File | Resolution |

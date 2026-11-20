@@ -120,6 +120,19 @@ toolbar legible without abandoning the motif.
 Rejected: shrinking the full mark to 16px — it reads as a red smudge. Rejected: a bold "C"
 for the toolbar — legible, but drops the quill exactly where users look most.
 
+## D11 — CI lives on `citewell`; `main` stays a mirror
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+GitHub disables a forked repository's inherited workflows (`disabled_fork`), so Zotero's
+`ci.yml` is inert here. The two workflows that matter — the Rust docs gate and CodeQL — are
+kept on the product branch, because Actions reads workflow files from the pushed branch.
+CodeQL analyses only languages that exist in this repository; the generated matrix included
+c-cpp and java-kotlin, whose jobs failed with "no code found" and reddened every run.
+
+Rejected: leaving CodeQL on `main` — it would only scan mirror pushes, never the branch where
+work happens, and would keep `main` divergent from upstream.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
