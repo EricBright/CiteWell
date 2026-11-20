@@ -62,6 +62,7 @@ to answer one question, not to get oriented.
 | `README.md` | always | starting any session | Identity, commands, repository map, this index |
 | `AGENTS.md` | always | working as an AI agent | Agent contract: language rule, naming invariant, doc rules |
 | `roadmap.md` | on-demand | choosing what to work on | Now / Next / Later, not-doing, exit criteria |
+| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, pick-up list, commands, pitfalls |
 | `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
 | `COPYING` | once | legal questions | Full AGPL-3.0 text |
 | `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
