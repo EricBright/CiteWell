@@ -136,17 +136,23 @@ Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a
 A temporary add-on disappears when Firefox restarts. An unsigned XPI cannot be installed
 permanently; signing needs an AMO account and is out of scope.
 
-## Before this can be called CiteWell's connector
+## Identity
 
-The imported manifest still identifies as Zotero, and one field is dangerous:
-
-| Field | Current value | Required |
+| Field | Value | State |
 |---|---|---|
-| `name` | `Zotero Connector` | `CiteWell Connector` |
-| `applications.gecko.id` | `zotero@chnm.gmu.edu` | a CiteWell id (also avoids colliding with the real Zotero Connector) |
-| `applications.gecko.update_url` | `https://zotero.org/AUTOFILLED` | **remove or point at CiteWell** — otherwise Firefox updates your connector back to Zotero's |
-| `icons` | Zotero `Icon-*.png` | generated from the CiteWell mark |
-| `strict_min_version` | `58.0` | leave unless the app requires more |
+| `name` | `CiteWell Connector` | done |
+| `applications.gecko.id` | `citewell-connector@sophy.ca` | done |
+| `update_url` | `https://zotero.org/AUTOFILLED` | **deliberately unchanged** |
+| `description` | "Save references to Zotero from your web browser" | still Zotero-branded |
+| `browser_action.default_title` | "Save to Zotero" | still Zotero-branded |
+
+The id is what makes this a separate add-on: it installs alongside the real Zotero Connector,
+gets its own storage, and cannot be mistaken for it. Changing the id later creates a *new*
+add-on rather than updating this one, so settle it before submitting to AMO.
+
+The unchanged `update_url` is now inert, not dangerous: Firefox asks that URL for updates to
+`citewell-connector@sophy.ca`, and Zotero's update manifest only lists `zotero@chnm.gmu.edu`.
+No update will ever match. When an AMO listing exists, point this field at the URL AMO provides.
 
 ## Updating from upstream
 

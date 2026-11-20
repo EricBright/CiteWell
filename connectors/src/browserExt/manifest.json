@@ -1,5 +1,5 @@
 {
-	"name": "Zotero Connector",
+	"name": "CiteWell Connector",
 	"manifest_version": 2,
 	"version": "AUTOFILLED",
 	"description": "__MSG_extension_description__",
@@ -81,7 +81,7 @@
 	"minimum_chrome_version": "55",
 	"applications": {
 		"gecko": {
-			"id": "zotero@chnm.gmu.edu",
+			"id": "citewell-connector@sophy.ca",
 			"update_url": "https://zotero.org/AUTOFILLED",
 			"strict_min_version": "58.0"
 		}
