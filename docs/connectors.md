@@ -30,6 +30,8 @@ upstream pull mechanical.
 | `connectors/images/toolbar` | regenerated at build time | produced by our Rust rasteriser, not committed |
 | `connectors/src/common/cachedTypes.js` | `getImageSrc` returns `book-section` for every item type | one icon for all types, per the design |
 | build output | dark set added: `book-section-dark.svg`, `book-section-dark@2x.svg`, toolbar PNGs | the connector ships no dark item icons |
+| build output | `Icon-{16,32,64,128}.png` re-rendered from `book-section` | upstream ships the Zotero mark |
+| build output | `manifest.json`: `default_icon` + `theme_icons` point at book-section | remove the flash of a different shape |
 
 ## One icon for every item type
 
@@ -44,6 +46,22 @@ returns the `-dark` variant instead:
 The dark assets are rendered by `xtask` from `chrome/skin/default/zotero/item-type/16/dark/`,
 because the connector's own build only copies the light set. Selection happens when the icon is
 set, so a theme change mid-session shows the new variant on the next state change, not instantly.
+
+## One shape, always
+
+A toolbar button that changes shape as it learns about a page forces the user to re-read it
+every time. CiteWell's connector therefore uses a single shape — `book-section` — for the
+extension icon, the default toolbar state, and every item badge. Only colour changes with the
+theme.
+
+| Surface | Asset |
+|---|---|
+| Extension icon (add-ons page, install) | `Icon-16/32/64/128.png`, rendered from `book-section` |
+| Toolbar, default and per tab | `images/toolbar/book-section*.png` for every item type |
+| Dark theme | `*-dark` variants of the same files, via `theme_icons` and `matchMedia` |
+
+State that is genuinely about state — saving, saved, error — still has its own badge; those
+convey progress, not type.
 
 ## Build
 

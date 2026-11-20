@@ -112,6 +112,7 @@ fn connectors_inner() -> Result<PathBuf, String> {
     }
 
     render_connector_dark_icons(&root, &firefox)?;
+    apply_connector_icons(&root, &firefox)?;
 
     let output = root.join("build/dist/CiteWell-Connector.xpi");
     if let Some(parent) = output.parent() {
@@ -154,21 +155,90 @@ fn render_connector_dark_icons(root: &Path, firefox: &Path) -> Result<(), String
 
     let shim = root.join("tools/target/debug/rsvg-convert");
     for (source, width, height, name) in [
-        (&svg_16, 16, 16, "book-section-dark@16.png"),
+        (&svg_16, 16u32, 16u32, "book-section-dark@16.png"),
         (&svg_32, 32, 32, "book-section-dark.png"),
         (&svg_32, 48, 48, "book-section-dark@48.png"),
     ] {
-        let target = toolbar.join(name);
-        let status = Command::new(&shim)
-            .arg(source)
-            .args(["-w", &width.to_string(), "-h", &height.to_string()])
-            .arg("-o")
-            .arg(&target)
-            .status()
-            .map_err(|e| format!("running {}: {e}", shim.display()))?;
-        if !status.success() {
-            return Err(format!("rendering {}", target.display()));
-        }
+        render(&shim, source, width, height, &toolbar.join(name))?;
+    }
+    Ok(())
+}
+
+/// Give the extension itself the same icon as every badge: book-section.
+/// The upstream Icon-*.png files are the Zotero mark, which would mean the
+/// toolbar button, the add-ons page and the badges show three different shapes.
+fn apply_connector_icons(root: &Path, firefox: &Path) -> Result<(), String> {
+    let skin = root.join("chrome/skin/default/zotero/item-type/16/light");
+    let shim = root.join("tools/target/debug/rsvg-convert");
+
+    for (source, size, name) in [
+        ("book-section.svg", 16u32, "Icon-16.png"),
+        ("book-section@2x.svg", 32, "Icon-32.png"),
+        ("book-section@2x.svg", 64, "Icon-64.png"),
+        ("book-section@2x.svg", 128, "Icon-128.png"),
+    ] {
+        render(&shim, &skin.join(source), size, size, &firefox.join(name))?;
+    }
+
+    // Point the default toolbar state at the same shape, with a dark variant,
+    // so there is no moment where a different icon is shown.
+    let manifest_path = firefox.join("manifest.json");
+    let text = fs::read_to_string(&manifest_path)
+        .map_err(|e| format!("reading {}: {e}", manifest_path.display()))?;
+    let mut manifest: serde_json::Value =
+        serde_json::from_str(&text).map_err(|e| format!("parsing manifest: {e}"))?;
+
+    let toolbar = |size: u32, dark: bool| {
+        let suffix = if size == 32 { String::new() } else { format!("@{size}") };
+        let theme = if dark { "-dark" } else { "" };
+        format!("images/toolbar/book-section{theme}{suffix}.png")
+    };
+
+    let key = if manifest.get("browser_action").is_some() {
+        "browser_action"
+    } else {
+        "action"
+    };
+    let action = manifest
+        .get_mut(key)
+        .and_then(|value| value.as_object_mut())
+        .ok_or("manifest has no browser_action/action object")?;
+
+    action.insert(
+        "default_icon".to_string(),
+        serde_json::json!({
+            "16": toolbar(16, false),
+            "32": toolbar(32, false),
+            "48": toolbar(48, false),
+        }),
+    );
+    action.insert(
+        "theme_icons".to_string(),
+        serde_json::json!([
+            {"size": 16, "light": toolbar(16, false), "dark": toolbar(16, true)},
+            {"size": 32, "light": toolbar(32, false), "dark": toolbar(32, true)},
+            {"size": 48, "light": toolbar(48, false), "dark": toolbar(48, true)},
+        ]),
+    );
+
+    let written = serde_json::to_string_pretty(&manifest)
+        .map_err(|e| format!("serialising manifest: {e}"))?;
+    fs::write(&manifest_path, written)
+        .map_err(|e| format!("writing {}: {e}", manifest_path.display()))?;
+
+    Ok(())
+}
+
+fn render(shim: &Path, source: &Path, width: u32, height: u32, target: &Path) -> Result<(), String> {
+    let status = Command::new(shim)
+        .arg(source)
+        .args(["-w", &width.to_string(), "-h", &height.to_string()])
+        .arg("-o")
+        .arg(target)
+        .status()
+        .map_err(|e| format!("running {}: {e}", shim.display()))?;
+    if !status.success() {
+        return Err(format!("rendering {}", target.display()));
     }
     Ok(())
 }
