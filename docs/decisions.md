@@ -133,6 +133,28 @@ c-cpp and java-kotlin, whose jobs failed with "no code found" and reddened every
 Rejected: leaving CodeQL on `main` — it would only scan mirror pushes, never the branch where
 work happens, and would keep `main` divergent from upstream.
 
+## D12 — Rust boundary: tooling and services yes, UI rewrite later
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+The app is Gecko + XUL + JavaScript; Rust cannot be called synchronously from it. Rust is adopted
+at three seams (build tooling, WASM, sidecars), with audited crates rather than std-only
+reimplementation of complex formats. Editing existing JavaScript stays allowed so UI work is
+possible; new JavaScript modules are not. Full policy: [rust.md](rust.md).
+
+Rejected: std-only — hand-rolled PDF/SQLite/TLS parsers are a data-loss risk, not a safety gain.
+Rejected: incremental UI replacement — XUL windows cannot be swapped piecemeal.
+
+## D13 — Linux AppImage only
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+Only Linux x86_64 AppImage is built. Windows and macOS packaging is neither built nor deleted:
+the upstream trees stay so that merges stay cheap. Flatpak is a possible later target from the
+same AppDir.
+
+Rejected: deleting `app/win` and `app/mac` — guaranteed conflicts on every upstream change.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

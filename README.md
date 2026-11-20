@@ -17,6 +17,7 @@ bugs.
 | Base | Zotero 10.0, upstream `864b2d47e` |
 | Version string | `10.0.9.SOURCE.864b2d47e` |
 | Build verified | Linux dev build, 2026-11-20 |
+| Platform | Linux x86_64, AppImage only |
 
 What is being worked on, and what is deliberately out of scope: [roadmap.md](roadmap.md).
 
@@ -67,6 +68,8 @@ to answer one question, not to get oriented.
 | `docs/sync.md` | on-demand | before or after a merge from upstream | Branch model, merge and submodule procedure |
 | `docs/branding.md` | on-demand | changing titles, icons, installer, or channel | Where each piece of branding lives |
 | `docs/decisions.md` | on-demand | asking why something is the way it is | Decision records and dead ends |
+| `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
+| `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License
