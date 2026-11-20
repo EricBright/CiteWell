@@ -1286,6 +1286,24 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				Zotero.Utilities.Internal.Environment.clearMozillaVariables();
 			}
 			
+			// On Linux, launch HTTP(S) URLs through the desktop's default handler directly.
+			// nsIHandlerInfo.launchWithURI() can defer the spawn past the point where the
+			// Mozilla launcher variables are restored, which makes Firefox start with a fresh
+			// profile instead of opening a tab in the running browser.
+			if (Zotero.isLinux && /^https?:/i.test(url)) {
+				let launcher = Zotero.File.pathToFile(
+					Zotero.Prefs.get('fallbackLauncher.unix') || '/usr/bin/xdg-open'
+				);
+				if (launcher.exists()) {
+					let proc = Components.classes["@mozilla.org/process/util;1"]
+						.createInstance(Components.interfaces.nsIProcess);
+					proc.init(launcher);
+					let args = [url];
+					proc.run(false, args, args.length);
+					return;
+				}
+			}
+			
 			var uri = Services.io.newURI(url, null, null);
 			var handler = Components.classes['@mozilla.org/uriloader/external-protocol-service;1']
 							.getService(Components.interfaces.nsIExternalProtocolService)

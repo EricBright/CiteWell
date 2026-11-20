@@ -16,5 +16,11 @@ export MOZ_LEGACY_PROFILES=1
 # Use wayland backend when available
 export MOZ_ENABLE_WAYLAND=1
 
+# KDE Plasma draws its own Breeze window decorations; asking GTK for the system decoration
+# mode lets KWin own the titlebar and its buttons instead of drawing a Firefox-style one.
+if [[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* || "${XDG_CURRENT_DESKTOP:-}" == *Plasma* ]]; then
+	export MOZ_GTK_TITLEBAR_DECORATION=system
+fi
+
 CALLDIR="$(dirname "$(readlink -f "$0")")"
 "$CALLDIR/zotero-bin" -app "$CALLDIR/app/application.ini" "$@"

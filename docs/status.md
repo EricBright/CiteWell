@@ -98,6 +98,8 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
 - The agent bridge (`/agent/v1`, D17) needs a 0600 token from the data directory and the
   `X-CiteWell-Agent: 1` header, audits every call, and has no destructive verbs. Token and
   setup instructions are in **Preferences → Agent access**.
+- On KDE, KWin draws the window frame and its buttons (D18); external links go through
+  `xdg-open` with the Mozilla launcher environment cleared, so they open in the default browser.
 - `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
   `item.attachFile` / `item.attachURL` create child attachments. Both were verified end to end
   on Firefox 153.

@@ -255,6 +255,32 @@ the library. Rejected: exposing `eval` to agents — verbs are reviewable; arbit
 not. Rejected: reusing the local API key — it gates writes but has no UI verbs, and its one-time
 keys are consumed by design.
 
+## D18 — System integration on Linux: KWin draws the frame, xdg-open opens links
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+Two rules for Linux, both about behaving like a desktop application rather than a browser:
+
+1. **KDE Plasma owns the window frame.** Under KDE, the launcher sets
+   `MOZ_GTK_TITLEBAR_DECORATION=system` and `titlebar.js` marks the window
+   `systemtitlebar`; KWin/Breeze draws the titlebar and its buttons, and CiteWell's menu row is
+   the only in-app chrome. This replaces drawing a Firefox-style titlebar whose buttons KDE's GTK
+   bridge reports incorrectly.
+2. **External links go to the system browser.** `Zotero.launchURL()` spawns
+   `fallbackLauncher.unix` (`/usr/bin/xdg-open`) for HTTP(S) after clearing the Mozilla launcher
+   environment. This makes links open in the person's default browser and avoids the
+   `launchWithURI()` race that started a fresh Firefox profile instead of a tab.
+
+The environment cleanup is the important half: `MOZ_LEGACY_PROFILES` must be gone before the
+child process is spawned, or Firefox chooses a different profile.
+
+No new dependencies: `xdg-open` is already the configured fallback, and the frame change is a
+CSS/JS branch plus one environment variable.
+
+Rejected: an internal browser for web links — it hides the person's real browser, history and
+extensions. Rejected: keeping the Firefox-style titlebar on KDE — its button detection reports
+only Close, so it either loses Minimize/Maximize or draws controls that ignore Plasma's theme.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

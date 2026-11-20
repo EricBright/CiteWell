@@ -178,7 +178,7 @@ Zotero_Preferences.Cite = {
 	
 	
 	openStylesPage: function () {
-		Zotero.openInViewer("https://www.zotero.org/styles/");
+		Zotero.launchURL("https://www.zotero.org/styles/");
 	},
 	
 	

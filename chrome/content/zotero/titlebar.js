@@ -37,6 +37,11 @@ if (platforms) {
 // https://searchfox.org/mozilla-central/rev/10f46c9c638e0e5935ed9fa12aadc9d0d4e71ade/xpfe/appshell/AppWindow.cpp#2582-2584
 
 // Create tab bar by default
+// KDE Plasma provides its own window frame and buttons; let KWin draw them.
+let currentDesktop = Services.env.get('XDG_CURRENT_DESKTOP') || '';
+if (Zotero.isLinux && /KDE|Plasma/i.test(currentDesktop)) {
+	document.documentElement.setAttribute('systemtitlebar', true);
+}
 document.documentElement.setAttribute('customtitlebar', true);
 document.documentElement.toggleAttribute("drawtitle", false);
 
