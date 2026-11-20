@@ -120,7 +120,7 @@ TOOLBAR_IMAGES=""
 # CiteWell: cross/tick/loading are replaced by the state-dot composites.
 NO_PROGRESS_WINDOW_TOOLBAR_IMAGES=""
 
-# CiteWell: no Z marks and no citations-unlinked; keep what the UI actually uses.
+# CiteWell: keep only the common images the UI actually uses.
 CONNECTOR_COMMON_IMAGES="$SRCDIR/common/images/csl-style.png \
 	$SRCDIR/common/images/prefs-advanced.png \
 	$SRCDIR/common/images/prefs-general.png \
@@ -185,7 +185,7 @@ function copyResources {
 	
 	# Copy common files
 	# CiteWell: images are copied explicitly above; a wholesale copy would re-add
-	# the Z marks and citations-unlinked.png that nothing uses.
+	# artwork nothing uses.
 	rsync -r --exclude '.*' --exclude 'images' "$SRCDIR/common/" "$browser_builddir/"
 	
 	# Copy browser-specific files

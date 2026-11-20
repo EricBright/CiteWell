@@ -339,8 +339,8 @@ function processFile() {
 							// default to the Z instead
 							let manifest = JSON.parse(contents);
 							manifest.browser_action.default_icon = {
-								16: "images/zotero-z-16px.png",
-								32: "images/zotero-z-32px.png"
+								16: "images/toolbar/book-section@16.png",
+								32: "images/toolbar/book-section.png"
 							};
 							contents = JSON.stringify(manifest, null, '\t');
 						}
