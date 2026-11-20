@@ -22,6 +22,11 @@ uses `title="&brandShortName;"`, resolved through the branding files above by
 `APP_NAME` and `APP_ID` are packaging identity, not display text: `APP_ID` also matches add-on
 installation and sync identity, so read [naming.md](naming.md) before touching either.
 
+The About dialog states the fork relationship in `about.xhtml` as code, not as a
+localized string: every locale's `about.createdBy` claimed CiteWell was "a project of"
+Digital Scholar, which is false and trademark-sensitive. Those strings are now unused by
+the dialog, and the sentence is intentionally not translated.
+
 ## Icons
 
 | Set | Location | Format |
@@ -63,7 +68,9 @@ s.write_to_png("mark-2048.png")
 ```
 
 Then trim to content, pad, and resize to exact square sizes — launcher icons must be
-square (32, 64, 128), and `.ico` frames are built with `icotool`.
+square (32, 64, 128). `icotool` writes uncompressed BMP frames only, which made a
+372 KB `.ico`; the committed icon uses PNG-compressed frames (28 KB), supported by
+Windows Vista and later.
 
 ## Update channel
 
