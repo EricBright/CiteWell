@@ -12,7 +12,9 @@
 
 use std::env;
 use std::io::{Read, Write};
+use std::fs;
 use std::net::TcpStream;
+use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::Duration;
 
@@ -37,19 +39,22 @@ fn usage() -> CliError {
         2,
         format!(
             "citewell — talk to a running CiteWell through its local API\n\n\
-             Usage: citewell [--url URL] [--pretty] COMMAND [ARGS]\n\n\
+             Usage: citewell [--url URL] [--data-dir DIR] [--pretty] COMMAND [ARGS]\n\n\
              Commands:\n  \
              status                              show app, API and library information\n  \
              search QUERY [--limit N]            search the library (default 25 results)\n  \
              item KEY                            fetch one item by key\n  \
              api METHOD PATH [--body JSON] [--key KEY] [--server-id ID]\n        \
              send a raw local-API request\n  \
-             authorize [--app-name NAME]         ask the app for a write key\n\n\
+             authorize [--app-name NAME]         ask the app for a write key\n  \
+             agent METHOD [--params JSON]        call the agent bridge (/agent/v1)\n\n\
              Options:\n  \
-             --url URL    local API origin (default http://127.0.0.1:23119 or $CITEWELL_URL)\n  \
-             --pretty     pretty-print JSON responses\n\n\
+             --url URL        local API origin (default http://127.0.0.1:23119 or $CITEWELL_URL)\n  \
+             --data-dir DIR   library data dir for the agent token (default $CITEWELL_DATA_DIR)\n  \
+             --pretty         pretty-print JSON responses\n\n\
              The local API must be enabled in CiteWell's Advanced preferences. Reads are open to\n\
-             local processes; writes need a key from `citewell authorize`."
+             local processes; writes need a key from `citewell authorize`. The `agent` command\n\
+             reads its token from the data directory; see Preferences → Agent access."
         ),
     )
 }
@@ -67,6 +72,7 @@ fn connection_error(origin: &str, error: &std::io::Error) -> CliError {
 fn run() -> Result<(), CliError> {
     let mut raw: Vec<String> = env::args().skip(1).collect();
     let mut base = env::var("CITEWELL_URL").unwrap_or_else(|_| DEFAULT_URL.to_string());
+    let mut data_dir: Option<PathBuf> = env::var_os("CITEWELL_DATA_DIR").map(PathBuf::from);
     let mut pretty = false;
 
     let mut filtered = Vec::new();
@@ -76,6 +82,10 @@ fn run() -> Result<(), CliError> {
             "--url" => {
                 i += 1;
                 base = raw.get(i).ok_or_else(usage)?.clone();
+            }
+            "--data-dir" => {
+                i += 1;
+                data_dir = Some(PathBuf::from(raw.get(i).ok_or_else(usage)?));
             }
             "--pretty" => pretty = true,
             "-h" | "--help" => {
@@ -97,6 +107,7 @@ fn run() -> Result<(), CliError> {
         "item" => cmd_item(&client, rest, pretty),
         "api" => cmd_api(&client, rest, pretty),
         "authorize" => cmd_authorize(&client, rest, pretty),
+        "agent" => cmd_agent(&client, rest, pretty, data_dir),
         _ => Err(usage()),
     }
 }
@@ -314,6 +325,71 @@ fn cmd_authorize(client: &Client, args: Vec<String>, pretty: bool) -> Result<(),
     }
     let body = serde_json::json!({ "appName": app_name }).to_string();
     let response = client.request("POST", "/api/local/authorize", Some(&body), &[])?;
+    if !response.is_success() {
+        return Err(http_error(&response, false));
+    }
+    print_body(response.body, pretty)
+}
+
+fn cmd_agent(
+    client: &Client,
+    args: Vec<String>,
+    pretty: bool,
+    data_dir: Option<PathBuf>,
+) -> Result<(), CliError> {
+    let method = args.first().cloned().ok_or_else(usage)?;
+    let mut params = "{}".to_string();
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--params" => {
+                i += 1;
+                let value = args.get(i).ok_or_else(usage)?;
+                params = if let Some(path) = value.strip_prefix('@') {
+                    fs::read_to_string(path)
+                        .map_err(|e| (2, format!("citewell: cannot read {path}: {e}")))?
+                }
+                else {
+                    value.clone()
+                };
+            }
+            _ => return Err(usage()),
+        }
+        i += 1;
+    }
+    serde_json::from_str::<serde_json::Value>(&params)
+        .map_err(|e| (2, format!("citewell: --params is not valid JSON: {e}")))?;
+
+    let data_dir = data_dir.ok_or_else(|| {
+        (
+            2,
+            "citewell: set CITEWELL_DATA_DIR or pass --data-dir (the directory passed to -datadir)"
+                .to_string(),
+        )
+    })?;
+    let token_path = data_dir.join("agent-token");
+    let token = fs::read_to_string(&token_path)
+        .map_err(|e| {
+            (
+                2,
+                format!(
+                    "citewell: cannot read the agent token at {}: {e}\nStart CiteWell once with this data directory, then check the token in Preferences → Agent access.",
+                    token_path.display()
+                ),
+            )
+        })?
+        .trim()
+        .to_string();
+    if token.is_empty() {
+        return Err((2, format!("citewell: agent token at {} is empty", token_path.display())));
+    }
+
+    let body = serde_json::json!({ "method": method, "params": serde_json::from_str::<serde_json::Value>(&params).unwrap() }).to_string();
+    let headers = vec![
+        ("Authorization".to_string(), format!("Bearer {token}")),
+        ("X-CiteWell-Agent".to_string(), "1".to_string()),
+    ];
+    let response = client.request("POST", "/agent/v1", Some(&body), &headers)?;
     if !response.is_success() {
         return Err(http_error(&response, false));
     }

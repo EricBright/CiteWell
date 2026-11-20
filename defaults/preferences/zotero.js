@@ -163,6 +163,8 @@ pref("extensions.zotero.httpServer.port", 23119);	// ascii "ZO"
 // CiteWell enables the loopback local API so the `citewell` CLI and local agents can read
 // the library; writes still require a key granted through an in-app dialog (D16).
 pref("extensions.zotero.httpServer.localAPI.enabled", true);
+// Agent bridge (/agent/v1); see docs/agent.md
+pref("extensions.zotero.agent.enabled", true);
 
 // Zeroconf
 pref("extensions.zotero.zeroconf.server.enabled", false);

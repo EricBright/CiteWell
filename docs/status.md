@@ -11,7 +11,7 @@ This page holds only what a fresh session needs to start working without re-deri
 | App | Builds and runs as a Linux AppImage on Firefox **153.7.0esr**; CiteWell naming; sync disabled and hidden |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | Imported at `connectors/`, Firefox XPI builds, branded, identity swapped |
-| Agent access | Loopback local API on by default plus the Rust `citewell` CLI ([cli.md](cli.md)) |
+| Agent access | Local API + authenticated `/agent/v1` bridge (Phase 1), `citewell` CLI, **Agent access** preferences pane, audit log |
 | Docs | README index, Rust docs gate, decisions (D1–D16), roadmap, export design |
 | CI | `docs` and `CodeQL` workflows; rerun after the Firefox port before trusting the badge |
 
@@ -32,9 +32,9 @@ Artifacts are local and gitignored:
 5. **R7 — non-English locales** still contain upstream Zotero translations.
 6. **R21 — checksums and `.zsync`** beside the AppImage, so Gear Lever and AppImageUpdate can
    verify and fetch incrementally. Needs a release host and stable filenames first.
-7. **R23 — agent bridge** (design in [agent.md](agent.md)): `/agent/v1` with translators,
-   attachments, notes and UI verbs, then `citewell mcp`. The read/write CLI is in place (R22);
-   Phase 1 is the next slice.
+7. **R23 Phase 2 — translators and files** in the agent bridge: `translate.save`, `attachFile`,
+   `attachURL`. Phase 1 (items, notes, collections, selection, opening, settings pane) is built;
+   Phase 3 is the MCP adapter.
 
 ## Commands
 
@@ -67,6 +67,7 @@ cargo run --manifest-path tools/docs-check/Cargo.toml
 test/runtests.sh searchTest.js advancedSearchTest.js pluginAPITest.js
 cargo build --manifest-path tools/Cargo.toml -p citewell-cli
 tools/target/debug/citewell status
+tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
 ```
 
 ## Pitfalls learned the hard way
@@ -95,6 +96,9 @@ tools/target/debug/citewell status
   file-based store is recorded as *not doing*; export is the portability answer.
 - The local API listens on `127.0.0.1:23119` by default in CiteWell (D16). The CLI does not
   touch SQLite; reads are local-unauthenticated, writes need an in-app key.
+- The agent bridge (`/agent/v1`, D17) needs a 0600 token from the data directory and the
+  `X-CiteWell-Agent: 1` header, audits every call, and has no destructive verbs. Token and
+  setup instructions are in **Preferences → Agent access**.
 - The connector's identity lives in `connectors/brand.json`; source strings use tokens that
   `xtask` substitutes, and the build fails on hardcoded English product names.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched.

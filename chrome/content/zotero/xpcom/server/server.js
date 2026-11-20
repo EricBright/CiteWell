@@ -65,6 +65,9 @@ Zotero.Server = new function () {
 		
 		// Do any necessary pre-listen initialization first
 		await Zotero.Server.LocalAPI.init();
+		if (Zotero.Server.Agent) {
+			await Zotero.Server.Agent.init();
+		}
 
 		port = port || Zotero.Prefs.get('httpServer.port');
 		try {

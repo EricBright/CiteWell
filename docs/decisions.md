@@ -230,6 +230,31 @@ leaving the API off by default — the owner's stated use is agent access, and t
 keeps reads on the same trust boundary as the database file. Rejected: having the CLI read SQLite
 directly — stale reads and no live state.
 
+## D17 — The agent bridge is token-authenticated, audited and trash-only
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (disable the pref)
+
+The `/agent/v1` bridge exists so an agent can act in the app, not just read the database. Because
+it can select and open items, it has a stricter gate than the local API:
+
+| Control | Value |
+|---|---|
+| Network | `HttpServer` on `127.0.0.1`; the existing Host check rejects non-loopback names |
+| Token | 64 hex chars in `<data-dir>/agent-token`, mode 0600, created at startup |
+| Headers | `Authorization: Bearer <token>` and `X-CiteWell-Agent: 1`; the custom header forces a CORS preflight |
+| Destructive actions | None: item deletes go to the trash, emptying the trash is not exposed |
+| Audit | One JSON line per call in `<data-dir>/agent-actions.log`, without note text or field values |
+| UI | Preferences → Agent access shows the toggle, token, setup snippet and log path |
+
+The token is a better fit than the local API's per-app key dialog: an agent's process cannot click
+"Allow", and the dialog is meant for a person granting one app access. The trade-off is documented
+in the pane: any local process that can read the token file can drive the app.
+
+Rejected: an unauthenticated bridge — a web page or a DNS-rebinding attack could otherwise act on
+the library. Rejected: exposing `eval` to agents — verbs are reviewable; arbitrary JavaScript is
+not. Rejected: reusing the local API key — it gates writes but has no UI verbs, and its one-time
+keys are consumed by design.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

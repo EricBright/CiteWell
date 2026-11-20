@@ -1,0 +1,70 @@
+"use strict";
+
+describe("Agent bridge", function () {
+	before(async function () {
+		await resetDB({
+			thisArg: this,
+			skipBundledFiles: true
+		});
+	});
+
+	it("should answer ping", async function () {
+		let result = await Zotero.Server.Agent.dispatch("ping", {});
+		assert.equal(result.version, 1);
+		assert.equal(result.app, Zotero.appName);
+		assert.include(result.capabilities, "item.create");
+	});
+
+	it("should reject a request without the agent header or token", async function () {
+		let headers = { authorization: "Bearer nope" };
+		let response = await Zotero.Server.Agent.Endpoint.prototype.init({
+			headers,
+			data: { method: "ping" }
+		});
+		assert.equal(response[0], 400);
+	});
+
+	it("should create, find and note an item", async function () {
+		let created = await Zotero.Server.Agent.dispatch("item.create", {
+			itemType: "book",
+			fields: { title: "Agent bridge test", date: "2026" },
+			creators: [{ creatorType: "author", firstName: "Ada", lastName: "Lovelace" }],
+			tags: ["agent-test"]
+		});
+		assert.ok(created.key);
+
+		let found = await Zotero.Server.Agent.dispatch("search", {
+			query: "Agent bridge test",
+			limit: 5
+		});
+		assert.equal(found.total, 1);
+		assert.equal(found.items[0].key, created.key);
+
+		let note = await Zotero.Server.Agent.dispatch("item.addNote", {
+			key: created.key,
+			text: "A note from the test."
+		});
+		let item = await Zotero.Server.Agent.dispatch("item.get", { key: created.key });
+		assert.include(item.item.notes, note.key);
+	});
+
+	it("should register and load the preferences pane", async function () {
+		let pane = Zotero.PreferencePanes.builtInPanes.find(p => p.id == 'zotero-prefpane-agent');
+		assert.ok(pane);
+		assert.equal(pane.rawLabel, "Agent access");
+
+		let win = Zotero.Utilities.Internal.openPreferences('zotero-prefpane-agent');
+		try {
+			let field = null;
+			for (let i = 0; i < 50 && !field; i++) {
+				await Zotero.Promise.delay(100);
+				field = win.document.getElementById('agent-token');
+			}
+			assert.ok(field, "token field was not rendered");
+			assert.equal(field.value, await Zotero.Server.Agent.getToken());
+		}
+		finally {
+			win.close();
+		}
+	});
+});

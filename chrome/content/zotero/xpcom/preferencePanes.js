@@ -73,6 +73,14 @@ Zotero.PreferencePanes = {
 			helpURL: 'https://www.zotero.org/support/preferences/cite',
 		},
 		{
+			id: 'zotero-prefpane-agent',
+			rawLabel: 'Agent access',
+			image: 'chrome://zotero/skin/20/universal/magic-wand.svg',
+			src: 'chrome://zotero/content/preferences/preferences_agent.xhtml',
+			scripts: ['chrome://zotero/content/preferences/preferences_agent.js'],
+			defaultXUL: true,
+		},
+		{
 			id: 'zotero-prefpane-advanced',
 			label: 'zotero.preferences.prefpane.advanced',
 			image: 'chrome://zotero/skin/20/universal/wrench-screwdriver.svg',

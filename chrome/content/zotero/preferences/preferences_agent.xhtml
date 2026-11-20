@@ -1,0 +1,79 @@
+<vbox id="zotero-prefpane-agent"
+	onload="Zotero_Preferences.Agent.init()"
+	onunload="Zotero_Preferences.Agent.uninit()"
+>
+	<vbox class="main-section">
+		<groupbox aria-label="Agent access">
+			<label><html:h2>Agent access</html:h2></label>
+			<description>
+				Allow a local agent — DeepSeek, MiMo, a script, or an MCP client — to work with this
+				library through the <html:code>/agent/v1</html:code> bridge.
+			</description>
+			<checkbox
+				id="agent-enabled"
+				label="Allow local agents to use this library"
+				preference="extensions.zotero.agent.enabled"
+				native="true"
+			/>
+			<description class="agent-muted">
+				The bridge listens on 127.0.0.1 only. Reads and writes both require the token below.
+				Deleting an item moves it to the trash; there is no "empty trash" verb.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Connection">
+			<label><html:h2>Connection</html:h2></label>
+			<hbox align="center" class="agent-token-row">
+				<label value="Token" control="agent-token"/>
+				<textbox id="agent-token" readonly="true" flex="1" class="agent-token"/>
+				<button id="agent-token-copy" label="Copy" oncommand="Zotero_Preferences.Agent.copyToken()"/>
+				<button id="agent-token-rotate" label="Regenerate" oncommand="Zotero_Preferences.Agent.rotateToken()"/>
+			</hbox>
+			<description id="agent-token-path" class="agent-path"/>
+			<description class="agent-muted">
+				Any local process that can read this file can drive the app. Keep it private; regenerate
+				it if it may have been exposed, then update the agent's copy.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Set up an agent">
+			<label><html:h2>Set up an agent</html:h2></label>
+			<description>
+				The CLI is a thin client for this bridge. Install it from a CiteWell source checkout,
+				then point it at this data directory:
+			</description>
+			<textbox id="agent-setup" multiline="true" readonly="true" class="agent-snippet"/>
+			<hbox>
+				<button id="agent-setup-copy" label="Copy setup" oncommand="Zotero_Preferences.Agent.copySetup()"/>
+				<button id="agent-audit-open" label="Open audit log" oncommand="Zotero_Preferences.Agent.openAuditLog()"/>
+			</hbox>
+			<description class="agent-muted">
+				MCP clients will use <html:code>citewell mcp</html:code> once the adapter lands
+				(R23 Phase 3). Until then, the CLI and the HTTP form above expose the same verbs.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="What agents can do">
+			<label><html:h2>What agents can do</html:h2></label>
+			<description>
+				In this build: <html:code>ping</html:code>, <html:code>search</html:code>,
+				<html:code>item.get</html:code>, <html:code>item.create</html:code>,
+				<html:code>item.update</html:code>, <html:code>item.addNote</html:code>,
+				<html:code>collection.list/create/addItems</html:code>, and
+				<html:code>ui.status/select/open/notify</html:code>.
+			</description>
+			<description class="agent-muted">
+				Translators (DOI/ISBN), file attachments and reader annotations arrive in R23 Phase 2.
+				The full verb list and protocol are in <html:code>docs/agent.md</html:code>.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Audit">
+			<label><html:h2>Audit</html:h2></label>
+			<description>
+				Every agent call appends one line to <html:code id="agent-audit-path"/>, recording the
+				method, object keys and outcome — not note text or field values.
+			</description>
+		</groupbox>
+	</vbox>
+</vbox>

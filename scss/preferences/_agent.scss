@@ -1,0 +1,23 @@
+#zotero-prefpane-agent {
+	.agent-token {
+		font-family: monospace;
+		min-width: 22em;
+	}
+
+	.agent-path {
+		font-family: monospace;
+		font-size: 0.9em;
+		opacity: 0.8;
+		word-break: break-all;
+	}
+
+	.agent-muted {
+		opacity: 0.75;
+	}
+
+	.agent-snippet {
+		font-family: monospace;
+		min-height: 13em;
+		width: 100%;
+	}
+}

@@ -11,8 +11,8 @@ can see the result.
 |---|---|---|
 | Data API | **Exists** | Zotero's local API on `127.0.0.1:23119/api/`: items, collections, tags, searches, notes as items; writes need an in-app key |
 | CLI | **Exists** | `citewell status/search/item/api/authorize`; raw HTTP with errors and exit codes ([cli.md](cli.md)) |
-| App bridge | **R23** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: translators, attachments, notes, collections, selection, tabs, reader |
-| MCP adapter | **R23** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |
+| App bridge | **Phase 1 built** | `/agent/v1` on the same loopback server, calling `Zotero.*` directly: item creation, notes, collections, selection, tabs; translators and attachments are Phase 2 |
+| MCP adapter | **R23 Phase 3** | `citewell mcp`: stdio MCP server exposing the bridge as tools, so DeepSeek, MiMo, Claude or a future agent needs no CiteWell-specific code |
 
 The local API is a data CRUD surface. It cannot run a translator, import a file from disk, or
 move the selection. Those live in the app, so the bridge calls the same JavaScript APIs the UI
@@ -36,7 +36,8 @@ agent ──CLI JSON────► citewell ─────HTTP──► /agent
 
 ## Authentication and safety
 
-- A 32-byte token lives in `<data-dir>/agent-token`, mode `0600`, generated on first start.
+- A 64-hex-character token lives in `<data-dir>/agent-token`, mode `0600`, generated on first
+  start. It is shown, copied and regenerated in **Preferences → Agent access**.
   Requests need `Authorization: Bearer <token>` **and** `X-CiteWell-Agent: 1`. The custom header
   forces a CORS preflight, so a web page cannot reach the endpoint even through DNS rebinding;
   the server also checks `Host` is a loopback address.
@@ -45,7 +46,23 @@ agent ──CLI JSON────► citewell ─────HTTP──► /agent
 - v1 has no destructive library verbs: `item.delete` moves to trash, and emptying the trash is not
   exposed. Anything irreversible stays a human action.
 - Every call appends one line to `<data-dir>/agent-actions.log` (timestamp, method, object keys,
-  outcome — not note text or field contents). The log is the audit trail when an agent goes wrong.
+  outcome — not note text or field contents). The log is the audit trail when an agent goes wrong,
+  and **Preferences → Agent access** can reveal it.
+
+## Settings and setup
+
+**Preferences → Agent access** is the whole setup surface:
+
+| Control | What it does |
+|---|---|
+| Allow local agents | Toggles `extensions.zotero.agent.enabled`; off returns 403 to every call |
+| Token | Shows the current token, with Copy and Regenerate; the file is mode 0600 |
+| Setup snippet | Copyable commands for the CLI and a raw `curl` request, with this data directory filled in |
+| Audit | Shows the audit-log path and opens it in the file manager |
+
+The pane also states what this build can and cannot do, so the instructions stay true as phases
+land. The token is created on first start even before the pane is opened, so an agent can connect
+without a trip through the UI.
 
 ## Verb surface
 
@@ -57,9 +74,9 @@ agent ──CLI JSON────► citewell ─────HTTP──► /agent
 | `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
 | `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
 | `item.addNote` | Child note (Markdown or HTML) | `Zotero.Item` note |
-| `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
-| `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
-| `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
+| `item.attachFile` *(Phase 2)* | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
+| `item.attachURL` *(Phase 2)* | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
+| `translate.save` *(Phase 2)* | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
 | `tag.list` / `add` / `remove` | Tag operations | `Zotero.Tags` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
@@ -101,7 +118,7 @@ Reading collection, and show me."
 
 | Phase | Outcome | Exit criterion |
 |---|---|---|
-| 1 | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote` | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
+| 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
 | 2 | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
 | 3 | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
 | 4 | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
