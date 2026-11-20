@@ -207,3 +207,20 @@
 		display: none;
 	}
 }
+
+// KDE's GTK bridge can report only a close button even though the window is drawn with
+// CiteWell's own titlebar, which leaves minimize and maximize invisible. The window controls are
+// ours in that case, so keep all three available; the sizemode rules still choose between
+// maximize and restore.
+@media not (-moz-gtk-csd-minimize-button) {
+	.titlebar-min {
+		display: flex;
+	}
+}
+
+@media not (-moz-gtk-csd-maximize-button) {
+	.titlebar-max,
+	.titlebar-restore {
+		display: flex;
+	}
+}

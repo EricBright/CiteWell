@@ -4,6 +4,7 @@ Comment=Research manager built on Zotero
 Exec=AppRun %U
 Icon=citewell
 Terminal=false
+StartupWMClass=CiteWell
 Type=Application
 Categories=Office;Education;Literature;
 MimeType=text/plain;x-scheme-handler/zotero;application/x-research-info-systems;text/x-research-info-systems;text/ris;application/x-endnote-refer;text/application/x-research-info-systems;application/x-inst-for-Scientific-info;application/mods+xml;application/rdf+xml;application/x-bibtex;text/x-bibtex;application/marc;application/vnd.citationstyles.style+xml
