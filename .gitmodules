@@ -62,6 +62,3 @@
 [submodule "connectors/src/zotero-schema"]
 	path = connectors/src/zotero-schema
 	url = https://github.com/zotero/zotero-schema
-[submodule "connectors/src/zotero-google-docs-integration"]
-	path = connectors/src/zotero-google-docs-integration
-	url = https://github.com/zotero/zotero-google-docs-integration.git

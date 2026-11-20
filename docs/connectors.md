@@ -27,6 +27,8 @@ upstream pull mechanical.
 | `connectors/build.sh` | `APP_DIR` + three path constants | skin icons, locales and `singlefile.js` come from the app root |
 | `connectors/.gitmodules` | `src/zotero` entry removed | no nested app |
 | root `.gitmodules` | four entries for `connectors/src/*` | git only reads submodules from the root |
+| `connectors/src/zotero-google-docs-integration` | submodule removed, source vendored | it needs patching, and a submodule cannot be patched from here |
+| `.../kixAddZoteroMenu.js`, `.../ui.jsx` | `book-section` icon (light/dark) and "CiteWell" label | the toolbar in Google Docs must match the connector |
 | `connectors/images/toolbar` | regenerated at build time | produced by our Rust rasteriser, not committed |
 | `connectors/src/common/cachedTypes.js` | `getImageSrc` returns `book-section` for every item type | one icon for all types, per the design |
 | build output | dark set added: `book-section-dark.svg`, `book-section-dark@2x.svg`, toolbar PNGs | the connector ships no dark item icons |
@@ -76,6 +78,18 @@ readers.
 Multi-item translators (previously `collection.png`) and the connector status button
 (previously the Z) use the same icon. The one remaining non-book shape is the progress meter in
 the save popup, which reports percentage rather than identity.
+
+## Google Docs
+
+The Docs integration is **vendored source**, not a submodule: it had to be patched, and a
+submodule's contents cannot be changed from this repository. The cost is that its updates are
+manual — pull the upstream repo and re-apply the diff — which is acceptable for a project this
+small and this stable.
+
+Its toolbar button uses the same `book-section` icon as everything else, light or dark, and the
+menu entry reads "CiteWell". The previous icon reference
+(`images/zotero-z-16px-offline.png`) did not exist in the build at all, so the button was
+already rendering without an image.
 
 ## Build
 
