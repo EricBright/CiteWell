@@ -99,6 +99,23 @@ git config remote.pushDefault origin
 gh repo set-default EricBright/CiteWell
 ```
 
+### What configuration cannot stop
+
+The remote settings above stop accidental *pushes*. They do not stop everything, and pretending
+otherwise would be worse than saying so:
+
+| Path | Reachable by accident? | Control |
+|---|---|---|
+| `git push upstream` | No — push URL is `DISABLED` | Repository config + docs-check |
+| `gh pr create` / `gh issue create -R zotero/zotero` | Only if `-R` is typed explicitly | `gh` default is the fork |
+| Browser "Contribute" / "New issue" on their repo | Yes, by clicking | Deliberate action only |
+| `zotero/zotero#123` in a commit or issue title | Yes | Never write upstream issue numbers; link to zotero.org instead |
+| `@`-mentioning a Zotero maintainer | Yes | Do not; mentions notify regardless of repository |
+
+The durable control is credential scope, not discipline: a **fine-grained token limited to
+`EricBright/CiteWell`** cannot push, open issues, or comment anywhere else, even if a command is
+mistyped. `gh auth status` shows whether the current token is user-wide OAuth (`gho_…`) or scoped.
+
 ## Cadence
 
 Monthly is enough for the 10.0 line — it receives fixes, not churn. Also merge immediately
