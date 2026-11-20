@@ -99,6 +99,8 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 
 SRCDIR="$CWD/src"
+# CiteWell: the app itself supplies skin and locale assets
+APP_DIR="$(dirname "$CWD")"
 DISTDIR="$CWD/dist"
 LIBDIR="$CWD/lib"
 NODE_MODULES_DIR="$CWD/node_modules"
@@ -106,7 +108,7 @@ LOG="$CWD/build.log"
 
 EXTENSION_TRANSLATE_DIR="$SRCDIR/translate"
 EXTENSION_UTILITIES_DIR="$SRCDIR/utilities"
-EXTENSION_SKIN_DIR="$SRCDIR/zotero/chrome/skin/default/zotero"
+EXTENSION_SKIN_DIR="$APP_DIR/chrome/skin/default/zotero"
 
 ITEM_IMAGES="$EXTENSION_SKIN_DIR/item-type/16/light/*2x.svg"
 COLLECTION_IMAGES="$EXTENSION_SKIN_DIR/collection-tree/16/light/collection.svg \
@@ -196,7 +198,7 @@ function copyResources {
 	# Get English strings from this repo
 	cp "$SRCDIR/messages.json" "$browser_builddir/_locales/en"
 	# And other locales from the Zotero submodule
-	pushd "$SRCDIR/zotero/chrome/locale" > /dev/null
+	pushd "$APP_DIR/chrome/locale" > /dev/null
 	for code in ?? ??-??; do
 		if [ $code = 'en-US' ]; then
 			continue
@@ -249,7 +251,7 @@ function copyResources {
 	  "$LIBDIR/SingleFile/single-file.js" \
 		"$browser_builddir/lib/SingleFile"
 	# Copy SingleFile config object from client code
-	cp "$SRCDIR/zotero/chrome/content/zotero/xpcom/singlefile.js" "$browser_builddir/singlefile-config.js"
+	cp "$APP_DIR/chrome/content/zotero/xpcom/singlefile.js" "$browser_builddir/singlefile-config.js"
 	
 	if [ ! -z $DEBUG ]; then
 		cp "$EXTENSION_TRANSLATE_DIR/testTranslators/"*.mjs "$browser_builddir/tools/testTranslators"

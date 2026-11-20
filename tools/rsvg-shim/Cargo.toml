@@ -1,0 +1,12 @@
+[package]
+name = "rsvg-shim"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "rsvg-convert"
+path = "src/main.rs"
+
+[dependencies]
+resvg = "0.45"

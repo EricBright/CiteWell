@@ -73,6 +73,7 @@ changes belong to the product branch.
 | File | Resolution |
 |---|---|
 | `README.md`, `AGENTS.md`, `NOTICE`, `docs/**`, `roadmap.md` | Ours. They are CiteWell's; upstream has no equivalent. Re-check whether upstream's README gained a fact worth copying |
+| `.gitmodules` | Ours for the connector entries; take upstream's changes to existing entries |
 | `COPYING`, `CLAUDE.md`, `CONTRIBUTING.md` | Theirs, untouched. If upstream changes them, take upstream |
 | `.github/workflows/**` | Decide per change. Upstream CI targets their infrastructure; keep only jobs that make sense here |
 | Code | Resolve toward upstream function + our change, then run the tests. If a conflict is structural, record the reasoning in [decisions.md](decisions.md) |

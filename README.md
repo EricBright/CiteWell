@@ -70,6 +70,7 @@ to answer one question, not to get oriented.
 | `docs/decisions.md` | on-demand | asking why something is the way it is | Decision records and dead ends |
 | `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
+| `docs/connectors.md` | on-demand | changing the browser connector | Import, patch list, XPI build, rebranding gaps |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License

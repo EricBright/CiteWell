@@ -20,6 +20,7 @@ usage: cargo run -p xtask -- <command>
 
 commands:
   appimage    assemble and package the staged Linux build as an AppImage
+  connectors  build the Firefox connector and package it as an XPI
   help        show this message
 ";
 
@@ -27,6 +28,7 @@ fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("appimage") => appimage(),
+        Some("connectors") => connectors(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
             ExitCode::SUCCESS
@@ -36,6 +38,109 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn connectors() -> ExitCode {
+    match connectors_inner() {
+        Ok(path) => {
+            println!("built {}", path.display());
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("xtask: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn connectors_inner() -> Result<PathBuf, String> {
+    let root = repo_root();
+    let dir = root.join("connectors");
+
+    if !dir.join("build.sh").is_file() {
+        return Err("connectors/ is missing; import it with git subtree first".to_string());
+    }
+
+    if !dir.join("node_modules").is_dir() {
+        println!("installing connector dependencies");
+        let status = run(
+            Command::new("npm")
+                .current_dir(&dir)
+                .env("npm_config_cache", root.join(".npm-cache"))
+                .args(["install", "--no-audit", "--no-fund"]),
+            "npm install",
+        )?;
+        if !status {
+            return Err("npm install failed".to_string());
+        }
+    }
+
+    // The connector's build calls rsvg-convert; use our Rust replacement.
+    let status = run(
+        Command::new(env::var("CARGO").unwrap_or_else(|_| "cargo".to_string()))
+            .current_dir(root.join("tools"))
+            .args(["build", "--quiet", "-p", "rsvg-shim"]),
+        "building the rsvg shim",
+    )?;
+    if !status {
+        return Err("building the rsvg shim failed".to_string());
+    }
+
+    let version = env::var("CITEWELL_CONNECTOR_VERSION").unwrap_or_else(|_| "0.1.0".to_string());
+    let path = format!(
+        "{}:{}",
+        root.join("tools/target/debug").display(),
+        env::var("PATH").unwrap_or_default()
+    );
+    let status = run(
+        Command::new("./build.sh")
+            .current_dir(&dir)
+            .env("PATH", path)
+            .args(["-p", "b", "-d", "-v", &version]),
+        "building the connector",
+    )?;
+    if !status {
+        return Err("connector build failed".to_string());
+    }
+
+    let firefox = dir.join("build/firefox");
+    if !firefox.join("manifest.json").is_file() {
+        return Err(format!(
+            "no Firefox build at {} — did build.sh change its output layout?",
+            firefox.display()
+        ));
+    }
+
+    let output = root.join("build/dist/CiteWell-Connector.xpi");
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("creating {}: {e}", parent.display()))?;
+    }
+    if output.exists() {
+        fs::remove_file(&output).map_err(|e| format!("replacing {}: {e}", output.display()))?;
+    }
+
+    let status = run(
+        Command::new("zip")
+            .current_dir(&firefox)
+            .arg("-q")
+            .arg("-r")
+            .arg("-X")
+            .arg(&output)
+            .arg("."),
+        "packaging the XPI",
+    )?;
+    if !status {
+        return Err("zip failed".to_string());
+    }
+
+    Ok(output)
+}
+
+fn run(command: &mut Command, what: &str) -> Result<bool, String> {
+    let status = command
+        .status()
+        .map_err(|e| format!("{what}: {e}"))?;
+    Ok(status.success())
 }
 
 fn repo_root() -> PathBuf {
