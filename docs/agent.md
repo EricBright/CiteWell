@@ -85,7 +85,7 @@ without a trip through the UI.
 | `item.get` | Fields, creators, tags, notes, attachments | `Zotero.Items.get` |
 | `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
 | `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
-| `item.addNote` | Child note (HTML or plain text) | `Zotero.Item` note |
+| `item.addNote` | Child note; Markdown by default (`format: "html"` opt-in) | `Zotero.Item` note |
 | `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
 | `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
 | `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |

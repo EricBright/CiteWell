@@ -269,17 +269,134 @@ Zotero.Server.Agent = {
 		return { key: item.key, item: this._summary(item) };
 	},
 
-	_addNote: async function ({ key, text }) {
+	_addNote: async function ({ key, text, format = 'markdown' }) {
 		if (!text || typeof text != 'string') {
 			throw new AgentError(400, 'text is required');
+		}
+		if (!['markdown', 'html'].includes(format)) {
+			throw new AgentError(400, "format must be 'markdown' or 'html'");
 		}
 		let parent = this._requireItem(key);
 		let note = new Zotero.Item('note');
 		note.libraryID = parent.libraryID;
 		note.parentID = parent.id;
-		note.setNote(text);
+		note.setNote(format == 'html' ? text : this._markdownToHTML(text));
 		await note.saveTx();
-		return { key: note.key, parentKey: parent.key };
+		return { key: note.key, parentKey: parent.key, format };
+	},
+
+	/**
+	 * Convert the small Markdown subset an agent is likely to write into the HTML that
+	 * Zotero's note editor stores. HTML passed with format=html bypasses this.
+	 */
+	_markdownToHTML: function (markdown) {
+		let escape = value => value
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+
+		let inline = value => {
+			let codes = [];
+			value = value.replace(/`([^`]+)`/g, (_, code) => {
+				codes.push(`<code>${escape(code)}</code>`);
+				return `\u0000${codes.length - 1}\u0000`;
+			});
+			value = escape(value);
+			value = value.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+				(_, label, url) => `<a href="${url}">${label}</a>`);
+			value = value.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+			value = value.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+			value = value.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+			value = value.replace(/(^|[^_])_([^_]+)_/g, '$1<em>$2</em>');
+			value = value.replace(/\u0000(\d+)\u0000/g, (_, index) => codes[Number(index)]);
+			return value;
+		};
+
+		let lines = markdown.replace(/\r\n/g, '\n').split('\n');
+		let html = [];
+		let paragraph = [];
+		let list = null;
+		let code = null;
+		let flushParagraph = () => {
+			if (paragraph.length) {
+				html.push(`<p>${paragraph.map(inline).join('<br/>')}</p>`);
+				paragraph = [];
+			}
+		};
+		let flushList = () => {
+			if (list) {
+				let tag = list.ordered ? 'ol' : 'ul';
+				html.push(`<${tag}>` + list.items.map(item => `<li>${inline(item)}</li>`).join('') + `</${tag}>`);
+				list = null;
+			}
+		};
+
+		for (let line of lines) {
+			if (code) {
+				if (line.startsWith('```')) {
+					html.push(`<pre><code>${escape(code.join('\n'))}</code></pre>`);
+					code = null;
+				}
+				else {
+					code.push(line);
+				}
+				continue;
+			}
+			if (line.startsWith('```')) {
+				flushParagraph();
+				flushList();
+				code = [];
+				continue;
+			}
+			if (!line.trim()) {
+				flushParagraph();
+				flushList();
+				continue;
+			}
+			let heading = line.match(/^(#{1,6})\s+(.*)$/);
+			if (heading) {
+				flushParagraph();
+				flushList();
+				let level = heading[1].length;
+				html.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+				continue;
+			}
+			if (/^---+$/.test(line.trim())) {
+				flushParagraph();
+				flushList();
+				html.push('<hr/>');
+				continue;
+			}
+			let bullet = line.match(/^\s*[-*]\s+(.*)$/);
+			let numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+			if (bullet || numbered) {
+				flushParagraph();
+				let ordered = !!numbered;
+				if (list && list.ordered != ordered) {
+					flushList();
+				}
+				if (!list) {
+					list = { ordered, items: [] };
+				}
+				list.items.push((bullet || numbered)[1]);
+				continue;
+			}
+			if (line.startsWith('> ')) {
+				flushParagraph();
+				flushList();
+				html.push(`<blockquote><p>${inline(line.slice(2))}</p></blockquote>`);
+				continue;
+			}
+			flushList();
+			paragraph.push(line);
+		}
+		flushParagraph();
+		flushList();
+		if (code) {
+			html.push(`<pre><code>${escape(code.join('\n'))}</code></pre>`);
+		}
+		return html.join('\n');
 	},
 
 	_attachFile: async function ({ key, path, title, move = false }) {

@@ -124,7 +124,11 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
         ),
         "add_note" => (
             "item.addNote",
-            json!({ "key": required(&arguments, "key")?, "text": required(&arguments, "text")? }),
+            json!({
+                "key": required(&arguments, "key")?,
+                "text": required(&arguments, "text")?,
+                "format": arguments.get("format").cloned().unwrap_or(json!("markdown"))
+            }),
         ),
         "attach_file" => (
             "item.attachFile",
@@ -247,8 +251,12 @@ fn tools() -> Value {
         ),
         tool(
             "add_note",
-            "Add a child note to an item. Text is HTML or plain text.",
-            json!({ "key": { "type": "string" }, "text": { "type": "string" } }),
+            "Add a child note to an item. Text is Markdown by default.",
+            json!({
+                "key": { "type": "string" },
+                "text": { "type": "string" },
+                "format": { "type": "string", "enum": ["markdown", "html"] }
+            }),
             &["key", "text"]
         ),
         tool(

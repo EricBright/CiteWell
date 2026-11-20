@@ -104,7 +104,8 @@ tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
   `xdg-open` with the Mozilla launcher environment cleared, so they open in the default browser.
 - CiteWell has its own profile (`~/.config/citewell/profile`), data dir (`~/CiteWell`) and
   port (23120); it never opens Zotero's profile or library (D19). Import is explicit only.
-- `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
+- Notes are Markdown by default and are converted to HTML only for Zotero storage (D20);
+  `export.note` returns Markdown. `translate.save` handles DOI, ISBN, PMID and page URLs through Zotero's own translators;
   `item.attachFile` / `item.attachURL` create child attachments. Both were verified end to end
   on Firefox 153.
 - `citewell mcp` exposes 19 bridge tools over stdio and was verified with initialize,

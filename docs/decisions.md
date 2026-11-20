@@ -305,6 +305,26 @@ Rejected: auto-detecting and adopting `~/Zotero` on first run — it looks conve
 it collides with Zotero and can route an agent to the wrong library. Rejected: a shared profile
 to reuse plugins — plugins can be installed separately; shared state is the larger risk.
 
+## D20 — Markdown is the default authoring and interchange format
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+
+Everything that crosses a boundary as content is Markdown by default:
+
+| Surface | Rule |
+|---|---|
+| Agent notes | `item.addNote` treats `text` as Markdown and converts it to the HTML Zotero stores; `format: "html"` is an explicit opt-in |
+| Agent export | `export.note` returns Markdown through the Note Markdown translator |
+| Documentation and skills | `SKILL.md`, `docs/**`, README and roadmap stay Markdown |
+| APIs | Prefer a Markdown field/string over HTML or RTF; HTML appears only at Zotero's storage boundary |
+
+Zotero's note editor stores HTML, so conversion is unavoidable at the last step. Keeping Markdown
+as the source format makes notes portable, reviewable and safe for an agent to write, and avoids
+locking content into markup the person did not choose.
+
+Rejected: storing raw Markdown in notes — the editor and sync expect HTML. Rejected: HTML as the
+default for agent input — harder to author, harder to diff, and carries sanitization risk.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

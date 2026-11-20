@@ -113,11 +113,11 @@ describe("Agent bridge", function () {
 
 		let note = await Zotero.Server.Agent.dispatch("item.addNote", {
 			key: created.key,
-			text: "<h1>Heading</h1><p>Hello <strong>world</strong></p>"
+			text: "# Heading\n\nHello **world**"
 		});
 		let exported = await Zotero.Server.Agent.dispatch("export.note", { key: note.key });
-		assert.include(exported.markdown, "Hello");
-		assert.include(exported.markdown, "world");
+		assert.include(exported.markdown, "# Heading");
+		assert.include(exported.markdown, "**world**");
 	});
 
 	it("should expose the skill from the Help menu", async function () {

@@ -60,7 +60,7 @@ The server speaks newline-delimited JSON-RPC on stdio. Use the tools below; do n
 | `save_identifier` | `identifier`, `collections?`, `saveAttachments?` | DOI, ISBN, PMID or page URL → real metadata |
 | `create_item` | `itemType`, `fields`, `creators?`, `tags?`, `collections?` | Manual item when no identifier exists |
 | `update_item` | `key`, `fields?`, `creators?`, `tags?` | Fill or correct fields |
-| `add_note` | `key`, `text` | Child note; text is HTML or plain text |
+| `add_note` | `key`, `text`, `format?` | Child note; text is Markdown by default |
 | `attach_file` | `key`, `path`, `title?` | Import a PDF/file already on disk |
 | `attach_url` | `key`, `url`, `title?` | Linked URL attachment |
 | `list_annotations` | `key` | Annotations on a PDF/EPUB |
@@ -112,6 +112,7 @@ Example: “Add 10.1038/nphys1170, attach ~/Downloads/paper.pdf, and show me.”
 - **Annotation positions** use `{ "pageIndex": 0, "rects": [[x1, y1, x2, y2]] }` in PDF
   coordinates. Only create an annotation when you have a position; do not invent one.
 - **`export_note`** takes a note key and returns Markdown; it does not write a file.
+- **Markdown is the default.** Pass `format: "html"` only when the person gave you HTML.
 
 ## CLI fallback
 
