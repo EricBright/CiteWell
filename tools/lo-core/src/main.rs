@@ -10,6 +10,7 @@
 
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::path::Path;
 use std::thread;
 use std::time::Duration;
 
@@ -20,6 +21,20 @@ fn main() -> std::io::Result<()> {
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(DEFAULT_PORT);
+    let parent_pid = std::env::args()
+        .skip_while(|arg| arg != "--parent-pid")
+        .nth(1)
+        .and_then(|value| value.parse::<u32>().ok());
+    if let Some(parent) = parent_pid {
+        // Exit if the CiteWell process that started us dies, including after a
+        // crash or SIGTERM that never runs the app's shutdown listeners.
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(2));
+            if !Path::new(&format!("/proc/{parent}")).exists() {
+                std::process::exit(0);
+            }
+        });
+    }
     let listener = TcpListener::bind(("127.0.0.1", port))?;
     println!("citewell-lo-core listening on 127.0.0.1:{port}");
     for stream in listener.incoming() {

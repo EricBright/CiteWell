@@ -55,8 +55,8 @@ The Rust side has a std-only health bridge:
 cargo run --manifest-path tools/Cargo.toml -p citewell-lo-core
 ```
 
-It listens on `127.0.0.1:23121` and answers `/health`. It is not yet launched by
-the CiteWell app or packaged into the AppImage.
+It listens on `127.0.0.1:23121` and answers `/health`. The AppImage now packages
+and launches it; a parent-pid watchdog stops it when CiteWell exits.
 
 The inherited Zotero integration is disabled and no longer packaged; see
 [docs/libreoffice.md](../../docs/libreoffice.md).

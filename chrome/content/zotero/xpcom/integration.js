@@ -25,6 +25,7 @@
 */
 
 const DATA_VERSION = 3;
+var { Subprocess } = ChromeUtils.importESModule("resource://gre/modules/Subprocess.sys.mjs");
 
 // Specifies that citations should only be updated if changed
 const FORCE_CITATIONS_FALSE = 0;
@@ -86,6 +87,7 @@ Zotero.Integration = new function () {
 	this.currentWindow = false;
 	this.currentCommandPromise = Promise.resolve();
 	this.sessions = {};
+	this._loBridge = null;
 	var upgradeTemplateNotNowTime = 0;
 
 	/**
@@ -93,6 +95,7 @@ Zotero.Integration = new function () {
 	 */
 	this.init = function () {
 		if (Zotero.test) return;
+		this._startLoBridge().catch(e => Zotero.logError(e));
 		if (!ZOTERO_CONFIG.LIBREOFFICE_INTEGRATION_ENABLED) return;
 		let entryPoints = [PLUGIN_PATHS.LibreOffice];
 		if (Zotero.isMac) {
@@ -112,6 +115,54 @@ Zotero.Integration = new function () {
 		}
 	}
 	
+	/**
+	 * Start the CiteWell-owned loopback bridge for the LibreOffice shim.
+	 *
+	 * The inherited LibreOffice integration is disabled, but the bridge is
+	 * still the stable CiteWell endpoint (D34) and is started independently.
+	 */
+	this._startLoBridge = async function () {
+		if (this._loBridge || Zotero.test) return;
+		var appDir = Services.dirsvc.get("XREExeF", Ci.nsIFile).parent.path;
+		var repoDir = appDir;
+		for (var i = 0; i < 3; i++) {
+			repoDir = PathUtils.parent(repoDir);
+		}
+		var override = Services.env.get("CITEWELL_LO_BIN");
+		var candidates = [
+			override,
+			PathUtils.join(appDir, "citewell-lo-core"),
+			PathUtils.join(repoDir, "tools", "target", "release", "citewell-lo-core"),
+			PathUtils.join(repoDir, "tools", "target", "debug", "citewell-lo-core"),
+		].filter(Boolean);
+		var command = null;
+		for (var candidate of candidates) {
+			if (await IOUtils.exists(candidate)) {
+				command = candidate;
+				break;
+			}
+		}
+		if (!command) {
+			Zotero.debug('citewell-lo-core not found; LibreOffice bridge not started');
+			return;
+		}
+		Zotero.debug('Starting ' + command);
+		var proc = await Subprocess.call({
+			command,
+			arguments: ["--parent-pid", String(Services.appinfo.processID)],
+			stderr: "pipe",
+		});
+		this._loBridge = proc;
+		Zotero.addShutdownListener(() => {
+			try {
+				proc.kill();
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		});
+	}
+
 	/**
 	 * Begin listening for integration commands on the given pipe
 	 * @param {String} pipe The path to the pipe

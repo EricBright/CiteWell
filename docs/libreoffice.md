@@ -138,8 +138,9 @@ is disposed when the Python provider is requested. A control with the Zarnegar
 Python component behaves the same way, so this is a remote-creation limitation.
 An in-process Basic macro now creates the component, queries the dispatch and
 runs the health check successfully against a temporary health server. The Rust
-`citewell-lo-core` crate supplies the same `/health` response on 23121; it is
-not yet launched by the app or packaged in the AppImage.
+`citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
+packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
+when the app exits.
 
 ## Test plan
 

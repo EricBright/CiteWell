@@ -510,6 +510,12 @@ fn appimage_inner() -> Result<PathBuf, String> {
     copy(&importer, &importer_dest)?;
     make_executable(&importer_dest)?;
 
+    // The LibreOffice bridge is a separate Rust sidecar on 127.0.0.1:23121.
+    let lo_core = build_lo_core(&root)?;
+    let lo_core_dest = app_dest.join("citewell-lo-core");
+    copy(&lo_core, &lo_core_dest)?;
+    make_executable(&lo_core_dest)?;
+
     // 2. Desktop entry and icons.
     fs::create_dir_all(appdir.join("usr/share/icons/hicolor/256x256/apps"))
         .map_err(|e| format!("creating icon directory: {e}"))?;
@@ -566,6 +572,26 @@ fn build_importer(root: &Path) -> Result<PathBuf, String> {
     if !binary.is_file() {
         return Err(format!(
             "import helper binary missing at {}",
+            binary.display()
+        ));
+    }
+    Ok(binary)
+}
+
+fn build_lo_core(root: &Path) -> Result<PathBuf, String> {
+    let status = Command::new(env::var("CARGO").unwrap_or_else(|_| "cargo".to_string()))
+        .current_dir(root.join("tools"))
+        .args(["build", "--release", "--quiet", "-p", "citewell-lo-core"])
+        .status()
+        .map_err(|e| format!("building the LibreOffice bridge: {e}"))?;
+    if !status.success() {
+        return Err(format!("cargo build for the LibreOffice bridge failed ({status})"));
+    }
+
+    let binary = root.join("tools/target/release/citewell-lo-core");
+    if !binary.is_file() {
+        return Err(format!(
+            "LibreOffice bridge binary missing at {}",
             binary.display()
         ));
     }
