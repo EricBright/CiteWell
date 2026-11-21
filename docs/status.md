@@ -15,8 +15,8 @@ This page holds only what a fresh session needs to start without re-deriving it.
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log |
 | Agent skill | [SKILL.md](../SKILL.md); Help → Agents and SKILL.md; Agent access pane |
 | Notes | **Agent notes accept Markdown but Zotero still stores HTML**; Markdown-only design approved (D21), not built |
-| Import | R24 Phase 1: Zotero detector, Library pane, Rust `citewell-import`; adopt-copy built, merge not |
-| Docs | README index, Rust docs gate, D1–D24, research note, note design |
+| Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
+| Docs | README index, Rust docs gate, D1–D25, research note, note design |
 | CI | `docs` and `CodeQL`; check the run for the pushed tip |
 
 Artifacts are local and gitignored:
@@ -26,10 +26,11 @@ Artifacts are local and gitignored:
 
 ## Pick up here
 
-1. **R24 — import/merge a Zotero library** ([import.md](import.md), D23). Adopt-copy is built:
-   detector, read-only inspection, Library pane, `citewell-import` stage/verify/apply, and the
-   pre-start hook. Next: try it against a copy of a real library, then start Phase 2 merge.
-   Source read-only throughout; R26 changes the note conversion step there.
+1. **R24 — import/merge a Zotero library** ([import.md](import.md), D23, D25). Adopt-copy,
+   replace and restore points are built: detector, read-only inspection, Library pane,
+   `citewell-import` stage/verify/apply and the pre-start hook. Next: Phase 2 merge, which writes
+   through Zotero's data layer and reports duplicates. Source read-only throughout; R26 changes
+   the note conversion step there.
 2. **R26 — Markdown-only notes** ([notes.md](notes.md), D21). Slice 1 is the conversion boundary
    only: `markdownToHTML` / `htmlToMarkdown` at the note-editor edge, load/save conversion,
    round-trip tests. Parser: bundled `markdown-it` + `prosemirror-markdown` (no new dependency).
@@ -102,6 +103,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
 | Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |
 | Import helper missing in a source build | Build it with `cargo build -p citewell-import`; the AppImage carries its own copy |
+| Tests using the real library | `test/runtests.sh` passes `-datadir "$TEMPDIR/Zotero"` and a temporary `XDG_CONFIG_HOME`; `resetDB()`/`resetData()` refuse `~/CiteWell` |
 | `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
 | Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
 

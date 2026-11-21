@@ -11,6 +11,15 @@
 				<button id="library-open" label="Open folder" oncommand="Zotero_Preferences.Library.openLibrary()"/>
 				<button id="library-move" label="Move…" oncommand="Zotero_Preferences.Library.moveLibrary()"/>
 			</hbox>
+			<checkbox id="library-replace-confirm"
+				label="I understand that replacing removes the current library from the active view"
+				hidden="true"
+				oncommand="Zotero_Preferences.Library.updateButtons()"/>
+			<button id="library-replace"
+				label="Replace with the selected Zotero library…"
+				hidden="true"
+				disabled="true"
+				oncommand="Zotero_Preferences.Library.replaceSelected()"/>
 			<description class="library-muted">
 				CiteWell is independent of Zotero: it has its own library and profile, and it never
 				writes to Zotero's data directory.
@@ -48,6 +57,23 @@
 			<hbox class="library-button-row">
 				<button id="library-import" label="Import…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
 				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
+				<button id="library-cancel-restore" label="Cancel staged restore" oncommand="Zotero_Preferences.Library.cancelRestore()" hidden="true"/>
+			</hbox>
+			<description class="library-muted">
+				Merging into an existing library is the next phase. Today a non-empty library can be
+				replaced, with a restore point kept.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Restore points">
+			<label><html:h2>Restore points</html:h2></label>
+			<description class="library-muted">
+				Backups made by import, replace or restore. Restoring swaps the active library and keeps
+				the current one as a new restore point.
+			</description>
+			<vbox id="library-restore-points"/>
+			<hbox class="library-button-row">
+				<button id="library-restore-open" label="Open backup folder" oncommand="Zotero_Preferences.Library.openBackups()"/>
 			</hbox>
 		</groupbox>
 

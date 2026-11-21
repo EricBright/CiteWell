@@ -36,6 +36,7 @@ var { Subprocess } = ChromeUtils.importESModule("resource://gre/modules/Subproce
  */
 Zotero.LibraryImport = {
 	REQUEST_FILENAME: "library-import-request.json",
+	RESTORE_FILENAME: "library-restore-request.json",
 	RESULT_FILENAME: "library-import-result.json",
 	APPLY_MARKER: ".import-apply-in-progress",
 
@@ -49,6 +50,10 @@ Zotero.LibraryImport = {
 
 	get requestPath() {
 		return PathUtils.join(this.profileDir, this.REQUEST_FILENAME);
+	},
+
+	get restorePath() {
+		return PathUtils.join(this.profileDir, this.RESTORE_FILENAME);
 	},
 
 	get resultPath() {
@@ -396,7 +401,7 @@ Zotero.LibraryImport = {
 
 	_stateAtPath: async function (dbPath) {
 		if (!(await IOUtils.exists(dbPath))) {
-			return { empty: true, schemaVersion: null };
+			return { empty: true, items: 0, collections: 0, savedSearches: 0, schemaVersion: null };
 		}
 		var db = new Zotero.DBConnection(dbPath);
 		try {
@@ -406,6 +411,9 @@ Zotero.LibraryImport = {
 			var schema = await db.valueQueryAsync("SELECT version FROM version WHERE schema='userdata'");
 			return {
 				empty: items === 0 && collections === 0 && savedSearches === 0,
+				items,
+				collections,
+				savedSearches,
 				schemaVersion: schema === null || schema === undefined ? null : Number(schema),
 			};
 		}
@@ -447,9 +455,9 @@ Zotero.LibraryImport = {
 	 * @param {Function} [options.onProgress] receives progress lines
 	 * @return {Promise<Object>} the request
 	 */
-	stage: async function (sourcePath, { counts = null, onProgress = null } = {}) {
+	stage: async function (sourcePath, { counts = null, onProgress = null, replace = false } = {}) {
 		var current = await this.getCurrentLibraryInfo();
-		if (!current.empty) {
+		if (!replace && !current.empty) {
 			throw new Error(
 				"CiteWell's library is not empty. Adopt-copy only works with an empty library."
 			);
@@ -537,12 +545,19 @@ Zotero.LibraryImport = {
 			var request = {
 				version: 1,
 				id,
+				mode: replace ? "replace" : "adopt",
 				source: sourcePath,
 				staging,
 				dataDir: this.dataDir,
 				createdAt: new Date().toISOString(),
 				sourceHash: hashBefore,
 				counts: counts || await this.inspect(sourcePath),
+				previous: {
+					items: current.items,
+					collections: current.collections,
+					savedSearches: current.savedSearches,
+					schemaVersion: current.schemaVersion,
+				},
 				staged,
 			};
 			await this._queue(request);
@@ -571,8 +586,14 @@ Zotero.LibraryImport = {
 
 	/**
 	 * Called from Zotero.init() before the database is opened.
+	 *
+	 * A restore request wins over an import request; the pane never queues both.
 	 */
 	applyPending: async function () {
+		if (await IOUtils.exists(this.restorePath)) {
+			return this._applyRestorePending();
+		}
+
 		var request;
 		try {
 			if (!(await IOUtils.exists(this.requestPath))) return false;
@@ -594,16 +615,17 @@ Zotero.LibraryImport = {
 					`The import was staged for ${request.dataDir}, but CiteWell is using ${this.dataDir}.`
 				);
 			}
-			var expectedRoot = PathUtils.join(this.dataDir, ".import");
-			if (!PathUtils.normalize(request.staging).startsWith(expectedRoot + "/")) {
-				throw new Error("The staged import is outside CiteWell's data directory");
-			}
+			var expectedRoot = PathUtils.normalize(PathUtils.join(this.dataDir, ".import"));
 			if (!(await IOUtils.exists(request.staging))) {
 				throw new Error("The staged import is missing");
 			}
+			if (!PathUtils.normalize(request.staging).startsWith(expectedRoot + "/")) {
+				throw new Error("The staged import is outside CiteWell's data directory");
+			}
 
+			var mode = request.mode === "replace" ? "replace" : "adopt";
 			var state = await this._stateAtPath(PathUtils.join(this.dataDir, "zotero.sqlite"));
-			if (!state.empty) {
+			if (mode !== "replace" && !state.empty) {
 				throw new Error(
 					"CiteWell's library changed after the import was staged. The import was cancelled."
 				);
@@ -626,19 +648,30 @@ Zotero.LibraryImport = {
 				"--backup",
 				backup,
 			]);
+			await this._writeBackupManifest(backup, {
+				version: 1,
+				kind: mode,
+				id: request.id,
+				createdAt: new Date().toISOString(),
+				source: request.source,
+				sourceCounts: request.counts,
+				replacedCounts: state,
+			});
 
 			await IOUtils.remove(this.requestPath, { ignoreAbsent: true });
 			await IOUtils.remove(request.staging, { recursive: true, ignoreAbsent: true });
 			await this._writeResult({
 				ok: true,
+				mode,
 				id: request.id,
 				source: request.source,
 				counts: request.counts,
+				previous: request.previous || state,
 				sourceHash: request.sourceHash,
 				backup,
 				finishedAt: new Date().toISOString(),
 			});
-			Zotero.debug(`Imported Zotero library from ${request.source}`);
+			Zotero.debug(`Imported Zotero library from ${request.source} (${mode})`);
 			return true;
 		}
 		catch (e) {
@@ -654,6 +687,187 @@ Zotero.LibraryImport = {
 			await IOUtils.remove(this.requestPath, { ignoreAbsent: true });
 			return false;
 		}
+	},
+
+	_applyRestorePending: async function () {
+		var request;
+		try {
+			request = JSON.parse(await Zotero.File.getContentsAsync(this.restorePath));
+		}
+		catch (e) {
+			Zotero.logError(e);
+			await this._writeResult({ ok: false, error: `Could not read the restore request: ${e}` });
+			return false;
+		}
+
+		try {
+			if (request.version !== 1) throw new Error("Unsupported restore request version");
+			if (request.dataDir !== this.dataDir) {
+				throw new Error(
+					`The restore was staged for ${request.dataDir}, but CiteWell is using ${this.dataDir}.`
+				);
+			}
+			var backupRoot = PathUtils.normalize(PathUtils.join(this.dataDir, ".import-backup"));
+			if (!(await IOUtils.exists(request.backup))) {
+				throw new Error("The restore point is missing");
+			}
+			if (!PathUtils.normalize(request.backup).startsWith(backupRoot + "/")) {
+				throw new Error("The restore point is outside CiteWell's data directory");
+			}
+			if (!(await IOUtils.exists(PathUtils.join(request.backup, "zotero.sqlite")))) {
+				throw new Error("The restore point has no database");
+			}
+			// Old restore points may have no storage directory; the helper
+			// requires one, and an empty directory is the correct empty state.
+			await Zotero.File.createDirectoryIfMissingAsync(
+				PathUtils.join(request.backup, "storage")
+			);
+
+			var current = await this._stateAtPath(PathUtils.join(this.dataDir, "zotero.sqlite"));
+			var newId = `restore-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+			var newBackup = PathUtils.join(backupRoot, newId);
+			await this._runSidecar([
+				"apply",
+				"--staging",
+				request.backup,
+				"--data-dir",
+				this.dataDir,
+				"--backup",
+				newBackup,
+			]);
+			await this._writeBackupManifest(newBackup, {
+				version: 1,
+				kind: "restore-safety",
+				id: newId,
+				createdAt: new Date().toISOString(),
+				restoredFrom: request.backup,
+				replacedCounts: current,
+			});
+
+			// The selected restore point was consumed; its database and storage
+			// are now the active library. Remove the leftovers so it is not
+			// offered again as a half-empty backup.
+			await IOUtils.remove(request.backup, { recursive: true, ignoreAbsent: true });
+			await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
+			await this._writeResult({
+				ok: true,
+				mode: "restore",
+				restoredFrom: request.backup,
+				backup: newBackup,
+				counts: current,
+				finishedAt: new Date().toISOString(),
+			});
+			Zotero.debug(`Restored library from ${request.backup}`);
+			return true;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			await this._writeResult({
+				ok: false,
+				mode: "restore",
+				restoredFrom: request?.backup || null,
+				error: String(e.message || e),
+				finishedAt: new Date().toISOString(),
+			});
+			await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
+			return false;
+		}
+	},
+
+	_writeBackupManifest: async function (backup, manifest) {
+		try {
+			await Zotero.File.putContentsAsync(
+				PathUtils.join(backup, "backup.json"),
+				JSON.stringify(manifest, null, 2)
+			);
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+	},
+
+	/**
+	 * Restore points created by replace, adopt and restore.
+	 */
+	listBackups: async function () {
+		var root = PathUtils.join(this.dataDir, ".import-backup");
+		var backups = [];
+		if (!(await IOUtils.exists(root))) return backups;
+
+		for (let child of await IOUtils.getChildren(root)) {
+			let stat;
+			try {
+				stat = await IOUtils.stat(child);
+			}
+			catch {
+				continue;
+			}
+			if (stat.type !== "directory") continue;
+			let db = PathUtils.join(child, "zotero.sqlite");
+			if (!(await IOUtils.exists(db))) continue;
+
+			let manifest = null;
+			try {
+				manifest = JSON.parse(
+					await Zotero.File.getContentsAsync(PathUtils.join(child, "backup.json"))
+				);
+			}
+			catch {
+				// A backup written before manifests existed, or one interrupted
+				// before its manifest was written.
+			}
+			backups.push({
+				id: PathUtils.filename(child),
+				path: child,
+				manifest,
+				dbSize: (await IOUtils.stat(db)).size,
+				storageSize: await this._treeSize(PathUtils.join(child, "storage")),
+				createdAt: manifest?.createdAt || stat.lastModified,
+			});
+		}
+
+		backups.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+		return backups;
+	},
+
+	hasPendingRestore: async function () {
+		return IOUtils.exists(this.restorePath);
+	},
+
+	/**
+	 * Queue a restore of one of the backups. The apply hook swaps it in before
+	 * the next database open and keeps the current library as a new restore point.
+	 */
+	queueRestore: async function (backupPath) {
+		if (await IOUtils.exists(this.requestPath)) {
+			throw new Error("An import is staged; restart or cancel it before restoring.");
+		}
+		if (await IOUtils.exists(this.restorePath)) {
+			throw new Error("A restore is already staged.");
+		}
+		var root = PathUtils.normalize(PathUtils.join(this.dataDir, ".import-backup"));
+		if (!(await IOUtils.exists(backupPath))) {
+			throw new Error("That restore point does not exist.");
+		}
+		if (!PathUtils.normalize(backupPath).startsWith(root + "/")) {
+			throw new Error("That is not a CiteWell restore point.");
+		}
+		if (!(await IOUtils.exists(PathUtils.join(backupPath, "zotero.sqlite")))) {
+			throw new Error("That restore point has no database.");
+		}
+		await Zotero.File.putContentsAsync(
+			this.restorePath,
+			JSON.stringify({
+				version: 1,
+				backup: backupPath,
+				dataDir: this.dataDir,
+				createdAt: new Date().toISOString(),
+			}, null, 2)
+		);
+	},
+
+	cancelRestore: async function () {
+		await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
 	},
 
 	getLocations: function () {

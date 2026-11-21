@@ -92,6 +92,31 @@ The safe, fast path for a first import:
 This preserves item keys, collections, notes, annotations and attachment links exactly. It is
 only offered when the CiteWell library is empty, because it replaces rather than merges.
 
+### Replace an existing library
+
+For a non-empty CiteWell library, replace is the explicit destructive option while merge is not
+built:
+
+1. The Library pane shows the current counts and requires a checkbox that names the consequence.
+2. A second confirmation repeats both libraries' counts and the restore-point path.
+3. The mover moves the current database, `storage/` and full-text index into
+   `<data>/.import-backup/<id>/`, then installs the staged library.
+4. The old library remains as a restore point, with a `backup.json` manifest.
+
+Replace is never silently chosen. The source Zotero library is still read-only.
+
+### Restore points
+
+Every replace, adopt and restore writes a restore point. The Library pane lists them with date,
+origin, item/collection counts and size. Restoring:
+
+1. Moves the current library into a new restore point.
+2. Swaps the selected restore point into place at the next start.
+3. Leaves both states recoverable: the previous current state is the new restore point.
+
+Backups are kept until the person removes them. They live under `<data>/.import-backup/` and are
+shown in the Locations list.
+
 ### Merge into the current library
 
 For an existing CiteWell library, the importer copies objects through Zotero's data layer:
@@ -119,9 +144,13 @@ A **Library** section (in Preferences) contains:
   token, each with an Open action, so no path has to be reconstructed from memory.
 - **Import from Zotero** — the detected candidates, best preselected, with counts and confidence
   labels, a Rescan button and a folder picker as the fallback.
+- **Import** — adopt-copy when the library is empty.
+- **Replace** — explicit checkbox and a second confirmation when the library is not empty; a
+  restore point is always kept.
 - **Dry run** — item, collection, note, annotation and attachment counts, size, free space and
   the source fingerprint, before anything is written.
-- **Last import** — counts, source fingerprint, and the restore-point path.
+- **Restore points** — date, origin, counts, size and a Restore action; restoring is reversible.
+- **Last operation** — counts, source fingerprint, and the restore-point path.
 
 The pane states plainly that Zotero is not modified and that CiteWell's library is independent.
 
@@ -130,7 +159,8 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 - Never import while the source is being written: ask the person to quit Zotero, and copy the
   database rather than opening it in place.
 - Never copy Zotero preferences, sync credentials, local API keys or plugins.
-- Back up the CiteWell database before a merge; keep the backup until the report is accepted.
+- Back up the CiteWell database before a replace or merge; keep the backup until the person
+  accepts the result. Replace and restore write a manifest beside it.
 - Do not delete duplicates automatically. Report them and let the person choose.
 - If any batch fails, stop, leave the source untouched, and keep the import resumable.
 
@@ -138,7 +168,7 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 
 | Phase | Outcome |
 |---|---|
-| 1 | Detector, dry run and adopt-copy for an empty library, with checksum verification |
+| 1 | Detector, dry run, adopt-copy, replace, restore points and checksum verification |
 | 2 | Merge regular items, collections and notes |
 | 3 | Attachments, annotations and saved searches |
 | 4 | Duplicate report and resumable merges |

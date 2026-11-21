@@ -426,6 +426,29 @@ migration. XDG data paths are reconsidered only for a packaged Flatpak.
 Rejected: moving the library to XDG data now — migration risk and hidden data for no gain.
 Rejected: splitting the database from `storage/` — they are one unit.
 
+## D25 — Replace is explicit, and restore points are first-class
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** yes
+
+Adopt-copy remains the safe default for an empty library. An existing library gets two
+operations, never one ambiguous button: **merge** is non-destructive and belongs to Phase 2;
+**replace** is destructive, explicitly confirmed, and always leaves a restore point.
+
+Replace requires a checkbox that names the consequence and a second confirmation showing both
+libraries' counts. The old database, `storage/` and full-text index are moved to
+`<data>/.import-backup/<id>/` with a manifest before the staged library is installed. The backup
+is a visible restore point, not a hidden file.
+
+Restore is available from the Library pane: it lists date, origin, counts and size, and is
+itself reversible. Restoring moves the current library into a new restore point before swapping
+the selected one in, so the person can go back again. Backups are never deleted automatically.
+
+A failed apply rolls back; the source Zotero library is never touched. Merge stays a separate
+Phase 2 feature and is not offered as a variant of Import.
+
+Rejected: replacing without a backup. Rejected: one Import button that silently chooses merge or
+replace. Rejected: auto-deleting old restore points.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

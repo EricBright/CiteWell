@@ -303,6 +303,10 @@ pub fn apply(staging: &Path, data_dir: &Path, backup: &Path) -> Result<(), Strin
         for name in REPLACED {
             move_if_exists(&data_dir.join(name), &backup.join(name))?;
         }
+        // A backup is also a valid restore point for `apply`, so it must have
+        // the storage directory even when the replaced library had no files.
+        fs::create_dir_all(backup.join("storage"))
+            .map_err(|e| format!("creating {}: {e}", path_string(&backup.join("storage"))))?;
         fs::rename(
             staging.join("zotero.sqlite"),
             data_dir.join("zotero.sqlite"),
@@ -432,6 +436,21 @@ mod tests {
         assert!(backup.join("storage/OLD/old.pdf").is_file());
         assert!(!data.join(APPLY_MARKER).exists());
 
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn backup_gets_an_empty_storage_directory() {
+        let root = temp("backup-storage");
+        let data = root.join("data");
+        let staging = root.join("staging");
+        let backup = root.join("backup");
+        write_db(&data.join("zotero.sqlite"), "old");
+        write_db(&staging.join("zotero.sqlite"), "new");
+        fs::create_dir_all(staging.join("storage")).unwrap();
+
+        apply(&staging, &data, &backup).unwrap();
+        assert!(backup.join("storage").is_dir());
         fs::remove_dir_all(&root).unwrap();
     }
 

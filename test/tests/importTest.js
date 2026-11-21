@@ -15,6 +15,14 @@ describe("Library import", function () {
 		await resetData();
 	});
 
+	it("should run against an isolated test library", function () {
+		assert.notEqual(
+			Zotero.DataDirectory.dir,
+			OS.Path.join(OS.Constants.Path.homeDir, "CiteWell"),
+			"tests must not use the real CiteWell library"
+		);
+	});
+
 	it("should be loaded in the application", function () {
 		assert.ok(Zotero.LibraryImport);
 		assert.isFunction(Zotero.LibraryImport.detectSources);
@@ -85,7 +93,7 @@ describe("Library import", function () {
 			assert.ok(win.document.getElementById("library-import"));
 			assert.include(
 				win.document.getElementById("library-current-path").textContent,
-				"CiteWell"
+				"Zotero"
 			);
 		}
 		finally {
@@ -103,6 +111,41 @@ describe("Library import", function () {
 		for (let location of locations) {
 			assert.isString(location.path);
 			assert.isAbove(location.path.length, 0);
+		}
+	});
+
+	it("should list and queue a restore point", async function () {
+		let root = OS.Path.join(Zotero.DataDirectory.dir, ".import-backup");
+		let backup = OS.Path.join(root, "test-backup");
+		await Zotero.File.createDirectoryIfMissingAsync(backup);
+		await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+		await IOUtils.copy(
+			Zotero.DataDirectory.getDatabase(),
+			OS.Path.join(backup, "zotero.sqlite")
+		);
+		await Zotero.File.putContentsAsync(
+			OS.Path.join(backup, "backup.json"),
+			JSON.stringify({
+				version: 1,
+				kind: "replace",
+				createdAt: new Date().toISOString(),
+				replacedCounts: { items: 2, collections: 1 },
+			})
+		);
+
+		try {
+			let backups = await Zotero.LibraryImport.listBackups();
+			assert.isTrue(backups.some(item => item.id === "test-backup"));
+
+			await Zotero.LibraryImport.queueRestore(backup);
+			assert.isTrue(await Zotero.LibraryImport.hasPendingRestore());
+
+			await Zotero.LibraryImport.cancelRestore();
+			assert.isFalse(await Zotero.LibraryImport.hasPendingRestore());
+		}
+		finally {
+			await Zotero.LibraryImport.cancelRestore();
+			await IOUtils.remove(backup, { recursive: true, ignoreAbsent: true });
 		}
 	});
 
