@@ -26,6 +26,7 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
+| LibreOffice | Inherited OXT 9.0.2 and socket 23116; installer is native-`unopkg` only. The host has LibreOffice 26.8.3.1 **Flatpak**, so installation currently fails. Plan: [libreoffice.md](libreoffice.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D33 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
@@ -59,7 +60,8 @@ plan.
    quick-copy/Mendeley annotation serialization.
 5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
    sandbox/permissions/integrity/rollback and test both integrations.
-6. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
+6. **LibreOffice integration** ([libreoffice.md](libreoffice.md)). Start with Flatpak-aware install and a 23116 conflict preflight; do not install the LibreOffice SDK or rebuild the OXT without approval.
+7. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
    from this repository. Do not port or vendor them; upstream remains available if ever needed.
 7. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
    note conversion step now targets `.md` attachments.

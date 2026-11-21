@@ -20,6 +20,7 @@ upstream merges are not roadmap items.
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R31 | Translator safeguards without freezing updates (D33) | Capture is the product's main input; updates must keep working while third-party code is contained | Updates still install and roll back; Firefox and Google Docs insertion tested; permissions/sandbox documented |
+| R32 | LibreOffice integration hardening: Flatpak install, port/identity conflict, isolated test profile ([plan](docs/libreoffice.md)) | The inherited OXT assumes native `unopkg` and Zotero's identity/port; the host has LibreOffice Flatpak | OXT installs and removes in an isolated Flatpak profile; citation insertion verified; 23116 conflict is detected; no real LibreOffice profile is touched |
 | R15 | Rust build toolchain: replace babel/browserify/sass with Rust equivalents | Removes the frozen Node build dependency | Bundles built by Rust tools pass the same tests |
 | R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` creates maintenance work, even without upstream parity | Written strategy; first string renamed without touching upstream locale files |
 | R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |

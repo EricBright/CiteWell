@@ -18,7 +18,7 @@ bugs.
 | Build verified | Linux dev build, 2026-11-20 |
 | Platform | Linux x86_64, AppImage only |
 
-What is being worked on, and what is deliberately out of scope: [roadmap.md](roadmap.md).
+Work in progress and scope: [roadmap.md](roadmap.md).
 
 ## Quick start
 
@@ -29,7 +29,7 @@ clone cannot install it.
 ```bash
 git clone --recursive https://github.com/EricBright/CiteWell
 cd CiteWell
-app/scripts/build_and_run      # build, then launch with debug output and the error console
+app/scripts/build_and_run      # build and launch with debug output
 ```
 
 While developing, run `node js-build/watch.js` in a second terminal to rebuild JS and Sass on save, then
@@ -73,6 +73,7 @@ to answer one question, not to get oriented.
 | `docs/export.md` | on-demand | planning or running a vault export | Obsidian/Markdown export design and safety rules |
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
+| `docs/libreoffice.md` | on-demand | planning LibreOffice integration | OXT, port, Flatpak, options |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
