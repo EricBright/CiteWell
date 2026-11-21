@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `f8d2e609…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `f8d2e609…`, 133,564,920 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -26,14 +26,14 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly; missing selection now produces an actionable message. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. It has not been run against the real LibreOffice profile yet. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
+| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly; missing selection now produces an actionable message. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. The current real-profile OXT predates the latest citation/error handling; refresh it only through the add-only install action. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
-| Docs | README index, Rust docs gate, D1–D33 |
+| Docs | README index, Rust docs gate, D1–D35 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `f8d2e60934c6ee0ae07f0c17dd68fc96e42c6d060d31229ed42dada67611be5c`)
+- `dist/CiteWell-x86_64.AppImage` (133,564,920 bytes; sha256 `f8d2e60934c6ee0ae07f0c17dd68fc96e42c6d060d31229ed42dada67611be5c`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -43,28 +43,30 @@ plan.
 
 ## Pick up here
 
-1. **Phase 0 — freeze and retire the old paths.** R26 is reverted, the `note.markdownStorage` pref
-   is gone, `.npmrc` fails closed, `repo-guard` and the pre-commit hook reject package/lock and
-   `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
-   clone with `git config core.hooksPath .githooks`.
+1. **R32 — LibreOffice citation integration (next).** The OXT has CiteWell’s id, the
+   `vnd.citewell.*` protocol handler, a Python UNO provider, and a Rust bridge on 23121. In an
+   isolated Writer profile the menu inserts the selected item’s APA citation, e.g.
+   `(Jillette, 2011)`. The bridge now passes actionable errors through; a missing selection says
+   so. Remaining: style selection, multiple items/locators, editable fields and refresh, and a
+   bibliography. **The installer is add-only (D35); never repair or remove another extension or
+   profile state.** Test against an isolated profile, not the real one.
 2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
-   migration, embedded-image copying, the note-editor bundle removal, excerpts and full-text
-   re-indexing are done. A read-only viewer replaces the editable element; note tabs still work.
-   Next: decide whether the note-window shell is still earning its place and trim the remaining
-   `editorInstance` serialization utilities.
-3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js, previews,
-   read-aloud UI, item-pane/notes-context annotation controls, Add Note from Annotations, the
-   citation-dialog annotation mode and annotation agent verbs are removed. Sidecars export from
-   Library preferences. Item-pane tests are green (73/73); citation dialog is 43/44 with one
-   pre-existing locator-parser failure. Next: trim `editorInstance` utilities used only by
-   quick-copy/Mendeley annotation serialization.
-5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
+   migration, embedded-image copying, note-editor bundle removal, excerpts and full-text
+   re-indexing are done. A read-only viewer replaces the editable element; note tabs work. Next:
+   decide whether the note-window shell earns its place and trim the remaining `editorInstance`
+   serialization utilities.
+3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js,
+   previews, read-aloud UI, annotation controls, Add Note from Annotations, citation-dialog
+   annotation mode and annotation agent verbs are removed. Sidecars export from Library
+   preferences. Item-pane tests are 73/73; the citation dialog is 43/44 with one pre-existing
+   locator-parser failure. Next: trim `editorInstance` utilities used only by quick-copy/Mendeley
+   annotation serialization.
+4. **R31 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
    sandbox/permissions/integrity/rollback and test both integrations.
-6. **LibreOffice integration** ([libreoffice.md](libreoffice.md)). Start with Flatpak-aware install and a 23116 conflict preflight; do not install the LibreOffice SDK or rebuild the OXT without approval.
-7. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
-   from this repository. Do not port or vendor them; upstream remains available if ever needed.
-7. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
-   note conversion step now targets `.md` attachments.
+5. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
+   note conversion step targets `.md` attachments.
+6. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents so the
+   frozen Node build can be retired.
 
 ## Commands
 

@@ -2,7 +2,7 @@
 
 Status: **Option B working; inherited Zotero integration disabled and removed from packaging.
 The CiteWell OXT installs, its menu dispatches, and it inserts the selected item's formatted
-citation in an isolated Writer profile.** Companion to [decisions.md](decisions.md) D34.
+citation in an isolated Writer profile.** Companion to [decisions.md](decisions.md) D34 and D35.
 
 ## Identity and transport
 
@@ -15,7 +15,7 @@ CiteWell owns this integration. The target contract is:
 | CiteWell socket | `127.0.0.1:23121` |
 | Compatibility sentinel | `127.0.0.1:19877` |
 | Update metadata | CiteWell-owned; never a Zotero URL |
-| Installer | Flatpak-aware, with an isolated-profile test path |
+| Installer | Flatpak-aware and add-only (D35); test in an isolated profile |
 
 The inherited values — id `zoteroLibreOfficeIntegration@zotero.org`, name “Zotero
 LibreOffice Integration”, port `23116`, sentinel `19876` — are rejected. Sharing them can
