@@ -67,12 +67,10 @@
 			<popupset>
 				<menupopup class="context-pane-add-child-note-button-popup">
 					<menuitem class="context-pane-add-child-note" label="&zotero.context.addChildNote;"/>
-					<menuitem class="context-pane-add-child-note-from-annotations" label="&zotero.context.addChildNoteFromAnnotations;"/>
 				</menupopup>
 		
 				<menupopup class="context-pane-add-standalone-note-button-popup">
 					<menuitem class="context-pane-add-standalone-note" label="&zotero.context.addStandaloneNote;"/>
-					<menuitem class="context-pane-add-standalone-note-from-annotations" label="&zotero.context.addStandaloneNoteFromAnnotations;"/>
 				</menupopup>
 				
 				<menupopup class="context-pane-list-popup">
@@ -204,7 +202,6 @@
 			});
 			this.notesList.addEventListener('add-child', (event) => {
 				this.querySelector('.context-pane-add-child-note').toggleAttribute('disabled', !this.editable);
-				this.querySelector('.context-pane-add-child-note-from-annotations').toggleAttribute('disabled', !this.editable);
 				Zotero.MenuManager.updateMenuPopup(addChildNotePopup, "notesPane/addItemNote", {
 					event: undefined,
 					getContext: () => {
@@ -228,7 +225,6 @@
 			});
 			this.notesList.addEventListener('add-standalone', (event) => {
 				this.querySelector('.context-pane-add-standalone-note').toggleAttribute('disabled', !this.editable);
-				this.querySelector('.context-pane-add-standalone-note-from-annotations').toggleAttribute('disabled', !this.editable);
 				Zotero.MenuManager.updateMenuPopup(addStandaloneNotePopup, "notesPane/addStandaloneNote", {
 					event: undefined,
 					getContext: () => {
@@ -256,30 +252,6 @@
 		_initNoteEditor() {
 			this.querySelectorAll(".zotero-tb-note-return").forEach(
 				btn => btn.addEventListener("command", this._handleNoteEditorReturn));
-		}
-
-		async _createNoteFromAnnotations(child) {
-			let attachment = this._getCurrentAttachment();
-			if (!attachment) {
-				return;
-			}
-			let annotations = attachment.getAnnotations().filter(x => x.annotationType != 'ink');
-			if (!annotations.length) {
-				return;
-			}
-			let note = await Zotero.EditorInstance.createNoteFromAnnotations(
-				annotations,
-				{
-					parentID: child && attachment.parentID
-				}
-			);
-
-			ZoteroContextPane.updateAddToNote();
-
-			this.input.value = '';
-			this._updateNotesList();
-
-			this._setPinnedNote(note);
 		}
 
 		_createNote(child) {
@@ -541,10 +513,6 @@
 					this._createNote(true);
 					break;
 
-				case 'context-pane-add-child-note-from-annotations':
-					this._createNoteFromAnnotations(true);
-					break;
-
 				default:
 			}
 		};
@@ -556,10 +524,6 @@
 			switch (event.originalTarget.classList[0]) {
 				case 'context-pane-add-standalone-note':
 					this._createNote();
-					break;
-
-				case 'context-pane-add-standalone-note-from-annotations':
-					this._createNoteFromAnnotations();
 					break;
 
 				default:

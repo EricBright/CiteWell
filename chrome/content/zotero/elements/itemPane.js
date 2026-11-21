@@ -40,7 +40,6 @@
 					previousfocus="zotero-items-tree" />
 				
 				<duplicates-merge-pane id="zotero-duplicates-merge-pane" />
-				<annotation-items-pane id="zotero-annotations-pane" />
 				<groupbox id="batch-edit-prompt" pack="center" align="center" data-l10n-id="item-pane-batch-editing-prompt">
 					<description id="batch-edit-prompt-message" />
 					<button id="batch-edit-prompt-enable" data-l10n-id="item-pane-batch-editing-enable" />
@@ -54,7 +53,6 @@
 			this._noteEditor = this.querySelector("#zotero-note-editor");
 			this._duplicatesPane = this.querySelector("#zotero-duplicates-merge-pane");
 			this._messagePane = this.querySelector("#zotero-item-message");
-			this._annotationsPane = this.querySelector("#zotero-annotations-pane");
 			this._batchEditEnableBtn = this.querySelector("#batch-edit-prompt button");
 			this._batchEditPromptMessage = this.querySelector("#batch-edit-prompt-message");
 			this._sidenav = this.querySelector("#zotero-view-item-sidenav");
@@ -113,12 +111,12 @@
 		}
 
 		get mode() {
-			return ["message", "item", "note", "duplicates", "annotations", "batch-edit-prompt"][this._deck.selectedIndex];
+			return ["message", "item", "note", "duplicates", "batch-edit-prompt"][this._deck.selectedIndex];
 		}
 
 		/**
 		 * Set mode of item pane
-		 * @param {"message" | "item" | "note" | "duplicates" | "annotations" | "batch-edit-prompt"} type view type
+		 * @param {"message" | "item" | "note" | "duplicates" | "batch-edit-prompt"} type view type
 		 */
 		set mode(type) {
 			this.setAttribute("view-type", type);
@@ -135,10 +133,6 @@
 		render() {
 			if (!this.data) return false;
 			let renderStatus = false;
-			// Only annotations selected
-			if (this.data.length > 0 && this.data.every(item => item.isAnnotation())) {
-				return renderStatus = this.renderAnnotations(this.data);
-			}
 			
 			// reset the batch editing flag
 			let IDs = this.data.map(item => item.id);
@@ -183,14 +177,6 @@
 					this.updateReadLabel();
 				}
 			}
-		}
-
-		renderAnnotations(annotations) {
-			this.mode = "annotations";
-			let annotationsViewer = document.getElementById("zotero-annotations-pane");
-			annotationsViewer.items = annotations;
-			annotationsViewer.render();
-			return true;
 		}
 
 		renderNoteEditor(item) {
@@ -385,12 +371,6 @@
 				this.updateReadLabel();
 				return;
 			}
-			// Create note from annotations button
-			if (this.data.every(item => item.isAnnotation())) {
-				container.renderCustomHead(this.renderAnnotationsHead.bind(this));
-				return;
-			}
-
 			if (this._isBatchEditEnabled && this.data.length > 1) {
 				container.renderCustomHead(this.renderBatchEditHead.bind(this));
 				return;
@@ -456,22 +436,6 @@
 			append(toggleReadButton, addToButton);
 
 			this.setTranslateButton();
-		}
-
-		renderAnnotationsHead(data) {
-			let { doc, append } = data;
-			let button = doc.createXULElement("button");
-			button.disabled = !this.collectionTreeRows.every(o => o.editable);
-			button.id = 'zotero-item-pane-note-from-annotations';
-			if (Zotero.Items.getTopLevel(this.data).length == 1) {
-				button.label = Zotero.getString('pane.items.menu.addNoteFromAnnotations');
-				button.addEventListener("command", () => ZoteroPane.addNoteFromAnnotationsFromSelected());
-			}
-			else {
-				button.label = Zotero.getString('pane.items.menu.createNoteFromAnnotations');
-				button.addEventListener("command", () => ZoteroPane.createStandaloneNoteFromAnnotationsFromSelected());
-			}
-			append(button);
 		}
 
 		renderBatchEditHead(data) {
@@ -627,12 +591,8 @@
 		getCurrentPane(mode = undefined) {
 			if (!mode) {
 				// Guess a mode from the current data
-				// Only annotation items selected
-				if (this.data.length > 0 && this.data.every(item => item.isAnnotation())) {
-					mode = "annotations";
-				}
 				// No/multiple objects are selected OR selected object is a trashed collection/search
-				else if (!this.data.length || (this.data.length > 1 && !this._isBatchEditEnabled)
+				if (!this.data.length || (this.data.length > 1 && !this._isBatchEditEnabled)
 					|| this.data[0] instanceof Zotero.Collection || this.data[0] instanceof Zotero.Search) {
 					mode = "message";
 				}
@@ -648,7 +608,6 @@
 				item: "_itemDetails",
 				note: "_noteEditor",
 				duplicates: "_duplicatesPane",
-				annotations: "_annotationsPane"
 			};
 			return this[map[mode]];
 		}
@@ -728,12 +687,8 @@
 					this._sidenav.container = this._duplicatesPane;
 					break;
 				}
-				case "annotations": {
-					this._deck.selectedIndex = 4;
-					break;
-				}
 				case "batch-edit-prompt": {
-					this._deck.selectedIndex = 5;
+					this._deck.selectedIndex = 4;
 					break;
 				}
 			}

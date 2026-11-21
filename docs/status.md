@@ -23,7 +23,7 @@ push target. The product branch may diverge without limit.
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text. The ProseMirror `note-editor` submodule and bundle are removed; a read-only legacy viewer remains, along with `editorInstance` annotation helpers to be removed with D30 |
-| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; the item-pane annotation list/button is gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences; the data layer is kept for that export and legacy citation use (D30) |
+| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane and notes-context annotation controls plus Add Note from Annotations are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains for that export; a citation-dialog annotation shell is the remaining legacy UI (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
@@ -51,10 +51,11 @@ plan.
    A read-only viewer replaces the editable element; note tabs still work. Next: add plain-text
    excerpts, remove the remaining `editorInstance` annotation helpers with D30, and decide whether
    the note-window shell is still earning its place.
-3. **D30 — clean up the PDF removal.** Reader, document worker, pdf.js, previews, read-aloud UI,
-   item-pane annotation controls and the annotation agent verbs are removed. Annotation sidecars
-   export from Library preferences. Next: remove the remaining reader-era tests and dead
-   `editorInstance` annotation helpers, and decide whether citation-dialog annotation inserts stay.
+3. **D30 — finish the annotation shell.** Reader, document worker, pdf.js, previews, read-aloud UI,
+   item-pane/notes-context annotation controls, Add Note from Annotations and annotation agent
+   verbs are removed. Sidecars export from Library preferences. Next: remove the citation-dialog
+   annotation shell and the now-unused `editorInstance` annotation utilities, and reconcile the
+   order-dependent item-pane test state.
 5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
    sandbox/permissions/integrity/rollback and test both integrations.
 6. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
@@ -154,8 +155,9 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
   D30. Do not rerun the migration on this library.
 - **PDF behavior is external-only:** no reader or pdf.js ships; PDFs open in the host; PDF text is
-  not indexed; annotation creation/listing is gone. Existing annotations export to sidecars. Old PDF
-  full-text rows may remain until the index is rebuilt; do not add PDF features back.
+  not indexed; annotation creation/listing and annotation-to-note actions are gone. Existing
+  annotations export to sidecars. The citation-dialog annotation shell is legacy; do not add PDF
+  features back.
 - **Plugins are parked:** `PLUGINS_ENABLED` is false and the loader returns early. Keep the code, but do
   not re-enable it without a decision and a tested flag.
 - Translators keep their update channel; safeguards must not freeze updates or break the Firefox /

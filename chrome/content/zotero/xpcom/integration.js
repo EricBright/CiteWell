@@ -1679,18 +1679,6 @@ Zotero.Integration.Session.prototype._insertCitingResult = async function (field
 	await citation.loadItemData();
 	
 	let allItems = citation.citationItems.map(item => Zotero.Cite.getItem(item.id));
-	// Handle adding selected annotations as a mock note
-	if (allItems.some(item => item.isAnnotation())) {
-		if (!allItems.every(item => item.isAnnotation())) {
-			throw new Error("Citing result with annotations must not include other item types");
-		}
-		let includeComments = Zotero.Prefs.get("integration.annotationDialogIncludeComments");
-		// Note is created with embedded data to be inserted but nothing is saved to DB
-		let mockNote = await Zotero.EditorInstance.createNoteFromAnnotations(
-			allItems, { noSave: true, noHeader: true, noComments: !includeComments }
-		);
-		return this._insertNoteIntoDocument(fieldIndex, field, mockNote);
-	}
 	let firstItem = Zotero.Cite.getItem(citation.citationItems[0].id);
 	if (firstItem && firstItem.isNote()) {
 		return this._insertNoteIntoDocument(fieldIndex, field, firstItem);

@@ -4183,7 +4183,6 @@ var ZoteroPane = new function () {
 			'showInLibrary',
 			'sep1',
 			'addNote',
-			'createNoteFromAnnotations',
 			'addAttachments',
 			'sep2',
 			'findFile',
@@ -4336,37 +4335,13 @@ var ZoteroPane = new function () {
 					}
 				}
 				
-				// "Add/Create Note from Annotations" and "Find Available PDFs"
+				// Find Available PDFs
 				if (collectionTreeRows[0].filesEditable
 						&& !collectionTreeRows[0].isDuplicates()
-						&& !collectionTreeRows[0].isFeedsOrFeed()) {
-					if (items.some(item => attachmentsWithExtractableAnnotations(item).length)
-							|| items.some(item => isAttachmentWithExtractableAnnotations(item))
-							|| items.some(item => item.isAnnotation())) {
-						let menuitem = menu.childNodes[m.createNoteFromAnnotations];
-						show.add(m.createNoteFromAnnotations);
-						let key;
-						// If all from a single item, show "Add Note from Annotations"
-						if (Zotero.Items.getTopLevel(items).length == 1) {
-							key = 'addNoteFromAnnotations';
-							menuitem.setAttribute('oncommand', 'ZoteroPane.addNoteFromAnnotationsFromSelected()');
-						}
-						// Otherwise show "Create Note from Annotations"
-						else {
-							key = 'createNoteFromAnnotations';
-							menuitem.setAttribute('oncommand', 'ZoteroPane.createStandaloneNoteFromAnnotationsFromSelected()');
-						}
-						menuitem.setAttribute(
-							'label',
-							Zotero.getString('pane.items.menu.' + key)
-						);
-						show.add(m.sep3);
-					}
-					
-					if (items.some(item => item.isRegularItem())) {
-						show.add(m.findFile);
-						show.add(m.sep3);
-					}
+						&& !collectionTreeRows[0].isFeedsOrFeed()
+						&& items.some(item => item.isRegularItem())) {
+					show.add(m.findFile);
+					show.add(m.sep3);
 				}
 
 				let canCreateParent = true;
@@ -4413,39 +4388,6 @@ var ZoteroPane = new function () {
 					if (!collectionTreeRows.every(o => o.isLibrary(true))) {
 						show.add(m.showInLibrary);
 						show.add(m.sep1);
-					}
-					
-					// Show "Add Note from Annotations" on parent item with any extractable annotations
-					if (item.isRegularItem() && !item.isFeedItem) {
-						show.add(m.addNote);
-						show.add(m.addAttachments);
-						show.add(m.sep2);
-						
-						let attachmentsWithAnnotations = Zotero.Items.get(item.getAttachments())
-							.filter(item => isAttachmentWithExtractableAnnotations(item));
-						if (attachmentsWithAnnotations.length) {
-							show.add(m.createNoteFromAnnotations);
-						}
-					}
-					// Show "(Create|Add) Note from Annotations" on attachment with extractable annotations
-					else if (isAttachmentWithExtractableAnnotations(item) || item.isAnnotation()) {
-						show.add(m.createNoteFromAnnotations);
-						show.add(m.sep2);
-					}
-					if (show.has(m.createNoteFromAnnotations)) {
-						let menuitem = menu.childNodes[m.createNoteFromAnnotations];
-						let str;
-						// Show "Create" on standalone attachments
-						if (item.isAttachment() && item.isTopLevelItem()) {
-							str = 'pane.items.menu.createNoteFromAnnotations';
-							menuitem.setAttribute('oncommand', 'ZoteroPane.createStandaloneNoteFromAnnotationsFromSelected()');
-						}
-						// And "Add" otherwise
-						else {
-							str = 'pane.items.menu.addNoteFromAnnotations';
-							menuitem.setAttribute('oncommand', 'ZoteroPane.addNoteFromAnnotationsFromSelected()');
-						}
-						menuitem.setAttribute('label', Zotero.getString(str));
 					}
 					
 					if (Zotero.Attachments.canFindFileForItem(item)) {
@@ -4659,19 +4601,6 @@ var ZoteroPane = new function () {
 		// Update parent item of notes/attachments
 		if (items.every(item => item.isNote() || item.isAttachment())) {
 			show.add(m.changeParentItem);
-		}
-
-		// Only keep annotation-specific options if annotations are selected
-		let annotationsSelected = items.some(item => item.isAnnotation());
-		if (annotationsSelected) {
-			let menuItemsForAnnotations = [
-				'createNoteFromAnnotations',
-				'deleteFromLibrary'
-			];
-			for (let i in m) {
-				if (menuItemsForAnnotations.includes(i)) continue;
-				show.delete(m[i]);
-			}
 		}
 
 		// Set labels, plural if necessary
@@ -4989,22 +4918,6 @@ var ZoteroPane = new function () {
 			ZoteroPane_Local.viewItems(items, event);
 		}
 	};
-	
-	
-	function attachmentsWithExtractableAnnotations(item) {
-		if (!item.isRegularItem()) return [];
-		return Zotero.Items.get(item.getAttachments())
-			.filter(item => isAttachmentWithExtractableAnnotations(item));
-	}
-	
-	
-	function isAttachmentWithExtractableAnnotations(item) {
-		// For now, consider all PDF attachments eligible, since we want to extract external
-		// annotations in unprocessed files if present
-		// item.isPDFAttachment() && item.getAnnotations().some(x => x.annotationType != 'ink');
-		return item.isPDFAttachment()
-			|| (item.isEPUBAttachment() || item.isSnapshotAttachment()) && item.getAnnotations().length;
-	}
 	
 	
 	this.openPreferences = function (paneID) {
@@ -6394,212 +6307,6 @@ var ZoteroPane = new function () {
 				await item.saveTx();
 			}
 		}
-	};
-	
-	
-	this.addNoteFromAnnotationsForAttachment = async function (attachment, { skipSelect } = {}) {
-		if (!this.canEdit()) {
-			this.displayCannotEditLibraryMessage();
-			return;
-		}
-		if (attachment.isPDFAttachment()) {
-			await Zotero.PDFWorker.import(attachment.id, true);
-		}
-		var annotations = attachment.getAnnotations().filter(x => x.annotationType != 'ink');
-		if (!annotations.length) {
-			return;
-		}
-		var note = await Zotero.EditorInstance.createNoteFromAnnotations(
-			annotations,
-			{
-				parentID: attachment.parentID
-			}
-		);
-		if (!skipSelect) {
-			await this.selectItem(note.id);
-		}
-		return note;
-	};
-	
-	
-	/**
-	 * Add a single child note with the annotations from all selected items, including from all
-	 * child attachments of a selected regular item
-	 *
-	 * Selected items must all have the same top-level item
-	 */
-	this.addNoteFromAnnotationsFromSelected = async function () {
-		if (!this.canEdit()) {
-			this.displayCannotEditLibraryMessage();
-			return;
-		}
-		var items = this.getSelectedItems();
-		var topLevelItems = [...new Set(Zotero.Items.getTopLevel(items))];
-		if (topLevelItems.length > 1) {
-			throw new Error("Can't create child attachment from different top-level items");
-		}
-		var topLevelItem = topLevelItems[0];
-		if (!topLevelItem.isRegularItem()) {
-			throw new Error("Can't add note to standalone attachment");
-		}
-		
-		// Ignore top-level item if specific child items are also selected
-		if (items.length > 1) {
-			items = items.filter(item => !item.isRegularItem());
-		}
-		
-		var attachments = [];
-		var annotations = [];
-		for (let item of items) {
-			if (item.isRegularItem()) {
-				// Find all child items with extractable annotations
-				attachments.push(
-					...Zotero.Items.get(item.getAttachments())
-						.filter(item => isAttachmentWithExtractableAnnotations(item))
-				);
-			}
-			else if (isAttachmentWithExtractableAnnotations(item)) {
-				attachments.push(item);
-			}
-			else if (item.isAnnotation() && item.annotationType != 'ink') {
-				annotations.push(item);
-			}
-			else {
-				continue;
-			}
-		}
-		
-		if (!attachments.length && !annotations.length) {
-			Zotero.debug("No attachments found", 2);
-			return;
-		}
-		
-		for (let attachment of attachments) {
-			if (attachment.isPDFAttachment()) {
-				try {
-					await Zotero.PDFWorker.import(attachment.id, true);
-				}
-				catch (e) {
-					Zotero.logError(e);
-				}
-			}
-			annotations.push(...attachment.getAnnotations().filter(x => x.annotationType != 'ink'));
-		}
-		var note = await Zotero.EditorInstance.createNoteFromAnnotations(
-			annotations,
-			{
-				parentID: topLevelItem.id
-			}
-		);
-		await this.selectItem(note.id);
-	};
-	
-	
-	/**
-	 * Create separate child notes for each selected item, including all child attachments of
-	 * selected regular items
-	 *
-	 * No longer exposed via UI
-	 */
-	this.addNotesFromAnnotationsFromSelected = async function () {
-		if (!this.canEdit()) {
-			this.displayCannotEditLibraryMessage();
-			return;
-		}
-		var items = this.getSelectedItems();
-		var itemIDsToSelect = [];
-		for (let item of items) {
-			let attachments = [];
-			if (item.isRegularItem()) {
-				// Find all child attachments with extractable annotations
-				attachments.push(
-					...Zotero.Items.get(item.getAttachments())
-						.filter(item => isAttachmentWithExtractableAnnotations(item))
-				);
-			}
-			else if (item.isFileAttachment() && !item.isTopLevelItem()) {
-				attachments.push(item);
-			}
-			else if (items.length == 1) {
-				throw new Error("Not a regular item or child file attachment");
-			}
-			else {
-				continue;
-			}
-			for (let attachment of attachments) {
-				let note = await this.addNoteFromAnnotationsForAttachment(
-					attachment,
-					{ skipSelect: true }
-				);
-				if (note) {
-					itemIDsToSelect.push(note.id);
-				}
-			}
-		}
-		await this.selectItems(itemIDsToSelect);
-	};
-	
-	
-	this.createStandaloneNoteFromAnnotationsFromSelected = async function () {
-		if (!this.canEdit()) {
-			this.displayCannotEditLibraryMessage();
-			return;
-		}
-		var items = this.getSelectedItems();
-		
-		// Ignore selected top-level items if any descendant items are also selected
-		var topLevelOfSelectedDescendants = new Set();
-		for (let item of items) {
-			if (!item.isTopLevelItem()) {
-				topLevelOfSelectedDescendants.add(item.topLevelItem);
-			}
-		}
-		items = items.filter(item => !topLevelOfSelectedDescendants.has(item));
-		
-		var annotations = [];
-		for (let item of items) {
-			let attachments = [];
-			if (item.isRegularItem()) {
-				// Find all child attachments with extractable annotations
-				attachments.push(
-					...Zotero.Items.get(item.getAttachments())
-						.filter(item => isAttachmentWithExtractableAnnotations(item))
-				);
-			}
-			else if (isAttachmentWithExtractableAnnotations(item)) {
-				attachments.push(item);
-			}
-			else if (item.isAnnotation()) {
-				annotations.push(item);
-			}
-			else {
-				continue;
-			}
-			for (let attachment of attachments) {
-				if (attachment.isPDFAttachment()) {
-					try {
-						await Zotero.PDFWorker.import(attachment.id, true);
-					}
-					catch (e) {
-						Zotero.logError(e);
-					}
-				}
-				annotations.push(...attachment.getAnnotations().filter(x => x.annotationType != 'ink'));
-			}
-		}
-		
-		if (!annotations.length) {
-			Zotero.debug("No annotations found", 2);
-			return;
-		}
-		
-		var note = await Zotero.EditorInstance.createNoteFromAnnotations(
-			annotations,
-			{
-				collectionID: this.getSelectedCollections(true)[0]
-			}
-		);
-		await this.selectItem(note.id);
 	};
 	
 	
