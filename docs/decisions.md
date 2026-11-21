@@ -630,9 +630,12 @@ to the wrong application.
 
 The implementation target is Rust, not Java. LibreOffice ships an official `rust_uno`
 binding, but it is generated in-tree and needs a LibreOffice SDK/build environment; that
-is a separate dependency decision. A Rust core with a thin Python UNO bridge is the
-no-new-toolchain fallback: the Python layer would only translate Writer document
-operations, while citation state and protocol stay in CiteWell/Rust.
+is a separate dependency decision. The official Rust example still uses a C++ UNO
+component wrapper, so a Rust core with a minimal C++ shim is the closest native path. A
+Rust core with a thin Python UNO bridge is the no-new-toolchain fallback: the Python layer
+would only translate Writer document operations, while citation state and protocol stay in
+CiteWell/Rust. A pure-Rust component would require a hand-written UNO C++ ABI and is not
+the plan.
 
 Rejected: shipping the inherited Java OXT — wrong identity and port. Rejected: compatibility
 mode on 23116 — ambiguous with Zotero. Rejected: pure-Rust native component without the

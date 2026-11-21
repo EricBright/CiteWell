@@ -56,47 +56,48 @@ Rust; the Rust core would sit behind the shim.
 
 ## Rust investigation
 
-Rust is technically viable, with an important build caveat.
+Rust can own the integration logic, but **pure Rust is not currently a supported
+LibreOffice extension model**.
 
 - LibreOffice ships an official **Rust UNO binding**, `rust_uno`, in the 26.x tree.
-  It generates typed wrappers over a C++ UNO bridge and supports native components.
-  The user guide says it is built **in-tree**: enable `--enable-rust-uno`, build
-  `codemaker`, build `rust_uno`, then build LibreOffice. It is not a standalone
-  `cargo add` dependency.
-- The C++ bridge still needs LibreOffice headers/UNO libraries and a C++ compiler.
-  The Flatpak runtime has `libuno_*` and `libpyuno`, but no SDK headers.
-- A native Rust `.so` can be loaded as a `com.sun.star.loader.SharedLibrary`
-  component, but only if its UNO ABI and generated interface wrappers match the
-  installed LibreOffice version.
-- Flatpak LibreOffice has shared network and home access, so a local socket to
-  CiteWell is possible.
+  It generates typed wrappers over a C++ UNO bridge. The guide says it is built
+  **in-tree**: enable `--enable-rust-uno`, build `codemaker`, build `rust_uno`, then
+  build LibreOffice. It is not a standalone `cargo add` dependency.
+- The official **Rust UNO example extension is not pure Rust**. Its component factory
+  and UNO interfaces are C++ (`example.cxx`, `cppu::WeakImplHelper2`), the Rust
+  library is called through a C++ hook, and the OXT still uses
+  `com.sun.star.loader.SharedLibrary`. The Rust binding is excellent for logic and
+  automation; it is not yet a component framework.
+- A native `.so` must match LibreOffice's UNO ABI and the installed version. The Flatpak
+  runtime has `libuno_*`, but no SDK headers or IDL-generated headers.
+- Writing the UNO C++ ABI by hand in Rust would be unsafe, version-specific and far more
+  work than a tiny C++ shim. It is not recommended.
+- Flatpak LibreOffice has shared network and home access, so a local socket to CiteWell
+  is possible. Python UNO also works inside the sandbox
+  (`PYTHONPATH=/app/libreoffice/program python3 -c 'import uno'`).
 
-Consequences:
+The practical choices are therefore:
 
-1. **Pure Rust native extension now** would require a LibreOffice SDK/build
-   environment or a vendored, version-matched generated bridge. That is a new
-   toolchain/dependency decision, not a small refactor.
-2. **Rust core + thin Python UNO shim** is feasible today: the Flatpak includes
-   `uno.py` and `pyuno.so`; `PYTHONPATH=/app/libreoffice/program python3 -c 'import uno'`
-   works inside the sandbox. The Python shim would manipulate the Writer document;
-   the Rust core would own the CiteWell protocol and logic. This removes Java but
-   is not a pure-Rust extension.
-3. **A Rust sidecar driving LibreOffice over a UNO remote connection** avoids an
-   OXT but still needs UNO bindings and sacrifices the normal toolbar/menu
-   integration. It is a fallback, not the first choice.
+| Path | Rust role | Extra boundary | Toolchain |
+|---|---|---|---|
+| A | Core + document protocol | Minimal C++ UNO shim | LibreOffice SDK + g++ |
+| B | Core + document protocol | Python UNO shim | None (Python is in LO) |
+| C | Entire component | Hand-written UNO ABI | None, but unsafe and large |
 
 ## Options
 
-### A — Native Rust UNO component (target)
+### A — Rust core + minimal C++ UNO shim (closest to Rust)
 
-- Vendor or build the `rust_uno` generated bridge for the installed LibreOffice
-  version; implement the CiteWell component in Rust.
-- New OXT id/name, port 23121, sentinel 19877; no Java.
-- Requires owner approval for the LibreOffice build/SDK dependency and a
-  reproducible, version-pinned bridge.
-- Highest long-term fit; highest setup cost and ABI risk.
+- Rust implements the CiteWell protocol, citation state and formatting.
+- A small C++ component wrapper implements only the UNO factory, service info and the
+  Writer dispatch/document calls, then calls into Rust through a C ABI.
+- No Java, no Python. Uses the official `rust_uno` binding where it helps, or plain C
+  ABI functions for the narrow shim boundary.
+- Requires the LibreOffice SDK/UNO headers and g++ (g++ is present; the SDK is not).
+- New OXT id/name, port 23121, sentinel 19877.
+- The C++ shim is the price of admission; it must be reviewed and kept tiny.
 
-### B — Rust core + Python UNO shim (feasible interim)
+### B — Rust core + Python UNO shim (no new toolchain)
 
 - The OXT contains Python UNO code and the Rust core sidecar or local service.
 - Python only translates Writer document operations into the CiteWell protocol;
@@ -107,9 +108,15 @@ Consequences:
 - Best first implementation if the SDK is not approved; it can be replaced by A
   behind the same protocol.
 
-### C — Shared Zotero extension
+### C — Pure Rust component through a hand-written UNO ABI
 
-Rejected by D34. It is convenient, but it breaks identity, can replace Zotero’s
+- Rejected for now: implementing the C++ vtable/UNO factory ABI by hand in Rust is
+  unsafe, version-fragile and a large research project. It does not remove the ABI
+  boundary; it only moves it into Rust.
+
+### D — Shared Zotero extension
+
+Rejected by D34. It is convenient, but it breaks identity, can replace Zotero's
 extension, and can route commands to the wrong library.
 
 ## Test plan
@@ -126,8 +133,9 @@ Use an isolated LibreOffice profile, never the owner’s real one:
 
 ## Decisions needed
 
-1. Approve the LibreOffice SDK/build dependency for option A, or accept option B as
-   the interim path?
+1. Approve the LibreOffice SDK/build dependency for option A (Rust core + tiny C++
+   shim), or accept option B (Python shim) as the interim path? Pure Rust is option C
+   and is not recommended.
 2. Should the inherited OXT be removed from packaging now, so it cannot be
    installed by accident while the replacement is built?
 3. Is a hard refusal when 23121 is already bound acceptable?
