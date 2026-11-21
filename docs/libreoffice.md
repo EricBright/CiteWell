@@ -135,10 +135,11 @@ Verified: the OXT builds and `unopkg` installs it into an isolated Flatpak
 LibreOffice profile under `~/.cache` (test profile removed through Trash). The
 component service could not be activated over the URP test bridge: the bridge
 is disposed when the Python provider is requested. A control with the Zarnegar
-Python component behaves the same way, so this is a remote-creation limitation,
-not proof that the CiteWell component is broken. The installed OXT is listed by
-`unopkg`; the remaining test is in-process through the LibreOffice menu or a
-Basic macro.
+Python component behaves the same way, so this is a remote-creation limitation.
+An in-process Basic macro now creates the component, queries the dispatch and
+runs the health check successfully against a temporary health server. The Rust
+`citewell-lo-core` crate supplies the same `/health` response on 23121; it is
+not yet launched by the app or packaged in the AppImage.
 
 ## Test plan
 

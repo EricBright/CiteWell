@@ -44,8 +44,19 @@ service causes the URP bridge to be disposed. A control test with the Zarnegar
 Python component behaves the same way, so this is a remote-creation limitation,
 not evidence that this OXT is broken.
 
-Menu dispatch still needs an **in-process** test (LibreOffice menu or a Basic
-macro). Do not treat the URP result as a component failure.
+An **in-process Basic macro** has now created the component, queried its
+dispatch and run the health check successfully against a temporary HTTP server
+returning `{"app":"CiteWell","health":"ok"}`. The URP bridge is not a valid
+activation test for Python components here.
+
+The Rust side has a std-only health bridge:
+
+```bash
+cargo run --manifest-path tools/Cargo.toml -p citewell-lo-core
+```
+
+It listens on `127.0.0.1:23121` and answers `/health`. It is not yet launched by
+the CiteWell app or packaged into the AppImage.
 
 The inherited Zotero integration is disabled and no longer packaged; see
 [docs/libreoffice.md](../../docs/libreoffice.md).
