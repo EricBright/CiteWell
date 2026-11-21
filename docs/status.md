@@ -28,7 +28,7 @@ push target. The product branch may diverge without limit.
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D33 |
-| CI | `docs` and `CodeQL`; the inherited `ci.yml` still contains npm jobs and is not the dependency policy |
+| CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
