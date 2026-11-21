@@ -1,174 +1,171 @@
-# Status and resumption
+# LibreOffice integration
 
-Last updated 2026-11-21 · branch `citewell` · companion to
-[roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
-This page holds only what a fresh session needs to start without re-deriving it.
+Status: **Option B working; inherited Zotero integration disabled and removed from packaging.
+The CiteWell OXT installs, its menu dispatches, and it inserts the selected item's formatted
+citation in an isolated Writer profile.** Companion to [decisions.md](decisions.md) D34.
 
-## Direction
+## Identity and transport
 
-CiteWell is a citation catalogue (D28), not a research workspace. There is no PDF viewer, PDF
-annotation UI, PDF full-text search, in-app note editor, or plugin execution in the target product.
-PDFs open in the host; notes are Markdown file attachments edited in the host; plugins are parked.
+CiteWell owns this integration. The target contract is:
 
-Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
-push target. The product branch may diverge without limit.
-
-## Where the project stands
-
-| Area | State |
+| Surface | CiteWell value |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `7dac180b…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
-| Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
-| Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
-| Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
-| Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
-| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; only `editorInstance` serialization utilities remain |
-| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
-| Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
-| Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. It has not been run against the real LibreOffice profile yet. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
-| Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
-| Docs | README index, Rust docs gate, D1–D33 |
-| CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
+| Extension id | `citewell-libreoffice-integration@sophy.ca` |
+| Display name | CiteWell LibreOffice Integration |
+| CiteWell socket | `127.0.0.1:23121` |
+| Compatibility sentinel | `127.0.0.1:19877` |
+| Update metadata | CiteWell-owned; never a Zotero URL |
+| Installer | Flatpak-aware, with an isolated-profile test path |
 
-Artifacts are local and gitignored:
+The inherited values — id `zoteroLibreOfficeIntegration@zotero.org`, name “Zotero
+LibreOffice Integration”, port `23116`, sentinel `19876` — are rejected. Sharing them can
+send commands to Zotero or replace Zotero’s extension.
 
-- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `7dac180b79dcb6b4cd71eee29160c22597984bb7922cc42bdddf00ec389c165b`)
-- `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
+Until a CiteWell extension exists, the inherited OXT is not offered for installation and is no
+longer packaged by the Linux build. LibreOffice integration is disabled until the CiteWell OXT
+ships.
 
-The obsolete R26 editor work was preserved before reverting at
-`~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
-(sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
-plan.
+## What the inherited integration does
 
-## Pick up here
+- The OXT is a LibreOffice Java/UNO component (`Zotero.jar`), not a Basic macro.
+- The CiteWell side starts a loopback socket (`zoteroLibreOfficeIntegration.mjs`) and
+  translates document commands into Zotero’s integration protocol.
+- The installer looks for native `unopkg` paths and an OXT inside the app.
+- The OXT manifest declares `application/vnd.sun.star.uno-component;type=Java`.
 
-1. **Phase 0 — freeze and retire the old paths.** R26 is reverted, the `note.markdownStorage` pref
-   is gone, `.npmrc` fails closed, `repo-guard` and the pre-commit hook reject package/lock and
-   `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
-   clone with `git config core.hooksPath .githooks`.
-2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
-   migration, embedded-image copying, the note-editor bundle removal, excerpts and full-text
-   re-indexing are done. A read-only viewer replaces the editable element; note tabs still work.
-   Next: decide whether the note-window shell is still earning its place and trim the remaining
-   `editorInstance` serialization utilities.
-3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js, previews,
-   read-aloud UI, item-pane/notes-context annotation controls, Add Note from Annotations, the
-   citation-dialog annotation mode and annotation agent verbs are removed. Sidecars export from
-   Library preferences. Item-pane tests are green (73/73); citation dialog is 43/44 with one
-   pre-existing locator-parser failure. Next: trim `editorInstance` utilities used only by
-   quick-copy/Mendeley annotation serialization.
-5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
-   sandbox/permissions/integrity/rollback and test both integrations.
-6. **LibreOffice integration** ([libreoffice.md](libreoffice.md)). Start with Flatpak-aware install and a 23116 conflict preflight; do not install the LibreOffice SDK or rebuild the OXT without approval.
-7. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
-   from this repository. Do not port or vendor them; upstream remains available if ever needed.
-7. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
-   note conversion step now targets `.md` attachments.
+The host has LibreOffice **26.8.3.1 Flatpak**. Its `unopkg` is
+`/app/libreoffice/program/unopkg`, reachable with
+`flatpak run --command=/app/libreoffice/program/unopkg org.libreoffice.LibreOffice`.
+There is no native `unopkg` on `PATH`, no LibreOffice SDK in the Flatpak, and no
+`soffice` binary on the host path. Java is present, but the extension’s Java build is
+not a path this project wants to keep.
 
-## Commands
+## Existing Python UNO prior art
 
-Fetch the Gecko runtime once per version (gitignored):
+`/run/media/eric/RedDragon/AI_related/Cherry_Backups/2nd_claw/zarnegar/libreoffice-extension`
+is a working LibreOffice extension for a different application. It is not CiteWell code and
+must not be copied into this repository, but it proves the relevant mechanics on this host:
 
-```bash
-app/scripts/fetch_xulrunner -p l -a x86_64
-```
+- a self-contained OXT using `com.sun.star.loader.Python`;
+- `components.xml`, `types`/`filters` registration and a tiny `unopkg` build;
+- a Flatpak lab that creates disposable LibreOffice profiles and installs with
+  `/app/libreoffice/program/unopkg add -env:UserInstallation=...`;
+- a free-port UNO accept socket for tests, avoiding a collision with the user's open office;
+- no third-party Python packages and no Java.
 
-Build. Use the existing Node tree; **do not run npm** (D32). Clean rebuild after assets or runtime
-changes, trashing `build/` and `.signatures.json` with `gio trash`, never `rm` (D26):
+That is a viable pattern for a CiteWell **Python UNO shim**. It does not make the extension
+Rust; the Rust core would sit behind the shim.
 
-```bash
-gio trash -f build .signatures.json
-node js-build/build.js
-app/scripts/dir_build -p l
-cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
-```
+## Rust investigation
 
-The note-editor is no longer part of the build: the submodule and bundle are gone, and
-`elements/noteEditor.js` is a read-only legacy viewer. Do not restore the npm build to make a
-build pass.
+Rust can own the integration logic, but **pure Rust is not currently a supported
+LibreOffice extension model**.
 
-Run without touching the real library:
+- LibreOffice ships an official **Rust UNO binding**, `rust_uno`, in the 26.x tree.
+  It generates typed wrappers over a C++ UNO bridge. The guide says it is built
+  **in-tree**: enable `--enable-rust-uno`, build `codemaker`, build `rust_uno`, then
+  build LibreOffice. It is not a standalone `cargo add` dependency.
+- The official **Rust UNO example extension is not pure Rust**. Its component factory
+  and UNO interfaces are C++ (`example.cxx`, `cppu::WeakImplHelper2`), the Rust
+  library is called through a C++ hook, and the OXT still uses
+  `com.sun.star.loader.SharedLibrary`. The Rust binding is excellent for logic and
+  automation; it is not yet a component framework.
+- A native `.so` must match LibreOffice's UNO ABI and the installed version. The Flatpak
+  runtime has `libuno_*`, but no SDK headers or IDL-generated headers.
+- Writing the UNO C++ ABI by hand in Rust would be unsafe, version-specific and far more
+  work than a tiny C++ shim. It is not recommended.
+- Flatpak LibreOffice has shared network and home access, so a local socket to CiteWell
+  is possible. Python UNO also works inside the sandbox
+  (`PYTHONPATH=/app/libreoffice/program python3 -c 'import uno'`).
 
-```bash
-./dist/CiteWell-x86_64.AppImage -datadir "$HOME/CiteWellData"
-```
+The practical choices are therefore:
 
-Docs, Rust tests, agent tests, connector:
+| Path | Rust role | Extra boundary | Toolchain |
+|---|---|---|---|
+| A | Core + document protocol | Minimal C++ UNO shim | LibreOffice SDK + g++ |
+| B | Core + document protocol | Python UNO shim | None (Python is in LO) |
+| C | Entire component | Hand-written UNO ABI | None, but unsafe and large |
 
-```bash
-cargo run --manifest-path tools/docs-check/Cargo.toml
-cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
-cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
-test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js
-cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
-```
+## Options
 
-Agent bridge quick check (app must be running; token appears in the data dir):
+### A — Rust core + minimal C++ UNO shim (closest to Rust)
 
-```bash
-tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
-printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}' \
-  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-  | tools/target/debug/citewell mcp --data-dir "$HOME/CiteWellData"
-```
+- Rust implements the CiteWell protocol, citation state and formatting.
+- A small C++ component wrapper implements only the UNO factory, service info and the
+  Writer dispatch/document calls, then calls into Rust through a C ABI.
+- No Java, no Python. Uses the official `rust_uno` binding where it helps, or plain C
+  ABI functions for the narrow shim boundary.
+- Requires the LibreOffice SDK/UNO headers and g++ (g++ is present; the SDK is not).
+- New OXT id/name, port 23121, sentinel 19877.
+- The C++ shim is the price of admission; it must be reviewed and kept tiny.
 
-## Pitfalls learned the hard way
+### B — Rust core + Python UNO shim (selected)
 
-| Pitfall | Handling |
-|---|---|
-| Trashing `build/` without `.signatures.json` | Sass skips everything and the bundle loses platform CSS. `xtask` refuses to package that now; trash both |
-| Putting working files under `build/` | Zotero zips `build/` into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
-| Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
-| `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
-| `-datadir "~/…"` | Quoted `~` is not expanded; use `"$HOME/…"` |
-| `-datadir` with no value | Gecko ignored it and opened `~/Zotero`; the Rust `AppRun` now exits 2 |
-| XHTML changes not copied by a test build | `node js-build/build.js` then `app/scripts/dir_build -p l` before trusting the staged app |
-| `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |
-| Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
-| Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |
-| Import helper missing in a source build | Build it with `cargo build -p citewell-import`; the AppImage carries its own copy |
-| Tests using the real library | `test/runtests.sh` passes `-datadir "$TEMPDIR/Zotero"` and a temporary `XDG_CONFIG_HOME`; `resetDB()`/`resetData()` refuse `~/CiteWell` |
-| `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
-| Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
-| npm | Retired. Do not install, update, audit or add packages; `repo-guard` rejects package/lock changes and restored npm fallbacks (D32) |
+- The OXT contains Python UNO code and the Rust core sidecar or local service.
+- Python only translates Writer document operations into the CiteWell protocol;
+  citation formatting, state and storage stay in Rust/CiteWell.
+- No Java and no LibreOffice SDK. Uses the Python/UNO runtime already inside the
+  Flatpak, following the working Zarnegar OXT lab pattern.
+- Still a non-Rust shim and a second runtime at the extension boundary.
+- Best first implementation if the SDK is not approved; it can be replaced by A
+  behind the same protocol.
 
-## Facts worth not re-litigating
+### C — Pure Rust component through a hand-written UNO ABI
 
-- Linux uses Firefox **153.7.0esr** (D15); Mac/Windows pins stay at 140.17 because they are not
-  built (D13).
-- `ONLINE_SYNC: false` in [resource/config.mjs](../resource/config.mjs); `ONLINE_LIBRARY: false`
-  in the connector. Code still exists (R19).
-- SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
-  file-based store is *not doing*; export is the portability answer. PDF text leaves the index
-  under D30; Markdown notes and annotation sidecars stay in it.
-- Local API and agent bridge listen on `127.0.0.1:23120` (D16/D17). The CLI never opens SQLite.
-  Reads on `/api/` are local-unauthenticated; `/agent/v1` needs the 0600 token and
-  `X-CiteWell-Agent: 1`, audits every call, and has no destructive verbs.
-- KDE/KWin draws the frame and its buttons (D18); external links and files go through `xdg-open`.
-- CiteWell has its own profile, data directory and port (D19). Zotero's paths are never opened;
-  import is explicit only.
-- **Zotero is canonical.** The current `~/CiteWell` database and storage are disposable test data
-  until CiteWell stabilizes (D27); they are not the authoritative library.
-- **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under
-  `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
-- **The disposable library is migrated:** 82 legacy notes became `.md` attachments, no failures, and
-  the old rows are in Trash. The database backup is `~/CiteWell/zotero.sqlite.pre-markdown-notes.bak`
-  (10,321,920 bytes). The ProseMirror editor bundle is gone; trashed/restored legacy notes open in a
-  read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
-  D30. Do not rerun the migration on this library.
-- **PDF behavior is external-only:** no reader or pdf.js ships; PDFs open in the host; PDF text is
-  not indexed; annotation creation/listing, annotation-to-note actions and the citation-dialog
-  annotation mode are gone. Existing annotations export to sidecars. Do not add PDF features back.
-- **Plugins are parked:** `PLUGINS_ENABLED` is false and the loader returns early. Keep the code, but do
-  not re-enable it without a decision and a tested flag.
-- Translators keep their update channel; safeguards must not freeze updates or break the Firefox /
-  Google Docs paths (D33).
-- `citewell mcp` exposes 17 tools; verified with initialize, tools/list and tools/call.
-- `SKILL.md` is the downloadable agent skill (Help → Agents and SKILL.md, or Agent access).
-- The connector identity lives in `connectors/brand.json`; `xtask` substitutes tokens and fails on
-  hardcoded English product names.
-- The Google Docs integration is vendored, not a submodule, because it had to be patched. Its
-  sync-dependent parts remain gated by D14.
+- Rejected for now: implementing the C++ vtable/UNO factory ABI by hand in Rust is
+  unsafe, version-fragile and a large research project. It does not remove the ABI
+  boundary; it only moves it into Rust.
+
+### D — Shared Zotero extension
+
+Rejected by D34. It is convenient, but it breaks identity, can replace Zotero's
+extension, and can route commands to the wrong library.
+
+## Scaffold status
+
+`extensions/citewell-libreoffice/` now contains the CiteWell-owned OXT source:
+
+- id `citewell-libreoffice-integration@sophy.ca`, version `0.1.0`;
+- `components.xml` with a Python UNO provider and an Addons menu;
+- `ProtocolHandler.xcu` mapping `vnd.citewell.*` to that provider;
+- health and citation dispatch through `http://127.0.0.1:23121`;
+- a small build script and README with attribution to the owner's AGPL Zarnegar
+  extension.
+
+Verified: the OXT builds and `unopkg` installs it into an isolated Flatpak
+LibreOffice profile under `~/.cache` (test profile removed through Trash). The
+component service could not be activated over the URP test bridge: the bridge
+is disposed when the Python provider is requested. A control with the Zarnegar
+Python component behaves the same way, so this is a remote-creation limitation.
+An in-process Basic macro and `DispatchHelper` now exercise the menu protocol, run the
+health check, and insert the formatted citation returned by `/citation` into a Writer
+document. The test used an isolated profile only; the protocol registration is what makes
+the Addons menu work instead of falling back to an OS error. The Rust
+`citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
+packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
+when the app exits. The CiteWell OXT is packaged under
+`integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`; Cite preferences
+now offers a Flatpak-aware install action, which still needs an end-to-end test
+against a disposable LibreOffice profile.
+
+## Test plan
+
+Use an isolated LibreOffice profile, never the owner’s real one:
+
+- `-env:UserInstallation=file:///tmp/citewell-lo-profile` or the Flatpak equivalent.
+- Install with
+  `flatpak run --command=/app/libreoffice/program/unopkg org.libreoffice.LibreOffice add <oxt>`.
+- List, insert a citation, refresh, and remove; verify the real profile is unchanged.
+- Run CiteWell and Zotero together; verify port 23121 is CiteWell-only and the
+  old 23116 path is not used.
+- Remove test profiles and OXT copies through Trash.
+
+## Decisions needed
+
+1. **Selected: option B.** No LibreOffice SDK and no new dependencies; only a restrained Python
+   UNO shim is added. Option A remains deferred and option C is rejected.
+2. Should the inherited OXT be removed from packaging now, so it cannot be
+   installed by accident while the replacement is built?
+3. Is a hard refusal when 23121 is already bound acceptable?
 
 *For the full documentation index, see [../README.md](../README.md).*
