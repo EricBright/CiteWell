@@ -17,13 +17,13 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the PDF reader removal (`10.0.9.SOURCE.e0d2585fc`, sha256 `41770e2f…`, 136,255,992 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the annotation-shell removal (`10.0.9.SOURCE.e0d2585fc`, sha256 `c812f0c2…`, 136,243,704 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text. The ProseMirror `note-editor` submodule and bundle are removed; a read-only legacy viewer remains, along with `editorInstance` annotation helpers to be removed with D30 |
-| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane and notes-context annotation controls plus Add Note from Annotations are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains for that export; the citation-dialog annotation mode button is hidden and its remaining markup/components are the last legacy shell (D30) |
+| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
@@ -51,11 +51,12 @@ plan.
    A read-only viewer replaces the editable element; note tabs still work. Next: add plain-text
    excerpts, remove the remaining `editorInstance` annotation helpers with D30, and decide whether
    the note-window shell is still earning its place.
-3. **D30 — finish the annotation shell.** Reader, document worker, pdf.js, previews, read-aloud UI,
-   item-pane/notes-context annotation controls, Add Note from Annotations and annotation agent
-   verbs are removed. Sidecars export from Library preferences. Next: remove the citation-dialog
-   annotation shell and the now-unused `editorInstance` annotation utilities, and reconcile the
-   order-dependent item-pane test state.
+3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js, previews,
+   read-aloud UI, item-pane/notes-context annotation controls, Add Note from Annotations, the
+   citation-dialog annotation mode and annotation agent verbs are removed. Sidecars export from
+   Library preferences. Item-pane tests are green (73/73); citation dialog is 43/44 with one
+   pre-existing locator-parser failure. Next: trim `editorInstance` utilities used only by
+   quick-copy/Mendeley annotation serialization.
 5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
    sandbox/permissions/integrity/rollback and test both integrations.
 6. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
@@ -155,9 +156,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
   D30. Do not rerun the migration on this library.
 - **PDF behavior is external-only:** no reader or pdf.js ships; PDFs open in the host; PDF text is
-  not indexed; annotation creation/listing and annotation-to-note actions are gone. Existing
-  annotations export to sidecars. The citation-dialog annotation shell is legacy; do not add PDF
-  features back.
+  not indexed; annotation creation/listing, annotation-to-note actions and the citation-dialog
+  annotation mode are gone. Existing annotations export to sidecars. Do not add PDF features back.
 - **Plugins are parked:** `PLUGINS_ENABLED` is false and the loader returns early. Keep the code, but do
   not re-enable it without a decision and a tested flag.
 - Translators keep their update channel; safeguards must not freeze updates or break the Firefox /

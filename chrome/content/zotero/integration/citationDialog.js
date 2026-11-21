@@ -270,15 +270,6 @@ async function setDialogType(type) {
 		_id("settings-button").hidden = true;
 		_id("keepSorted").disabled = true;
 	}
-	else if (DIALOG_STATE.isAddingAnnotations()) {
-		// Only library mode supported when adding annotations.
-		// On the first call, current layout is not loaded.
-		// Dialog mode will be set in setInitialDialogMode
-		if (currentLayout) {
-			await IOManager.toggleDialogMode("library");
-		}
-		_id("includeComments").checked = Zotero.Prefs.get("integration.annotationDialogIncludeComments");
-	}
 
 	// hide the settings button if there are no settings to show
 	let visibleSettings = !!_id("settings-popup").querySelector(".popup div:not([hidden]) input:not([disabled])");
@@ -706,9 +697,6 @@ class LibraryLayout extends Layout {
 			columnPicker: true,
 			onSelectionChange: () => {
 				libraryLayout.updateSelectedItems();
-				if (DIALOG_STATE.isAddingAnnotations()) {
-					this._handleSelectionChangeWithAnnotation();
-				}
 			},
 			regularOnly: DIALOG_STATE.isCitingItems(),
 			multiSelect: DIALOG_STATE.isCitingItems() || DIALOG_STATE.isAddingAnnotations(),
@@ -806,35 +794,7 @@ class LibraryLayout extends Layout {
 		}
 	}
 
-	_initSidepane() {
-		// Click on the + icon of annotion-row will bubbleize the annotation
-		_id("annotations-list").addEventListener("click", (event) => {
-			if (!event.target.classList.contains("zotero-clicky-plus")) return;
-			let annotationRow = event.target.closest("annotation-row");
-			let item = Zotero.Items.get(annotationRow.annotation.id);
-			IOManager.addItemsToCitation(item);
-		});
-		// Space/Enter on annotation row is the same as clicking on the + icon
-		_id("annotations-list").addEventListener("keydown", (event) => {
-			if ([" ", "Enter"].includes(event.key) && event.target.tagName == "annotation-row") {
-				let item = Zotero.Items.get(event.target.annotation.id);
-				IOManager.addItemsToCitation(item);
-				event.preventDefault();
-				event.stopPropagation();
-			}
-		});
-		// Handle the actual filtering in itemPane
-		_id("annotations-sidebar-filter").addEventListener("input", (event) => {
-			_id("annotations-filter-cancel-btn").hidden = !event.target.value;
-			_id("annotations-list").filter = event.target.value;
-			_id("annotations-list").render();
-		});
-		// Handle click on X button to clear the filter
-		_id("annotations-filter-cancel-btn").addEventListener("click", () => {
-			_id("annotations-sidebar-filter").value = "";
-			_id("annotations-sidebar-filter").dispatchEvent(new Event('input', { bubbles: true }));
-		});
-	}
+	_initSidepane() {}
 
 	// Draggable divider to resize collectionTree
 	_initCollectionsTreeDivider() {
@@ -984,37 +944,6 @@ class LibraryLayout extends Layout {
 			items = items.filter(item => item.isAnnotation());
 		}
 		return items;
-	}
-
-	_handleSelectionChangeWithAnnotation() {
-		let selectedItems = this.itemsView.getSelectedItems().filter(item => item.isAnnotation() || item.isFileAttachment() || item.isRegularItem());
-		let selectedAnnotations = selectedItems.flatMap(item => SearchHandler.getAllAnnotations(item));
-		let uniqueAnnotations = [];
-		let annotationIDs = new Set();
-		for (let annotation of selectedAnnotations) {
-			if (annotationIDs.has(annotation.id)) continue;
-			uniqueAnnotations.push(annotation);
-			annotationIDs.add(annotation.id);
-		}
-		// Don't re-render if the list has not changed
-		let rendered = new Set(_id("annotations-list").items.map(item => item.id));
-		if (rendered.isSupersetOf(annotationIDs) && rendered.isSubsetOf(annotationIDs)) return;
-
-		// When no annotations are selected, a message will be shown
-		_id("annotations-list-wrapper").hidden = uniqueAnnotations.length == 0;
-		_id("annotations-sidebar-filter-wrapper").hidden = uniqueAnnotations.length == 0;
-		_id("annotations-message").hidden = uniqueAnnotations.length > 0;
-
-		_id("annotations-list").items = uniqueAnnotations;
-		_id("annotations-list").filter = "";
-		_id("annotations-sidebar-filter").value = "";
-		_id("annotations-list").render();
-
-		// Add the plus icon to every annotation row
-		let annotationRows = [...doc.querySelectorAll("#annotations-list annotation-row")];
-		for (let annotationRow of annotationRows) {
-			annotationRow.setAttribute("action", "plus");
-		}
 	}
 
 	// Highlight/de-highlight selected rows
@@ -1287,7 +1216,6 @@ const IOManager = {
 			this.toggleDialogMode(event.target.closest(".option").getAttribute("value"));
 		});
 
-		_id("includeComments").addEventListener("click", () => this._toggleIncludeComments());
 		_id("display-preview-button").addEventListener("click", () => this._toggleDisplayPreview());
 
 		// open settings popup on btn click
@@ -1956,11 +1884,6 @@ const IOManager = {
 		CitationDataManager.sort().then(() => {
 			this.updateBubbleInput();
 		});
-	},
-
-	_toggleIncludeComments() {
-		let includeComments = _id("includeComments").checked;
-		Zotero.Prefs.set("integration.annotationDialogIncludeComments", includeComments);
 	},
 
 	async _toggleDisplayPreview() {
