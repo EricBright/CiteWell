@@ -133,10 +133,12 @@ extension, and can route commands to the wrong library.
 
 Verified: the OXT builds and `unopkg` installs it into an isolated Flatpak
 LibreOffice profile under `~/.cache` (test profile removed through Trash). The
-component service could not yet be activated over the URP test bridge: the
-bridge is disposed when the Python provider is requested. The installed OXT is
-listed by `unopkg`, so the remaining problem is module activation/interface
-loading, not packaging.
+component service could not be activated over the URP test bridge: the bridge
+is disposed when the Python provider is requested. A control with the Zarnegar
+Python component behaves the same way, so this is a remote-creation limitation,
+not proof that the CiteWell component is broken. The installed OXT is listed by
+`unopkg`; the remaining test is in-process through the LibreOffice menu or a
+Basic macro.
 
 ## Test plan
 

@@ -36,12 +36,16 @@ The build and lab patterns are adapted, with the owner's permission, from the
 owner's **Zarnegar** LibreOffice extension, which is licensed
 AGPL-3.0-or-later. The CiteWell code here is also AGPL-3.0-or-later.
 
-## Current blocker
+## Current test status
 
 On the current LibreOffice 26.8.3.1 Flatpak, the Python UNO loader accepts the
 OXT and lists it as installed. A remote UNO client that asks for the component
-service causes the URP bridge to be disposed, so menu dispatch has not been
-verified yet. This is the next debugging step before citation insertion.
+service causes the URP bridge to be disposed. A control test with the Zarnegar
+Python component behaves the same way, so this is a remote-creation limitation,
+not evidence that this OXT is broken.
+
+Menu dispatch still needs an **in-process** test (LibreOffice menu or a Basic
+macro). Do not treat the URP result as a component failure.
 
 The inherited Zotero integration is disabled and no longer packaged; see
 [docs/libreoffice.md](../../docs/libreoffice.md).

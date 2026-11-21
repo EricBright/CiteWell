@@ -18,16 +18,34 @@ import os
 import traceback
 import urllib.request
 
+_LOG_PATH = os.environ.get("CITEWELL_LO_LOG", "/tmp/citewell_lo.log")
+
+
+def _early(message):
+    try:
+        with open(_LOG_PATH, "a") as handle:
+            stamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+            handle.write("%s pid=%d %s\n" % (stamp, os.getpid(), message))
+    except Exception:
+        pass
+
+
+_early("module import start")
 import uno
 import unohelper
-from com.sun.star.frame import XDispatchProvider, XDispatch
-from com.sun.star.lang import XServiceInfo
+try:
+    from com.sun.star.frame import XDispatchProvider, XDispatch
+    from com.sun.star.lang import XServiceInfo
+except Exception:
+    _early("UNO import failed\n%s" % traceback.format_exc())
+    raise
+_early("module import complete")
 
 IMPL_PROVIDER = "org.citewell.comp.LibreOffice.Provider"
 IMPL_DISPATCH = "org.citewell.comp.LibreOffice.Dispatch"
 SERVICE = "org.citewell.LibreOffice"
 HEALTH_URL = "http://127.0.0.1:23121/health"
-LOG_PATH = os.environ.get("CITEWELL_LO_LOG", "/tmp/citewell_lo.log")
+LOG_PATH = _LOG_PATH
 
 
 def _log(message):
