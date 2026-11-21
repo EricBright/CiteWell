@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; inherited LibreOffice OXT removed; Rust `citewell-lo-core` bridge packaged and launched (`10.0.9.SOURCE.66e9b9ab8`, sha256 `ff2b380a…`, 127,601,144 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched (`10.0.9.SOURCE.66e9b9ab8`, sha256 `c76e5bf1…`, 127,601,144 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -26,14 +26,14 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it and its health check succeeds. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
+| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it and its health check succeeds. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`, but there is no in-app installer yet. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D33 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (127,601,144 bytes; sha256 `ff2b380a1b73e86227203e00fdeb38474f9709cf757c760a8b61b52ae90ea8e8`)
+- `dist/CiteWell-x86_64.AppImage` (127,601,144 bytes; sha256 `c76e5bf19d31b7762842fc3a81512d6817cbe3d89c58054dd62eb0335e7d4a79`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at

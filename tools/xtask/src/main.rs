@@ -516,6 +516,13 @@ fn appimage_inner() -> Result<PathBuf, String> {
     copy(&lo_core, &lo_core_dest)?;
     make_executable(&lo_core_dest)?;
 
+    // The CiteWell-owned OXT is built from extension source, never copied from
+    // Zotero. A Python builder is used because the OXT format is a ZIP plus
+    // Python UNO sources; no Python package dependencies are involved.
+    let lo_oxt = build_lo_extension(&root)?;
+    let lo_oxt_dest = app_dest.join("integration/libreoffice/CiteWell_LibreOffice_Integration.oxt");
+    copy(&lo_oxt, &lo_oxt_dest)?;
+
     // 2. Desktop entry and icons.
     fs::create_dir_all(appdir.join("usr/share/icons/hicolor/256x256/apps"))
         .map_err(|e| format!("creating icon directory: {e}"))?;
@@ -576,6 +583,26 @@ fn build_importer(root: &Path) -> Result<PathBuf, String> {
         ));
     }
     Ok(binary)
+}
+
+fn build_lo_extension(root: &Path) -> Result<PathBuf, String> {
+    let script = root.join("extensions/citewell-libreoffice/tools/build.py");
+    let status = Command::new("python3")
+        .arg(&script)
+        .current_dir(root)
+        .status()
+        .map_err(|e| format!("building the LibreOffice OXT: {e}"))?;
+    if !status.success() {
+        return Err(format!("LibreOffice OXT build failed ({status})"));
+    }
+
+    let oxt = root.join(
+        "extensions/citewell-libreoffice/build/CiteWell_LibreOffice_Integration.oxt",
+    );
+    if !oxt.is_file() {
+        return Err(format!("LibreOffice OXT missing at {}", oxt.display()));
+    }
+    Ok(oxt)
 }
 
 fn build_lo_core(root: &Path) -> Result<PathBuf, String> {

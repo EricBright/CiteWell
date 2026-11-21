@@ -140,7 +140,9 @@ An in-process Basic macro now creates the component, queries the dispatch and
 runs the health check successfully against a temporary health server. The Rust
 `citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
 packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
-when the app exits.
+when the app exits. The CiteWell OXT is packaged under
+`integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`; installation is
+still a manual `unopkg` step.
 
 ## Test plan
 

@@ -28,7 +28,9 @@ flatpak run --command=/app/libreoffice/program/unopkg org.libreoffice.LibreOffic
 ```
 
 The Flatpak's `unopkg` is only reachable through `flatpak run`; a native
-`unopkg` is not installed on this host.
+`unopkg` is not installed on this host. The AppImage also carries the built OXT
+at `usr/lib/citewell/integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`;
+installation is still manual.
 
 ## Attribution
 
