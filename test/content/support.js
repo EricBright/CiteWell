@@ -724,7 +724,18 @@ var removeDir = async function (dir) {
  * @param {Object} [options.prefs] - Prefs to set for the reinitialization, overriding the
  *     test-runner defaults. Cleared by the global afterEach().
  */
+function assertIsolatedTestDataDir() {
+	var realDataDir = OS.Path.join(OS.Constants.Path.homeDir, "CiteWell");
+	if (Zotero.DataDirectory.dir === realDataDir) {
+		throw new Error(
+			"Refusing to reset the real CiteWell library. "
+			+ "Tests must pass -datadir with an isolated directory."
+		);
+	}
+}
+
 async function resetDB(options = {}) {
+	assertIsolatedTestDataDir();
 	resetPrefs();
 	
 	if (options.prefs) {
@@ -769,6 +780,7 @@ async function resetDB(options = {}) {
  * collections, searches, or sync state) but don't need a completely fresh Zotero instance.
  */
 async function resetData() {
+	assertIsolatedTestDataDir();
 	resetPrefs();
 
 	// Erase group and feed libraries (cascades to their items, collections, etc.)

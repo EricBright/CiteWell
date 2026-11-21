@@ -137,8 +137,10 @@ mkdir -p "$PROFILE"
 
 makePath ZOTERO_PATH "$ROOT_DIR/build"
 
-# Create data directory
+# Create data directory. Tests must never use the real ~/CiteWell library.
 mkdir "$TEMPDIR/Zotero"
+export XDG_CONFIG_HOME="$TEMPDIR/config"
+mkdir -p "$XDG_CONFIG_HOME"
 
 touch "$PROFILE/prefs.js"
 cat <<EOF >> "$PROFILE/prefs.js"
@@ -188,6 +190,7 @@ ZOTERO_TEST=1 "$ROOT_DIR/app/scripts/dir_build"
 
 makePath FX_PROFILE "$PROFILE"
 MOZ_NO_REMOTE=1 NO_EM_RESTART=1 "$Z_EXECUTABLE" -profile "$FX_PROFILE" \
+    -datadir "$TEMPDIR/Zotero" \
     -test "$TESTS" -grep "$GREP" -retries "$RETRIES" -ZoteroTest $Z_ARGS
 
 # Check for success

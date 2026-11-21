@@ -30,4 +30,18 @@ CALLDIR="$(dirname "$(readlink -f "$0")")"
 PROFILE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/citewell/profile"
 mkdir -p "$PROFILE_DIR"
 
-"$CALLDIR/zotero-bin" -app "$CALLDIR/app/application.ini" -profile "$PROFILE_DIR" "$@"
+# Respect an explicit -profile. The test runner passes its own isolated
+# profile; without this check the launcher's profile would win and tests would
+# reset the real library.
+args=("$@")
+has_profile=0
+for arg in "${args[@]}"; do
+	case "$arg" in
+		-profile|--profile|-profile=*|--profile=*) has_profile=1 ;;
+	esac
+done
+if [[ $has_profile -eq 0 ]]; then
+	args=(-profile "$PROFILE_DIR" "${args[@]}")
+fi
+
+"$CALLDIR/zotero-bin" -app "$CALLDIR/app/application.ini" "${args[@]}"
