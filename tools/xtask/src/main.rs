@@ -483,12 +483,11 @@ fn appimage_inner() -> Result<PathBuf, String> {
     let listing = String::from_utf8_lossy(&listing.stdout);
     for required in [
         "chrome/content/zotero-platform/unix/zotero.css",
-        "resource/note-editor/editor.html",
     ] {
         if !listing.contains(required) {
             return Err(format!(
                 "staged build is incomplete (missing {required}).\n\
-                 Rebuild from scratch:\n  rm -rf build .signatures.json\n  \
+                 Rebuild from scratch:\n  gio trash -f build .signatures.json\n  \
                  node js-build/build.js\n  app/scripts/dir_build -p l"
             ));
         }

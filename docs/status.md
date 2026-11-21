@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt at `e4e88c165` (AppImage `38ee108a…`, 155,134,456 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the editor removal (`10.0.9.SOURCE.933f1496c`, sha256 `f0dbf08f…`, 154,544,632 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -32,7 +32,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (155,134,456 bytes; sha256 `38ee108ad2c30ac2ba05371b35738bba6d9799c8b0b16b9995f521d415cd7ea5`)
+- `dist/CiteWell-x86_64.AppImage` (154,544,632 bytes; sha256 `f0dbf08fa803615c192c51b843c241261b3d232598c857631be4c094391cc5da`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
