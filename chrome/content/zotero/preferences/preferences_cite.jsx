@@ -87,7 +87,7 @@ Zotero_Preferences.Cite = {
 		for (var candidate of candidates) {
 			if (await IOUtils.exists(candidate)) return candidate;
 		}
-		throw new Error("CiteWell LibreOffice extension not found; rebuild the app or run the extension build.");
+		throw new Error("The extension is missing from this build. Reinstall CiteWell.");
 	},
 
 	_run: async function (command, args) {
@@ -113,8 +113,8 @@ Zotero_Preferences.Cite = {
 	installLibreOffice: async function () {
 		var status = document.getElementById("citewell-lo-status");
 		var button = document.getElementById("citewell-lo-install");
-		var message = "Install the CiteWell LibreOffice extension into your LibreOffice "
-			+ "user profile? Restart LibreOffice afterward. No Zotero extension is used.";
+		var message = "Install the CiteWell extension for LibreOffice? "
+			+ "Restart LibreOffice afterward.";
 		if (!Services.prompt.confirm(null, "Install CiteWell extension", message)) return;
 
 		button.disabled = true;
@@ -139,7 +139,7 @@ Zotero_Preferences.Cite = {
 			if (flatpak) {
 				var info = await this._run(flatpak, ["info", "org.libreoffice.LibreOffice"]);
 				if (info.exitCode === 0) {
-					status.textContent = "Installing through Flatpak LibreOffice…";
+					status.textContent = "Installing…";
 					result = await this._run(flatpak, [
 						"run", "--command=/app/libreoffice/program/unopkg",
 						"org.libreoffice.LibreOffice", "add", "-f", visible
@@ -160,20 +160,20 @@ Zotero_Preferences.Cite = {
 					}
 				}
 				if (!unopkg) {
-					throw new Error("LibreOffice unopkg was not found. Install LibreOffice or its Flatpak.");
+					throw new Error("LibreOffice was not found. Install LibreOffice, then try again.");
 				}
-				status.textContent = "Installing through LibreOffice…";
+				status.textContent = "Installing…";
 				result = await this._run(unopkg, ["add", "-f", visible]);
 			}
 			if (result.exitCode !== 0) {
-				throw new Error(result.stderr.trim() || result.stdout.trim() || `unopkg exited ${result.exitCode}`);
+				throw new Error("LibreOffice could not install the extension.");
 			}
-			status.textContent = "Installed. Restart LibreOffice to load the CiteWell menu.";
+			status.textContent = "Installed. Restart LibreOffice.";
 			button.disabled = false;
 		}
 		catch (e) {
 			Zotero.logError(e);
-			status.textContent = `Installation failed: ${e.message || e}`;
+			status.textContent = `Could not install the extension. ${e.message || ""}`;
 			button.disabled = false;
 		}
 	},
