@@ -1,4 +1,5 @@
-describe("Plugin API", function () {
+// The plugin loader is parked by D31; keep the suite for a future re-enable.
+(ZOTERO_CONFIG.PLUGINS_ENABLED ? describe : describe.skip)("Plugin API", function () {
 	var win, doc, ZoteroPane, Zotero_Tabs, ZoteroContextPane, _itemsView, infoSection, caches;
 
 	function resetCaches() {

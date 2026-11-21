@@ -5,6 +5,8 @@ export var ZOTERO_CONFIG = {
 	// Personal builds keep Zotero's online sync. A distributed build must set this
 	// to false once the enforcement in roadmap R18 exists.
 	ONLINE_SYNC: false,
+	// Plugin loading is parked until a deliberate decision re-enables it (D31).
+	PLUGINS_ENABLED: false,
 	DOMAIN_NAME: 'zotero.org',
 	PRODUCER: 'Digital Scholar',
 	PRODUCER_URL: 'https://www.zotero.org',

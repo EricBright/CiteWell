@@ -65,6 +65,10 @@ Zotero.Plugins = new function () {
 	
 	
 	this.init = async function () {
+		if (!ZOTERO_CONFIG.PLUGINS_ENABLED) {
+			Zotero.debug('Plugin loading is disabled by build configuration (D31)');
+			return;
+		}
 		this._addonObserver.init();
 		
 		// In Fx102, getActiveAddons(["extension"]) doesn't always return fully loaded addon objects
@@ -480,6 +484,9 @@ Zotero.Plugins = new function () {
 
 
 	this.getAllPluginIDs = async function () {
+		if (!ZOTERO_CONFIG.PLUGINS_ENABLED) {
+			return [];
+		}
 		let addons = await AddonManager.getAddonsByTypes(["extension"]);
 		return addons.map(addon => addon.id);
 	}
