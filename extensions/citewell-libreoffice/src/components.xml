@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<components xmlns="http://openoffice.org/2010/uno-components">
+  <component loader="com.sun.star.loader.Python" uri="pythonpath/citewell_lo.py">
+    <implementation name="org.citewell.comp.LibreOffice.Provider">
+      <service name="org.citewell.LibreOffice"/>
+    </implementation>
+  </component>
+</components>

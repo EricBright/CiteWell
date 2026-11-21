@@ -1,6 +1,7 @@
 # LibreOffice integration
 
-Status: **Option B selected; inherited Zotero integration disabled and removed from packaging.**
+Status: **Option B scaffold built; inherited Zotero integration disabled and removed from
+packaging. OXT installs, but Python UNO component activation is still being debugged.**
 Companion to [decisions.md](decisions.md) D34.
 
 ## Identity and transport
@@ -119,6 +120,23 @@ The practical choices are therefore:
 
 Rejected by D34. It is convenient, but it breaks identity, can replace Zotero's
 extension, and can route commands to the wrong library.
+
+## Scaffold status
+
+`extensions/citewell-libreoffice/` now contains the CiteWell-owned OXT source:
+
+- id `citewell-libreoffice-integration@sophy.ca`, version `0.1.0`;
+- `components.xml` with a Python UNO provider and an Addons menu entry;
+- a health check to `http://127.0.0.1:23121/health`;
+- a small build script and README with attribution to the owner's AGPL Zarnegar
+  extension.
+
+Verified: the OXT builds and `unopkg` installs it into an isolated Flatpak
+LibreOffice profile under `~/.cache` (test profile removed through Trash). The
+component service could not yet be activated over the URP test bridge: the
+bridge is disposed when the Python provider is requested. The installed OXT is
+listed by `unopkg`, so the remaining problem is module activation/interface
+loading, not packaging.
 
 ## Test plan
 

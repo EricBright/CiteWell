@@ -1,0 +1,4 @@
+CiteWell integration for LibreOffice Writer.
+
+This is the CiteWell-owned scaffold. It talks only to CiteWell on
+127.0.0.1:23121 and never to Zotero or its extension.

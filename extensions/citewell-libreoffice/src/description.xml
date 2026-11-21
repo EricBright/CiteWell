@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://openoffice.org/extensions/description/2006"
+             xmlns:xlink="http://www.w3.org/1999/xlink">
+  <identifier value="citewell-libreoffice-integration@sophy.ca"/>
+  <version value="0.1.0"/>
+  <display-name>
+    <name lang="en">CiteWell LibreOffice Integration</name>
+  </display-name>
+  <publisher>
+    <name xlink:href="https://github.com/EricBright/CiteWell" lang="en">CiteWell</name>
+  </publisher>
+  <extension-description>
+    <src lang="en" xlink:href="description.txt"/>
+  </extension-description>
+</description>
