@@ -43,6 +43,7 @@ Zotero_Preferences.Library = {
 
 		await this._refreshCurrent();
 		this._renderLocations();
+		await this._refreshNoteMigration();
 		await this.rescan();
 		await this._showLastResult();
 		await this._renderRestorePoints();
@@ -51,6 +52,84 @@ Zotero_Preferences.Library = {
 
 	uninit: function () {
 		this._initialized = false;
+	},
+
+	_refreshNoteMigration: async function () {
+		let count = 0;
+		try {
+			count = await Zotero.Notes.countLegacyNotes();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._el("library-notes-status").textContent
+				= `Could not count legacy notes: ${e.message || e}`;
+			this._el("library-notes-migrate").disabled = true;
+			return;
+		}
+		this._el("library-notes-migrate").disabled = !count;
+		if (count) {
+			this._el("library-notes-status").textContent
+				= `${count} legacy note${count === 1 ? "" : "s"} still stored in the database.`;
+		}
+		else {
+			this._el("library-notes-status").textContent
+				= "No legacy database notes remain.";
+		}
+	},
+
+	migrateNotes: async function () {
+		let count = 0;
+		try {
+			count = await Zotero.Notes.countLegacyNotes();
+		}
+		catch (e) {
+			this._setStatus(`Could not count legacy notes: ${e.message || e}`, true);
+			return;
+		}
+		if (!count) return;
+
+		let message = `${count} note${count === 1 ? "" : "s"} will be converted to Markdown `
+			+ `file${count === 1 ? "" : "s"}. The database is backed up first. Each old note `
+			+ `moves to Trash only after its file is verified. Continue?`;
+		if (!Services.prompt.confirm(null, "Migrate notes", message)) {
+			return;
+		}
+
+		this._el("library-notes-migrate").disabled = true;
+		this._el("library-notes-progress").hidden = false;
+		this._el("library-notes-progress").value = 0;
+		this._el("library-notes-progress").max = count;
+		this._el("library-notes-status").textContent = "Starting…";
+
+		try {
+			let result = await Zotero.Notes.migrateLegacyNotes({
+				onProgress: ({ index, total, title }) => {
+					this._el("library-notes-progress").value = index;
+					this._el("library-notes-progress").max = total;
+					this._el("library-notes-status").textContent
+						= `Converting ${index + 1} of ${total}: ${title}`;
+				}
+			});
+			this._el("library-notes-progress").value = result.migrated;
+			let failed = result.failed.length;
+			this._el("library-notes-status").textContent
+				= `${result.migrated} converted; ${failed} failed`
+				+ (result.backup ? "; database backed up." : "; backup skipped in test mode.");
+			if (failed) {
+				let details = result.failed.slice(0, 3)
+					.map(item => `${item.title || item.key}: ${item.error}`)
+					.join(" · ");
+				this._setStatus(`Migration failures — ${details}`, true);
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Note migration failed: ${e.message || e}`, true);
+		}
+		finally {
+			this._el("library-notes-progress").hidden = true;
+			await this._refreshNoteMigration();
+		}
 	},
 
 	_el: function (id) {

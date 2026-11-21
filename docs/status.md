@@ -22,7 +22,7 @@ push target. The product branch may diverge without limit.
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log — note and annotation verbs will change with D29/D30 |
-| Notes | New notes and agent notes are `.md` file attachments opened externally. Legacy `itemNotes` still open in the shipped ProseMirror editor until the explicit migration is built |
+| Notes | New notes and agent notes are `.md` file attachments. An explicit migration in Library preferences converts legacy `itemNotes`, copies embedded images and trashes the source after verification (3 migration tests). Excerpts and note search are not built; the old editor still ships for unmigrated notes |
 | PDF | **Partial:** every attachment opens through the host, and PDF text extraction is disabled (`fulltext.pdfMaxPages = 0` plus an `indexItem` guard). The reader, document worker, pdf.js, annotation UI and annotation verbs are still in the build (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
@@ -46,10 +46,11 @@ plan.
    is gone, `.npmrc` fails closed, `repo-guard` and the pre-commit hook reject package/lock and
    `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
    clone with `git config core.hooksPath .githooks`.
-2. **D29 — file-backed Markdown notes** ([notes.md](notes.md)). Implement the attachment model,
-   explicit migration, external open, excerpts and search; then remove the editor, its submodule,
-   its npm build path and the `note.xhtml`/`editorInstance` surfaces. Tests must prove no new
-   `itemNotes` row is written.
+2. **D29 — finish file-backed Markdown notes** ([notes.md](notes.md)). Attachment creation,
+   external open, explicit migration and embedded-image copying are built. Next: run the migration
+   on a copy of `~/CiteWell`, add plain-text excerpts and note search, then remove the editor, its
+   submodule, its npm build path and the `note.xhtml`/`editorInstance` surfaces. Keep the test that
+   no new `itemNotes` row is written.
 3. **D30 — finish removing PDF handling.** External open and the PDF text-index stop are in. Next:
    remove `reader/`, `document-worker/` and pdf.js from the build and UI; export existing annotations
    to `storage/<key>/annotations.md`; remove annotation creation/listing from the agent, the reader
@@ -146,9 +147,10 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   until CiteWell stabilizes (D27); they are not the authoritative library.
 - **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under
   `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
-- **Notes are split during the transition:** `newNote` and `add_note` now create `.md` attachments.
-  Legacy `itemNotes` still open in the editor, and migration is not built. Do not describe
-  Markdown-only notes as complete until the old rows are converted and the editor is removed.
+- **Notes are split during the transition:** `newNote` and `add_note` create `.md` attachments, and
+  Library preferences can migrate legacy rows. The 82 notes in the current test library are not
+  migrated yet, so the editor still ships. Do not describe Markdown-only notes as complete until
+  the old rows are converted and the editor is removed.
 - **PDF behavior is transitioning:** PDFs already open externally and new PDF text is not indexed.
   The reader still ships and old PDF index rows may remain until the index is rebuilt; annotation
   UI and verbs are still present. Do not add features to them.

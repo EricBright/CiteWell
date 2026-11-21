@@ -34,6 +34,21 @@
 			<vbox id="library-locations" class="library-locations"/>
 		</groupbox>
 
+		<groupbox aria-label="Notes">
+			<label><html:h2>Notes</html:h2></label>
+			<description>
+				Notes are Markdown files opened by your editor. Legacy notes stored inside the
+				database can be converted once; each converted file is verified before the old note
+				moves to Trash, and the database is backed up first.
+			</description>
+			<description id="library-notes-status" class="library-muted"/>
+			<progressmeter id="library-notes-progress" mode="determined" hidden="true"/>
+			<hbox class="library-button-row">
+				<button id="library-notes-migrate" label="Migrate notes to Markdown files…"
+					oncommand="Zotero_Preferences.Library.migrateNotes()"/>
+			</hbox>
+		</groupbox>
+
 		<groupbox aria-label="Import from Zotero">
 			<label><html:h2>Import from Zotero</html:h2></label>
 			<description>

@@ -138,6 +138,181 @@ Zotero.Notes = new function () {
 	};
 
 	/**
+	 * Convert a legacy HTML note through the Note Markdown translator.
+	 */
+	this.htmlToMarkdown = async function (html) {
+		await Zotero.Translators.init();
+		let translator = Zotero.Translators.get(Zotero.Translators.TRANSLATOR_ID_NOTE_MARKDOWN);
+		if (!translator) {
+			throw new Error('Note Markdown translator is not available');
+		}
+		let item = new Zotero.Item('note');
+		item.libraryID = Zotero.Libraries.userLibraryID;
+		item.setNote(html || '<div class="zotero-note znv1"></div>');
+		let markdown = '';
+		let translation = new Zotero.Translate.Export();
+		translation.setItems([item]);
+		translation.setTranslator(translator);
+		translation.setHandler('done', (obj, worked) => {
+			if (worked) {
+				markdown = obj.string.replace(/\r\n/g, '\n');
+			}
+		});
+		await translation.translate();
+		if (!markdown) {
+			throw new Error('Note export did not return Markdown');
+		}
+		return markdown;
+	};
+
+	this.countLegacyNotes = async function () {
+		return Zotero.DB.valueQueryAsync(
+			`SELECT COUNT(*) FROM itemNotes N
+			JOIN items I ON I.itemID = N.itemID
+			JOIN itemTypes T ON T.itemTypeID = I.itemTypeID
+			WHERE T.typeName = 'note'
+			AND N.itemID NOT IN (SELECT itemID FROM deletedItems)`
+		);
+	};
+
+	/**
+	 * Explicitly convert every legacy itemNotes row to a `.md` attachment (D29).
+	 *
+	 * The source note is moved to Trash only after the new file exists, is
+	 * readable and non-empty. A failed note is left untouched and reported.
+	 *
+	 * @param {Object} [options]
+	 * @param {Function} [options.onProgress]
+	 * @return {Promise<{migrated: Number, failed: Array, backup: Boolean}>}
+	 */
+	this.migrateLegacyNotes = async function ({ onProgress } = {}) {
+		let ids = await Zotero.DB.columnQueryAsync(
+			`SELECT N.itemID FROM itemNotes N
+			JOIN items I ON I.itemID = N.itemID
+			JOIN itemTypes T ON T.itemTypeID = I.itemTypeID
+			WHERE T.typeName = 'note'
+			AND N.itemID IN (
+				SELECT itemID FROM items
+				WHERE itemID NOT IN (SELECT itemID FROM deletedItems)
+			)
+			ORDER BY N.itemID`
+		);
+		ids = (ids || []).map(Number);
+		if (!ids.length) {
+			return { migrated: 0, failed: [], backup: false };
+		}
+
+		let backup = await Zotero.DB.backUpDatabase({
+			force: true,
+			suffix: 'pre-markdown-notes'
+		});
+		if (!backup && !Zotero.test) {
+			throw new Error('Could not back up the database before migrating notes');
+		}
+
+		let result = { migrated: 0, failed: [], backup: !!backup };
+		for (let i = 0; i < ids.length; i++) {
+			let note = await Zotero.Items.getAsync(ids[i]);
+			if (!note) continue;
+			let title = Zotero.Utilities.Item.noteToTitle(note.getNote()) || note.getField('title') || 'Note';
+			onProgress?.({ index: i, total: ids.length, title });
+			try {
+				await this._migrateLegacyNote(note);
+				result.migrated++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				result.failed.push({ key: note.key, title, error: e.message || String(e) });
+			}
+		}
+		return result;
+	};
+
+	this._migrateLegacyNote = async function (note) {
+		if (!note.isNote()) {
+			throw new Error('Item is not a note');
+		}
+		let html = note.getNote();
+		let markdown = await this.htmlToMarkdown(html);
+		let title = Zotero.Utilities.Item.noteToTitle(html) || note.getField('title') || 'Note';
+		let parentItemID = note.parentItemID || undefined;
+		let collections = parentItemID ? undefined : note.getCollections();
+
+		let attachment = await this.createMarkdownAttachment({
+			libraryID: note.libraryID,
+			parentItemID,
+			collections,
+			title,
+			text: markdown,
+		});
+
+		try {
+			markdown = await this._migrateEmbeddedImages(note, attachment, html, markdown);
+			let path = await attachment.getFilePathAsync();
+			if (!path) {
+				throw new Error('Migrated note file is missing');
+			}
+			await Zotero.File.putContentsAsync(path, markdown);
+			let written = await Zotero.File.getContentsAsync(path);
+			if (!written) {
+				throw new Error('Migrated note file is empty');
+			}
+
+			try {
+				attachment.dateAdded = note.dateAdded;
+				attachment.dateModified = note.dateModified;
+				await attachment.saveTx({ skipDateModifiedUpdate: true });
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+
+			await Zotero.Items.trashTx(note.id);
+			return attachment;
+		}
+		catch (e) {
+			// Keep the new file for inspection but do not trash the source.
+			Zotero.logError(e);
+			throw e;
+		}
+	};
+
+	this._migrateEmbeddedImages = async function (note, attachment, html, markdown) {
+		let doc = new DOMParser().parseFromString(html, 'text/html');
+		let imageKeys = Array.from(doc.querySelectorAll('img[data-attachment-key]'))
+			.map(img => img.getAttribute('data-attachment-key'))
+			.filter(Boolean);
+		if (!imageKeys.length) {
+			return markdown;
+		}
+
+		let storageDir = Zotero.Attachments.getStorageDirectory(attachment).path;
+		let replacements = [];
+		for (let key of imageKeys) {
+			let image = Zotero.Items.getByLibraryAndKey(note.libraryID, key);
+			if (!image || !image.isAttachment()) continue;
+			let source = await image.getFilePathAsync();
+			if (!source) continue;
+			let leaf = PathUtils.filename(source);
+			let targetLeaf = `${image.key}-${leaf}`;
+			let target = OS.Path.join(storageDir, targetLeaf);
+			await IOUtils.copy(source, target);
+			let alt = image.getField('title') || 'image';
+			replacements.push(`![${alt}](<${targetLeaf}>)`);
+		}
+		if (!replacements.length) {
+			return markdown;
+		}
+
+		let index = 0;
+		markdown = markdown.replace(/\[image\]/g, () => replacements[index++] || '[image]');
+		if (index < replacements.length) {
+			markdown += '\n\n' + replacements.slice(index).join('\n\n') + '\n';
+		}
+		return markdown;
+	};
+
+	/**
 	 * Open note in tab or window
 	 * @param {number} itemID
 	 * @param {Object} location - Not implemented yet

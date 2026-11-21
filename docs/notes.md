@@ -1,6 +1,6 @@
 # Notes as Markdown file attachments
 
-Status: **design approved, not built.** Companion to [decisions.md](decisions.md) D29 and D20.
+Status: **core built, migration pending on real data.** Companion to [decisions.md](decisions.md) D29 and D20.
 
 ## Goal
 
