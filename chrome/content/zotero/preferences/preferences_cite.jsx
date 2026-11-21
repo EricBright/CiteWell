@@ -26,6 +26,7 @@
 "use strict";
 
 var { FilePicker } = ChromeUtils.importESModule('chrome://zotero/content/modules/filePicker.mjs');
+var { Subprocess } = ChromeUtils.importESModule('resource://gre/modules/Subprocess.sys.mjs');
 
 var React = require('react');
 var ReactDOM = require('react-dom');
@@ -69,6 +70,114 @@ Zotero_Preferences.Cite = {
 	},
 	
 	
+	/**
+	 * Locate the CiteWell-owned OXT. In an AppImage it sits next to the app;
+	 * in a source tree it is under extensions/.
+	 */
+	_getLibreOfficeExtension: async function () {
+		var appDir = Services.dirsvc.get("XREExeF", Ci.nsIFile).parent.path;
+		var repoDir = appDir;
+		for (var i = 0; i < 3; i++) {
+			repoDir = PathUtils.parent(repoDir);
+		}
+		var candidates = [
+			PathUtils.join(appDir, "integration", "libreoffice", "CiteWell_LibreOffice_Integration.oxt"),
+			PathUtils.join(repoDir, "extensions", "citewell-libreoffice", "build", "CiteWell_LibreOffice_Integration.oxt"),
+		];
+		for (var candidate of candidates) {
+			if (await IOUtils.exists(candidate)) return candidate;
+		}
+		throw new Error("CiteWell LibreOffice extension not found; rebuild the app or run the extension build.");
+	},
+
+	_run: async function (command, args) {
+		var proc = await Subprocess.call({
+			command,
+			arguments: args,
+			stderr: "pipe",
+		});
+		var stdout = "";
+		var stderr = "";
+		var read = async (stream, append) => {
+			var chunk;
+			while ((chunk = await stream.readString())) append(chunk);
+		};
+		await Promise.all([
+			read(proc.stdout, chunk => { stdout += chunk; }),
+			read(proc.stderr, chunk => { stderr += chunk; }),
+		]);
+		var { exitCode } = await proc.wait();
+		return { exitCode, stdout, stderr };
+	},
+
+	installLibreOffice: async function () {
+		var status = document.getElementById("citewell-lo-status");
+		var button = document.getElementById("citewell-lo-install");
+		var message = "Install the CiteWell LibreOffice extension into your LibreOffice "
+			+ "user profile? Restart LibreOffice afterward. No Zotero extension is used.";
+		if (!Services.prompt.confirm(null, "Install CiteWell extension", message)) return;
+
+		button.disabled = true;
+		status.textContent = "Preparing…";
+		try {
+			var oxt = await this._getLibreOfficeExtension();
+			var cacheDir = PathUtils.join(
+				Services.dirsvc.get("Home", Ci.nsIFile).path,
+				".cache", "citewell", "lo-extension"
+			);
+			await IOUtils.makeDirectory(cacheDir, { createAncestors: true, ignoreExisting: true });
+			var visible = PathUtils.join(cacheDir, `CiteWell_LibreOffice_Integration-${Date.now()}.oxt`);
+			await IOUtils.copy(oxt, visible);
+
+			var flatpak = null;
+			try {
+				flatpak = await Subprocess.pathSearch("flatpak");
+			}
+			catch (e) {
+			}
+			var result;
+			if (flatpak) {
+				var info = await this._run(flatpak, ["info", "org.libreoffice.LibreOffice"]);
+				if (info.exitCode === 0) {
+					status.textContent = "Installing through Flatpak LibreOffice…";
+					result = await this._run(flatpak, [
+						"run", "--command=/app/libreoffice/program/unopkg",
+						"org.libreoffice.LibreOffice", "add", "-f", visible
+					]);
+				}
+			}
+			if (!result) {
+				var native = [
+					"/usr/bin/unopkg",
+					"/usr/lib/libreoffice/program/unopkg",
+					"/usr/lib64/libreoffice/program/unopkg",
+				];
+				var unopkg = null;
+				for (var candidate of native) {
+					if (await IOUtils.exists(candidate)) {
+						unopkg = candidate;
+						break;
+					}
+				}
+				if (!unopkg) {
+					throw new Error("LibreOffice unopkg was not found. Install LibreOffice or its Flatpak.");
+				}
+				status.textContent = "Installing through LibreOffice…";
+				result = await this._run(unopkg, ["add", "-f", visible]);
+			}
+			if (result.exitCode !== 0) {
+				throw new Error(result.stderr.trim() || result.stdout.trim() || `unopkg exited ${result.exitCode}`);
+			}
+			status.textContent = "Installed. Restart LibreOffice to load the CiteWell menu.";
+			button.disabled = false;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			status.textContent = `Installation failed: ${e.message || e}`;
+			button.disabled = false;
+		}
+	},
+
 	/**
 	 * Refreshes the list of styles in the styles pane
 	 * @param {String} cslID Style to select

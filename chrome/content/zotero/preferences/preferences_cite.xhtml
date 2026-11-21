@@ -82,6 +82,19 @@
 			</hbox>
 		</groupbox>
 	</vbox>
+	<vbox class="main-section" id="citewellLibreOffice">
+		<html:h1>LibreOffice</html:h1>
+		<description>
+			CiteWell has its own LibreOffice extension. It uses the CiteWell identity and
+			talks to CiteWell on 127.0.0.1:23121; it never installs or uses Zotero's extension.
+		</description>
+		<hbox class="library-button-row">
+			<button id="citewell-lo-install" label="Install CiteWell LibreOffice extension…"
+				oncommand="Zotero_Preferences.Cite.installLibreOffice()"/>
+		</hbox>
+		<description id="citewell-lo-status" class="library-muted"/>
+	</vbox>
+
 	<vbox class="main-section" id="wordProcessors" hidden="true" aria-label="&zotero.preferences.cite.wordProcessors;" role="group">
 		<html:h1>&zotero.preferences.cite.wordProcessors;</html:h1>
 		

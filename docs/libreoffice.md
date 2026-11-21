@@ -141,8 +141,9 @@ runs the health check successfully against a temporary health server. The Rust
 `citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
 packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
 when the app exits. The CiteWell OXT is packaged under
-`integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`; installation is
-still a manual `unopkg` step.
+`integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`; Cite preferences
+now offers a Flatpak-aware install action, which still needs an end-to-end test
+against a disposable LibreOffice profile.
 
 ## Test plan
 
