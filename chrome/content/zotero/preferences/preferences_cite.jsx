@@ -110,6 +110,18 @@ Zotero_Preferences.Cite = {
 		return { exitCode, stdout, stderr };
 	},
 
+	_isLibreOfficeRunning: async function (flatpak) {
+		if (!flatpak) return false;
+		try {
+			var result = await this._run(flatpak, ["ps"]);
+			return result.exitCode === 0
+				&& /org\.libreoffice\.LibreOffice/.test(result.stdout);
+		}
+		catch (e) {
+			return false;
+		}
+	},
+
 	installLibreOffice: async function () {
 		var status = document.getElementById("citewell-lo-status");
 		var button = document.getElementById("citewell-lo-install");
@@ -139,6 +151,9 @@ Zotero_Preferences.Cite = {
 			if (flatpak) {
 				var info = await this._run(flatpak, ["info", "org.libreoffice.LibreOffice"]);
 				if (info.exitCode === 0) {
+					if (await this._isLibreOfficeRunning(flatpak)) {
+						throw new Error("Close LibreOffice completely, then try again.");
+					}
 					status.textContent = "Installing…";
 					result = await this._run(flatpak, [
 						"run", "--command=/app/libreoffice/program/unopkg",
@@ -166,6 +181,11 @@ Zotero_Preferences.Cite = {
 				result = await this._run(unopkg, ["add", "-f", visible]);
 			}
 			if (result.exitCode !== 0) {
+				var detail = `${result.stdout}\n${result.stderr}`.trim();
+				Zotero.logError(new Error(`unopkg failed (${result.exitCode}): ${detail}`));
+				if (/enabling: components\.xml|another instance|lock/i.test(detail)) {
+					throw new Error("Close LibreOffice completely, then try again.");
+				}
 				throw new Error("LibreOffice could not install the extension.");
 			}
 			status.textContent = "Installed. Restart LibreOffice.";
@@ -173,7 +193,7 @@ Zotero_Preferences.Cite = {
 		}
 		catch (e) {
 			Zotero.logError(e);
-			status.textContent = `Could not install the extension. ${e.message || ""}`;
+			status.textContent = e.message || "Could not install the extension.";
 			button.disabled = false;
 		}
 	},

@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `f21c3e8e…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `35f0a5fe…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `f21c3e8e78f70ac2634211830358f9a05ced25e214b4bfdebcf3302c283a3136`)
+- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `35f0a5fe45374472ca4518cd2d952da9b46161bccfd7e280637b221ef8f3d472`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
