@@ -120,8 +120,8 @@ profile. The CLI fetches the server ID itself for writes.
 
 ## MCP
 
-`citewell mcp --data-dir "$CITEWELL_DATA_DIR"` starts a stdio MCP server. It exposes 19 tools
-(`search_library`, `create_item`, `save_identifier`, `attach_file`, `create_annotation`,
+`citewell mcp --data-dir "$CITEWELL_DATA_DIR"` starts a stdio MCP server. It exposes 18 tools
+(`search_library`, `create_item`, `save_identifier`, `attach_file`,
 `export_note`, `select_items`, `open_item`, `notify`, and the rest of the bridge). Add it to an MCP client as:
 
 ```json

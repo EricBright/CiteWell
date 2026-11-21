@@ -21,7 +21,7 @@ calls — never SQLite.
 ## Bundled skill
 
 [SKILL.md](../SKILL.md) is the short, self-contained version for an agent that has never seen
-CiteWell: prerequisites, MCP setup, the 19 tools, a working loop, and the rules that keep it out of
+CiteWell: prerequisites, MCP setup, the 18 tools, a working loop, and the rules that keep it out of
 Zotero's data.
 
 In the app, it is two clicks away: **Help → Agents and SKILL.md** opens **Preferences → Agent
