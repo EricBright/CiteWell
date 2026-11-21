@@ -325,6 +325,29 @@ locking content into markup the person did not choose.
 Rejected: storing raw Markdown in notes — the editor and sync expect HTML. Rejected: HTML as the
 default for agent input — harder to author, harder to diff, and carries sanitization risk.
 
+## D21 — Notes are Markdown, with a rich editor as the view
+
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (until the first Markdown save)
+
+Zotero's note pipeline is HTML: `itemNotes.note`, ProseMirror, HTML search and the Note Markdown
+exporter. CiteWell replaces the storage format, not the editor: Markdown is the only persisted
+note format, while the existing ProseMirror surface is loaded from Markdown and serialized back to
+Markdown. This keeps Gecko's IME, selection, spellcheck and accessibility, which no reusable Rust
+editor currently offers (see [research](research/rust-markdown-editors.md)).
+
+The parser and serializer already exist inside the note editor (`markdown-it`,
+`prosemirror-markdown`), so the first cut adds no dependency. A Rust `citewell-md` crate compiled to
+WASM can take over parse/serialize/index later without changing storage.
+
+Citations are deferred: no citation insertion in Markdown notes yet; existing citation spans
+flatten to `(Author Year)` on conversion. The design and slices are in [notes.md](notes.md).
+
+Rejected: a custom Rust/egui editor now — notecraft is an app with no screen reader and no
+cross-block selection; egui/iced give plain text only; XUL cannot host a native surface, so it
+would be a second window. Rejected: dual HTML/Markdown storage — it is not "no HTML notes" and
+doubles every read path. Rejected: raw Markdown in the note editor without conversion — the
+ProseMirror UI would display syntax literally.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

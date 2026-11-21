@@ -1,9 +1,8 @@
 # CiteWell
 
 CiteWell is a fork of [Zotero](https://github.com/zotero/zotero), the free research manager
-for collecting, organizing, annotating, citing, and sharing sources. It keeps Zotero's engine,
-data model, and workflow, and changes the interface — icons, layout, and interaction details —
-for a cleaner working environment.
+for collecting, organizing, annotating, and citing sources. It keeps Zotero's engine, data
+model, and workflow, and changes the interface for a cleaner working environment.
 
 CiteWell is an independent project. It is not produced, endorsed, or supported by the Zotero
 project or the Corporation for Digital Scholarship, and it is not the place to report Zotero
@@ -76,6 +75,7 @@ to answer one question, not to get oriented.
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
+| `docs/notes.md` | on-demand | changing notes or the editor | Markdown-only notes |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License
