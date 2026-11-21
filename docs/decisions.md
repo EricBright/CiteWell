@@ -613,6 +613,31 @@ Rejected: freezing translator updates — capture rots as sites change. Rejected
 integrations to simplify the app — they are the product's main input path. Rejected: accepting
 updates without review — third-party translator code runs with app privileges.
 
+## D34 — CiteWell owns its LibreOffice integration
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** until the first CiteWell OXT ships
+
+CiteWell does not reuse Zotero's LibreOffice extension identity or transport. The target
+contract is a CiteWell-owned OXT, display name and installer, with extension id
+`citewell-libreoffice-integration@sophy.ca`, socket `127.0.0.1:23121`, and compatibility
+sentinel `19877`. Zotero's `zoteroLibreOfficeIntegration@zotero.org`, port `23116` and
+sentinel `19876` are not CiteWell's.
+
+The inherited Java OXT must not be offered for installation by a CiteWell build. Until a
+CiteWell replacement exists, the integration is disabled or hidden; sharing Zotero's
+extension is rejected because it can replace Zotero's extension or send document commands
+to the wrong application.
+
+The implementation target is Rust, not Java. LibreOffice ships an official `rust_uno`
+binding, but it is generated in-tree and needs a LibreOffice SDK/build environment; that
+is a separate dependency decision. A Rust core with a thin Python UNO bridge is the
+no-new-toolchain fallback: the Python layer would only translate Writer document
+operations, while citation state and protocol stay in CiteWell/Rust.
+
+Rejected: shipping the inherited Java OXT — wrong identity and port. Rejected: compatibility
+mode on 23116 — ambiguous with Zotero. Rejected: pure-Rust native component without the
+LibreOffice SDK or a version-matched generated bridge — not buildable on this host today.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
