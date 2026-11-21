@@ -641,6 +641,18 @@ Rejected: shipping the inherited Java OXT — wrong identity and port. Rejected:
 mode on 23116 — ambiguous with Zotero. Rejected: pure-Rust native component without the
 LibreOffice SDK or a version-matched generated bridge — not buildable on this host today.
 
+## D35 — The LibreOffice installer is add-only
+
+The CiteWell extension installer may only add the CiteWell OXT. It must never remove,
+reconstruct, reinstall, or edit LibreOffice's extension registry or user profile. It must
+not attempt to repair a stale registration automatically. A stale or damaged registry is
+reported to the user with instructions to use LibreOffice's Extension Manager; the
+installer must leave every other extension and its settings untouched. A failed CiteWell
+install must never mutate another extension.
+
+This is a safety rule, not a limitation to optimise away. `unopkg remove` and registry
+rewrites are prohibited in the installer.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

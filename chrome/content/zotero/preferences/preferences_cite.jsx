@@ -122,30 +122,8 @@ Zotero_Preferences.Cite = {
 		}
 	},
 
-	_repairStaleBundle: async function (oxt, detail, command, prefix) {
-		var match = detail.match(/file:\/\/(\/[^"\s]+?CiteWell_LibreOffice_Integration[^"\s]*?\.oxt)/);
-		if (!match) return false;
-		var path = decodeURIComponent(match[1]);
-		if (!path.includes("/CiteWell_LibreOffice_Integration")) return false;
-		try {
-			await IOUtils.makeDirectory(path, { createAncestors: true, ignoreExisting: true });
-			var unzip = await Subprocess.pathSearch("unzip");
-			var extract = await this._run(unzip, ["-q", "-o", oxt, "-d", path]);
-			if (extract.exitCode !== 0) return false;
-			var removed = await this._run(
-				command,
-				prefix.concat(["remove", "citewell-libreoffice-integration@sophy.ca"])
-			);
-			if (removed.exitCode !== 0) return false;
-			Zotero.debug("Removed stale CiteWell LibreOffice bundle registration");
-			return true;
-		}
-		catch (e) {
-			Zotero.logError(e);
-			return false;
-		}
-	},
-
+	// Add only the CiteWell OXT. This action must never remove, replace or
+	// repair another extension or LibreOffice's deployment registry.
 	installLibreOffice: async function () {
 		var status = document.getElementById("citewell-lo-status");
 		var button = document.getElementById("citewell-lo-install");
@@ -211,14 +189,14 @@ Zotero_Preferences.Cite = {
 				if (/enabling: components\.xml|another instance|lock/i.test(detail)) {
 					throw new Error("Close LibreOffice completely, then try again.");
 				}
-				if (/Error binding package|NOT_EXISTING/i.test(detail)
-						&& await this._repairStaleBundle(visible, detail, command, prefix)) {
-					status.textContent = "Repairing extension state…";
-					result = await install();
+				if (/Error binding package|NOT_EXISTING/i.test(detail)) {
+					throw new Error(
+						"LibreOffice has a stale CiteWell extension entry. "
+						+ "Open Tools → Extension Manager, remove the CiteWell entry, "
+						+ "then try again. Your other extensions will not be changed."
+					);
 				}
-				if (result.exitCode !== 0) {
-					throw new Error("LibreOffice could not install the extension.");
-				}
+				throw new Error("LibreOffice could not install the extension.");
 			}
 			status.textContent = "Installed. Restart LibreOffice.";
 			button.disabled = false;
