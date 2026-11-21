@@ -1252,31 +1252,6 @@ describe("Item pane", function () {
 			assert.equal(reader.itemID, attachment.id);
 		});
 
-		it("should select attachment on clicking annotation button of attachment row", async function () {
-			let itemDetails = ZoteroPane.itemPane._itemDetails;
-			let attachmentsBox = itemDetails.getPane(paneID);
-
-			let item = new Zotero.Item('book');
-			await item.saveTx();
-			let file = getTestDataDirectory();
-			file.append('test.pdf');
-			let attachment = await Zotero.Attachments.importFromFile({
-				file,
-				parentItemID: item.id
-			});
-			let _annotation = await createAnnotation('highlight', attachment);
-
-			await ZoteroPane.selectItem(item.id);
-			await waitForScrollToPane(itemDetails, paneID);
-			await waitForPreviewBoxRender(attachmentsBox);
-
-			let attachmentRow = attachmentsBox.querySelector(`attachment-row[attachment-id="${attachment.id}"]`);
-			attachmentRow._annotationButton.click();
-			await Zotero.Promise.delay(100);
-			// Should select attachment
-			assert.equal(ZoteroPane.getSelectedItems(true)[0], attachment.id);
-		});
-
 		it("should open attachment on double-clicking attachments pane preview", async function () {
 			let itemDetails = ZoteroPane.itemPane._itemDetails;
 			let attachmentsBox = itemDetails.getPane(paneID);

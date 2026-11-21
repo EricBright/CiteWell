@@ -118,20 +118,8 @@
 		content = null;
 
 		lazyContent = MozXULElement.parseXULToFragment(`
-			<browser id="preview"
-				tooltip="iframeTooltip"
-				type="content"
-				primary="true"
-				transparent="transparent"
-				src="resource://zotero/reader/reader.html"
-				flex="1"/>
-			<browser id="next-preview"
-				tooltip="iframeTooltip"
-				type="content"
-				primary="true"
-				transparent="transparent"
-				src="resource://zotero/reader/reader.html"
-				flex="1"/>
+			<box id="preview" hidden="true" flex="1"/>
+			<box id="next-preview" hidden="true" flex="1"/>
 			<html:img id="image-preview" class="media-preview"></html:img>
 			<html:span class="icon"></html:span>
 			<html:div class="btn-container">
@@ -145,13 +133,7 @@
 
 		get nextPreview() {
 			return MozXULElement.parseXULToFragment(`
-				<browser id="next-preview"
-					tooltip="iframeTooltip"
-					type="content"
-					primary="true"
-					transparent="transparent"
-					src="resource://zotero/reader/reader.html"
-					flex="1"/>
+				<box id="next-preview" hidden="true" flex="1"/>
 			`);
 		}
 

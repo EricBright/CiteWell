@@ -49,6 +49,20 @@
 			</hbox>
 		</groupbox>
 
+		<groupbox aria-label="PDF annotations">
+			<label><html:h2>PDF annotations</html:h2></label>
+			<description>
+				CiteWell no longer displays PDF annotations. Existing annotations can be exported
+				once to a human-readable <html:code>annotations.md</html:code> beside each PDF.
+				Existing sidecar files are never overwritten.
+			</description>
+			<description id="library-annotations-status" class="library-muted"/>
+			<hbox class="library-button-row">
+				<button id="library-annotations-export" label="Export PDF annotations to Markdown…"
+					oncommand="Zotero_Preferences.Library.exportAnnotations()"/>
+			</hbox>
+		</groupbox>
+
 		<groupbox aria-label="Import from Zotero">
 			<label><html:h2>Import from Zotero</html:h2></label>
 			<description>

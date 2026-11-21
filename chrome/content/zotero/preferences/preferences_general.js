@@ -55,9 +55,6 @@ Zotero_Preferences.General = {
 		
 		this.refreshLocale();
 		this._initItemPaneHeaderUI();
-		this._updateFileHandlerUI();
-		this._initEbookFontFamilyMenu();
-		this._initAutoDisableToolCheckbox();
 	},
 
 	uninit: function () {
@@ -243,8 +240,7 @@ Zotero_Preferences.General = {
 		);
 		fp.appendFilters(fp.filterApps);
 		if (await fp.show() != fp.returnOK) {
-			this._updateFileHandlerUI();
-			return false;
+				return false;
 		}
 		this.setFileHandler(type, fp.file);
 	},
@@ -268,7 +264,6 @@ Zotero_Preferences.General = {
 		}
 		
 		Zotero.Prefs.set(pref, handler);
-		this._updateFileHandlerUI();
 	},
 	
 	_updateFileHandlerUI: function () {

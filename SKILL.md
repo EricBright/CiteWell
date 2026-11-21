@@ -63,7 +63,6 @@ The server speaks newline-delimited JSON-RPC on stdio. Use the tools below; do n
 | `add_note` | `key`, `text` | Child `.md` file attachment; edited by the host |
 | `attach_file` | `key`, `path`, `title?` | Import a PDF/file already on disk |
 | `attach_url` | `key`, `url`, `title?` | Linked URL attachment |
-| `list_annotations` | `key` | Annotations on a PDF/EPUB |
 | `export_note` | `key` | Markdown note file contents |
 | `list_collections` | — | Collection tree |
 | `create_collection` | `name`, `parentKey?` | New collection |

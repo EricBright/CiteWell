@@ -17,8 +17,6 @@ if (require.main === module) {
 		try {
 			await getClean(path.join(ROOT, 'build'));
 			await getClean(path.join(ROOT, '.signatures.json'));
-			await getClean(path.join(ROOT, 'reader/build'));
-			await getClean(path.join(ROOT, 'document-worker/build'));
 		} catch (err) {
 			process.exitCode = 1;
 			global.isError = true;

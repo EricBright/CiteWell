@@ -44,6 +44,7 @@ Zotero_Preferences.Library = {
 		await this._refreshCurrent();
 		this._renderLocations();
 		await this._refreshNoteMigration();
+		await this._refreshAnnotationExport();
 		await this.rescan();
 		await this._showLastResult();
 		await this._renderRestorePoints();
@@ -52,6 +53,65 @@ Zotero_Preferences.Library = {
 
 	uninit: function () {
 		this._initialized = false;
+	},
+
+	_refreshAnnotationExport: async function () {
+		let count = 0;
+		try {
+			count = await Zotero.Notes.countAnnotatedAttachments();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._el("library-annotations-status").textContent
+				= `Could not count annotations: ${e.message || e}`;
+			this._el("library-annotations-export").disabled = true;
+			return;
+		}
+		this._el("library-annotations-export").disabled = !count;
+		this._el("library-annotations-status").textContent = count
+			? `${count} attachment${count === 1 ? "" : "s"} with stored annotations.`
+			: "No stored PDF annotations remain.";
+	},
+
+	exportAnnotations: async function () {
+		let count = 0;
+		try {
+			count = await Zotero.Notes.countAnnotatedAttachments();
+		}
+		catch (e) {
+			this._setStatus(`Could not count annotations: ${e.message || e}`, true);
+			return;
+		}
+		if (!count) return;
+
+		let message = `Export annotations for ${count} attachment${count === 1 ? "" : "s"} `
+			+ "to annotations.md? Existing sidecars are skipped.";
+		if (!Services.prompt.confirm(null, "Export annotations", message)) {
+			return;
+		}
+		this._el("library-annotations-export").disabled = true;
+		this._el("library-annotations-status").textContent = "Exporting…";
+		try {
+			let result = await Zotero.Notes.exportAnnotationSidecars({
+				onProgress: ({ index, total, title }) => {
+					this._el("library-annotations-status").textContent
+						= `Exporting ${index + 1} of ${total}: ${title}`;
+				}
+			});
+			this._el("library-annotations-status").textContent
+				= `${result.written} written; ${result.skipped} existing skipped; `
+				+ `${result.failed.length} failed.`;
+			if (result.failed.length) {
+				this._setStatus(`Annotation export failures: ${result.failed[0].error}`, true);
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Annotation export failed: ${e.message || e}`, true);
+		}
+		finally {
+			await this._refreshAnnotationExport();
+		}
 	},
 
 	_refreshNoteMigration: async function () {

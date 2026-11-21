@@ -72,7 +72,6 @@ Services.scriptloader.loadSubScript('chrome://zotero/content/elements/itemTreeMe
 		['collapsible-section', 'chrome://zotero/content/elements/collapsibleSection.js'],
 		['attachments-box', 'chrome://zotero/content/elements/attachmentsBox.js'],
 		['attachment-row', 'chrome://zotero/content/elements/attachmentRow.js'],
-		['attachment-annotations-box', 'chrome://zotero/content/elements/attachmentAnnotationsBox.js'],
 		['annotation-row', 'chrome://zotero/content/elements/annotationRow.js'],
 		['annotation-items-pane', 'chrome://zotero/content/elements/annotationItemsPane.js'],
 		['context-notes-list', 'chrome://zotero/content/elements/contextNotesList.js'],

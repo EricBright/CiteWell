@@ -21,7 +21,7 @@ calls — never SQLite.
 ## Bundled skill
 
 [SKILL.md](../SKILL.md) is the short, self-contained version for an agent that has never seen
-CiteWell: prerequisites, MCP setup, the 18 tools, a working loop, and the rules that keep it out of
+CiteWell: prerequisites, MCP setup, the 17 tools, a working loop, and the rules that keep it out of
 Zotero's data.
 
 In the app, it is two clicks away: **Help → Agents and SKILL.md** opens **Preferences → Agent
@@ -89,12 +89,11 @@ without a trip through the UI.
 | `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
 | `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
 | `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
-| `annotation.list` | Annotations on a PDF/EPUB attachment | `Zotero.Items.getAnnotations` |
 | `export.note` | Markdown attachment contents | File read |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
 | `ui.select` | Select items in the main window | `ZoteroPane.selectItems` |
-| `ui.open` | Open an item, note or PDF reader | `Zotero.Reader.open`, `Zotero_Tabs` |
+| `ui.open` | Select and open an item or note | `ZoteroPane.viewItems`, `Zotero_Tabs` |
 | `ui.notify` | Short in-app message so the person sees what happened | `Zotero.ProgressWindow` |
 
 `item.create` accepts the natural shape (`itemType`, `fields`, `creators`, `tags`, `collections`)

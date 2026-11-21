@@ -312,6 +312,113 @@ Zotero.Notes = new function () {
 		return markdown;
 	};
 
+	this.countAnnotatedAttachments = async function () {
+		return Zotero.DB.valueQueryAsync(
+			'SELECT COUNT(DISTINCT parentItemID) FROM itemAnnotations'
+		);
+	};
+
+	/**
+	 * Export stored PDF annotations once to `annotations.md` beside the file.
+	 *
+	 * An existing sidecar is never overwritten. This is the compatibility path
+	 * for annotations authored before PDF support was removed (D30).
+	 */
+	this.exportAnnotationSidecars = async function ({ onProgress } = {}) {
+		let ids = await Zotero.DB.columnQueryAsync(
+			'SELECT DISTINCT parentItemID FROM itemAnnotations ORDER BY parentItemID'
+		);
+		ids = (ids || []).map(Number);
+		let result = { written: 0, skipped: 0, empty: 0, failed: [] };
+		for (let i = 0; i < ids.length; i++) {
+			let attachment = await Zotero.Items.getAsync(ids[i]);
+			if (!attachment || !attachment.isFileAttachment()) {
+				result.empty++;
+				continue;
+			}
+			onProgress?.({ index: i, total: ids.length, title: attachment.getField('title') });
+			try {
+				let annotations = attachment.getAnnotations();
+				if (!annotations.length) {
+					result.empty++;
+					continue;
+				}
+				let dir = Zotero.Attachments.getStorageDirectory(attachment).path;
+				let path = OS.Path.join(dir, 'annotations.md');
+				if (await IOUtils.exists(path)) {
+					result.skipped++;
+					continue;
+				}
+				await Zotero.File.createDirectoryIfMissingAsync(dir);
+				await Zotero.File.putContentsAsync(path, this._annotationsToMarkdown(attachment, annotations));
+				result.written++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				result.failed.push({ key: attachment.key, error: e.message || String(e) });
+			}
+		}
+		return result;
+	};
+
+	this._annotationsToMarkdown = function (attachment, annotations) {
+		let title = attachment.getField('title') || attachment.key;
+		let lines = [
+			`# Annotations — ${title}`,
+			'',
+			`Attachment: ${attachment.key}`,
+			`File: ${attachment.attachmentFilename || ''}`,
+			`Exported: ${new Date().toISOString()}`,
+			'',
+		];
+		for (let annotation of annotations) {
+			let page = annotation.annotationPageLabel
+				|| (() => {
+					try {
+						let position = JSON.parse(annotation.annotationPosition);
+						return position.pageIndex === undefined ? '' : String(position.pageIndex + 1);
+					}
+					catch (e) {
+						return '';
+					}
+				})();
+			lines.push(`## ${annotation.annotationType || 'annotation'}${page ? ` · page ${page}` : ''}`);
+			lines.push('');
+			if (annotation.annotationColor) {
+				lines.push(`Color: ${annotation.annotationColor}`);
+				lines.push('');
+			}
+			let text = this._plainText(annotation.annotationText);
+			if (text) {
+				lines.push(...text.split('\n').map(line => `> ${line}`));
+				lines.push('');
+			}
+			let comment = this._plainText(annotation.annotationComment);
+			if (comment) {
+				lines.push(comment);
+				lines.push('');
+			}
+			if (annotation.annotationPosition) {
+				lines.push('Position:');
+				lines.push('```json');
+				lines.push(annotation.annotationPosition);
+				lines.push('```');
+				lines.push('');
+			}
+		}
+		return lines.join('\n').replace(/\n{3,}/g, '\n\n') + '\n';
+	};
+
+	this._plainText = function (value) {
+		if (!value) return '';
+		try {
+			return new DOMParser().parseFromString(String(value), 'text/html').body.textContent || '';
+		}
+		catch (e) {
+			return String(value);
+		}
+	};
+
 	/**
 	 * Open note in tab or window
 	 * @param {number} itemID

@@ -146,10 +146,6 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
             }),
         ),
         "save_identifier" => ("translate.save", arguments),
-        "list_annotations" => (
-            "annotation.list",
-            json!({ "key": required(&arguments, "key")? }),
-        ),
         "export_note" => (
             "export.note",
             json!({ "key": required(&arguments, "key")? }),
@@ -287,12 +283,6 @@ fn tools() -> Value {
             &["identifier"]
         ),
         tool(
-            "list_annotations",
-            "List annotations on a PDF or EPUB attachment.",
-            json!({ "key": { "type": "string" } }),
-            &["key"]
-        ),
-        tool(
             "export_note",
             "Export a note as Markdown text.",
             json!({ "key": { "type": "string" } }),
@@ -367,7 +357,7 @@ mod tests {
             .iter()
             .filter_map(|tool| tool.get("name").and_then(|name| name.as_str()))
             .collect();
-        assert_eq!(names.len(), 18);
+        assert_eq!(names.len(), 17);
         for expected in [
             "search_library",
             "create_item",

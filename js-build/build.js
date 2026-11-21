@@ -5,8 +5,6 @@ const getCopy = require('./copy');
 const getJS = require('./js');
 const getSass = require('./sass');
 const getSymlinks = require('./symlinks');
-const getReader = require('./reader');
-const getDocumentWorker = require('./document-worker');
 const { formatDirsForMatcher, getSignatures, writeSignatures, cleanUp, onSuccess, onError} = require('./utils');
 const { dirs, symlinkDirs, copyDirs, symlinkFiles, jsFiles, scssFiles, ignoreMask } = require('./config');
 
@@ -34,9 +32,7 @@ if (require.main === module) {
 				getJS(jsFiles, { ignore: ignoreMask }, signatures),
 				...scssFiles.map(scf => getSass(scf, { ignore: ignoreMask }, signatures)),
 				getSymlinks(symlinks, { nodir: true, ignore: ignoreMask }, signatures),
-				getSymlinks(symlinkDirs, { ignore: ignoreMask }, signatures),
-				getReader(signatures),
-				getDocumentWorker(signatures)
+				getSymlinks(symlinkDirs, { ignore: ignoreMask }, signatures)
 			]);
 
 			await writeSignatures(signatures);

@@ -25,14 +25,6 @@
 [submodule "resource/SingleFile"]
 	path = resource/SingleFile
 	url = https://github.com/gildas-lormeau/SingleFile.git
-[submodule "pdf-reader"]
-	path = reader
-	url = https://github.com/zotero/reader.git
-	branch = master
-[submodule "pdf-worker"]
-	path = document-worker
-	url = https://github.com/zotero/document-worker.git
-	branch = master
 [submodule "chrome/content/zotero/xpcom/utilities"]
 	path = chrome/content/zotero/xpcom/utilities
 	url = https://github.com/zotero/utilities.git

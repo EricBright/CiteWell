@@ -144,7 +144,7 @@ Zotero.Server.Agent = {
 					capabilities: [
 						'ping', 'search', 'item.get', 'item.create', 'item.update', 'item.addNote',
 						'item.attachFile', 'item.attachURL', 'translate.save',
-						'annotation.list', 'export.note',
+						'export.note',
 						'collection.list', 'collection.create', 'collection.addItems',
 						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
 					],
@@ -173,9 +173,6 @@ Zotero.Server.Agent = {
 
 			case 'translate.save':
 				return this._translateSave(params);
-
-			case 'annotation.list':
-				return this._listAnnotations(params);
 
 			case 'export.note':
 				return this._exportNote(params);
@@ -410,26 +407,6 @@ Zotero.Server.Agent = {
 			throw new AgentError(400, 'Attachments and notes cannot have child attachments');
 		}
 		return item;
-	},
-
-	_listAnnotations: async function ({ key }) {
-		let attachment = this._requireAttachment(key);
-		let ids = attachment.getAnnotations(false, true);
-		let items = await Zotero.Items.getAsync(ids);
-		let annotations = [];
-		for (let annotation of items) {
-			await annotation.loadDataType('annotation');
-			annotations.push({
-				key: annotation.key,
-				type: annotation.annotationType,
-				text: annotation.annotationText || '',
-				comment: annotation.annotationComment || '',
-				color: annotation.annotationColor,
-				pageLabel: annotation.annotationPageLabel || '',
-				position: annotation.annotationPosition,
-			});
-		}
-		return { annotations };
 	},
 
 	_createAnnotation: async function ({
