@@ -7,6 +7,10 @@ loader, has CiteWell's extension id and talks only to `127.0.0.1:23121`.
 
 ## Identity
 
+`ProtocolHandler.xcu` maps `vnd.citewell.*` URLs to the Python provider. The
+Addons menu needs this registration; without it LibreOffice reports an
+unsupported operating-system operation.
+
 - id: `citewell-libreoffice-integration@sophy.ca`
 - display name: CiteWell LibreOffice Integration
 - health URL: `http://127.0.0.1:23121/health`
