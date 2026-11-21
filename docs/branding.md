@@ -107,7 +107,7 @@ point the updater at `download.zotero.org`.
 
 ```bash
 ./scripts/make-app-icons         # only when app/linux/icons/citewell.svg changed
-npm run build                    # assets are copied during the build
+node js-build/build.js            # assets are copied during the build
 app/scripts/build_and_run -n     # relaunch the staged app
 ```
 

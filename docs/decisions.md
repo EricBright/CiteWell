@@ -307,13 +307,13 @@ to reuse plugins — plugins can be installed separately; shared state is the la
 
 ## D20 — Markdown is the default authoring and interchange format
 
-**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
+**Date:** 2026-11-20 · **Status:** accepted for APIs and docs; superseded by D29 for note storage · **Reversible:** yes
 
 Everything that crosses a boundary as content is Markdown by default:
 
 | Surface | Rule |
 |---|---|
-| Agent notes | `item.addNote` treats `text` as Markdown and converts it to the HTML Zotero stores; `format: "html"` is an explicit opt-in |
+| Agent notes | Superseded by D29: `add_note` writes a `.md` attachment; HTML is rejected |
 | Agent export | `export.note` returns Markdown through the Note Markdown translator |
 | Documentation and skills | `SKILL.md`, `docs/**`, README and roadmap stay Markdown |
 | APIs | Prefer a Markdown field/string over HTML or RTF; HTML appears only at Zotero's storage boundary |
@@ -327,7 +327,7 @@ default for agent input — harder to author, harder to diff, and carries saniti
 
 ## D21 — Notes are Markdown, with a rich editor as the view
 
-**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (until the first Markdown save)
+**Date:** 2026-11-20 · **Status:** superseded by D29 · **Reversible:** yes (never built)
 
 Zotero's note pipeline is HTML: `itemNotes.note`, ProseMirror, HTML search and the Note Markdown
 exporter. CiteWell replaces the storage format, not the editor: Markdown is the only persisted
@@ -476,6 +476,142 @@ primary application.
 
 Rejected: treating the current CiteWell library as canonical — it is test data for a pre-alpha
 build, and the owner would lose the distinction between experiments and the real library.
+
+## D28 — CiteWell is a citation catalogue, not a workspace
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** no (product direction)
+
+CiteWell collects, organizes and cites sources. Its job is metadata, collections, capture through
+translators, and a local agent/CLI interface. PDF reading, annotation, note editing, and plugin
+execution belong to other tools. The catalogue stays small enough to audit and maintain.
+
+This ends the Zotero feature-parity and upstream-merge frame. `zotero/zotero` remains available as
+source reference if a deleted mechanism is ever wanted again, but CiteWell is not expected to merge
+with it, and no roadmap item exists to keep pace with it. The fork's own `main` mirror may remain,
+but product decisions no longer consider upstream conflicts.
+
+Consequences:
+
+| Surface | New rule |
+|---|---|
+| PDFs | No renderer, no annotations UI, no PDF full-text index; the host opens the file (D30) |
+| Notes | Markdown file attachments edited by the host, not an embedded editor (D29) |
+| Plugins | Code retained, loading and UI off by default (D31) |
+| Dependencies | npm retired, no new toolchain or Rust crate without owner approval (D32) |
+| Translators | Updates stay intact; safeguards are additive (D33) |
+
+Rejected: an all-in-one research workspace — every added viewer, editor and plugin runtime is
+threat surface and maintenance for work the desktop already does better. Rejected: feature parity
+with Zotero — it would make upstream architecture the roadmap. Rejected: merging with upstream
+later — the note and PDF changes make the data and UI paths intentionally incompatible.
+
+## D29 — Notes are file-backed Markdown attachments
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** with the database backup · **Supersedes:** D21
+
+A note is a `.md` file attachment under its parent item, not a row in `itemNotes`. The file lives in
+Zotero's attachment storage (`storage/<attachmentKey>/<name>.md`), so it is included in the same
+backup unit as the rest of the library. The attachment item carries the title, parent and dates; the
+file carries the content.
+
+There is no in-app note editor and no bundled Markdown parser or renderer. Opening a note launches
+the host's default Markdown editor through `xdg-open`; if none is configured, CiteWell explains how
+to choose one and does not install anything. The item pane shows the attachment title, parent, date
+and a plain-text excerpt. Search indexes the file text and refreshes when the file's modification
+time changes; no HTML is parsed and no PDF text is involved.
+
+Existing `itemNotes` migrate once, explicitly, not silently on startup:
+
+1. Back up `zotero.sqlite` before the first conversion.
+2. Convert each legacy note with the existing Note Markdown translator, including embedded images.
+3. Write the `.md` file, verify it is readable and non-empty, then attach it to the original parent
+   with the original dates. The old note item is moved to Trash, never deleted (D26).
+4. A failed conversion leaves the old note untouched and reports it; a rerun resumes.
+5. No dual-format state survives: once migrated, no reader assumes `itemNotes.note`.
+
+Agent `add_note` creates a `.md` attachment; `export.note` reads the file. The old
+`markdownStorage` preference and editor conversion boundary are removed with the editor.
+
+Rejected: ProseMirror as a Markdown view (D21) — it keeps the largest npm subtree and a second
+document model for a job an external editor does better. Rejected: Markdown in `itemNotes.note` —
+it preserves the note-item type, search and editor dependencies that this decision removes.
+Rejected: dual HTML/Markdown storage — every read path would have to handle both forever.
+
+## D30 — PDFs are external files; annotations become Markdown sidecars
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** for the sidecar format, not for the viewer
+
+CiteWell does not render, annotate, thumbnail or full-text-index PDFs. The `reader/`,
+`document-worker/` and pdf.js code paths are removed from the build and UI. PDF attachment records
+and files remain; opening one hands the path to `xdg-open` or the file manager.
+
+Existing PDF annotations are exported once to a human-readable Markdown sidecar next to the
+attachment, `storage/<attachmentKey>/annotations.md`, with the quote, comment, page, colour and
+position in plain text. The sidecar is not parsed back into the app and is never overwritten if it
+already exists. The current test library has no annotations, so this is mostly a compatibility path
+for an imported Zotero library.
+
+`fulltext.sqlite` remains for text search over Markdown notes and sidecars, but PDF text is no longer
+indexed, and stale PDF rows are dropped on the next rebuild. PDF metadata extraction that does not
+require a renderer may remain; thumbnails do not, because they are produced by pdf.js.
+
+Rejected: an embedded viewer — it is the largest single piece of inherited threat surface for a job
+the desktop performs. Rejected: in-app PDF annotation — it requires the viewer and a second
+annotation model. Rejected: keeping pdf.js only for thumbnails/metadata — it keeps the dependency
+and the attack surface for a cosmetic gain. Rejected: silently discarding annotations — they are
+user-authored data and get a portable sidecar instead.
+
+## D31 — The plugin API is parked
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** yes (one flag)
+
+The plugin code remains in the tree for reference and possible later use, but released builds do
+not initialize the plugin loader, expose plugin UI, or execute third-party plugin code. A build
+constant/flag, off by default, controls it; no plugin state is loaded until the flag is deliberately
+changed and tested.
+
+Rejected: deleting the code now — it is entangled with the core and would make the cleanup diff
+larger than the product needs. Rejected: leaving plugins enabled — it is arbitrary local code
+execution and a compatibility obligation this project no longer carries.
+
+## D32 — Dependency freeze: no new npm, crates, or toolchains without approval
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** only by explicit owner approval
+
+npm is retired as a package manager. No install, upgrade, audit, `ci`, new package entry, lockfile
+change, or vendored npm tree is allowed. `.npmrc` fails closed (offline, unreachable registry, empty
+cache, `ignore-scripts`) so an accidental command cannot quietly succeed. The existing
+`node_modules` tree is frozen and used only by the legacy build until R15 replaces it; it is not a
+place to add or update anything.
+
+No new Rust crate is added without consulting the owner first; standard-library Rust is the default.
+No second toolchain is installed. AGPL-3.0-or-later dependencies are acceptable on license grounds,
+but license compatibility is not a reason to add one.
+
+The note-editor npm build path is retired rather than vendored. If a build needs a missing artifact,
+the answer is to remove the dependency or ask, not to run npm.
+
+Rejected: vendoring the note editor and its lockfile — it preserves a package ecosystem this
+project has decided not to maintain. Rejected: routine dependency updates — they add change without
+a product need. Rejected: trusting audit output — it reports known advisories, not supply-chain
+risk.
+
+## D33 — Translator updates stay intact; safeguards are additive
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** with care
+
+Translators are core to capture. Their update channel, the vendored translator tree, and the Firefox
+/ Google Docs integration paths stay working. Safeguards — sandboxing, explicit permissions,
+verified downloads, rollback of a bad update, and a reviewable diff — must be added around them, not
+by freezing or disabling updates.
+
+Locales remain data, not code, and are not removed. The sync-dependent parts of the connector remain
+gated by D14; the translator and citation-insertion paths themselves must not be broken by this work.
+Any change to translator execution is tested against Firefox and Google Docs before shipping.
+
+Rejected: freezing translator updates — capture rots as sites change. Rejected: removing the
+integrations to simplify the app — they are the product's main input path. Rejected: accepting
+updates without review — third-party translator code runs with app privileges.
 
 ## Dead ends
 

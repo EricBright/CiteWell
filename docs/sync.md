@@ -23,22 +23,20 @@ git switch -c citewell upstream/10.0
 git submodule update --init --recursive
 ```
 
-## Routine merge
+## Upstream is reference only
+
+CiteWell does not merge upstream (D28). Do not run a routine merge, do not update submodule
+pointers to follow upstream, and do not run npm to reconcile a package tree (D32).
+
+If a specific upstream file is ever needed, read it without changing the branch:
 
 ```bash
-git fetch upstream
-git switch citewell
-git merge upstream/10.0
-git submodule update --init --recursive     # upstream moves submodule pointers constantly
-npm i                                        # only if package.json or package-lock.json changed
-node js-build/build.js
-app/scripts/build_and_run -n                 # verify
-test/runtests.sh -f item collections         # or the relevant subset
-git push origin citewell
+git fetch upstream 10.0
+git show upstream/10.0:path/to/file
 ```
 
-Merging (not rebasing) keeps published history intact. Do not force-push a branch that GitHub
-Issues or a build reference.
+Adapt what is useful in a normal CiteWell commit. A wholesale merge would import architecture and
+dependencies this project has deliberately removed.
 
 ## Submodules
 

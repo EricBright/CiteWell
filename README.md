@@ -1,8 +1,8 @@
 # CiteWell
 
-CiteWell is a fork of [Zotero](https://github.com/zotero/zotero), the free research manager
-for collecting, organizing, annotating, and citing sources. It keeps Zotero's engine, data
-model, and workflow, and changes the interface for a cleaner working environment.
+CiteWell is a citation catalogue built on [Zotero](https://github.com/zotero/zotero)'s engine
+and data model, for collecting, organizing, and citing sources. PDF reading, annotation, and
+note editing are left to desktop tools; CiteWell owns the catalogue.
 
 CiteWell is an independent project. It is not produced, endorsed, or supported by the Zotero
 project or the Corporation for Digital Scholarship, and it is not the place to report Zotero
@@ -22,20 +22,19 @@ What is being worked on, and what is deliberately out of scope: [roadmap.md](roa
 
 ## Quick start
 
-Requirements: Node 18 or later, [Git LFS](https://git-lfs.com/), and the platform tools listed
-in [app/README.md](app/README.md).
+Requirements: Node 18 or later, [Git LFS](https://git-lfs.com/), and the platform tools in
+[app/README.md](app/README.md). npm is retired (D32): the dependency tree is frozen, and a fresh
+clone cannot install it.
 
 ```bash
 git clone --recursive https://github.com/EricBright/CiteWell
 cd CiteWell
-npm i
 app/scripts/build_and_run      # build, then launch with debug output and the error console
 ```
 
-While developing, run `npm start` in a second terminal to rebuild JS and Sass on save, then
+While developing, run `node js-build/watch.js` in a second terminal to rebuild JS and Sass on save, then
 `app/scripts/build_and_run -n` to relaunch without rebuilding. Tests run inside a built app:
-`test/runtests.sh`, optionally with a test name to run a single file. Build output lands in
-`app/staging/`, and the staged app can be launched directly.
+`test/runtests.sh`. Build output lands in `app/staging/`.
 
 ## Repository map
 
@@ -65,7 +64,7 @@ to answer one question, not to get oriented.
 | `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
 | `COPYING` | once | legal questions | Full AGPL-3.0 text |
 | `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
-| `docs/sync.md` | on-demand | before or after a merge from upstream | Branch model, merge and submodule procedure |
+| `docs/sync.md` | on-demand | relating CiteWell to upstream | Branch model; upstream is reference only |
 | `docs/branding.md` | on-demand | changing titles, icons, installer, or channel | Where each piece of branding lives |
 | `docs/decisions.md` | on-demand | asking why something is the way it is | Decision records and dead ends |
 | `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
@@ -75,7 +74,7 @@ to answer one question, not to get oriented.
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
-| `docs/notes.md` | on-demand | changing notes or the editor | Markdown-only notes |
+| `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License

@@ -4,47 +4,63 @@ Last updated 2026-11-21 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
+## Direction
+
+CiteWell is a citation catalogue (D28), not a research workspace. There is no PDF viewer, PDF
+annotation UI, PDF full-text search, in-app note editor, or plugin execution in the target product.
+PDFs open in the host; notes are Markdown file attachments edited in the host; plugins are parked.
+
+Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
+push target. The product branch may diverge without limit.
+
 ## Where the project stands
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell naming; sync disabled and hidden |
+| App | Linux AppImage on Firefox **153.7.0esr**; last build `19400ae98`; that build still contains the PDF reader, note editor and plugin loader |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
-| Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log |
-| Agent skill | [SKILL.md](../SKILL.md); Help → Agents and SKILL.md; Agent access pane |
-| Notes | **Agent notes accept Markdown but Zotero still stores HTML**; Markdown-only design approved (D21), not built |
+| Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log — note and annotation verbs will change with D29/D30 |
+| Notes | New notes and agent notes are `.md` file attachments opened externally. Legacy `itemNotes` still open in the shipped ProseMirror editor until the explicit migration is built |
+| PDF | **Target:** external files only; annotations exported once to `annotations.md` sidecars; no PDF text index (D30). **Not built.** Current build still ships the reader and pdf.js |
+| Plugins | **Target:** code retained, loader and UI off by default (D31). **Not built.** Current build still loads plugins |
+| Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
-| Docs | README index, Rust docs gate, D1–D25, research note, note design |
-| CI | `docs` and `CodeQL`; check the run for the pushed tip |
+| Docs | README index, Rust docs gate, D1–D33 |
+| CI | `docs` and `CodeQL`; the inherited `ci.yml` still contains npm jobs and is not the dependency policy |
 
 Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (≈155 MB)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
+The obsolete R26 editor work was preserved before reverting at
+`~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
+(sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
+plan.
+
 ## Pick up here
 
-1. **R24 — import/merge a Zotero library** ([import.md](import.md), D23, D25). Adopt-copy,
-   replace and restore points are built: detector, read-only inspection, Library pane,
-   `citewell-import` stage/verify/apply and the pre-start hook. Next: Phase 2 merge, which writes
-   through Zotero's data layer and reports duplicates. Source read-only throughout; R26 changes
-   the note conversion step there.
-2. **R26 — Markdown-only notes** ([notes.md](notes.md), D21). Slice 1 is the conversion boundary
-   only: `markdownToHTML` / `htmlToMarkdown` at the note-editor edge, load/save conversion,
-   round-trip tests. Parser: bundled `markdown-it` + `prosemirror-markdown` (no new dependency).
-   Editor: ProseMirror as a view over Markdown. Citations deferred and flattened; tables and math
-   kept; legacy HTML converts on first open with a backup.
-3. **R21 — checksums and `.zsync`** beside the AppImage, for Gear Lever/AppImageUpdate. Needs a
-   release host and stable filenames.
-4. **Connector on AMO** — id `citewell-connector@sophy.ca`; `update_url` is inert until a listing
-   exists.
-5. **R6 — UI behaviour changes** — needs the owner's list; one decision and one test per change.
-6. **R19 — remove the sync subsystem**; R18 hides it now.
-7. **R7 — non-English locales** still contain upstream Zotero translations.
-8. **R20 — Obsidian/Markdown export** ([export.md](export.md)); it becomes mostly a copy once
-   R26 lands.
+1. **Phase 0 — freeze and retire the old paths.** R26 is reverted, the `note.markdownStorage` pref
+   is gone, `.npmrc` fails closed, `repo-guard` and the pre-commit hook reject package/lock and
+   `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
+   clone with `git config core.hooksPath .githooks`.
+2. **D29 — file-backed Markdown notes** ([notes.md](notes.md)). Implement the attachment model,
+   explicit migration, external open, excerpts and search; then remove the editor, its submodule,
+   its npm build path and the `note.xhtml`/`editorInstance` surfaces. Tests must prove no new
+   `itemNotes` row is written.
+3. **D30 — remove PDF handling.** Drop `reader/`, `document-worker/` and pdf.js from the build and
+   UI; open PDFs with `xdg-open`; export existing annotations to `storage/<key>/annotations.md`;
+   stop indexing PDF text; remove reader/annotation tests and agent verbs.
+4. **D31 — park plugins.** Add the off-by-default flag, skip loader initialization and hide plugin
+   UI. Keep the code.
+5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
+   sandbox/permissions/integrity/rollback and test both integrations.
+6. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
+   from this repository. Do not port or vendor them; upstream remains available if ever needed.
+7. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
+   note conversion step now targets `.md` attachments.
 
 ## Commands
 
@@ -54,8 +70,8 @@ Fetch the Gecko runtime once per version (gitignored):
 app/scripts/fetch_xulrunner -p l -a x86_64
 ```
 
-Clean rebuild after assets, trashing `build/`, or changing the runtime. Use Trash, never `rm`
-(D26):
+Build. Use the existing Node tree; **do not run npm** (D32). Clean rebuild after assets or runtime
+changes, trashing `build/` and `.signatures.json` with `gio trash`, never `rm` (D26):
 
 ```bash
 gio trash -f build .signatures.json
@@ -63,6 +79,9 @@ node js-build/build.js
 app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
+
+The note-editor build currently fetches a prebuilt archive. Its npm fallback is being removed; do
+not restore it to make a build pass. If the archive is unavailable, fix the build or land D29.
 
 Run without touching the real library:
 
@@ -76,7 +95,7 @@ Docs, Rust tests, agent tests, connector:
 cargo run --manifest-path tools/docs-check/Cargo.toml
 cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
 cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
-test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js pluginAPITest.js
+test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 ```
 
@@ -93,7 +112,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 | Pitfall | Handling |
 |---|---|
-| Trashing `build/` without `.signatures.json` | Sass skips everything; the bundle loses platform CSS and the note editor. `xtask` refuses to package that now; trash both |
+| Trashing `build/` without `.signatures.json` | Sass skips everything and the bundle loses platform CSS. `xtask` refuses to package that now; trash both |
 | Putting working files under `build/` | Zotero zips `build/` into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
 | Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
 | `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
@@ -107,6 +126,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | Tests using the real library | `test/runtests.sh` passes `-datadir "$TEMPDIR/Zotero"` and a temporary `XDG_CONFIG_HOME`; `resetDB()`/`resetData()` refuse `~/CiteWell` |
 | `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
 | Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
+| npm | Retired. Do not install, update, audit or add packages; `repo-guard` rejects package/lock changes and restored npm fallbacks (D32) |
 
 ## Facts worth not re-litigating
 
@@ -115,24 +135,31 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 - `ONLINE_SYNC: false` in [resource/config.mjs](../resource/config.mjs); `ONLINE_LIBRARY: false`
   in the connector. Code still exists (R19).
 - SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
-  file-based store is *not doing*; export is the portability answer.
+  file-based store is *not doing*; export is the portability answer. PDF text leaves the index
+  under D30; Markdown notes and annotation sidecars stay in it.
 - Local API and agent bridge listen on `127.0.0.1:23120` (D16/D17). The CLI never opens SQLite.
   Reads on `/api/` are local-unauthenticated; `/agent/v1` needs the 0600 token and
   `X-CiteWell-Agent: 1`, audits every call, and has no destructive verbs.
-- KDE/KWin draws the frame and its buttons (D18); external links go through `xdg-open` with the
-  Mozilla launcher environment cleared, so they open in the default browser.
+- KDE/KWin draws the frame and its buttons (D18); external links and files go through `xdg-open`.
 - CiteWell has its own profile, data directory and port (D19). Zotero's paths are never opened;
   import is explicit only.
 - **Zotero is canonical.** The current `~/CiteWell` database and storage are disposable test data
   until CiteWell stabilizes (D27); they are not the authoritative library.
-- **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
-- **Current note behavior:** `add_note` accepts Markdown and converts it to HTML for Zotero
-  storage (D20); `export.note` returns Markdown. R26 will remove HTML storage entirely, so do not
-  claim Markdown-only notes are done.
+- **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under
+  `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
+- **Notes are split during the transition:** `newNote` and `add_note` now create `.md` attachments.
+  Legacy `itemNotes` still open in the editor, and migration is not built. Do not describe
+  Markdown-only notes as complete until the old rows are converted and the editor is removed.
+- **Current PDF behavior is obsolete:** the reader, annotations and PDF full-text index are still in
+  the last build. D30 removes them. Do not add features to them.
+- **Plugins still load in the last build.** D31 parks them.
+- Translators keep their update channel; safeguards must not freeze updates or break the Firefox /
+  Google Docs paths (D33).
 - `citewell mcp` exposes 19 tools; verified with initialize, tools/list and tools/call.
 - `SKILL.md` is the downloadable agent skill (Help → Agents and SKILL.md, or Agent access).
 - The connector identity lives in `connectors/brand.json`; `xtask` substitutes tokens and fails on
   hardcoded English product names.
-- The Google Docs integration is vendored, not a submodule, because it had to be patched.
+- The Google Docs integration is vendored, not a submodule, because it had to be patched. Its
+  sync-dependent parts remain gated by D14.
 
 *For the full documentation index, see [../README.md](../README.md).*

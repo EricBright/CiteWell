@@ -1,65 +1,115 @@
-# Markdown-only notes
+# Notes as Markdown file attachments
 
-Status: **design approved, not implemented.** Companion to [research](research/rust-markdown-editors.md),
-D20 and D21.
+Status: **design approved, not built.** Companion to [decisions.md](decisions.md) D29 and D20.
 
 ## Goal
 
-A CiteWell note is Markdown. No HTML is written to `itemNotes.note`, exported as the note body,
-or required to read a note. The note editor remains a rich surface, but it is a view over
-Markdown, not a second format.
+A CiteWell note is a `.md` file attachment under its parent item. There is no `itemNotes` storage
+for new notes, no in-app note editor, and no bundled Markdown parser. The host's editor owns
+editing; CiteWell owns the attachment record, the file, search and export.
 
-## Decisions
+This replaces the abandoned ProseMirror-over-Markdown design (D21).
 
-| Question | Decision |
+## Data model
+
+| Part | Value |
 |---|---|
-| Parser | Reuse the note editor's bundled `markdown-it` + `prosemirror-markdown`; no new dependency |
-| Editor | Keep ProseMirror for IME, selection, spellcheck and accessibility; load Markdown, save Markdown |
-| Storage | Markdown in `itemNotes.note`; no new column in the first cut |
-| Legacy notes | Detect HTML on open and convert once, with a database backup; blank libraries are unaffected |
-| Citations | Deferred. The editor must not create citation nodes in Markdown mode; existing ones flatten to text on save |
-| Search and titles | Markdown-aware plain-text extraction, not HTML parsing |
-| Export | `export.note` returns the stored Markdown; R20 copies it |
-| HTML | Allowed only as the editor's in-memory document and for print/copy; never persisted |
+| Item type | Attachment (`imported_file`) |
+| File | `storage/<attachmentKey>/<name>.md` |
+| Content type | `text/markdown` |
+| Parent | The item the note belongs to; a standalone note is a top-level attachment |
+| Title | Attachment title, initially the note title or the first Markdown heading |
+| Dates | Preserve the source note's `dateAdded` and `dateModified` where the data layer accepts them |
+| Content | The file only; no `itemNotes` row and no HTML copy |
 
-## Implementation slices
+The attachment key is new. Existing note keys are not preserved, because a note becomes a different
+item. References to old note keys are reported during migration; nothing silently rewrites unrelated
+items.
 
-1. **Conversion boundary.** Add `markdownToHTML` and `htmlToMarkdown` at the note-editor boundary.
-   `EditorInstance.saveSync()` converts the editor HTML to Markdown before `setNote()`; the note
-   tab converts Markdown to HTML before initializing the editor. Round-trip tests cover headings,
-   lists, tables, code, math, links, inline formatting and images.
-2. **Reading surfaces.** The item-pane preview, note list, note titles, and any read-only note view
-   render Markdown in memory. No stored HTML is assumed.
-3. **Search.** `fulltext.js` and title extraction use a Markdown-to-text pass, so words inside
-   emphasis, headings and code are indexed without the markers.
-4. **Citations and rich-only constructs.** Remove citation insertion from Markdown notes; flatten
-   existing `data-citation` spans to `(Author Year)` on conversion. Underline, colour, highlight
-   and sup/sub round-trip through the existing serializer or degrade to their text.
-5. **Import.** R24 converts HTML notes to Markdown while copying a Zotero library, with a report
-   of lossy constructs.
+File names are a slug of the title, with the attachment key as the collision breaker. Renaming the
+attachment title does not have to rename the file; the file name is not an identifier.
 
-## Safety
+## Creating and opening
 
-- Before the first conversion of an existing note, copy `zotero.sqlite` to a timestamped backup.
-- A note whose Markdown→editor→Markdown round trip would change content opens read-only and says
-  why, rather than silently rewriting it.
-- Never mix formats in one note. A per-note HTML detection is a migration tool, not a permanent
-  dual-format mode.
-- Sync is off, so no protocol compatibility is at stake.
+- **New Note** creates `Untitled Note.md` (or `Note.md` from selected text), saves it under the
+  parent and calls `xdg-open`. A title prompt is not built yet. If there is no Markdown handler,
+  CiteWell explains how to choose a default editor; it does not install one.
+- Double-clicking a note attachment opens the file externally. The item pane shows title, parent,
+  date, size and a plain-text excerpt. No editor widget is embedded in a tab or the item pane.
+- The note tab type and `note-editor`/`editorInstance`/`note.xhtml` surfaces are removed once
+  migration is complete. A legacy note opened before migration gets a read-only notice pointing at
+  the migration action, not a hidden conversion.
+
+## Migration of existing notes
+
+Migration is explicit, not a silent startup rewrite. The Library preferences pane gets a **Migrate
+notes to Markdown files…** action that shows the count and asks for confirmation.
+
+1. Back up `zotero.sqlite` with a timestamped backup and keep it visible (D25 style).
+2. For each `itemNotes` row, convert HTML to Markdown with the existing Note Markdown translator.
+   Embedded images, tables and math are converted; anything the translator cannot represent is
+   listed in the report.
+3. Create the attachment item and file, verify the file exists, is readable and non-empty, then
+   copy the old note's parent, collection memberships and dates where possible.
+4. Move the old note item to Trash; never delete it (D26). The Trash copy remains the rollback path
+   in addition to the database backup.
+5. A failed note is left in place and reported. A rerun skips notes already represented by a
+   verified file, so an interrupted run resumes.
+
+The current test library has 83 notes. A dry run on a copy is required before the migration is
+offered in a normal build.
+
+## Reading, excerpts and search
+
+- Excerpts strip Markdown syntax crudely (headings, emphasis markers, link destinations) and take a
+  bounded number of characters. No renderer is used.
+- The note text is indexed in `fulltext.sqlite` as plain text. The index is refreshed when the file's
+  modification time or size changes, on item selection and on a library scan; there is no file
+  watcher in the first cut.
+- PDF text is never indexed (D30). Annotation sidecars are indexed as ordinary text.
+- Search results find words inside emphasis, headings and code because the Markdown markers are not
+  part of the indexed tokens.
+
+## Agent interface
+
+- `add_note` creates a `.md` attachment under the parent, writes `text` as the file content, and
+  returns the attachment key and parent key. `format` is always Markdown; HTML is rejected rather
+  than converted.
+- `export.note` returns the file content and a filename derived from the title. A missing or
+  unreadable file is an error, not an empty note.
+- Item lookup, search and attachment-open verbs work on the attachment item like any other file.
+- The audit log records the path and action, never the note text.
+
+## Removal
+
+When the last legacy note has migrated:
+
+- Remove the `note-editor` submodule and its `js-build` build path.
+- Remove `editorInstance.js`, `elements/noteEditor.js`, `note.xhtml`, the note-tab plumbing, the
+  `note.markdownStorage` preference, and the npm fallback that rebuilt the editor.
+- Keep `Zotero.Notes` only for migration helpers, title/excerpt extraction and search; rename the
+  module if it becomes clearer once the editor is gone.
+- Remove note-editor styles, locale strings that only the editor used, and tests that assert editor
+  behaviour. Tests for migration, external open and search replace them.
 
 ## Exit criteria
 
-- Edit 200 notes, save, reopen; the second save produces byte-identical Markdown.
-- `rg '<(p|div|span|h[1-6])'` finds no HTML in note bodies in a fresh library.
-- Search finds a word inside `**bold**`, a heading and a code span.
-- A note with a legacy citation opens, flattens as documented, and remains editable.
+- No new note is stored in `itemNotes`; no new HTML is written.
+- 83 legacy notes migrate on a copy with a readable report and zero lost note bodies.
+- Every migrated note opens in the configured host editor and is found by a word inside its text.
+- Search never returns a PDF match.
+- The app starts and builds with the note-editor submodule absent and its npm tree untouched.
 
 ## Open questions
 
-1. Does the first cut convert every legacy note at startup, or on first open? Startup is simpler
-   but touches the whole library; first-open is safer but needs a marker.
-2. Are tables and math required in the first cut, or can they degrade to fenced blocks?
-3. Does the note list need rendered previews immediately, or is a Markdown-aware text excerpt
-   enough for the first release?
+1. Whether a title edit should rename the file, or only the attachment title (current proposal:
+   title only).
+2. Whether standalone notes should remain top-level attachments or be forced under a synthetic
+   parent.
+3. How the item pane displays a note excerpt without an editor: plain text block or read-only
+   preformatted view.
+4. Whether the migration is a preferences action or a first-run prompt when legacy notes exist
+   (current proposal: preferences action, plus a one-time banner).
+5. How to index files changed while CiteWell is closed without a full-library rescan on every start.
 
 *For the full documentation index, see [../README.md](../README.md).*

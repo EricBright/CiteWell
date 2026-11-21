@@ -15,9 +15,9 @@ violate.
 3. **README is always-tier.** Do not add detail to it. New documentation goes under `docs/`, is
    registered in the README index, and carries the back-reference line. `tools/docs-check`
    enforces the word cap and the completeness of the index.
-4. **Prefer new files over edits to upstream files.** `COPYING`, `CLAUDE.md`, and
-   `CONTRIBUTING.md` are upstream's and stay unmodified; every edit to a tracked upstream file
-   is a future merge conflict. CiteWell documentation therefore lives in `docs/`.
+4. **Leave upstream legal and agent files alone.** `COPYING`, `CLAUDE.md`, and
+   `CONTRIBUTING.md` are upstream's and stay unmodified. CiteWell documentation lives in
+   `docs/`.
 
 The name `CLAUDE.md` is upstream's, not this project's agent contract. It is kept verbatim as an
 architecture reference for all tools.
@@ -32,7 +32,8 @@ architecture reference for all tools.
    parity before deleting it; no big-bang or line-by-line translation. Procedure:
    [docs/rust.md](docs/rust.md#porting-existing-javascript).
 
-7. **Never `rm`.** Use Trash; keep every removal recoverable.
+7. **Never `rm`; never add dependencies without approval.** Use Trash; no npm, new crates, or
+   toolchains (D32).
 
 ## Where to look
 
