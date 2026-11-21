@@ -32,6 +32,8 @@ architecture reference for all tools.
    parity before deleting it; no big-bang or line-by-line translation. Procedure:
    [docs/rust.md](docs/rust.md#porting-existing-javascript).
 
+7. **Never `rm`.** Use Trash; keep every removal recoverable.
+
 ## Where to look
 
 | Question | File |

@@ -449,6 +449,34 @@ Phase 2 feature and is not offered as a variant of Import.
 Rejected: replacing without a backup. Rejected: one Import button that silently chooses merge or
 replace. Rejected: auto-deleting old restore points.
 
+## D26 — Nothing is deleted; removals go to Trash
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** yes
+
+This is the owner's main machine, and a destructive command is not a recoverable action. Every
+manual removal — build output, test directories, data the owner calls disposable — uses
+`gio trash`, which keeps a restorable entry in the wastebasket. `rm`, `rm -rf`, `find -delete` and
+`shred` are not used. `gio trash` refuses system internal mounts such as `/tmp`; for those, move
+the file to `~/.local/share/dsh-trash/<date>/` and say where it went. If neither works, leave the
+file and ask; never fall back to `rm`. Before overwriting an untracked file, copy it to Trash; tracked edits remain in Git. The
+Trash is never emptied automatically.
+
+Rejected: `rm -rf` on generated build directories — regenerable, but not recoverable as a
+snapshot. Rejected: emptying Trash to save space.
+
+## D27 — Zotero remains canonical until CiteWell stabilizes
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** when the pre-alpha ends
+
+The owner's canonical library is Zotero. The CiteWell database and storage are disposable test
+data until the import, notes and interface work has stabilized and been tested; they must not be
+treated as the authoritative copy, and resetting them is allowed through Trash (D26). The import
+is one-way: nothing in CiteWell is merged back into Zotero. Revisit this when CiteWell becomes the
+primary application.
+
+Rejected: treating the current CiteWell library as canonical — it is test data for a pre-alpha
+build, and the owner would lose the distinction between experiments and the real library.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

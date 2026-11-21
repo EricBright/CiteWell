@@ -54,10 +54,11 @@ Fetch the Gecko runtime once per version (gitignored):
 app/scripts/fetch_xulrunner -p l -a x86_64
 ```
 
-Clean rebuild after assets, deleting `build/`, or changing the runtime:
+Clean rebuild after assets, trashing `build/`, or changing the runtime. Use Trash, never `rm`
+(D26):
 
 ```bash
-rm -rf build .signatures.json
+gio trash -f build .signatures.json
 node js-build/build.js
 app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
@@ -92,7 +93,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 | Pitfall | Handling |
 |---|---|
-| Deleting `build/` without `.signatures.json` | Sass skips everything; the bundle loses platform CSS and the note editor. `xtask` refuses to package that now; clear both |
+| Trashing `build/` without `.signatures.json` | Sass skips everything; the bundle loses platform CSS and the note editor. `xtask` refuses to package that now; trash both |
 | Putting working files under `build/` | Zotero zips `build/` into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
 | Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
 | `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
@@ -122,6 +123,9 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   Mozilla launcher environment cleared, so they open in the default browser.
 - CiteWell has its own profile, data directory and port (D19). Zotero's paths are never opened;
   import is explicit only.
+- **Zotero is canonical.** The current `~/CiteWell` database and storage are disposable test data
+  until CiteWell stabilizes (D27); they are not the authoritative library.
+- **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
 - **Current note behavior:** `add_note` accepts Markdown and converts it to HTML for Zotero
   storage (D20); `export.note` returns Markdown. R26 will remove HTML storage entirely, so do not
   claim Markdown-only notes are done.
