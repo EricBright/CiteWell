@@ -549,7 +549,7 @@ Zotero.Server.Agent = {
 		}
 		items = items.filter(item => item.isRegularItem());
 		if (!items.length) {
-			throw new AgentError(400, 'Select one or more regular items first');
+			throw new AgentError(400, 'Select one or more items in CiteWell first.');
 		}
 		await Zotero.Styles.init();
 		let styleObject = style

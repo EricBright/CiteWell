@@ -16,6 +16,7 @@ import datetime
 import json
 import os
 import traceback
+import urllib.error
 import urllib.request
 
 _LOG_PATH = os.environ.get("CITEWELL_LO_LOG", "/tmp/citewell_lo.log")
@@ -67,10 +68,16 @@ def _health():
 
 
 def _citation():
-    with urllib.request.urlopen(CITATION_URL, timeout=5) as response:
-        citation = response.read(8192).decode("utf-8").strip()
+    try:
+        with urllib.request.urlopen(CITATION_URL, timeout=15) as response:
+            citation = response.read(8192).decode("utf-8").strip()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read(2048).decode("utf-8", "replace").strip()
+        raise RuntimeError(detail or "CiteWell could not produce a citation.") from None
+    except Exception as exc:
+        raise RuntimeError("CiteWell is not running.") from exc
     if not citation:
-        raise RuntimeError("CiteWell returned no citation")
+        raise RuntimeError("Select one or more items in CiteWell first.")
     return citation
 
 
@@ -137,7 +144,7 @@ class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
                                "Start CiteWell and try again.")
                     _log("health failed: %r" % (body,))
         except Exception as exc:
-            message = "CiteWell could not insert a citation.\n%s" % exc
+            message = str(exc) or "CiteWell could not insert a citation."
             _log("dispatch failed\n%s" % traceback.format_exc())
         if os.environ.get("CITEWELL_LO_SELFTEST"):
             return

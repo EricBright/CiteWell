@@ -88,7 +88,7 @@ fn response_for(request: &str) -> String {
             Err(error) => http_response(
                 "503 Service Unavailable",
                 "text/plain; charset=utf-8",
-                &format!("CiteWell could not produce a citation: {error}"),
+                &error,
             ),
         }
     } else {
@@ -118,7 +118,7 @@ fn agent_citation() -> Result<String, String> {
     let mut stream = TcpStream::connect(("127.0.0.1", 23120))
         .map_err(|e| format!("connecting to CiteWell: {e}"))?;
     stream
-        .set_read_timeout(Some(Duration::from_secs(5)))
+        .set_read_timeout(Some(Duration::from_secs(15)))
         .map_err(|e| format!("setting timeout: {e}"))?;
     stream
         .write_all(request.as_bytes())
@@ -132,6 +132,9 @@ fn agent_citation() -> Result<String, String> {
         .split_once("\r\n\r\n")
         .ok_or("malformed agent response")?;
     if !headers.starts_with("HTTP/1.1 200") && !headers.starts_with("HTTP/1.0 200") {
+        if let Some(message) = json_string_field(body, "message") {
+            return Err(message);
+        }
         return Err(format!("agent returned {}", headers.lines().next().unwrap_or("an error")));
     }
     if !body.contains(r#""ok":true"#) {
@@ -186,7 +189,7 @@ mod tests {
     fn citation_without_app_is_a_clear_error() {
         let response = response_for("GET /citation HTTP/1.1\r\n\r\n");
         assert!(response.starts_with("HTTP/1.1 503"));
-        assert!(response.contains("CiteWell could not produce a citation"));
+        assert!(response.contains("bridge was started without --data-dir"));
     }
 
     #[test]

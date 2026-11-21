@@ -140,7 +140,8 @@ Python component behaves the same way, so this is a remote-creation limitation.
 An in-process Basic macro and `DispatchHelper` now exercise the menu protocol, run the
 health check, and insert the formatted citation returned by `/citation` into a Writer
 document. The test used an isolated profile only; the protocol registration is what makes
-the Addons menu work instead of falling back to an OS error. The Rust
+the Addons menu work instead of falling back to an OS error. A missing selection is
+reported as “Select one or more items in CiteWell first.” rather than an HTTP code. The Rust
 `citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
 packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
 when the app exits. The CiteWell OXT is packaged under

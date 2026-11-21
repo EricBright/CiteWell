@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `7dac180b…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.66e9b9ab8`, sha256 `f8d2e609…`, 133,552,632 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -26,14 +26,14 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. It has not been run against the real LibreOffice profile yet. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
+| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly; missing selection now produces an actionable message. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. It has not been run against the real LibreOffice profile yet. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D33 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `7dac180b79dcb6b4cd71eee29160c22597984bb7922cc42bdddf00ec389c165b`)
+- `dist/CiteWell-x86_64.AppImage` (133,552,632 bytes; sha256 `f8d2e60934c6ee0ae07f0c17dd68fc96e42c6d060d31229ed42dada67611be5c`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
