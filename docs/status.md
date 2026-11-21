@@ -17,12 +17,12 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the annotation-shell removal (`10.0.9.SOURCE.e0d2585fc`, sha256 `c812f0c2…`, 136,243,704 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt with note excerpts/search (`10.0.9.SOURCE.599d0ebd4`, sha256 `dd49fe24…`, 136,247,800 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
-| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text. The ProseMirror `note-editor` submodule and bundle are removed; a read-only legacy viewer remains, along with `editorInstance` annotation helpers to be removed with D30 |
+| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; only `editorInstance` serialization utilities remain |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
@@ -47,10 +47,10 @@ plan.
    `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
    clone with `git config core.hooksPath .githooks`.
 2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
-   migration, embedded-image copying and the removal of the note-editor submodule/bundle are done.
-   A read-only viewer replaces the editable element; note tabs still work. Next: add plain-text
-   excerpts, remove the remaining `editorInstance` annotation helpers with D30, and decide whether
-   the note-window shell is still earning its place.
+   migration, embedded-image copying, the note-editor bundle removal, excerpts and full-text
+   re-indexing are done. A read-only viewer replaces the editable element; note tabs still work.
+   Next: decide whether the note-window shell is still earning its place and trim the remaining
+   `editorInstance` serialization utilities.
 3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js, previews,
    read-aloud UI, item-pane/notes-context annotation controls, Add Note from Annotations, the
    citation-dialog annotation mode and annotation agent verbs are removed. Sidecars export from

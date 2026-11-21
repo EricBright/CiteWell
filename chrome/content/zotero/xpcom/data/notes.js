@@ -312,6 +312,39 @@ Zotero.Notes = new function () {
 		return markdown;
 	};
 
+	/**
+	 * Crude plain-text excerpt for the item pane. No Markdown renderer is used.
+	 */
+	this.getMarkdownExcerpt = function (text, maxLength = 500) {
+		if (!text) return '';
+		let plain = String(text)
+			.replace(/^\s*#{1,6}\s+/gm, '')
+			.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+			.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+			.replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
+			.replace(/[*_~]/g, '')
+			.replace(/^\s*>\s?/gm, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+		return plain.length > maxLength ? plain.slice(0, maxLength) + '…' : plain;
+	};
+
+	/**
+	 * Re-index Markdown attachments at startup and when a note is opened. The
+	 * file may have been edited by an external editor while CiteWell was closed.
+	 */
+	this.indexMarkdownAttachments = async function () {
+		let ids = await Zotero.DB.columnQueryAsync(
+			`SELECT A.itemID FROM itemAttachments A
+			JOIN items I ON I.itemID = A.itemID
+			WHERE A.contentType = 'text/markdown'
+			AND I.itemID NOT IN (SELECT itemID FROM deletedItems)`
+		);
+		if (!ids || !ids.length) return 0;
+		await Zotero.Fulltext.indexItems(ids, { ignoreErrors: true });
+		return ids.length;
+	};
+
 	this.countAnnotatedAttachments = async function () {
 		return Zotero.DB.valueQueryAsync(
 			'SELECT COUNT(DISTINCT parentItemID) FROM itemAnnotations'

@@ -73,6 +73,20 @@
 							</html:div>
 						</html:div>
 					</html:div>
+					<html:div id="markdown-note" hidden="true" style="margin-top: 1em;">
+						<html:div id="markdown-note-parent-row" class="meta-row">
+							<html:div class="meta-label"><html:label class="key">Parent</html:label></html:div>
+							<html:div class="meta-data"><html:span id="markdown-note-parent"/></html:div>
+						</html:div>
+						<html:div id="markdown-note-date-row" class="meta-row">
+							<html:div class="meta-label"><html:label class="key">Added</html:label></html:div>
+							<html:div class="meta-data"><html:span id="markdown-note-date"/></html:div>
+						</html:div>
+						<html:div class="meta-row" style="align-items: start;">
+							<html:div class="meta-label"><html:label class="key">Excerpt</html:label></html:div>
+							<html:div id="markdown-note-excerpt" class="meta-data" style="white-space: pre-wrap; max-height: 14em; overflow: auto;"/>
+						</html:div>
+					</html:div>
 					<html:div id="note-container">
 						<note-editor id="attachment-note-editor" notitle="1" flex="1"/>
 						<button id="note-button" data-l10n-id="attachment-info-convert-note"/>
@@ -523,6 +537,7 @@
 			}
 
 			this.initAttachmentNoteEditor();
+			await this.updateMarkdownNote();
 			
 			if (this.displayButton) {
 				selectButton.label = this.buttonCaption;
@@ -679,6 +694,41 @@
 				);
 			}
 			this._forceRenderAll();
+		}
+
+		async updateMarkdownNote() {
+			let container = this._id('markdown-note');
+			if (!container) return;
+			if (!Zotero.Notes.isMarkdownAttachment(this.item)) {
+				container.hidden = true;
+				return;
+			}
+			let parent = this.item.parentItem;
+			this._id('markdown-note-parent').textContent = parent ? parent.getDisplayTitle() : '';
+			try {
+				let added = Zotero.Date.sqlToDate(this.item.dateAdded, true);
+				this._id('markdown-note-date').textContent = added.toLocaleString();
+			}
+			catch (e) {
+				this._id('markdown-note-date').textContent = '';
+			}
+			let excerpt = '';
+			try {
+				if (await this.item.fileExists()) {
+					let text = await Zotero.Notes.getMarkdownAttachmentText(this.item);
+					excerpt = Zotero.Notes.getMarkdownExcerpt(text);
+				}
+				else {
+					excerpt = 'File not found.';
+				}
+			}
+			catch (e) {
+				Zotero.logError(e);
+				excerpt = 'Could not read the note file.';
+			}
+			this._id('markdown-note-excerpt').textContent = excerpt;
+			container.hidden = false;
+			Zotero.Fulltext.indexItems([this.item.id], { ignoreErrors: true }).catch(e => Zotero.logError(e));
 		}
 
 		initAttachmentNoteEditor() {

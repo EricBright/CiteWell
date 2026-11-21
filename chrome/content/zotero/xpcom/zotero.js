@@ -447,6 +447,12 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 		Zotero.debug('Initializing Word Processor plugins');
 		Zotero.Integration.init();
 		await Zotero.Plugins.init();
+		try {
+			await Zotero.Notes.indexMarkdownAttachments();
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
 	}
 	
 	
