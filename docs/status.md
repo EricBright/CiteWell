@@ -17,13 +17,13 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the PDF reader removal (`10.0.9.SOURCE.e0d2585fc`, sha256 `6aa9103a…`, 136,255,992 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt after the PDF reader removal (`10.0.9.SOURCE.e0d2585fc`, sha256 `41770e2f…`, 136,255,992 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text. The ProseMirror `note-editor` submodule and bundle are removed; a read-only legacy viewer remains, along with `editorInstance` annotation helpers to be removed with D30 |
-| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane and notes-context annotation controls plus Add Note from Annotations are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains for that export; a citation-dialog annotation shell is the remaining legacy UI (D30) |
+| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane and notes-context annotation controls plus Add Note from Annotations are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains for that export; the citation-dialog annotation mode button is hidden and its remaining markup/components are the last legacy shell (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
@@ -32,7 +32,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (136,255,992 bytes; sha256 `6aa9103ac2feabb21884d6603ca4efee1df15c0ef80d31d2d8f3cb7d4cb709e8`)
+- `dist/CiteWell-x86_64.AppImage` (136,255,992 bytes; sha256 `41770e2f5b9876dce3c018ede130144400bab93af58defd565efacc522512aee`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
