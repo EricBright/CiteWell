@@ -23,7 +23,7 @@ push target. The product branch may diverge without limit.
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log — note and annotation verbs will change with D29/D30 |
 | Notes | New notes and agent notes are `.md` file attachments opened externally. Legacy `itemNotes` still open in the shipped ProseMirror editor until the explicit migration is built |
-| PDF | **Target:** external files only; annotations exported once to `annotations.md` sidecars; no PDF text index (D30). **Not built.** Current build still ships the reader and pdf.js |
+| PDF | **Partial:** every attachment opens through the host, and PDF text extraction is disabled (`fulltext.pdfMaxPages = 0` plus an `indexItem` guard). The reader, document worker, pdf.js, annotation UI and annotation verbs are still in the build (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
@@ -50,9 +50,10 @@ plan.
    explicit migration, external open, excerpts and search; then remove the editor, its submodule,
    its npm build path and the `note.xhtml`/`editorInstance` surfaces. Tests must prove no new
    `itemNotes` row is written.
-3. **D30 — remove PDF handling.** Drop `reader/`, `document-worker/` and pdf.js from the build and
-   UI; open PDFs with `xdg-open`; export existing annotations to `storage/<key>/annotations.md`;
-   stop indexing PDF text; remove reader/annotation tests and agent verbs.
+3. **D30 — finish removing PDF handling.** External open and the PDF text-index stop are in. Next:
+   remove `reader/`, `document-worker/` and pdf.js from the build and UI; export existing annotations
+   to `storage/<key>/annotations.md`; remove annotation creation/listing from the agent, the reader
+   tests and the toolbar/tab surfaces.
 5. **D33 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
    sandbox/permissions/integrity/rollback and test both integrations.
 6. **Cleanup.** Delete dead reader/editor/plugin/PDF code, styles, locale-only strings and tests
@@ -148,8 +149,9 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 - **Notes are split during the transition:** `newNote` and `add_note` now create `.md` attachments.
   Legacy `itemNotes` still open in the editor, and migration is not built. Do not describe
   Markdown-only notes as complete until the old rows are converted and the editor is removed.
-- **Current PDF behavior is obsolete:** the reader, annotations and PDF full-text index are still in
-  the last build. D30 removes them. Do not add features to them.
+- **PDF behavior is transitioning:** PDFs already open externally and new PDF text is not indexed.
+  The reader still ships and old PDF index rows may remain until the index is rebuilt; annotation
+  UI and verbs are still present. Do not add features to them.
 - **Plugins are parked:** `PLUGINS_ENABLED` is false and the loader returns early. Keep the code, but do
   not re-enable it without a decision and a tested flag.
 - Translators keep their update channel; safeguards must not freeze updates or break the Firefox /

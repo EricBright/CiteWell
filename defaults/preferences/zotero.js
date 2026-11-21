@@ -111,7 +111,7 @@ pref("extensions.zotero.search.quicksearch-mode", "fields");
 
 // Fulltext indexing
 pref("extensions.zotero.fulltext.textMaxLength", 500000);
-pref("extensions.zotero.fulltext.pdfMaxPages", 100);
+pref("extensions.zotero.fulltext.pdfMaxPages", 0);
 pref("extensions.zotero.search.useLeftBound", true);
 
 // Notes

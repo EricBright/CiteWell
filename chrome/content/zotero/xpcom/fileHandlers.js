@@ -26,9 +26,7 @@
  
 
 Zotero.FileHandlers = {
-	async open(item, params) {
-		let { location, openInWindow = false } = params || {};
-		
+	async open(item) {
 		let path = await item.getFilePathAsync();
 		if (!path) {
 			Zotero.warn(`File not found: ${item.attachmentPath}`);
@@ -37,156 +35,9 @@ Zotero.FileHandlers = {
 		
 		Zotero.debug('Opening ' + path);
 		
-		let readerType = item.attachmentReaderType;
-		
-		// Not a file that we/external readers handle with page number support -
-		// just open it with the system handler
-		if (!readerType) {
-			Zotero.debug('No associated reader type -- launching default application');
-			Zotero.launchFile(path);
-			return true;
-		}
-		
-		let handler = Zotero.Prefs.get(`fileHandler.${readerType}`);
-		if (!handler) {
-			Zotero.debug('No external handler for ' + readerType + ' -- opening in Zotero');
-			await Zotero.Reader.open(item.id, location, {
-				openInWindow,
-				allowDuplicate: openInWindow
-			});
-			return true;
-		}
-
-		let systemHandler = this._getSystemHandler(item.attachmentContentType);
-
-		if (handler === 'system') {
-			handler = systemHandler;
-			Zotero.debug(`System handler is ${handler}`);
-		}
-		else {
-			Zotero.debug(`Custom handler is ${handler}`);
-		}
-		
-		let handlers;
-		if (this._mockHandlers) {
-			handlers = this._mockHandlers[readerType];
-		}
-		else if (Zotero.isMac) {
-			handlers = this._handlersMac[readerType];
-		}
-		else if (Zotero.isWin) {
-			handlers = this._handlersWin[readerType];
-		}
-		else if (Zotero.isLinux) {
-			handlers = this._handlersLinux[readerType];
-		}
-		
-		let page;
-		if (location) {
-			if (location.pageIndex) {
-				page = location.pageIndex;
-			}
-			// If caller didn't pass a pageIndex but passed an annotation,
-			// look up its pageIndex so we can pass that to external readers
-			else if (location.annotationID) {
-				let annotation = Zotero.Items.getByLibraryAndKey(item.libraryID, location.annotationID);
-				if (annotation && annotation.isAnnotation() && annotation.parentItemID === item.id) {
-					page = JSON.parse(annotation.annotationPosition).pageIndex;
-				}
-			}
-			
-			// Add 1 to page index for external readers
-			if (page !== undefined && parseInt(page) == page) {
-				page = parseInt(page) + 1;
-			}
-		}
-		
-		// If there are handlers for this platform and this reader type...
-		if (handlers) {
-			// First try to open with the custom handler
-			if (handler) {
-				try {
-					for (let [i, { name, open }] of handlers.entries()) {
-						if (name.test(handler)) {
-							Zotero.debug('Opening with handler ' + i);
-							await open(handler, { filePath: path, location, page });
-							return true;
-						}
-					}
-				}
-				catch (e) {
-					Zotero.logError(e);
-				}
-			}
-
-			// If we get here, we don't have special handling for the custom
-			// handler that the user has set. If we have a location, we really
-			// want to open with something we know how to pass a page number to,
-			// so we'll see if we know how to do that for the system handler.
-			if (location) {
-				try {
-					if (systemHandler && handler !== systemHandler) {
-						Zotero.debug(`Custom handler did not match -- falling back to system handler ${systemHandler}`);
-						handler = systemHandler;
-						for (let [i, { name, open }] of handlers.entries()) {
-							if (name.test(handler)) {
-								Zotero.debug('Opening with handler ' + i);
-								await open(handler, { filePath: path, location, page });
-								return true;
-							}
-						}
-					}
-				}
-				catch (e) {
-					Zotero.logError(e);
-				}
-
-				// And lastly, the fallback handler for this platform/reader type,
-				// if we have one
-				let fallback = handlers.find(h => h.fallback);
-				if (fallback) {
-					try {
-						Zotero.debug('Opening with fallback');
-						await fallback.open(null, { filePath: path, location, page });
-						return true;
-					}
-					catch (e) {
-						// Don't log error if fallback fails
-						// Just move on and try system handler
-					}
-				}
-			}
-		}
-		
-		Zotero.debug("Opening handler without page number");
-		
-		handler = handler || systemHandler;
-		if (handler) {
-			if (Zotero.isMac) {
-				Zotero.Utilities.Internal.Environment.clearMozillaVariables();
-				try {
-					await Zotero.Utilities.Internal.exec('/usr/bin/open', ['-a', handler, path]);
-					return true;
-				}
-				catch (e) {
-					Zotero.logError(e);
-				}
-			}
-			
-			try {
-				if (await IOUtils.exists(handler)) {
-					Zotero.debug(`Opening with handler ${handler}`);
-					Zotero.launchFileWithApplication(path, handler);
-					return true;
-				}
-			}
-			catch (e) {
-				Zotero.logError(e);
-			}
-			Zotero.logError(`${handler} not found`);
-		}
-		
-		Zotero.debug('Launching file normally');
+		// CiteWell does not render PDFs or EPUBs (D30). Hand every file to the
+		// host's default application; no in-app reader is opened.
+		Zotero.debug('Opening with the system handler');
 		Zotero.launchFile(path);
 		return true;
 	},

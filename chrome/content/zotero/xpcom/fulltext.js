@@ -799,7 +799,8 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		}
 		
 		if (contentType == 'application/pdf') {
-			return this.indexPDF(path, item.id, complete);
+			Zotero.debug('PDF full-text indexing is disabled (D30)');
+			return false;
 		}
 		
 		if (contentType == 'application/epub+zip') {
