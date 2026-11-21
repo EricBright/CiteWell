@@ -651,7 +651,10 @@ installer must leave every other extension and its settings untouched. A failed 
 install must never mutate another extension.
 
 This is a safety rule, not a limitation to optimise away. `unopkg remove` and registry
-rewrites are prohibited in the installer.
+rewrites are prohibited in the installer. The installer must fail closed before any write,
+and every failure message must state what failed, that nothing else was changed, what the
+user can do next, and where technical details are logged. Recovery advice must never ask the
+user to reset or delete their LibreOffice profile.
 
 ## Dead ends
 

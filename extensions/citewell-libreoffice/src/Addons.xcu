@@ -9,6 +9,10 @@
           </prop>
           <node o:name="Submenu">
             <node o:name="1" o:op="replace">
+              <prop o:name="URL"><value>vnd.citewell.cite:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Insert Citation</value></prop>
+            </node>
+            <node o:name="2" o:op="replace">
               <prop o:name="URL"><value>vnd.citewell.health:</value></prop>
               <prop o:name="Title" xml:lang="en-US"><value>Check CiteWell</value></prop>
             </node>

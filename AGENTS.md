@@ -19,8 +19,7 @@ violate.
    `CONTRIBUTING.md` are upstream's and stay unmodified. CiteWell documentation lives in
    `docs/`.
 
-The name `CLAUDE.md` is upstream's, not this project's agent contract. It is kept verbatim as an
-architecture reference for all tools.
+`CLAUDE.md` is upstream's architecture reference, not this project's agent contract.
 
 5. **Never interact with `zotero/zotero`.** No pushes, issues, pull requests, comments,
    `@`-mentions, or `zotero/zotero#NNN` references — every one of those notifies their
@@ -33,7 +32,8 @@ architecture reference for all tools.
    [docs/rust.md](docs/rust.md#porting-existing-javascript).
 
 7. **Never `rm`; never add dependencies without approval.** Use Trash; no npm, new crates, or
-   toolchains (D32).
+   toolchains (D32). External profiles are append-only: add only our artifact, never remove,
+   repair, or rewrite user state; fail with actionable guidance.
 
 ## Where to look
 

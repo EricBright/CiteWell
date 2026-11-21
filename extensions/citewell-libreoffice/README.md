@@ -1,6 +1,6 @@
 # CiteWell LibreOffice integration
 
-Status: **scaffold; OXT builds and installs, dispatch activation still under test.**
+Status: **working scaffold; health and citation insertion verified in an isolated profile.**
 
 This is the CiteWell-owned extension boundary. It uses LibreOffice's Python UNO
 loader, has CiteWell's extension id and talks only to `127.0.0.1:23121`.
@@ -58,8 +58,10 @@ The Rust side has a std-only health bridge:
 cargo run --manifest-path tools/Cargo.toml -p citewell-lo-core
 ```
 
-It listens on `127.0.0.1:23121` and answers `/health`. The AppImage now packages
-and launches it; a parent-pid watchdog stops it when CiteWell exits.
+It listens on `127.0.0.1:23121` and answers `/health` and `/citation`. The AppImage
+packages and launches it; a parent-pid watchdog stops it when CiteWell exits.
+The Writer menu inserts the returned citation text; real item selection and
+formatting come next.
 
 The inherited Zotero integration is disabled and no longer packaged; see
 [docs/libreoffice.md](../../docs/libreoffice.md).

@@ -45,6 +45,7 @@ IMPL_PROVIDER = "org.citewell.comp.LibreOffice.Provider"
 IMPL_DISPATCH = "org.citewell.comp.LibreOffice.Dispatch"
 SERVICE = "org.citewell.LibreOffice"
 HEALTH_URL = "http://127.0.0.1:23121/health"
+CITATION_URL = "http://127.0.0.1:23121/citation"
 LOG_PATH = _LOG_PATH
 
 
@@ -63,6 +64,37 @@ def _health():
             return response.status, response.read(256).decode("utf-8", "replace")
     except Exception as exc:
         return None, str(exc)
+
+
+def _citation():
+    with urllib.request.urlopen(CITATION_URL, timeout=1) as response:
+        data = json.loads(response.read(2048).decode("utf-8"))
+    citation = data.get("citation")
+    if not citation:
+        raise RuntimeError("CiteWell returned no citation")
+    return citation
+
+
+def _insert_citation(ctx):
+    desktop = ctx.ServiceManager.createInstanceWithContext(
+        "com.sun.star.frame.Desktop", ctx
+    )
+    document = desktop.CurrentComponent
+    if document is None:
+        components = desktop.Components.createEnumeration()
+        while components.hasMoreElements():
+            candidate = components.nextElement()
+            if hasattr(candidate, "getText"):
+                document = candidate
+                break
+    if document is None:
+        raise RuntimeError("Open a Writer document first.")
+    text = document.getText()
+    cursor = text.createTextCursor()
+    cursor.gotoEnd(False)
+    citation = _citation()
+    text.insertString(cursor, " " + citation, False)
+    return citation
 
 
 def _show_message(ctx, text):
@@ -90,14 +122,24 @@ class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
         return (SERVICE,)
 
     def dispatch(self, url, args):
-        status, body = _health()
-        if status == 200:
-            message = "CiteWell bridge is running on 127.0.0.1:23121."
-            _log("health ok: %s" % body)
-        else:
-            message = ("CiteWell bridge is not running on 127.0.0.1:23121.\n"
-                       "Start CiteWell and try again.")
-            _log("health failed: %r" % (body,))
+        message = None
+        try:
+            if url.Complete.startswith("vnd.citewell.cite:"):
+                citation = _insert_citation(self.ctx)
+                message = "Inserted: %s" % citation
+                _log("citation inserted: %s" % citation)
+            else:
+                status, body = _health()
+                if status == 200:
+                    message = "CiteWell is running."
+                    _log("health ok: %s" % body)
+                else:
+                    message = ("CiteWell is not running.\n"
+                               "Start CiteWell and try again.")
+                    _log("health failed: %r" % (body,))
+        except Exception as exc:
+            message = "CiteWell could not insert a citation.\n%s" % exc
+            _log("dispatch failed\n%s" % traceback.format_exc())
         if os.environ.get("CITEWELL_LO_SELFTEST"):
             return
         _show_message(self.ctx, message)

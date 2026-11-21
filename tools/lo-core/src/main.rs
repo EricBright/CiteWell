@@ -73,6 +73,13 @@ fn response_for(request: &str) -> String {
             body.len(),
             body
         )
+    } else if path == "/citation" {
+        let body = r#"{"citation":"(CiteWell, 2026)","version":1}"#;
+        format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(),
+            body
+        )
     } else {
         let body = "not found";
         format!(
@@ -93,6 +100,13 @@ mod tests {
         assert!(response.starts_with("HTTP/1.1 200 OK"));
         assert!(response.contains(r#""app":"CiteWell""#));
         assert!(response.contains(r#""health":"ok""#));
+    }
+
+    #[test]
+    fn citation_endpoint_returns_text() {
+        let response = response_for("GET /citation HTTP/1.1\r\n\r\n");
+        assert!(response.starts_with("HTTP/1.1 200 OK"));
+        assert!(response.contains(r#""citation":"(CiteWell, 2026)""#));
     }
 
     #[test]
