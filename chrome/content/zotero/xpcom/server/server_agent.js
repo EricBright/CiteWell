@@ -146,6 +146,7 @@ Zotero.Server.Agent = {
 						'item.attachFile', 'item.attachURL', 'translate.save',
 						'export.note',
 						'collection.list', 'collection.create', 'collection.addItems',
+						'citation.preview',
 						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
 					],
 				};
@@ -185,6 +186,9 @@ Zotero.Server.Agent = {
 
 			case 'collection.addItems':
 				return this._addToCollection(params);
+
+			case 'citation.preview':
+				return this._citationPreview(params);
 
 			case 'ui.status':
 				return this._uiStatus();
@@ -531,6 +535,35 @@ Zotero.Server.Agent = {
 			await collection.addItems(ids);
 		});
 		return { collectionKey: collection.key, added: itemKeys.length };
+	},
+
+	_citationPreview: async function ({ keys = null, style = null } = {}) {
+		let items;
+		if (Array.isArray(keys) && keys.length) {
+			items = keys.map(key => this._requireItem(key));
+		}
+		else {
+			let pane = Zotero.getActiveZoteroPane();
+			if (!pane) throw new AgentError(400, 'No active CiteWell window');
+			items = pane.getSelectedItems();
+		}
+		items = items.filter(item => item.isRegularItem());
+		if (!items.length) {
+			throw new AgentError(400, 'Select one or more regular items first');
+		}
+		await Zotero.Styles.init();
+		let styleObject = style
+			? Zotero.Styles.get(style)
+			: Zotero.Styles.get('http://www.zotero.org/styles/apa')
+				|| Zotero.Styles.getVisible()[0];
+		if (!styleObject) throw new AgentError(400, `Unknown citation style: ${style}`);
+		let engine = styleObject.getCiteProc('en-US', 'text', { cache: true });
+		let text = Zotero.Cite.makeFormattedBibliographyOrCitationList(engine, items, 'text', true);
+		return {
+			text: text.trim(),
+			style: styleObject.styleID,
+			itemKeys: items.map(item => item.key),
+		};
 	},
 
 	_uiStatus: function () {

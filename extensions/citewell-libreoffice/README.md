@@ -60,8 +60,8 @@ cargo run --manifest-path tools/Cargo.toml -p citewell-lo-core
 
 It listens on `127.0.0.1:23121` and answers `/health` and `/citation`. The AppImage
 packages and launches it; a parent-pid watchdog stops it when CiteWell exits.
-The Writer menu inserts the returned citation text; real item selection and
-formatting come next.
+The Writer menu inserts the formatted citation for the item selected in
+CiteWell; APA is the initial default style. Editable fields and refresh come next.
 
 The inherited Zotero integration is disabled and no longer packaged; see
 [docs/libreoffice.md](../../docs/libreoffice.md).

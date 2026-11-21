@@ -149,7 +149,10 @@ Zotero.Integration = new function () {
 		Zotero.debug('Starting ' + command);
 		var proc = await Subprocess.call({
 			command,
-			arguments: ["--parent-pid", String(Services.appinfo.processID)],
+			arguments: [
+				"--parent-pid", String(Services.appinfo.processID),
+				"--data-dir", Zotero.DataDirectory.dir,
+			],
 			stderr: "pipe",
 		});
 		this._loBridge = proc;

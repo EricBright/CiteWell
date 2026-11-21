@@ -137,7 +137,7 @@ component service could not be activated over the URP test bridge: the bridge
 is disposed when the Python provider is requested. A control with the Zarnegar
 Python component behaves the same way, so this is a remote-creation limitation.
 An in-process Basic macro now creates the component, queries the dispatch,
-runs the health check, and inserts the citation returned by `/citation` into a
+runs the health check, and inserts the formatted citation returned by `/citation` into a
 Writer document. The test used an isolated profile only. The Rust
 `citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
 packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it

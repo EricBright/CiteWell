@@ -8,13 +8,16 @@
 //! The extension only needs a CiteWell-owned identity on 127.0.0.1:23121.
 //! Citation protocol work grows here; the first endpoint is `/health`.
 
+use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use std::thread;
 use std::time::Duration;
 
 const DEFAULT_PORT: u16 = 23121;
+static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 fn main() -> std::io::Result<()> {
     let port = std::env::var("CITEWELL_LO_PORT")
@@ -25,6 +28,13 @@ fn main() -> std::io::Result<()> {
         .skip_while(|arg| arg != "--parent-pid")
         .nth(1)
         .and_then(|value| value.parse::<u32>().ok());
+    let data_dir = std::env::args()
+        .skip_while(|arg| arg != "--data-dir")
+        .nth(1)
+        .map(PathBuf::from);
+    if let Some(data_dir) = data_dir {
+        let _ = DATA_DIR.set(data_dir);
+    }
     if let Some(parent) = parent_pid {
         // Exit if the CiteWell process that started us dies, including after a
         // crash or SIGTERM that never runs the app's shutdown listeners.
@@ -67,27 +77,97 @@ fn response_for(request: &str) -> String {
         .and_then(|line| line.split_whitespace().nth(1))
         .unwrap_or("/");
     if path == "/health" {
-        let body = r#"{"app":"CiteWell","version":1,"health":"ok"}"#;
-        format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-            body.len(),
-            body
+        http_response(
+            "200 OK",
+            "application/json",
+            r#"{"app":"CiteWell","version":1,"health":"ok"}"#,
         )
     } else if path == "/citation" {
-        let body = r#"{"citation":"(CiteWell, 2026)","version":1}"#;
-        format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-            body.len(),
-            body
-        )
+        match agent_citation() {
+            Ok(text) => http_response("200 OK", "text/plain; charset=utf-8", &text),
+            Err(error) => http_response(
+                "503 Service Unavailable",
+                "text/plain; charset=utf-8",
+                &format!("CiteWell could not produce a citation: {error}"),
+            ),
+        }
     } else {
-        let body = "not found";
-        format!(
-            "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-            body.len(),
-            body
-        )
+        http_response("404 Not Found", "text/plain", "not found")
     }
+}
+
+fn http_response(status: &str, content_type: &str, body: &str) -> String {
+    format!(
+        "HTTP/1.1 {status}\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    )
+}
+
+fn agent_citation() -> Result<String, String> {
+    let data_dir = DATA_DIR
+        .get()
+        .ok_or("bridge was started without --data-dir")?;
+    let token = fs::read_to_string(data_dir.join("agent-token"))
+        .map_err(|e| format!("reading agent token: {e}"))?;
+    let token = token.trim();
+    let body = r#"{"method":"citation.preview","params":{}}"#;
+    let request = format!(
+        "POST /agent/v1 HTTP/1.1\r\nHost: 127.0.0.1:23120\r\nX-CiteWell-Agent: 1\r\nAuthorization: Bearer {token}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let mut stream = TcpStream::connect(("127.0.0.1", 23120))
+        .map_err(|e| format!("connecting to CiteWell: {e}"))?;
+    stream
+        .set_read_timeout(Some(Duration::from_secs(5)))
+        .map_err(|e| format!("setting timeout: {e}"))?;
+    stream
+        .write_all(request.as_bytes())
+        .map_err(|e| format!("writing request: {e}"))?;
+    let mut response = Vec::new();
+    stream
+        .read_to_end(&mut response)
+        .map_err(|e| format!("reading response: {e}"))?;
+    let response = String::from_utf8_lossy(&response);
+    let (headers, body) = response
+        .split_once("\r\n\r\n")
+        .ok_or("malformed agent response")?;
+    if !headers.starts_with("HTTP/1.1 200") && !headers.starts_with("HTTP/1.0 200") {
+        return Err(format!("agent returned {}", headers.lines().next().unwrap_or("an error")));
+    }
+    if !body.contains(r#""ok":true"#) {
+        return Err(json_string_field(body, "message").unwrap_or_else(|| "unknown agent error".into()));
+    }
+    json_string_field(body, "text").ok_or_else(|| "agent returned no citation text".into())
+}
+
+fn json_string_field(body: &str, key: &str) -> Option<String> {
+    let marker = format!("\"{key}\":\"");
+    let start = body.find(&marker)? + marker.len();
+    let mut output = String::new();
+    let mut chars = body[start..].chars();
+    while let Some(ch) = chars.next() {
+        match ch {
+            '"' => return Some(output),
+            '\\' => match chars.next()? {
+                '"' => output.push('"'),
+                '\\' => output.push('\\'),
+                '/' => output.push('/'),
+                'b' => output.push('\u{0008}'),
+                'f' => output.push('\u{000c}'),
+                'n' => output.push('\n'),
+                'r' => output.push('\r'),
+                't' => output.push('\t'),
+                'u' => {
+                    let digits: String = chars.by_ref().take(4).collect();
+                    let value = u32::from_str_radix(&digits, 16).ok()?;
+                    output.push(char::from_u32(value)?);
+                }
+                other => output.push(other),
+            },
+            other => output.push(other),
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -103,10 +183,10 @@ mod tests {
     }
 
     #[test]
-    fn citation_endpoint_returns_text() {
+    fn citation_without_app_is_a_clear_error() {
         let response = response_for("GET /citation HTTP/1.1\r\n\r\n");
-        assert!(response.starts_with("HTTP/1.1 200 OK"));
-        assert!(response.contains(r#""citation":"(CiteWell, 2026)""#));
+        assert!(response.starts_with("HTTP/1.1 503"));
+        assert!(response.contains("CiteWell could not produce a citation"));
     }
 
     #[test]

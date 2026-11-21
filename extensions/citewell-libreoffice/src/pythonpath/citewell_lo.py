@@ -67,9 +67,8 @@ def _health():
 
 
 def _citation():
-    with urllib.request.urlopen(CITATION_URL, timeout=1) as response:
-        data = json.loads(response.read(2048).decode("utf-8"))
-    citation = data.get("citation")
+    with urllib.request.urlopen(CITATION_URL, timeout=5) as response:
+        citation = response.read(8192).decode("utf-8").strip()
     if not citation:
         raise RuntimeError("CiteWell returned no citation")
     return citation
