@@ -85,9 +85,6 @@ async function onLoad() {
 	if (io.isCitingNotes) {
 		initialType = 'add-note';
 	}
-	else if (io.isAddingAnnotations) {
-		initialType = 'annotations';
-	}
 	await setDialogType(initialType);
 
 	// Restore the dimensions of the dialog in the specified mode.
