@@ -1,0 +1,3 @@
+#!/bin/sh
+# Dependency freeze gate (D32). The check itself is Rust; this is only Git glue.
+exec cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --staged

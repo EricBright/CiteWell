@@ -62,17 +62,10 @@ fn connectors_inner() -> Result<PathBuf, String> {
     }
 
     if !dir.join("node_modules").is_dir() {
-        println!("installing connector dependencies");
-        let status = run(
-            Command::new("npm")
-                .current_dir(&dir)
-                .env("npm_config_cache", root.join(".npm-cache"))
-                .args(["install", "--no-audit", "--no-fund"]),
-            "npm install",
-        )?;
-        if !status {
-            return Err("npm install failed".to_string());
-        }
+        return Err(
+            "connectors/node_modules is missing; npm is retired (D32) and xtask will not install it"
+                .to_string(),
+        );
     }
 
     // The connector's build calls rsvg-convert; use our Rust replacement.

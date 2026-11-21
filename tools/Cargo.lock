@@ -318,6 +318,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "repo-guard"
+version = "0.1.0"
+
+[[package]]
 name = "resvg"
 version = "0.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

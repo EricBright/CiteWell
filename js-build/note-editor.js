@@ -37,9 +37,10 @@ async function getZoteroNoteEditor(signatures) {
 		}
 		catch (e) {
 			console.error(e);
-			await exec('npm ci', { cwd: modulePath });
-			await exec('npm run build', { cwd: modulePath });
-			await fs.copy(path.join(modulePath, 'build', 'zotero'), targetDir);
+			throw new Error(
+				'The prebuilt note editor is unavailable. npm is retired (D32); '
+				+ 'do not rebuild it here. Land D29 and remove the note editor.'
+			);
 		}
 		signatures['note-editor'] = { hash };
 	}

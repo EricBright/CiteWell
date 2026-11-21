@@ -45,13 +45,10 @@ async function getDocumentWorker(signatures) {
 		}
 		catch (e) {
 			console.error(e);
-			await exec('npm ci', { cwd: modulePath });
-			await exec('npm run build', { cwd: modulePath });
-			await fs.copy(path.join(modulePath, 'build'), targetDir);
-			let missingFiles = await getMissingFiles(targetDir);
-			if (missingFiles.length) {
-				throw new Error(`Local document-worker build is missing ${missingFiles.join(', ')}`);
-			}
+			throw new Error(
+				'The prebuilt document worker is unavailable. npm is retired (D32); '
+				+ 'do not rebuild it here. Land D30 and remove the document worker.'
+			);
 		}
 		signatures['document-worker'] = { hash };
 	}

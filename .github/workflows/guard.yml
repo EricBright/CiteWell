@@ -1,0 +1,33 @@
+name: Dependency guard
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject package, lockfile, and node_modules changes
+        run: |
+          set -eu
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --quiet origin "${{ github.base_ref }}"
+            range="origin/${{ github.base_ref }}...HEAD"
+          else
+            before="${{ github.event.before }}"
+            case "$before" in
+              ""|0000000000000000000000000000000000000000)
+                range="HEAD^..HEAD"
+                ;;
+              *)
+                range="$before..${{ github.sha }}"
+                ;;
+            esac
+          fi
+          cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --range "$range"
