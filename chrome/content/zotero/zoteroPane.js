@@ -5107,45 +5107,46 @@ var ZoteroPane = new function () {
 			return false;
 		}
 		
-		if (popup) {
-			// TODO: _text_
-			this.openNote(null, { parentKey });
-			return null;
-		}
-		
 		if (!text) {
 			text = '';
 		}
 		text = text.trim();
-		
-		if (text) {
-			text = '<blockquote'
-					+ (citeURI ? ' cite="' + citeURI + '"' : '')
-					+ '>' + Zotero.Utilities.text2html(text) + "</blockquote>";
+
+		let markdown = text
+			? text.split('\n').map(line => '> ' + line).join('\n')
+			: '';
+		if (citeURI) {
+			markdown += (markdown ? '\n\n' : '') + `[Source](${citeURI})`;
 		}
-		
-		var item = new Zotero.Item('note');
-		item.libraryID = this.getSelectedLibraryIDs()[0];
-		item.setNote(text);
+
+		let libraryID = this.getSelectedLibraryIDs()[0];
+		let parentItemID;
 		if (parentKey) {
-			item.parentKey = parentKey;
-		}
-		else if (this.getCollectionTreeRows().every(row => row.isCollection())) {
-			for (let row of this.getCollectionTreeRows()) {
-				item.addToCollection(row.ref.id);
+			let parent = await Zotero.Items.getByLibraryAndKeyAsync(libraryID, parentKey);
+			if (!parent) {
+				throw new Error(`Parent item not found: ${parentKey}`);
 			}
+			parentItemID = parent.id;
 		}
-		var itemID = await item.saveTx({
-			notifierData: {
-				autoSyncDelay: Zotero.Notes.AUTO_SYNC_DELAY
-			}
+		let collections;
+		if (!parentItemID && this.getCollectionTreeRows().every(row => row.isCollection())) {
+			collections = this.getCollectionTreeRows().map(row => row.ref.id);
+		}
+
+		let item = await Zotero.Notes.createMarkdownAttachment({
+			libraryID,
+			parentItemID,
+			collections,
+			title: text ? 'Note' : 'Untitled Note',
+			text: markdown,
 		});
-		
-		await this.selectItem(itemID);
-		
-		document.getElementById('zotero-note-editor').focus();
-		
-		return itemID;
+
+		await this.selectItem(item.id);
+		if (!Zotero.test) {
+			await Zotero.Notes.openMarkdownAttachment(item);
+		}
+
+		return item.id;
 	};
 	
 	

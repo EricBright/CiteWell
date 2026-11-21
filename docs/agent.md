@@ -85,13 +85,13 @@ without a trip through the UI.
 | `item.get` | Fields, creators, tags, notes, attachments | `Zotero.Items.get` |
 | `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
 | `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
-| `item.addNote` | Child note; Markdown by default (`format: "html"` opt-in) | `Zotero.Item` note |
+| `item.addNote` | Child Markdown file attachment; no HTML, no in-app editor | `Zotero.Notes.createMarkdownAttachment` |
 | `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
 | `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
 | `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
 | `annotation.list` | Annotations on a PDF/EPUB attachment | `Zotero.Items.getAnnotations` |
 | `annotation.create` | Highlight, underline, note or text annotation from a position | `Zotero.Annotations.saveFromJSON` |
-| `export.note` | Note as Markdown text | Note Markdown translator |
+| `export.note` | Markdown attachment contents | File read |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
 | `ui.select` | Select items in the main window | `ZoteroPane.selectItems` |

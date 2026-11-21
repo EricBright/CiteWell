@@ -45,7 +45,9 @@ describe("Agent bridge", function () {
 			text: "A note from the test."
 		});
 		let item = await Zotero.Server.Agent.dispatch("item.get", { key: created.key });
-		assert.include(item.item.notes, note.key);
+		assert.include(item.item.attachments, note.key);
+		let exported = await Zotero.Server.Agent.dispatch("export.note", { key: note.key });
+		assert.equal(exported.markdown, "A note from the test.");
 	});
 
 	it("should attach a file and a URL, and reject an unknown identifier", async function () {

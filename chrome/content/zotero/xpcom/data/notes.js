@@ -36,6 +36,108 @@ Zotero.Notes = new function () {
 	this._downloadInProgressPromise = null;
 
 	/**
+	 * A note is a Markdown file attachment, not an itemNotes row (D29).
+	 */
+	this.isMarkdownAttachment = function (item) {
+		return !!(item
+			&& item.isAttachment()
+			&& item.attachmentContentType == 'text/markdown');
+	};
+
+	/**
+	 * Plain-text title: the first Markdown heading, else the first non-empty line.
+	 */
+	this.getMarkdownTitle = function (text) {
+		if (!text) return '';
+		let lines = text.replace(/\r\n/g, '\n').split('\n');
+		let heading = lines.find(line => /^\s*#{1,6}\s+\S/.test(line));
+		let title = heading
+			? heading.replace(/^\s*#{1,6}\s+/, '').trim()
+			: (lines.find(line => line.trim()) || '').trim();
+		return title.slice(0, this.MAX_TITLE_LENGTH);
+	};
+
+	/**
+	 * Create a `.md` attachment from a string and move the file into storage.
+	 *
+	 * @param {Object} options
+	 * @param {Integer} [options.parentItemID]
+	 * @param {Integer} [options.libraryID]
+	 * @param {String} [options.title]
+	 * @param {String} options.text
+	 * @param {Integer[]|String[]} [options.collections]
+	 * @return {Promise<Zotero.Item>}
+	 */
+	this.createMarkdownAttachment = async function ({ parentItemID, libraryID, title, text, collections }) {
+		if (typeof text != 'string') {
+			throw new Error('Markdown note text must be a string');
+		}
+		if (!parentItemID && !libraryID) {
+			throw new Error('A parent item or library is required');
+		}
+
+		let noteTitle = (title || this.getMarkdownTitle(text) || 'Untitled Note').trim();
+		let fileBaseName = Zotero.File.getValidFileName(noteTitle).replace(/\.md$/i, '');
+		if (!fileBaseName) fileBaseName = 'note';
+
+		let tmpFile = Zotero.getTempDirectory().clone();
+		tmpFile.append('citewell-note-' + Zotero.DataObjectUtilities.generateKey() + '.md');
+		tmpFile.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0o600);
+		await Zotero.File.putContentsAsync(tmpFile.path, text);
+
+		try {
+			return await Zotero.Attachments.importFromFile({
+				file: tmpFile,
+				libraryID,
+				parentItemID,
+				title: noteTitle,
+				collections,
+				fileBaseName,
+				contentType: 'text/markdown',
+				moveFile: true
+			});
+		}
+		catch (e) {
+			try {
+				if (tmpFile.exists()) tmpFile.remove(false);
+			}
+			catch (cleanupError) {
+				Zotero.logError(cleanupError);
+			}
+			throw e;
+		}
+	};
+
+	/**
+	 * Read a Markdown attachment from disk.
+	 */
+	this.getMarkdownAttachmentText = async function (item) {
+		if (!this.isMarkdownAttachment(item)) {
+			throw new Error('Item is not a Markdown attachment');
+		}
+		let path = await item.getFilePathAsync();
+		if (!path) {
+			throw new Error('Markdown note file is missing');
+		}
+		return Zotero.File.getContentsAsync(path);
+	};
+
+	/**
+	 * Open a Markdown attachment in the host's default editor. No handler is
+	 * installed and no in-app editor is used (D29).
+	 */
+	this.openMarkdownAttachment = async function (item) {
+		if (!this.isMarkdownAttachment(item)) {
+			throw new Error('Item is not a Markdown attachment');
+		}
+		let path = await item.getFilePathAsync();
+		if (!path) {
+			throw new Error('Markdown note file is missing');
+		}
+		Zotero.launchFile(path);
+	};
+
+	/**
 	 * Open note in tab or window
 	 * @param {number} itemID
 	 * @param {Object} location - Not implemented yet

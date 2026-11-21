@@ -84,18 +84,25 @@ describe("ZoteroPane", function () {
 	});
 	
 	describe("#newNote()", function () {
-		it("should create a child note and select it", async function () {
+		it("should create a child Markdown note file and select it", async function () {
 			var item = await createDataObject('item');
 			var noteID = await zp.newNote(false, item.key, "Test");
+			var note = Zotero.Items.get(noteID);
+			assert.ok(note.isAttachment());
+			assert.equal(note.attachmentContentType, "text/markdown");
+			assert.equal(note.parentID, item.id);
 			var selected = zp.itemsView.getSelectedItems(true);
 			assert.lengthOf(selected, 1);
 			assert.equal(selected, noteID);
 		})
 		
-		it("should create a standalone note within a collection and select it", async function () {
+		it("should create a standalone Markdown note file within a collection and select it", async function () {
 			var collection = await createDataObject('collection');
 			await select(win, collection);
 			var noteID = await zp.newNote(false, false, "Test");
+			var note = Zotero.Items.get(noteID);
+			assert.ok(note.isAttachment());
+			assert.equal(note.attachmentContentType, "text/markdown");
 			assert.equal(zp.collectionsView.getSelectedCollections()[0], collection);
 			var selected = zp.itemsView.getSelectedItems(true);
 			assert.lengthOf(selected, 1);
