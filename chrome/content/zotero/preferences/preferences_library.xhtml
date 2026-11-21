@@ -1,0 +1,59 @@
+<vbox id="zotero-prefpane-library"
+	onload="Zotero_Preferences.Library.init()"
+	onunload="Zotero_Preferences.Library.uninit()"
+>
+	<vbox class="main-section">
+		<groupbox aria-label="Current library">
+			<label><html:h2>Current library</html:h2></label>
+			<description id="library-current-path" class="library-path"/>
+			<description id="library-current-status" class="library-muted"/>
+			<hbox class="library-button-row">
+				<button id="library-open" label="Open folder" oncommand="Zotero_Preferences.Library.openLibrary()"/>
+				<button id="library-move" label="Move…" oncommand="Zotero_Preferences.Library.moveLibrary()"/>
+			</hbox>
+			<description class="library-muted">
+				CiteWell is independent of Zotero: it has its own library and profile, and it never
+				writes to Zotero's data directory.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Locations">
+			<label><html:h2>Locations</html:h2></label>
+			<description class="library-muted">
+				Where each piece of the current library lives.
+			</description>
+			<vbox id="library-locations" class="library-locations"/>
+		</groupbox>
+
+		<groupbox aria-label="Import from Zotero">
+			<label><html:h2>Import from Zotero</html:h2></label>
+			<description>
+				Copies a Zotero library into CiteWell. Zotero is never modified, and its settings,
+				plugins and sync credentials are never copied.
+			</description>
+
+			<radiogroup id="library-candidates" class="library-candidates"/>
+			<description id="library-candidate-warning" class="library-warning" hidden="true"/>
+			<description id="library-candidate-summary" class="library-muted"/>
+
+			<hbox class="library-button-row">
+				<button id="library-rescan" label="Rescan" oncommand="Zotero_Preferences.Library.rescan()"/>
+				<button id="library-choose" label="Choose another folder…" oncommand="Zotero_Preferences.Library.chooseFolder()"/>
+				<button id="library-check" label="Check" oncommand="Zotero_Preferences.Library.checkSelected()"/>
+			</hbox>
+
+			<progressmeter id="library-progress" mode="undetermined" hidden="true"/>
+			<description id="library-import-status" class="library-status"/>
+
+			<hbox class="library-button-row">
+				<button id="library-import" label="Import…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
+				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
+			</hbox>
+		</groupbox>
+
+		<groupbox aria-label="Last import">
+			<label><html:h2>Last import</html:h2></label>
+			<description id="library-last-result" class="library-muted"/>
+		</groupbox>
+	</vbox>
+</vbox>

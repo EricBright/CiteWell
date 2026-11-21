@@ -1,0 +1,40 @@
+#zotero-prefpane-library {
+	.library-path {
+		font-family: monospace;
+		font-size: 0.9em;
+		opacity: 0.8;
+		word-break: break-all;
+	}
+
+	.library-muted {
+		opacity: 0.75;
+	}
+
+	.library-warning {
+		color: var(--accent-orange);
+	}
+
+	.library-error {
+		color: var(--accent-red);
+	}
+
+	.library-location-row {
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 2px;
+	}
+
+	.library-location-label {
+		min-width: 12em;
+	}
+
+	.library-candidates radio {
+		white-space: normal;
+		margin-bottom: 2px;
+	}
+
+	.library-button-row {
+		gap: 6px;
+		margin-top: 4px;
+	}
+}

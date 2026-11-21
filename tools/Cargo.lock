@@ -70,6 +70,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "citewell-import"
+version = "0.1.0"
+
+[[package]]
 name = "citewell-launcher"
 version = "0.1.0"
 

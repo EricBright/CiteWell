@@ -37,10 +37,13 @@ gets copied into the application itself (the bundle once grew to 532 MB this way
 | `AppRun` | Rust launcher (`tools/launcher`); execs the bundled `zotero` script |
 | `citewell.desktop`, `citewell.png`, `.DirIcon` | Desktop integration |
 | `usr/share/icons/hicolor/256x256/apps/citewell.png` | Icon theme entry |
+| `usr/lib/citewell/citewell-import` | Rust import/backup helper, built by `xtask` |
 | `usr/lib/citewell/…` | The staged application, unchanged |
 
 `AppRun` is a Rust binary rather than a shell script, so the bundle needs no extra interpreter.
 It uses `exec`, not `spawn`, so signals and the process group behave as a direct launch would.
+`citewell-import` is a separate std-only Rust binary, built in release mode by `xtask` and placed
+next to `zotero-bin`; a source build finds the debug or release copy under `tools/target/`.
 
 ## A clean rebuild
 

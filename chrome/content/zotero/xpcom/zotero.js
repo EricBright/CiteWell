@@ -461,6 +461,11 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	 * @return {Promise:Boolean}
 	 */
 	var _initFull = async function () {
+		// Finish an adopt-copy before Zotero.DB exists, so the file swap never
+		// happens underneath a live database connection.
+		if (Zotero.LibraryImport) {
+			await Zotero.LibraryImport.applyPending();
+		}
 		if (!((await _initDB()))) return false;
 		
 		Zotero.VersionHeader.init();

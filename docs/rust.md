@@ -107,7 +107,7 @@ A plan is one page and answers:
 |---|---|---|
 | S1 | Packaging and docs tooling in Rust | done — `xtask`, `docs-check` |
 | S2 | Build toolchain in Rust (JS bundling, SCSS) | not started |
-| S3 | Services and pure logic in Rust (WASM first) | not started |
+| S3 | Services and pure logic in Rust (WASM first) | in progress — `citewell-import` file engine (R24) |
 | S4 | UI rewrite decision | deliberately undecided |
 
 ## What this does not promise

@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-20 · branch `citewell` @ `6b3c5d2b5` · companion to
+Last updated 2026-11-21 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
@@ -15,25 +15,26 @@ This page holds only what a fresh session needs to start without re-deriving it.
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log |
 | Agent skill | [SKILL.md](../SKILL.md); Help → Agents and SKILL.md; Agent access pane |
 | Notes | **Agent notes accept Markdown but Zotero still stores HTML**; Markdown-only design approved (D21), not built |
-| Docs | README index, Rust docs gate, D1–D22, research note, note design |
+| Import | R24 Phase 1: Zotero detector, Library pane, Rust `citewell-import`; adopt-copy built, merge not |
+| Docs | README index, Rust docs gate, D1–D24, research note, note design |
 | CI | `docs` and `CodeQL`; check the run for the pushed tip |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (≈141 MB)
+- `dist/CiteWell-x86_64.AppImage` (≈155 MB)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 ## Pick up here
 
-1. **R26 — Markdown-only notes** ([notes.md](notes.md), D21). This is the next phase. Slice 1 is
-   the conversion boundary only: `markdownToHTML` / `htmlToMarkdown` at the note-editor edge,
-   load/save conversion, round-trip tests. Parser: bundled `markdown-it` + `prosemirror-markdown`
-   (no new dependency). Editor: ProseMirror as a view over Markdown. Citations deferred and
-   flattened; tables and math kept; legacy HTML converts on first open with a backup. Do not
-   switch storage before the round trip is proven.
-2. **R24 — import/merge a Zotero library** ([import.md](import.md)): adopt-copy for an empty
-   library, then a batched merge. Source read-only throughout; R26 changes the note conversion
-   step here.
+1. **R24 — import/merge a Zotero library** ([import.md](import.md), D23). Adopt-copy is built:
+   detector, read-only inspection, Library pane, `citewell-import` stage/verify/apply, and the
+   pre-start hook. Next: try it against a copy of a real library, then start Phase 2 merge.
+   Source read-only throughout; R26 changes the note conversion step there.
+2. **R26 — Markdown-only notes** ([notes.md](notes.md), D21). Slice 1 is the conversion boundary
+   only: `markdownToHTML` / `htmlToMarkdown` at the note-editor edge, load/save conversion,
+   round-trip tests. Parser: bundled `markdown-it` + `prosemirror-markdown` (no new dependency).
+   Editor: ProseMirror as a view over Markdown. Citations deferred and flattened; tables and math
+   kept; legacy HTML converts on first open with a backup.
 3. **R21 — checksums and `.zsync`** beside the AppImage, for Gear Lever/AppImageUpdate. Needs a
    release host and stable filenames.
 4. **Connector on AMO** — id `citewell-connector@sophy.ca`; `update_url` is inert until a listing
@@ -71,8 +72,9 @@ Docs, Rust tests, agent tests, connector:
 
 ```bash
 cargo run --manifest-path tools/docs-check/Cargo.toml
-cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher
-test/runtests.sh agentTest.js searchTest.js advancedSearchTest.js pluginAPITest.js
+cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
+cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
+test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js pluginAPITest.js
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 ```
 
@@ -99,6 +101,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |
 | Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
 | Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |
+| Import helper missing in a source build | Build it with `cargo build -p citewell-import`; the AppImage carries its own copy |
 | `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
 | Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
 

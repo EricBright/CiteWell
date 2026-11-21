@@ -511,6 +511,13 @@ fn appimage_inner() -> Result<PathBuf, String> {
     let app_dest = appdir.join("usr/lib/citewell");
     copy_dir(&staged, &app_dest)?;
 
+    // The import helper lives next to the app binary. It is built here, not
+    // by the upstream staging script, so a source build keeps its own copy.
+    let importer = build_importer(&root)?;
+    let importer_dest = app_dest.join("citewell-import");
+    copy(&importer, &importer_dest)?;
+    make_executable(&importer_dest)?;
+
     // 2. Desktop entry and icons.
     fs::create_dir_all(appdir.join("usr/share/icons/hicolor/256x256/apps"))
         .map_err(|e| format!("creating icon directory: {e}"))?;
@@ -551,6 +558,26 @@ fn appimage_inner() -> Result<PathBuf, String> {
     }
 
     Ok(output)
+}
+
+fn build_importer(root: &Path) -> Result<PathBuf, String> {
+    let status = Command::new(env::var("CARGO").unwrap_or_else(|_| "cargo".to_string()))
+        .current_dir(root.join("tools"))
+        .args(["build", "--release", "--quiet", "-p", "citewell-import"])
+        .status()
+        .map_err(|e| format!("building the import helper: {e}"))?;
+    if !status.success() {
+        return Err(format!("cargo build for the import helper failed ({status})"));
+    }
+
+    let binary = root.join("tools/target/release/citewell-import");
+    if !binary.is_file() {
+        return Err(format!(
+            "import helper binary missing at {}",
+            binary.display()
+        ));
+    }
+    Ok(binary)
 }
 
 fn build_launcher(root: &Path) -> Result<PathBuf, String> {

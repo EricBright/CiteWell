@@ -372,6 +372,60 @@ Rejected: "Turing-complete, therefore portable" — true only at the computabili
 justifies an unbounded rewrite. Rejected: function-by-function translation — interface churn with
 no stable seam. Rejected: big-bang subsystem rewrite — no oracle, no parity, no rollback.
 
+## D23 — Import is a Rust file engine over the existing JavaScript data layer
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** until the first import
+
+Bringing a Zotero library in must copy it exactly and must never put a second writer on either
+database. The engine that stages and swaps files can therefore be Rust, but the part that reads
+or writes Zotero's data layer cannot: it is the application's own code, and reimplementing it in
+Rust would create two catalogs.
+
+Phase 1, adopt-copy for an empty library:
+
+- A small std-only Rust helper, `tools/importer` / `citewell-import`, owns staging: copy
+  `storage/`, verify the snapshot, back up the empty library, swap files, roll back on failure.
+  It never opens SQLite.
+- JavaScript owns the data layer and the UI: read-only source probe, empty check, database
+  snapshot, SHA-256, the Library pane, the request file and the pre-start apply hook.
+- The source is read-only. The apply runs before `Zotero.DB` is created, so no live connection
+  ever sees a file swap. The empty CiteWell database is kept as a restore point.
+- The detector reads only `dataDir`, `useDataDir` and `lastDataDir` from Zotero's `prefs.js` to
+  find a custom library. It never copies or writes the profile. It also checks `~/Zotero`,
+  common folders and drive roots, and preselects the best candidate with a confidence label.
+- Notes, annotations, collections, saved searches and item keys come across because the database
+  file is copied whole. Group libraries are copied as-is; hiding them is a later UI change.
+
+Phase 2, merging into a non-empty library, writes through
+`Zotero.Items`/collections/notes/attachments in JavaScript and reuses the same mover for
+attachments and the same receipt. A Rust planner can be added later if it earns its keep; it
+would read and plan, not write.
+
+Rejected: a `rusqlite` sidecar owning the database — it duplicates the schema and the only
+writer. Rejected: JavaScript file copying only — the engine would be rewritten later, and the
+policy requires new code in Rust. Rejected: swapping the live database — shutdown handlers and
+caches still touch it. Rejected: pointing CiteWell at Zotero's live data directory — SQLite has
+one writer, Zotero opens it exclusively, and CiteWell's schema upgrades and Markdown notes would
+change the file Zotero depends on; the promise that Zotero is never modified would be false.
+Rejected: asking the person to find the library path — the detector does it.
+
+## D24 — Keep the library visible; modernize the edges
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** yes
+
+CiteWell keeps its library in a visible `~/CiteWell` folder and its Gecko profile in
+`~/.config/citewell/profile`. The visible folder is the unit of backup, import and support;
+hiding it under `~/.local/share` would make it harder to find, not more modern.
+
+Modernization happens around the library: a Locations panel shows every path with Open actions;
+`agent-token` and the audit log move out of the library into config/state; caches move to
+`~/.cache/citewell` and logs to `~/.local/state/citewell`; `fulltext.sqlite` is marked
+rebuildable and excluded from backups. "Move library…" reuses Zotero's tested data-directory
+migration. XDG data paths are reconsidered only for a packaged Flatpak.
+
+Rejected: moving the library to XDG data now — migration risk and hidden data for no gain.
+Rejected: splitting the database from `storage/` — they are one unit.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

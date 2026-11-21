@@ -81,6 +81,14 @@ Zotero.PreferencePanes = {
 			defaultXUL: true,
 		},
 		{
+			id: 'zotero-prefpane-library',
+			rawLabel: 'Library',
+			image: 'chrome://zotero/skin/20/universal/folder-open.svg',
+			src: 'chrome://zotero/content/preferences/preferences_library.xhtml',
+			scripts: ['chrome://zotero/content/preferences/preferences_library.js'],
+			defaultXUL: true,
+		},
+		{
 			id: 'zotero-prefpane-advanced',
 			label: 'zotero.preferences.prefpane.advanced',
 			image: 'chrome://zotero/skin/20/universal/wrench-screwdriver.svg',
