@@ -122,6 +122,30 @@ Zotero_Preferences.Cite = {
 		}
 	},
 
+	_repairStaleBundle: async function (oxt, detail, command, prefix) {
+		var match = detail.match(/file:\/\/(\/[^"\s]+?CiteWell_LibreOffice_Integration[^"\s]*?\.oxt)/);
+		if (!match) return false;
+		var path = decodeURIComponent(match[1]);
+		if (!path.includes("/CiteWell_LibreOffice_Integration")) return false;
+		try {
+			await IOUtils.makeDirectory(path, { createAncestors: true, ignoreExisting: true });
+			var unzip = await Subprocess.pathSearch("unzip");
+			var extract = await this._run(unzip, ["-q", "-o", oxt, "-d", path]);
+			if (extract.exitCode !== 0) return false;
+			var removed = await this._run(
+				command,
+				prefix.concat(["remove", "citewell-libreoffice-integration@sophy.ca"])
+			);
+			if (removed.exitCode !== 0) return false;
+			Zotero.debug("Removed stale CiteWell LibreOffice bundle registration");
+			return true;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			return false;
+		}
+	},
+
 	installLibreOffice: async function () {
 		var status = document.getElementById("citewell-lo-status");
 		var button = document.getElementById("citewell-lo-install");
@@ -147,46 +171,54 @@ Zotero_Preferences.Cite = {
 			}
 			catch (e) {
 			}
-			var result;
+			var command = null;
+			var prefix = [];
 			if (flatpak) {
 				var info = await this._run(flatpak, ["info", "org.libreoffice.LibreOffice"]);
 				if (info.exitCode === 0) {
 					if (await this._isLibreOfficeRunning(flatpak)) {
 						throw new Error("Close LibreOffice completely, then try again.");
 					}
-					status.textContent = "Installing…";
-					result = await this._run(flatpak, [
+					command = flatpak;
+					prefix = [
 						"run", "--command=/app/libreoffice/program/unopkg",
-						"org.libreoffice.LibreOffice", "add", "-f", visible
-					]);
+						"org.libreoffice.LibreOffice"
+					];
 				}
 			}
-			if (!result) {
+			if (!command) {
 				var native = [
 					"/usr/bin/unopkg",
 					"/usr/lib/libreoffice/program/unopkg",
 					"/usr/lib64/libreoffice/program/unopkg",
 				];
-				var unopkg = null;
 				for (var candidate of native) {
 					if (await IOUtils.exists(candidate)) {
-						unopkg = candidate;
+						command = candidate;
 						break;
 					}
 				}
-				if (!unopkg) {
+				if (!command) {
 					throw new Error("LibreOffice was not found. Install LibreOffice, then try again.");
 				}
-				status.textContent = "Installing…";
-				result = await this._run(unopkg, ["add", "-f", visible]);
 			}
+			var install = () => this._run(command, prefix.concat(["add", "-f", visible]));
+			status.textContent = "Installing…";
+			var result = await install();
 			if (result.exitCode !== 0) {
 				var detail = `${result.stdout}\n${result.stderr}`.trim();
 				Zotero.logError(new Error(`unopkg failed (${result.exitCode}): ${detail}`));
 				if (/enabling: components\.xml|another instance|lock/i.test(detail)) {
 					throw new Error("Close LibreOffice completely, then try again.");
 				}
-				throw new Error("LibreOffice could not install the extension.");
+				if (/Error binding package|NOT_EXISTING/i.test(detail)
+						&& await this._repairStaleBundle(visible, detail, command, prefix)) {
+					status.textContent = "Repairing extension state…";
+					result = await install();
+				}
+				if (result.exitCode !== 0) {
+					throw new Error("LibreOffice could not install the extension.");
+				}
 			}
 			status.textContent = "Installed. Restart LibreOffice.";
 			button.disabled = false;
