@@ -49,6 +49,58 @@ R6 requires changing behaviour in a JavaScript UI. The rule is therefore:
 - New user-visible functionality should ship as WASM or a sidecar, with JS reduced to a thin
   call site.
 
+## Porting existing JavaScript
+
+Turing completeness is not a migration plan. Rust can compute anything JavaScript computes, but a
+faithful port must preserve observable behaviour, the runtime it depends on, performance and
+maintainability. "Impossible" is usually "large, risky and under-specified": say which, and name
+the seam, rather than refusing. Conversely, "Turing-complete, therefore portable" is true only in
+the weak computability sense and is not a plan.
+
+The unit of port is a **seam**: a cohesive module with a stable public interface and tests. Not a
+function, and not a subsystem.
+
+1. **Plan before code.** Record the module and seam, its public API, the behaviour contract, the
+   JS oracle, the parity tests, the Rust types/errors/async/ownership, the interop mechanism, the
+   risks, and the exit criteria. A port starts from that plan, not from "translate this file".
+2. **One seam at a time.** Split a module that has more than one seam; batch pure utilities rather
+   than porting functions one by one. For an application path that crosses modules, use a
+   vertical slice only to prove the architecture, then return to seams.
+3. **Tests before the rewrite.** Write characterization or golden tests first, then differential
+   tests that feed the same inputs to the JS and Rust implementations. Keep the JS as the oracle
+   until parity is proven.
+4. **Design the Rust surface first.** Enums for unions, `Option` for null/undefined, `Result` for
+   exceptions, explicit ownership and async. Do not translate JS mutation into `Rc<RefCell<_>>`
+   everywhere, and do not line-by-line translate idioms.
+5. **Interop while both exist.** Pure logic goes to WASM (the citeproc bridge is the precedent;
+   there is no wasm-bindgen runtime here); file and process work goes to a sidecar over a
+   versioned protocol. The app owns SQLite: a sidecar may read it read-only or work while the app
+   is closed, never write it alongside Gecko.
+6. **Stop at unclear behaviour.** If the JS depends on undocumented runtime behaviour, an
+   unmaintained vendored library, or something the tests cannot pin down, stop and report it. A
+   guessed semantic is worse than an unported module.
+7. **Delete only after parity.** Parity tests, error behaviour, performance and the absence of a
+   hidden JS dependency are the exit criteria; remove the JS in the same change, not "later".
+
+Vendored JavaScript is not ported line by line. Replace it with a maintained crate only when that
+dependency is approved; otherwise leave it on the JS side.
+
+Common semantic traps: JS numbers are doubles, strings are UTF-16, `null` and `undefined` differ,
+object key order and `Date`/regex/equality coercion are observable, exceptions must become
+`Result`, async ordering and event-loop timing change, and GC/finalizer assumptions do not survive.
+
+### Port plan
+
+A plan is one page and answers:
+
+- **Seam:** module, public API, callers.
+- **Behaviour:** what is observable, and which JS tests or fixtures pin it down.
+- **Parity:** characterization and differential tests, including error cases.
+- **Rust surface:** types, ownership, errors, async, threading.
+- **Interop:** WASM or sidecar, lifecycle, versioned protocol.
+- **Risks:** semantics that cannot be pinned down; dependencies that must stay.
+- **Exit:** tests, performance, deletion of the JS.
+
 ## Stages
 
 | Stage | Content | State |

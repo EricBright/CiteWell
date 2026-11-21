@@ -15,7 +15,7 @@ This page holds only what a fresh session needs to start without re-deriving it.
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 19 MCP tools; `citewell` CLI; audit log |
 | Agent skill | [SKILL.md](../SKILL.md); Help → Agents and SKILL.md; Agent access pane |
 | Notes | **Agent notes accept Markdown but Zotero still stores HTML**; Markdown-only design approved (D21), not built |
-| Docs | README index, Rust docs gate, D1–D21, research note, note design |
+| Docs | README index, Rust docs gate, D1–D22, research note, note design |
 | CI | `docs` and `CodeQL`; check the run for the pushed tip |
 
 Artifacts are local and gitignored:

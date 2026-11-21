@@ -28,6 +28,10 @@ architecture reference for all tools.
    default to `origin`, `gh` defaults to this fork, and `tools/docs-check` fails if any remote
    can push upstream.
 
+6. **Port JavaScript seam by seam.** Plan the module, keep the JS as the test oracle, and prove
+   parity before deleting it; no big-bang or line-by-line translation. Procedure:
+   [docs/rust.md](docs/rust.md#porting-existing-javascript).
+
 ## Where to look
 
 | Question | File |

@@ -348,6 +348,30 @@ would be a second window. Rejected: dual HTML/Markdown storage — it is not "no
 doubles every read path. Rejected: raw Markdown in the note editor without conversion — the
 ProseMirror UI would display syntax literally.
 
+## D22 — Porting JavaScript is a seam-by-seam rewrite, not a translation
+
+**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** yes
+
+Turing completeness proves that Rust can compute what JavaScript computes; it says nothing about
+preserving XUL/Gecko APIs, Zotero's data layer, event-loop timing, the vendored libraries, or the
+cost of a rewrite. In practice an agent asked to "port this" either calls it impossible or
+translates line by line, and both fail the same way: the result looks converted and its behaviour
+drifts where nobody is looking.
+
+The procedure is now policy: plan the seam first, port one cohesive module behind a stable
+interface, write characterization and differential tests before the rewrite, keep the JS as the
+oracle until parity, design Rust types/ownership/errors before internals, use WASM or a sidecar
+for interop, and delete the JS only after parity. It is written out in
+[rust.md](rust.md#porting-existing-javascript), with a one-page port plan and the semantic traps
+(numbers, strings, null/undefined, key order, async ordering, exceptions, GC assumptions).
+
+[AGENTS.md](../AGENTS.md) rule 6 makes this binding for agents. The point is not to forbid ports;
+it is to make each one a bounded, testable change with a known seam instead of a leap.
+
+Rejected: "Turing-complete, therefore portable" — true only at the computability level, and it
+justifies an unbounded rewrite. Rejected: function-by-function translation — interface churn with
+no stable seam. Rejected: big-bang subsystem rewrite — no oracle, no parity, no rollback.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
