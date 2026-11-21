@@ -33,10 +33,6 @@
 	path = document-worker
 	url = https://github.com/zotero/document-worker.git
 	branch = master
-[submodule "note-editor"]
-	path = note-editor
-	url = https://github.com/zotero/note-editor.git
-	branch = master
 [submodule "chrome/content/zotero/xpcom/utilities"]
 	path = chrome/content/zotero/xpcom/utilities
 	url = https://github.com/zotero/utilities.git

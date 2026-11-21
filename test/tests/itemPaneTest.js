@@ -2009,35 +2009,6 @@ describe("Item pane", function () {
 	});
 
 
-	describe("Note editor", function () {
-		it("should refresh on note update", async function () {
-			var item = new Zotero.Item('note');
-			var id = await item.saveTx();
-			
-			var noteEditor = doc.getElementById('zotero-note-editor');
-			
-			// Wait for the editor if it has not been initialized yet
-			if (!noteEditor.item) {
-				await new Zotero.Promise((resolve, reject) => {
-					noteEditor.onInit(() => resolve());
-				});
-				assert.equal(noteEditor._editorInstance._iframeWindow.wrappedJSObject.getDataSync(), null);
-			}
-
-			item.setNote('<p>Test</p>');
-			await item.saveTx();
-			
-			// Wait for asynchronous editor update
-			do {
-				await Zotero.Promise.delay(10);
-			} while (
-				!/<div data-schema-version=".*"><p>Test<\/p><\/div>/.test(
-					noteEditor._editorInstance._iframeWindow.wrappedJSObject.getDataSync().html.replace(/\n/g, '')
-				)
-			);
-		});
-	});
-	
 	describe("Feed buttons", function () {
 		describe("Mark as Read/Unread", function () {
 			it("should change an item from unread to read", async function () {

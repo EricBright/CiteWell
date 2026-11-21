@@ -19,7 +19,6 @@ if (require.main === module) {
 			await getClean(path.join(ROOT, '.signatures.json'));
 			await getClean(path.join(ROOT, 'reader/build'));
 			await getClean(path.join(ROOT, 'document-worker/build'));
-			await getClean(path.join(ROOT, 'note-editor/build'));
 		} catch (err) {
 			process.exitCode = 1;
 			global.isError = true;

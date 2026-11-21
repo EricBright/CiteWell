@@ -22,7 +22,7 @@ push target. The product branch may diverge without limit.
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1` Phases 1–4: items, translators, attachments, notes, collections, UI, annotations, `export.note`; 18 MCP tools; `citewell` CLI; audit log — note and annotation verbs will change with D29/D30 |
-| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text; plain-text excerpts and the editor removal are still open |
+| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library were migrated on 2026-11-21: 0 failures, 0 active `itemNotes`, 82 old notes in Trash, 83 `.md` attachments, database backup kept. Full-text search finds migrated note text. The ProseMirror `note-editor` submodule and bundle are removed; a read-only legacy viewer remains, along with `editorInstance` annotation helpers to be removed with D30 |
 | PDF | **Partial:** every attachment opens through the host, and PDF text extraction is disabled (`fulltext.pdfMaxPages = 0` plus an `indexItem` guard). PDF previews are disabled and the agent can no longer create annotations. The reader, document worker, pdf.js and annotation UI are still in the build (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
@@ -46,11 +46,11 @@ plan.
    is gone, `.npmrc` fails closed, `repo-guard` and the pre-commit hook reject package/lock and
    `node_modules` changes, and the build no longer falls back to npm. The hook is enabled in this
    clone with `git config core.hooksPath .githooks`.
-2. **D29 — remove the retired note editor** ([notes.md](notes.md)). Attachment creation, external
-   open, migration and embedded-image copying are built and the disposable library is migrated.
-   Next: add plain-text excerpts, then remove the editor element, `editorInstance`, note tabs,
-   `note.xhtml`, the `note-editor` submodule and its build path. Keep the test that no new
-   `itemNotes` row is written.
+2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
+   migration, embedded-image copying and the removal of the note-editor submodule/bundle are done.
+   A read-only viewer replaces the editable element; note tabs still work. Next: add plain-text
+   excerpts, remove the remaining `editorInstance` annotation helpers with D30, and decide whether
+   the note-window shell is still earning its place.
 3. **D30 — finish removing PDF handling.** External open and the PDF text-index stop are in. Next:
    remove `reader/`, `document-worker/` and pdf.js from the build and UI; export existing annotations
    to `storage/<key>/annotations.md`; remove annotation listing/UI, the reader tests and the
@@ -80,8 +80,9 @@ app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
 
-The note-editor build currently fetches a prebuilt archive. Its npm fallback is being removed; do
-not restore it to make a build pass. If the archive is unavailable, fix the build or land D29.
+The note-editor is no longer part of the build: the submodule and bundle are gone, and
+`elements/noteEditor.js` is a read-only legacy viewer. Do not restore the npm build to make a
+build pass.
 
 Run without touching the real library:
 
@@ -149,8 +150,9 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
 - **The disposable library is migrated:** 82 legacy notes became `.md` attachments, no failures, and
   the old rows are in Trash. The database backup is `~/CiteWell/zotero.sqlite.pre-markdown-notes.bak`
-  (10,321,920 bytes). The note editor still ships for compatibility with trashed/restored notes;
-  removing it is the remaining D29 work. Do not rerun the migration on this library.
+  (10,321,920 bytes). The ProseMirror editor bundle is gone; trashed/restored legacy notes open in a
+  read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
+  D30. Do not rerun the migration on this library.
 - **PDF behavior is transitioning:** PDFs already open externally and new PDF text is not indexed.
   The reader still ships and old PDF index rows may remain until the index is rebuilt; annotation
   UI and verbs are still present. Do not add features to them.

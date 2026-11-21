@@ -1,7 +1,7 @@
 # Notes as Markdown file attachments
 
-Status: **core built; disposable library migrated; editor removal pending.** Companion to
-[decisions.md](decisions.md) D29 and D20.
+Status: **core built; disposable library migrated; editor bundle removed; read-only fallback.**
+Companion to [decisions.md](decisions.md) D29 and D20.
 
 ## Goal
 
@@ -83,20 +83,16 @@ offered in a normal build.
 
 ## Removal
 
-When the last legacy note has migrated:
-
-- Remove the `note-editor` submodule and its `js-build` build path.
-- Remove `editorInstance.js`, `elements/noteEditor.js`, `note.xhtml`, the note-tab plumbing, the
-  `note.markdownStorage` preference, and the npm fallback that rebuilt the editor.
-- Keep `Zotero.Notes` only for migration helpers, title/excerpt extraction and search; rename the
-  module if it becomes clearer once the editor is gone.
-- Remove note-editor styles, locale strings that only the editor used, and tests that assert editor
-  behaviour. Tests for migration, external open and search replace them.
+The `note-editor` submodule and its `js-build` build path are removed. `elements/noteEditor.js` is
+now a read-only text view for legacy rows; note tabs still open through it. The editable
+`editorInstance` helpers remain only for annotation-to-note creation and will go with D30. Note
+editor tests that asserted ProseMirror behaviour are removed; migration, external-open and note-tab
+coverage remains. The `note.markdownStorage` preference is gone.
 
 ## Exit criteria
 
 - No new note is stored in `itemNotes`; no new HTML is written.
-- 83 legacy notes migrate on a copy with a readable report and zero lost note bodies.
+- The 82 legacy notes in the disposable library migrated with zero failures and zero lost bodies.
 - Every migrated note opens in the configured host editor and is found by a word inside its text.
 - Search never returns a PDF match.
 - The app starts and builds with the note-editor submodule absent and its npm tree untouched.

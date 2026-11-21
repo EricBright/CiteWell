@@ -7,7 +7,6 @@ const getSass = require('./sass');
 const getSymlinks = require('./symlinks');
 const getReader = require('./reader');
 const getDocumentWorker = require('./document-worker');
-const getZoteroNoteEditor = require('./note-editor');
 const { formatDirsForMatcher, getSignatures, writeSignatures, cleanUp, onSuccess, onError} = require('./utils');
 const { dirs, symlinkDirs, copyDirs, symlinkFiles, jsFiles, scssFiles, ignoreMask } = require('./config');
 
@@ -37,8 +36,7 @@ if (require.main === module) {
 				getSymlinks(symlinks, { nodir: true, ignore: ignoreMask }, signatures),
 				getSymlinks(symlinkDirs, { ignore: ignoreMask }, signatures),
 				getReader(signatures),
-				getDocumentWorker(signatures),
-				getZoteroNoteEditor(signatures)
+				getDocumentWorker(signatures)
 			]);
 
 			await writeSignatures(signatures);

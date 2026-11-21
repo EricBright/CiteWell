@@ -121,7 +121,6 @@ const ftlFileBaseNames = [
 	'scaffold',
 	'reader',
 	'integration',
-	'note-editor',
 	'schema',
 	'fileRenaming',
 ];

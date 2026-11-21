@@ -29,7 +29,9 @@ let noteEditor;
 let notifierUnregisterID;
 
 function showInLibrary() {
-	noteEditor._editorInstance._showInLibrary([noteEditor._editorInstance._item.id]);
+	if (noteEditor._editorInstance) {
+		noteEditor._editorInstance._showInLibrary([noteEditor._editorInstance._item.id]);
+	}
 }
 
 async function onLoad() {

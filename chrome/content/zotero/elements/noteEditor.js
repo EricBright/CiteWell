@@ -1,24 +1,21 @@
 /*
     ***** BEGIN LICENSE BLOCK *****
     
-    Copyright © 2021 Corporation for Digital Scholarship
-                     Vienna, Virginia, USA
-                     https://www.zotero.org
+    Copyright © 2026 Eric Bright
+    This file is part of CiteWell, a fork of Zotero.
     
-    This file is part of Zotero.
-    
-    Zotero is free software: you can redistribute it and/or modify
+    CiteWell is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
     
-    Zotero is distributed in the hope that it will be useful,
+    CiteWell is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
     
     You should have received a copy of the GNU Affero General Public License
-    along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
+    along with CiteWell.  If not, see <http://www.gnu.org/licenses/>.
     
     ***** END LICENSE BLOCK *****
 */
@@ -26,285 +23,123 @@
 "use strict";
 
 {
+	/**
+	 * Read-only view for legacy itemNotes rows.
+	 *
+	 * CiteWell notes are Markdown file attachments (D29); this element keeps
+	 * trashed or restored legacy notes readable without shipping ProseMirror,
+	 * the note-editor bundle, or an editing surface.
+	 */
 	class NoteEditor extends XULElement {
 		constructor() {
 			super();
-
-			this._notitle = false;
 			this._mode = 'view';
 			this._item = null;
 			this._parentItem = null;
-			this._iframe = null;
-			this._initialized = false;
-			this._initPromise = new Promise((resolve, reject) => {
-				this._resolveInitPromise = resolve;
-				this._rejectInitPromise = reject;
-			});
-			this._editorInstance = null;
 			this._destroyed = false;
-			this._bottomPlaceholder = null;
-			this._contextPaneOpen = null;
+			this._initialized = false;
+			this._editorInstance = null;
+			this._initPromise = Promise.resolve();
+			this._onInitCallback = null;
+			this._returnHandler = null;
+			this._navigateHandler = null;
+			this._notitle = false;
+			this.displayButton = false;
+			this._tabID = null;
+			this.viewMode = 'library';
 
 			this.content = MozXULElement.parseXULToFragment(`
-				<html:div class="custom-head empty"></html:div>
-				<box flex="1" tooltip="html-tooltip" style="display: flex; flex-grow: 1" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-					<div id="note-editor" style="display: flex;flex-direction: column;flex-grow: 1;" xmlns="http://www.w3.org/1999/xhtml">
-						<iframe id="editor-view" style="border: 0;width: 100%;flex-grow: 1;" src="resource://zotero/note-editor/editor.html" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" type="content" context="textbox-contextmenu"/>
-						<div id="links-container">
-							<links-box id="links-box" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"/>
-						</div>
-					</div>
-				</box>
-				<popupset xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-					<menupopup id="editor-menu"/>					
-				</popupset>
-			`, ['chrome://zotero/locale/zotero.dtd']);
+				<vbox flex="1" style="overflow: auto; padding: 1em;">
+					<description id="legacy-note-warning" class="library-muted"
+						value="Read-only legacy note. Notes are now Markdown file attachments."/>
+					<description id="legacy-note-title" style="font-weight: bold; font-size: 1.15em; margin: 0.5em 0;"/>
+					<description id="legacy-note-body" style="white-space: pre-wrap;"/>
+					<box id="links-container" hidden="true"/>
+				</vbox>
+			`);
 		}
-		
+
 		connectedCallback() {
-			this._destroyed = false;
-			window.addEventListener("unload", () => this.destroy(), { once: true });
-
-			MozXULElement.insertFTLIfNeeded('toolkit/global/textActions.ftl');
-			document.l10n.connectRoot(this);
-			
-			// var s1 = document.createElement("link");
-			// s1.rel = "stylesheet";
-			// s1.href = "chrome://zotero-platform/content/zotero.css";
-			// shadow.append(s1);
-
-			let content = document.importNode(this.content, true);
-			this._iframe = content.querySelector('#editor-view');
-			this._iframe.addEventListener('DOMContentLoaded', (_event) => {
-				// For iframes without chrome priviledges, for unknown reasons,
-				// dataTransfer.getData() returns empty value for `drop` event
-				// when dragging something from the outside of Zotero.
-				// Update: Since fx102 non-standard data types don't work when dragging into an§ iframe,
-				// while the original problem probably no longer exists
-				this._iframe.contentWindow.addEventListener('drop', (event) => {
-					this._iframe.contentWindow.wrappedJSObject.droppedData = Components.utils.cloneInto({
-						'text/plain': event.dataTransfer.getData('text/plain'),
-						'text/html': event.dataTransfer.getData('text/html'),
-						'zotero/annotation': event.dataTransfer.getData('zotero/annotation'),
-						'zotero/item': event.dataTransfer.getData('zotero/item')
-					}, this._iframe.contentWindow);
-				}, true);
-				this._iframe.docShell.windowDraggingAllowed = true;
-				this._initialized = true;
-			});
-			this.append(content);
-
-			this._notifierID = Zotero.Notifier.registerObserver(this, ['item', 'file'], 'noteEditor');
+			if (this._initialized) {
+				return;
+			}
+			this._initialized = true;
+			this.append(document.importNode(this.content, true));
 			this.notitle = !!this.getAttribute('notitle');
-			window.goBuildEditContextMenu();
+			this.refresh();
 		}
-		
-		destroy() {
-			if (this._destroyed) {
-				return;
-			}
-			this._destroyed = true;
-			this._editorInstance?.uninit();
-			
-			Zotero.Notifier.unregisterObserver(this._notifierID);
-		}
-		
+
 		disconnectedCallback() {
+			this._destroyed = true;
+			if (this._editorInstance) {
+				Zotero.Notes.unregisterEditorInstance(this._editorInstance);
+				this._editorInstance = null;
+			}
 			this.replaceChildren();
-			this.destroy();
 		}
 
-		async save() {
-
+		destroy() {
+			this._destroyed = true;
 		}
 
-		saveSync = () => {
-			if (this._editorInstance) {
-				this._editorInstance.saveSync();
-			}
-		};
-
-		getCurrentInstance = () => {
-			return this._editorInstance;
-		};
-
-		initEditor = async (state, reloaded) => {
-			if (this._editorInstance) {
-				this._editorInstance.uninit();
-			}
-
-			// Automatically upgrade editable v1 note before it's loaded
-			// TODO: Remove this at some point
-			if (this._mode == 'edit') {
-				await Zotero.Notes.upgradeSchemaV1(this._item);
-			}
-
-			this._editorInstance = new Zotero.EditorInstance();
-			await this._editorInstance.init({
-				state,
-				item: this._item,
-				reloaded,
-				iframeWindow: this._id('editor-view').contentWindow,
-				popup: this._id('editor-menu'),
-				onNavigate: this._navigateHandler,
-				viewMode: this.viewMode,
-				tabID: this.tabID,
-				readOnly: this._mode != 'edit',
-				disableUI: this._mode == 'merge',
-				onReturn: this._returnHandler,
-				placeholder: this.placeholder
-			});
-			if (this._onInitCallback) {
-				this._onInitCallback();
-			}
-			requestIdleCallback(() => this.setToggleContextPaneButtonMode());
-
-			await this._editorInstance._initPromise;
-			this._resolveInitPromise();
-		};
-
-		onInit = (callback) => {
-			if (this._editorInstance) {
-				return callback();
-			}
-			this._onInitCallback = callback;
-			return undefined;
-		};
-
-		notify = async (event, type, ids, extraData) => {
-			if (this._editorInstance) {
-				await this._editorInstance.notify(event, type, ids, extraData);
-			}
-
-			if (!this._item) {
-				return;
-			}
-			// Try to use the state from the item save event
-			let id = this._item.id;
-			if (ids.includes(id)) {
-				if (event == 'delete') {
-					if (this._returnHandler) {
-						this._returnHandler();
-					}
-				}
-				else {
-					let state = extraData && extraData[id] && extraData[id].state;
-					if (state) {
-						if (extraData[id].noteEditorID !== this._editorInstance.instanceID) {
-							let noteData = { state, html: this._item.note };
-							this._editorInstance.applyIncrementalUpdate(noteData, true);
-						}
-					}
-					else {
-						let curValue = this._item.note;
-						if (curValue !== this._lastHtmlValue) {
-							let noteData = { html: curValue };
-							this._editorInstance.applyIncrementalUpdate(noteData, true);
-						}
-					}
-					this._lastHtmlValue = this._item.note;
-				}
-			}
-
-			if (ids.includes(id) || this._parentItem && ids.includes(this._parentItem.id)) {
-				this._id('links-box')?.refresh();
-			}
-		};
-
-		set notitle(val) {
-			this._notitle = !!val;
-			let linksBox = this._id('links-box');
-			if (linksBox) {
-				linksBox.notitle = val;
-			}
-		}
-
-		set navigateHandler(val) {
-			if (this._editorInstance) {
-				this._editorInstance.onNavigate = val;
-			}
-			this._navigateHandler = val;
-		}
-
-		set returnHandler(val) {
-			this._returnHandler = val;
+		_id(id) {
+			return this.querySelector(`#${id}`);
 		}
 
 		get mode() {
 			return this._mode;
 		}
-		
+
 		set mode(val) {
-			var displayLinks = true;
-			switch (val) {
-				case 'merge':
-					displayLinks = false;
-					break;
-				case 'view':
-					break;
-
-				case 'edit':
-					break;
-
-				default:
-					throw new Error(`Invalid mode '${val}'`);
-			}
-
 			this._mode = val;
-			this._id('links-container').hidden = !displayLinks;
-			this._id('links-box').mode = val;
+			this.refresh();
 		}
-		
+
 		get item() {
 			return this._item;
 		}
-		
+
 		set item(val) {
-			// The binding can be immediately destroyed
-			// (which i.e. happens in merge dialog)
-			if (this._destroyed) {
-				return;
-			}
-
-			if (this._item && this._item.id && this._item.id == val.id) {
-				return;
-			}
-
-			if (this._editorInstance) {
-				this._editorInstance.uninit();
+			if (!val) {
+				this._item = null;
 				this._editorInstance = null;
+				this.refresh();
+				return;
 			}
-
-			this._lastHtmlValue = val.note;
 			this._item = val;
-
-			var parentKey = this._item.parentKey;
-			if (parentKey) {
-				this.parentItem = Zotero.Items.getByLibraryAndKey(this._item.libraryID, parentKey);
+			if (this._mode == 'edit') {
+				this._mode = 'view';
 			}
+			this._editorInstance = {
+				itemID: val.id,
+				_item: val,
+				viewMode: this.viewMode,
+				tabID: this._tabID,
+				_initPromise: Promise.resolve(),
+				focus() {},
+				focusToolbar() {},
+				uninit() {},
+				saveSync() {},
+				notify() {},
+				applyIncrementalUpdate() {},
+				setToggleContextPaneButtonMode() {},
+				_showInLibrary(ids) {
+					Zotero.getMainWindow()?.ZoteroPane.selectItems(ids, true);
+				},
+			};
+			Zotero.Notes.registerEditorInstance(this._editorInstance);
+			this.refresh();
+		}
 
-			this._id('links-box').item = this._item;
+		get tabID() {
+			return this._tabID;
+		}
 
-			(async () => {
-				// `item` field can be set before the constructor is called
-				// or noteeditor is attached to dom (which happens in the
-				// merge dialog i.e.), therefore we wait for the initialization
-				let n = 0;
-				while (!this._initialized && !this._destroyed) {
-					if (n >= 1000) {
-						throw new Error('Waiting for noteeditor initialization failed');
-					}
-					await Zotero.Promise.delay(10);
-					n++;
-				}
-
-				if (this._destroyed) {
-					return;
-				}
-
-				this.initEditor();
-				this._id('links-box').item = this._item;
-			})();
+		set tabID(val) {
+			this._tabID = val;
+			if (this._editorInstance) {
+				this._editorInstance.tabID = val;
+			}
 		}
 
 		get parentItem() {
@@ -313,167 +148,81 @@
 
 		set parentItem(val) {
 			this._parentItem = val;
-			this._id('links-box').parentItem = val;
-		}
-
-		// TODO: implement this
-		async navigate(_location) {}
-
-		async focus() {
-			let n = 0;
-			while (!this._editorInstance && n++ < 100) {
-				await Zotero.Promise.delay(10);
-			}
-			await this._editorInstance._initPromise;
-			this._iframe.focus();
-			this._editorInstance.focus();
-		}
-
-		async focusFirst() {
-			try {
-				let n = 0;
-				while (!this._editorInstance && n++ < 100) {
-					await Zotero.Promise.delay(10);
-				}
-				await this._editorInstance._initPromise;
-				this._iframe.focus();
-				this._editorInstance._iframeWindow.document.querySelector('.toolbar-button-return').focus();
-			}
-			catch {
-			}
-		}
-
-		refresh() {}
-
-		renderCustomHead(callback) {
-			let customHead = this.querySelector(".custom-head");
-			customHead.replaceChildren();
-			let append = (...args) => {
-				customHead.append(...args);
-			};
-			if (callback) callback({
-				doc: document,
-				append,
-			});
-		};
-
-		setBottomPlaceholderHeight(height) {
-			// Store raw value as null/number for toggle contextPane button update
-			this._bottomPlaceholder = height;
-			if (typeof height !== 'number') {
-				height = 0;
-			}
-			this.style.height = `calc(100% - ${height}px)`;
-			this.setToggleContextPaneButtonMode();
-		};
-
-		setContextPaneOpen(open) {
-			this._contextPaneOpen = open;
-			this.setToggleContextPaneButtonMode();
-		}
-
-		setToggleContextPaneButtonMode() {
-			if (!this._editorInstance) return;
-			if (this._bottomPlaceholder === null && this._contextPaneOpen === null) return;
-			let mode = null;
-			if (this._bottomPlaceholder !== null) {
-				mode = "stacked";
-			}
-			else if (!this._contextPaneOpen) {
-				mode = "standard";
-			}
-			this._editorInstance.setToggleContextPaneButtonMode(mode);
-		}
-
-		_id(id) {
-			return this.querySelector(`#${id}`);
-		}
-	}
-	customElements.define("note-editor", NoteEditor);
-}
-
-
-{
-	class LinksBox extends XULElement {
-		constructor() {
-			super();
-
-			this._mode = 'view';
-			this._item = null;
-			this._parentItem = null;
-			this._destroyed = false;
-
-			this.content = MozXULElement.parseXULToFragment(`
-<!--
-				<html:div id="parent-label" class="label" hidden="true"/>
-				<html:div id="parent-value" class="value zotero-clicky" hidden="true"/>
--->
-				<tags-box id="tags"/>
-				<libraries-collections-box id="libraries-collections"/>
-				<related-box id="related"/>
-			`, ['chrome://zotero/locale/zotero.dtd']);
-		}
-
-		connectedCallback() {
-			this._destroyed = false;
-			window.addEventListener("unload", () => this.destroy(), { once: true });
-
-			this.append(document.importNode(this.content, true));
-		}
-
-		destroy() {
-			if (this._destroyed) {
-				return;
-			}
-			this._destroyed = true;
-		}
-
-		disconnectedCallback() {
-			this.replaceChildren();
-			this.destroy();
-		}
-
-		set item(val) {
-			this._item = val;
-			this._id('related').item = this._item;
-			this._id('tags').item = this._item;
-			if (this._item.parentItem) {
-				this._id('libraries-collections').hidden = true;
-			}
-			else {
-				this._id('libraries-collections').item = this._item;
-			}
-
-			this.refresh();
-		}
-
-		set mode(val) {
-			this._mode = val;
-			this._id('related').editable = val == "edit";
-			this._id('tags').editable = val == "edit";
-			this._id('libraries-collections').editable = val == "edit";
-			this.refresh();
 		}
 
 		set notitle(val) {
-			this._notitle = val;
-			this.refresh();
+			this._notitle = !!val;
 		}
 
-		set parentItem(val) {
-			this._parentItem = val;
-			this.refresh();
+		set navigateHandler(val) {
+			this._navigateHandler = val;
+		}
+
+		set returnHandler(val) {
+			this._returnHandler = val;
 		}
 
 		refresh() {
-			this._id('related')?.render();
-			this._id('tags')?.render();
-			this._id('libraries-collections')?.render();
+			if (!this._initialized) {
+				return;
+			}
+			let title = '';
+			let text = '';
+			if (this._item) {
+				title = this._item.getNoteTitle?.() || this._item.getField?.('title') || '';
+				let note = this._item.getNote?.() || '';
+				try {
+					let doc = new DOMParser().parseFromString(note, 'text/html');
+					text = doc.body.textContent || '';
+				}
+				catch (e) {
+					Zotero.logError(e);
+					text = note;
+				}
+			}
+			let titleNode = this._id('legacy-note-title');
+			let bodyNode = this._id('legacy-note-body');
+			if (titleNode) titleNode.textContent = title;
+			if (bodyNode) bodyNode.textContent = text;
 		}
 
-		_id(id) {
-			return this.querySelector(`#${id}`);
+		async save() {}
+
+		saveSync() {
+			// Read-only: nothing to write.
 		}
+
+		getCurrentInstance() {
+			return null;
+		}
+
+		onInit(callback) {
+			if (callback) {
+				callback();
+			}
+		}
+
+		async notify() {
+			this.refresh();
+		}
+
+		async navigate() {}
+
+		async focus() {}
+		async focusFirst() {}
+		async focusToolbar() {}
+		async navigate() {}
+
+		renderCustomHead(callback) {
+			if (callback) {
+				callback({ doc: document, append: () => {} });
+			}
+		}
+
+		setBottomPlaceholderHeight() {}
+		setContextPaneOpen() {}
+		setToggleContextPaneButtonMode() {}
 	}
-	customElements.define("links-box", LinksBox);
+
+	customElements.define("note-editor", NoteEditor);
 }
