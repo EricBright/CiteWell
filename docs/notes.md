@@ -1,6 +1,7 @@
 # Notes as Markdown file attachments
 
-Status: **core built, migration pending on real data.** Companion to [decisions.md](decisions.md) D29 and D20.
+Status: **core built; disposable library migrated; editor removal pending.** Companion to
+[decisions.md](decisions.md) D29 and D20.
 
 ## Goal
 
