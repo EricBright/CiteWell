@@ -93,6 +93,7 @@ Zotero.Integration = new function () {
 	 */
 	this.init = function () {
 		if (Zotero.test) return;
+		if (!ZOTERO_CONFIG.LIBREOFFICE_INTEGRATION_ENABLED) return;
 		let entryPoints = [PLUGIN_PATHS.LibreOffice];
 		if (Zotero.isMac) {
 			entryPoints.push(PLUGIN_PATHS.MacWord);

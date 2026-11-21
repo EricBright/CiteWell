@@ -625,22 +625,6 @@ elif [ $BUILD_WIN == 1 ]; then
 	
 	echo "manifest	integration/word-for-windows/chrome.manifest" >> chrome.manifest
 fi
-# Libreoffice plugin for all platforms
-pluginDir="$CALLDIR/modules/zotero-libreoffice-integration"
-mkdir -p "integration/libreoffice"
-cp -RH "$pluginDir/chrome" \
-	"$pluginDir/components" \
-	"$pluginDir/resource" \
-	"$pluginDir/chrome.manifest" \
-	"integration/libreoffice"
-echo -n "LibreOffice plugin version: "
-cat "integration/libreoffice/resource/version.txt"
-echo
-echo >> $prefs_file
-cat "$CALLDIR/modules/zotero-libreoffice-integration/defaults/preferences/zoteroLibreOfficeIntegration.js" >> $prefs_file
-echo >> $prefs_file
-
-echo "manifest	integration/libreoffice/chrome.manifest" >> chrome.manifest
 
 # Delete files that shouldn't be distributed
 find chrome -name .DS_Store -exec rm -f {} \;
@@ -735,7 +719,6 @@ if [ $BUILD_MAC == 1 ]; then
 	
 	# Add word processor plug-ins
 	mkdir "$CONTENTSDIR/Resources/integration"
-	cp -RH "$CALLDIR/modules/zotero-libreoffice-integration/install" "$CONTENTSDIR/Resources/integration/libreoffice"
 	cp -RH "$CALLDIR/modules/zotero-word-for-mac-integration/install" "$CONTENTSDIR/Resources/integration/word-for-mac"
 	
 	# Delete extraneous files
@@ -835,24 +818,7 @@ if [ $BUILD_MAC == 1 ]; then
 		entitlements_file="$CALLDIR/mac/entitlements.xml"
 		find "$APPDIR/Contents" -name '*.app' -not -name "updater.app" -print0 | xargs -0 /usr/bin/codesign --force --options runtime --entitlements "$entitlements_file" --sign "$DEVELOPER_ID"
 		
-		# Sign .jnilib (Java native shared library) within LibreOffice extension, since notarization
-		# started failing without this. The .jnilib is within a .jar within the .oxt, so we have to
-		# extract both, sign the libraries, and then update each ZIP.
-		#
-		# TODO: Remove this block once the plugin ships a jna.jar without the macOS native
-		# libraries, which are never loaded (JNA is used only on Windows)
-		pushd "$BUILD_DIR"
-		mkdir libreoffice-repack
-		cd libreoffice-repack
-		unzip -q "$APPDIR/Contents/Resources/integration/libreoffice/Zotero_LibreOffice_Integration.oxt" external_jars/jna.jar
-		unzip -q external_jars/jna.jar 'com/sun/jna/darwin*/libjnidispatch.jnilib'
-		/usr/bin/codesign --force --options runtime --sign "$DEVELOPER_ID" com/sun/jna/darwin*/libjnidispatch.jnilib
-		zip -u external_jars/jna.jar com/sun/jna/darwin*/libjnidispatch.jnilib
-		zip -u "$APPDIR/Contents/Resources/integration/libreoffice/Zotero_LibreOffice_Integration.oxt" external_jars/jna.jar
-		cd ..
-		rm -rf libreoffice-repack
-		popd
-		
+
 		# Sign Safari extensions
 		#
 		# Even though they're signed by Xcode, we sign them again to make sure they match the parent app signature
@@ -1012,7 +978,6 @@ if [ $BUILD_WIN == 1 ]; then
 		
 		# Add word processor plug-ins
 		mkdir -p "$APPDIR/integration"
-		cp -RH "$CALLDIR/modules/zotero-libreoffice-integration/install" "$APPDIR/integration/libreoffice"
 		cp -RH "$CALLDIR/modules/zotero-word-for-windows-integration/install" "$APPDIR/integration/word-for-windows"
 		if [ $arch = 'win32' ]; then
 			rm "$APPDIR/integration/word-for-windows/libzoteroWinWordIntegration_x64.dll"
@@ -1166,7 +1131,6 @@ if [ $BUILD_LINUX == 1 ]; then
 		
 		# Add word processor plug-ins
 		mkdir "$APPDIR/integration"
-		cp -RH "$CALLDIR/modules/zotero-libreoffice-integration/install" "$APPDIR/integration/libreoffice"
 		
 		# Firefox includes an 'icons' folder with updater.png, but some Linux distro builds omit it
 		mkdir -p "$APPDIR/icons"

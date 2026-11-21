@@ -7,6 +7,9 @@ export var ZOTERO_CONFIG = {
 	ONLINE_SYNC: false,
 	// Plugin loading is parked until a deliberate decision re-enables it (D31).
 	PLUGINS_ENABLED: false,
+	// The inherited Zotero LibreOffice OXT is not shipped; a CiteWell-owned
+	// extension is planned (D34).
+	LIBREOFFICE_INTEGRATION_ENABLED: false,
 	DOMAIN_NAME: 'zotero.org',
 	PRODUCER: 'Digital Scholar',
 	PRODUCER_URL: 'https://www.zotero.org',

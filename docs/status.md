@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; rebuilt with note excerpts/search (`10.0.9.SOURCE.599d0ebd4`, sha256 `dd49fe24…`, 136,247,800 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; LibreOffice OXT removed (`10.0.9.SOURCE.66e9b9ab8`, sha256 `a35b7129…`, 127,396,344 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -26,14 +26,14 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | Inherited OXT 9.0.2 and socket 23116; installer is native-`unopkg` only. The host has LibreOffice 26.8.3.1 **Flatpak**, so installation currently fails. Plan: [libreoffice.md](libreoffice.md) |
+| LibreOffice | **Disabled for now.** The inherited Zotero OXT is no longer packaged, `Zotero.Integration.init` is gated off, the Cite word-processor section is hidden, and no 23116 socket starts. Option B (Rust core + constrained Python UNO shim) is selected; host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice.md](libreoffice.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D33 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (136,255,992 bytes; sha256 `41770e2f5b9876dce3c018ede130144400bab93af58defd565efacc522512aee`)
+- `dist/CiteWell-x86_64.AppImage` (127,396,344 bytes; sha256 `a35b7129316bbc39dbeab86548d1b395aea8387b7afc0b4fd0dcc07173f51899`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at

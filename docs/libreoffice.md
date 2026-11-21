@@ -1,7 +1,7 @@
 # LibreOffice integration
 
-Status: **planning. The inherited Zotero integration is not the target and must not be
-installed by CiteWell.** Companion to [decisions.md](decisions.md) D34.
+Status: **Option B selected; inherited Zotero integration disabled and removed from packaging.**
+Companion to [decisions.md](decisions.md) D34.
 
 ## Identity and transport
 
@@ -20,8 +20,9 @@ The inherited values — id `zoteroLibreOfficeIntegration@zotero.org`, name “Z
 LibreOffice Integration”, port `23116`, sentinel `19876` — are rejected. Sharing them can
 send commands to Zotero or replace Zotero’s extension.
 
-Until a CiteWell extension exists, the inherited OXT must not be offered for installation.
-The current build still bundles it; removing or disabling that path is part of the migration.
+Until a CiteWell extension exists, the inherited OXT is not offered for installation and is no
+longer packaged by the Linux build. LibreOffice integration is disabled until the CiteWell OXT
+ships.
 
 ## What the inherited integration does
 
@@ -97,7 +98,7 @@ The practical choices are therefore:
 - New OXT id/name, port 23121, sentinel 19877.
 - The C++ shim is the price of admission; it must be reviewed and kept tiny.
 
-### B — Rust core + Python UNO shim (no new toolchain)
+### B — Rust core + Python UNO shim (selected)
 
 - The OXT contains Python UNO code and the Rust core sidecar or local service.
 - Python only translates Writer document operations into the CiteWell protocol;
@@ -133,9 +134,8 @@ Use an isolated LibreOffice profile, never the owner’s real one:
 
 ## Decisions needed
 
-1. Approve the LibreOffice SDK/build dependency for option A (Rust core + tiny C++
-   shim), or accept option B (Python shim) as the interim path? Pure Rust is option C
-   and is not recommended.
+1. **Selected: option B.** No LibreOffice SDK and no new dependencies; only a restrained Python
+   UNO shim is added. Option A remains deferred and option C is rejected.
 2. Should the inherited OXT be removed from packaging now, so it cannot be
    installed by accident while the replacement is built?
 3. Is a hard refusal when 23121 is already bound acceptable?

@@ -49,7 +49,8 @@ Zotero_Preferences.Cite = {
 		else if (Zotero.isMac) {
 			wordPlugins.push('macWord');
 		}
-		wordPlugins.push('libreOffice');
+		let wordProcessors = document.getElementById('wordProcessors');
+		if (wordProcessors) wordProcessors.hidden = !wordPlugins.length;
 		await Zotero.Promise.delay();
 		for (let wordPlugin of wordPlugins) {
 			// This is the weirdest indirect code, but let's not fix what's not broken
