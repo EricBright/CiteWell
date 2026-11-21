@@ -64,7 +64,6 @@ The server speaks newline-delimited JSON-RPC on stdio. Use the tools below; do n
 | `attach_file` | `key`, `path`, `title?` | Import a PDF/file already on disk |
 | `attach_url` | `key`, `url`, `title?` | Linked URL attachment |
 | `list_annotations` | `key` | Annotations on a PDF/EPUB |
-| `create_annotation` | `key`, `position`, `type?`, `text?`, `comment?`, `color?` | Highlight/underline/note at a page position |
 | `export_note` | `key` | Markdown note file contents |
 | `list_collections` | — | Collection tree |
 | `create_collection` | `name`, `parentKey?` | New collection |
@@ -109,8 +108,6 @@ Example: “Add 10.1038/nphys1170, attach ~/Downloads/paper.pdf, and show me.”
   app is not running.
 - **Do not batch blindly.** Create one item, check its key and fields, then continue. This keeps
   failures small and reversible.
-- **Annotation positions** use `{ "pageIndex": 0, "rects": [[x1, y1, x2, y2]] }` in PDF
-  coordinates. Only create an annotation when you have a position; do not invent one.
 - **`export_note`** takes a Markdown attachment key and returns its file contents; it does not write a file.
 - **Markdown only.** Notes are `.md` file attachments; do not send HTML or expect an in-app editor.
 

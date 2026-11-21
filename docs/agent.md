@@ -90,7 +90,6 @@ without a trip through the UI.
 | `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
 | `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
 | `annotation.list` | Annotations on a PDF/EPUB attachment | `Zotero.Items.getAnnotations` |
-| `annotation.create` | Highlight, underline, note or text annotation from a position | `Zotero.Annotations.saveFromJSON` |
 | `export.note` | Markdown attachment contents | File read |
 | `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
 | `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |

@@ -150,7 +150,6 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
             "annotation.list",
             json!({ "key": required(&arguments, "key")? }),
         ),
-        "create_annotation" => ("annotation.create", arguments),
         "export_note" => (
             "export.note",
             json!({ "key": required(&arguments, "key")? }),
@@ -294,21 +293,6 @@ fn tools() -> Value {
             &["key"]
         ),
         tool(
-            "create_annotation",
-            "Create a highlight, underline, note or text annotation on an attachment.",
-            json!({
-                "key": { "type": "string" },
-                "type": { "type": "string", "enum": ["highlight", "underline", "note", "text"] },
-                "text": { "type": "string" },
-                "comment": { "type": "string" },
-                "color": { "type": "string" },
-                "pageLabel": { "type": "string" },
-                "position": { "type": "object" },
-                "sortIndex": { "type": "string" }
-            }),
-            &["key", "position"]
-        ),
-        tool(
             "export_note",
             "Export a note as Markdown text.",
             json!({ "key": { "type": "string" } }),
@@ -383,12 +367,11 @@ mod tests {
             .iter()
             .filter_map(|tool| tool.get("name").and_then(|name| name.as_str()))
             .collect();
-        assert_eq!(names.len(), 19);
+        assert_eq!(names.len(), 18);
         for expected in [
             "search_library",
             "create_item",
             "save_identifier",
-            "create_annotation",
             "export_note",
             "attach_file",
             "select_items",

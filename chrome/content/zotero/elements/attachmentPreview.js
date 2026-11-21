@@ -164,8 +164,9 @@
 		}
 
 		get previewType() {
+			// No in-app PDF/EPUB preview: those files open in the host (D30).
 			if (this._item?.attachmentReaderType) {
-				return this._item.attachmentReaderType;
+				return "file";
 			}
 			let contentType = this._item?.attachmentContentType;
 			if (!contentType) {

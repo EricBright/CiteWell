@@ -144,7 +144,7 @@ Zotero.Server.Agent = {
 					capabilities: [
 						'ping', 'search', 'item.get', 'item.create', 'item.update', 'item.addNote',
 						'item.attachFile', 'item.attachURL', 'translate.save',
-						'annotation.list', 'annotation.create', 'export.note',
+						'annotation.list', 'export.note',
 						'collection.list', 'collection.create', 'collection.addItems',
 						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
 					],
@@ -176,9 +176,6 @@ Zotero.Server.Agent = {
 
 			case 'annotation.list':
 				return this._listAnnotations(params);
-
-			case 'annotation.create':
-				return this._createAnnotation(params);
 
 			case 'export.note':
 				return this._exportNote(params);
