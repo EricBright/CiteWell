@@ -98,6 +98,22 @@ error; one log line per frame makes a user report replayable. A security fix tou
 a LibreOffice quirk is isolated to the document layer. Citation semantics travel as data, so new
 citation features do not touch the shim at all ([libreoffice-parity.md](libreoffice-parity.md)).
 
+### 10. Waiting is never invisible
+
+While teaching at CDI College, I watched the citation workflow fail in the worst possible way: the
+prompt opened behind the browser or LibreOffice, while the visible window said “Please wait…”. A
+student who did not know the prompt was behind the active window had no reason to press Alt-Tab and
+no way to discover that the application was waiting for them. The lesson was not to add another
+spinner. It was that an invisible prompt is a broken prompt.
+
+CiteWell treats attention as part of the integration contract. A dialog that needs a person is
+parented and brought forward; if the compositor refuses activation, the app escalates visibly
+through taskbar urgency, a native notification with a click-to-focus action, or a LibreOffice
+InfoBar, and changes its title and message to say what happened and what to do next. Background
+progress never leaves a hidden modal window, and no operation ends in an indefinite “Please wait…”.
+We cannot force every Wayland compositor to raise a window; we can guarantee that the user is never
+left guessing where it is. The implementation is recorded in [attention.md](attention.md).
+
 ## What you give up
 
 - Sync, collaboration and mobile: not supported; the code is present but disabled.

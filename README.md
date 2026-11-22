@@ -1,12 +1,11 @@
 # CiteWell
 
 CiteWell is a citation catalogue built on [Zotero](https://github.com/zotero/zotero)'s engine
-and data model, for collecting, organizing, and citing sources. PDF reading, annotation, and
-note editing are left to desktop tools; CiteWell owns the catalogue.
+and data model for citation work. PDF reading, annotation, and note editing are left to desktop
+tools; CiteWell owns the catalogue.
 
-CiteWell is an independent project. It is not produced, endorsed, or supported by the Zotero
-project or the Corporation for Digital Scholarship, and it is not the place to report Zotero
-bugs.
+CiteWell is independent, not produced or endorsed by Zotero project or Corporation for Digital
+Scholarship, and is not the place to report Zotero bugs.
 
 ## Status
 
@@ -38,7 +37,7 @@ to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `
 
 | Path | Contents |
 |---|---|
-| `chrome/` | Application UI: XUL/XHTML windows, custom elements, React components, XPCOM modules |
+| `chrome/` | Application UI: XUL/XHTML, custom elements, React, XPCOM |
 | `resource/` | Third-party JS and runtime resources bundled into the app |
 | `scss/` | Styles, compiled to CSS during the build |
 | `js-build/` | Babel, Sass, and browserify build pipeline |
@@ -57,7 +56,7 @@ budget by `tools/docs-check`. Everything else is on-demand.
 | `README.md` | always | starting any session | Identity, commands, repository map, this index |
 | `AGENTS.md` | always | working as an AI agent | Agent contract: language rule, naming invariant, doc rules |
 | `roadmap.md` | on-demand | choosing what to work on | Now / Next / Later, not-doing, exit criteria |
-| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, pick-up list, commands, pitfalls |
+| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, next work, commands, pitfalls |
 | `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
 | `COPYING` | once | legal questions | Full AGPL-3.0 text |
 | `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
@@ -73,6 +72,7 @@ budget by `tools/docs-check`. Everything else is on-demand.
 | `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
 | `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants, milestones |
 | `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and honest trade-offs |
+| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation, fallbacks, tests |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
