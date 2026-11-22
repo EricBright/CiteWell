@@ -19,6 +19,8 @@ used for `ImageSmallHCURL` and `ImageBigHCURL`. Files are PNG with transparency.
 Actions that only appear in the menu do not need icons.
 
 Source SVGs live in `<set>/source/` and use `{{ink}}` and `{{accent}}` tokens.
+Owner-supplied originals for specific icons are kept unchanged under
+`<set>/source/owner/` with their own README.
 They are the editable originals, not used at runtime. `render_icons.py` renders
 the PNGs with the palette in `palette.json`; it needs ImageMagick, but the
 committed PNGs mean normal builds do not.
