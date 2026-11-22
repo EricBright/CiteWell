@@ -64,12 +64,106 @@ Zotero_Preferences.Cite = {
 			}
 		}
 		await this.refreshStylesList();
+		await this.refreshSystemIntegration();
 		document.querySelector('#zotero-prefpane-cite').addEventListener('showing', () => {
 			this._tree.invalidate();
 		});
 	},
 	
 	
+	_integrationManifest: function () {
+		var configHome = Services.env.get("XDG_CONFIG_HOME");
+		if (!configHome) {
+			configHome = PathUtils.join(
+				Services.dirsvc.get("Home", Ci.nsIFile).path,
+				".config"
+			);
+		}
+		return PathUtils.join(configHome, "citewell", "integration.txt");
+	},
+
+	refreshSystemIntegration: async function () {
+		var section = document.getElementById("citewell-system-integration");
+		if (!section) return;
+		var appimage = Services.env.get("APPIMAGE");
+		var status = document.getElementById("citewell-integration-status");
+		var paths = document.getElementById("citewell-integration-paths");
+		var repair = document.getElementById("citewell-integration-repair");
+		var remove = document.getElementById("citewell-integration-remove");
+		if (!appimage) {
+			section.hidden = true;
+			return;
+		}
+		section.hidden = false;
+		var manifest = this._integrationManifest();
+		var installed = await IOUtils.exists(manifest);
+		status.textContent = installed
+			? "User-level activation integration is installed."
+			: "User-level activation integration is not installed.";
+		paths.textContent = installed ? "Manifest: " + manifest : "";
+		if (repair) repair.disabled = false;
+		if (remove) remove.disabled = !installed;
+	},
+
+	repairSystemIntegration: async function () {
+		var appimage = Services.env.get("APPIMAGE");
+		if (!appimage) return;
+		if (!Services.prompt.confirm(
+			null,
+			"Repair system integration",
+			"Install or refresh CiteWell's user-level systemd unit and D-Bus activation file?\n\n"
+			+ "Only files under your user configuration and data directories are written. "
+			+ "No system-wide files, library data, or LibreOffice profile are changed."
+		)) return;
+		var buttons = ["citewell-integration-repair", "citewell-integration-remove"]
+			.map(id => document.getElementById(id));
+		buttons.forEach(button => { if (button) button.disabled = true; });
+		try {
+			await Zotero.Utilities.Internal.subprocess(appimage, [
+				"--install-integration",
+				"-datadir",
+				Zotero.DataDirectory.dir,
+			]);
+			await this.refreshSystemIntegration();
+			document.getElementById("citewell-integration-status").textContent
+				= "User-level activation integration is installed.";
+		}
+		catch (e) {
+			Zotero.logError(e);
+			Services.prompt.alert(null, "System integration", "Could not repair the integration: " + e);
+		}
+		finally {
+			buttons.forEach(button => { if (button) button.disabled = false; });
+			await this.refreshSystemIntegration();
+		}
+	},
+
+	removeSystemIntegration: async function () {
+		var appimage = Services.env.get("APPIMAGE");
+		if (!appimage) return;
+		var manifest = this._integrationManifest();
+		var details = "";
+		if (await IOUtils.exists(manifest)) {
+			details = "\n\n" + (await IOUtils.readUTF8(manifest));
+		}
+		if (!Services.prompt.confirm(
+			null,
+			"Remove system integration",
+			"Remove the CiteWell user-level activation integration?\n\n"
+			+ details
+			+ "\nOnly the files listed above are removed. Your library, preferences, and "
+			+ "LibreOffice profile are not touched."
+		)) return;
+		try {
+			await Zotero.Utilities.Internal.subprocess(appimage, ["--remove-integration"]);
+			await this.refreshSystemIntegration();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			Services.prompt.alert(null, "System integration", "Could not remove the integration: " + e);
+		}
+	},
+
 	/**
 	 * Locate the CiteWell-owned OXT. In an AppImage it sits next to the app;
 	 * in a source tree it is under extensions/.

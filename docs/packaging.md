@@ -100,6 +100,12 @@ is:
 - `--install-integration` — install them explicitly;
 - `--remove-integration` — remove exactly the files recorded in the manifest.
 
+CiteWell also exposes the same safe removal in **Cite preferences → System integration → Remove
+system integration…**. The dialog lists the manifest path, removes only the recorded files, and
+does not touch the library, preferences or LibreOffice profile. The section is hidden in source
+builds where no AppImage is present.
+
+
 The integration is user-scoped; there are no system-wide files. Gear Lever and AppImageUpdate
 replace or remove the AppImage but do not run uninstall hooks, so deleting the AppImage leaves the
 unit and D-Bus file until `--remove-integration` is run. This is documented here and in the

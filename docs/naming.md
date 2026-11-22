@@ -33,6 +33,22 @@ stops resolving.
 - Icons, logos, installer metadata, desktop entry `Name=`.
 - Documentation prose, which is why this file exists.
 
+## New CiteWell-owned identifiers
+
+For identifiers that did not exist in Zotero, use the narrowest conventional form:
+
+| Kind | Form | Examples |
+|---|---|---|
+| Prose, UI, notices | **CiteWell** | “CiteWell needs your attention”, settings labels |
+| Protocol, URL, environment, paths | lowercase `citewell` | `vnd.citewell.*`, `CITEWELL_*`, `~/.config/citewell`, `citewell-attention.service` |
+| D-Bus well-known name | reverse-DNS with the product name as the final element | `org.citewell.CiteWell` |
+| Command-line executable | lowercase `citewell` | `citewell status` |
+| Existing Zotero-owned identifiers | `zotero`, never changed | `zotero://`, `Zotero.*`, data directory |
+
+The current systemd unit, D-Bus file, manifest path and protocol prefix already follow this rule.
+Do not rename an existing wire prefix, service name or preference key just to make the spelling
+prettier; compatibility wins over consistency.
+
 ## What may be renamed with care
 
 | Surface | Caveat |

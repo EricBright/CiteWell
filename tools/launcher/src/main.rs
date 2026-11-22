@@ -251,7 +251,32 @@ fn main() {
         std::process::exit(2);
     }
 
-    if install || (activate == false && !no_integration) {
+    if install {
+        let (Some(appimage), Some(data)) = (env::var_os("APPIMAGE"), datadir(&args)) else {
+            eprintln!("CiteWell: --install-integration needs APPIMAGE and -datadir.");
+            std::process::exit(2);
+        };
+        let Some(appimage) = appimage.to_str() else {
+            eprintln!("CiteWell: APPIMAGE is not valid UTF-8.");
+            std::process::exit(2);
+        };
+        match install_integration(appimage, &data) {
+            Ok(changed) => {
+                if !changed.is_empty() {
+                    reload_systemd();
+                }
+                print_notice(appimage, &changed);
+                // An explicit install is a short-lived command, not an app launch.
+                return;
+            }
+            Err(error) => {
+                eprintln!("CiteWell: attention integration not installed: {error}");
+                std::process::exit(1);
+            }
+        }
+    }
+
+    if activate == false && !no_integration {
         if let (Some(appimage), Some(data)) = (env::var_os("APPIMAGE"), datadir(&args)) {
             if let Some(appimage) = appimage.to_str() {
                 match install_integration(appimage, &data) {
@@ -264,9 +289,6 @@ fn main() {
                     Err(error) => eprintln!("CiteWell: attention integration not installed: {error}"),
                 }
             }
-        }
-        else if install {
-            eprintln!("CiteWell: --install-integration needs APPIMAGE and -datadir.");
         }
     }
 
