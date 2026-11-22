@@ -148,6 +148,8 @@ double. No automatic repair of LibreOffice state (D35).
 ## Known gaps
 
 - The add-only install in the real profile is an explicit user action and was not performed.
+- Documents created before the text-section bibliography fix can retain stray bibliography
+  paragraphs outside the field; deleting those paragraphs or re-adding the bibliography repairs them.
 - Editing an existing bibliography and the citation explorer were not exercised.
 - The reference implementation's undo context and save listener are not ported yet.
 - The production message box for Unlink confirmation is implemented but the self-test harness

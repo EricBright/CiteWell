@@ -71,12 +71,17 @@ class Field(object):
         self.content = self.named
         self.anchor = self.named.getAnchor()
         self.document._renamed(self, old_name, new_name)
-        if old_text:
+        if old_text and self.kind != "TextSection":
             self.set_text(old_text, False)
 
     # -- content ----------------------------------------------------------
 
     def set_text(self, text, rich=False):
+        if self.code.startswith("BIBL") or self.kind == "TextSection":
+            if self.kind != "TextSection":
+                self._make_section()
+            self._set_section_text(text, rich)
+            return
         text_object = self.anchor.getText()
         cursor = text_object.createTextCursorByRange(self.anchor)
         if not self.anchor.getString():
@@ -123,6 +128,43 @@ class Field(object):
         if pre_break is not None:
             pre_break.setString("")
             post_break.setString("")
+
+    def _make_section(self):
+        text_object = self.anchor.getText()
+        cursor = text_object.createTextCursorByRange(self.anchor)
+        try:
+            text_object.removeTextContent(self.content)
+        except Exception:
+            pass
+        cursor.setString(PLACEHOLDER)
+        section = self.document.component.createInstance("com.sun.star.text.TextSection")
+        section.setName(self.raw_name)
+        text_object.insertTextContent(cursor, section, True)
+        self.named = section
+        self.content = section
+        self.anchor = section.getAnchor()
+        self.kind = "TextSection"
+
+    def _set_section_text(self, text, rich):
+        text_object = self.anchor.getText()
+        cursor = text_object.createTextCursorByRange(self.anchor)
+        if not text:
+            cursor.setString("")
+        elif rich:
+            data = uno.ByteSequence(text.encode("latin-1", "replace"))
+            stream = self.document.context.ServiceManager.createInstanceWithArgumentsAndContext(
+                "com.sun.star.io.SequenceInputStream", (data,), self.document.context
+            )
+            cursor.insertDocumentFromURL(
+                "private:stream",
+                (
+                    _prop("FilterName", "Rich Text Format"),
+                    _prop("InputStream", stream),
+                ),
+            )
+        else:
+            cursor.setString(text)
+        self.anchor = self.content.getAnchor()
 
     def remove_code(self):
         """Keep the text, drop the field identity.
@@ -280,12 +322,17 @@ class Document(object):
 
     def fields(self, field_type="ReferenceMark"):
         found = []
+        seen = set()
         for named, kind in self._all_named():
             name = named.getName()
-            if kind != field_type:
+            if field_type == "ReferenceMark":
+                if kind not in ("ReferenceMark", "TextSection"):
+                    continue
+            elif kind != field_type:
                 continue
-            if not is_field_name(name):
+            if not is_field_name(name) or name in seen:
                 continue
+            seen.add(name)
             found.append(self._register(named, kind))
         found.sort(key=functools.cmp_to_key(lambda a, b: a.compare_to(b)))
         return found
