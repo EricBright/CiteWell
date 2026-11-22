@@ -210,8 +210,8 @@ First slice:
 - Cite is ordered immediately after General; the settings test asserts that adjacency.
 - Attachment base-directory and data-directory controls moved from Advanced to Library & Files;
   database maintenance remains in Advanced.
-- OpenURL/Locate moved from General to Library & Files; the Locate menu deep link now opens that
-  pane.
+- OpenURL/Locate moved from General to Library & Files; the Locate menu deep link opens that pane,
+  and the no-resolver prompt now names Library & Files instead of General.
 - Language & Region, Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite →
   Citation Options, Library & Files → File Handling and Library & Files → Attachment Titles are now
   registry descriptors (`simpleSections`) rendered by the preferences shell. The renderer supports

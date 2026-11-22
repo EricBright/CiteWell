@@ -659,7 +659,9 @@ var Zotero_LocateMenu = new function () {
 		this.handleItems = async function (items, event) {
 			// If no resolver configured, show error
 			if (!Zotero.Prefs.get('openURL.resolver')) {
-				let paneName = Zotero.Intl.strings['zotero.preferences.prefpane.general'];
+				let libraryPane = Zotero.PreferencePanes.builtInPanes
+					.find(pane => pane.id === 'zotero-prefpane-library');
+				let paneName = libraryPane?.rawLabel || "Library & Files";
 				let [noResolverStr, openSettingsStr] = await document.l10n.formatValues(
 					[
 						{ id: 'locate-library-lookup-no-resolver', args: { pane: paneName } },
