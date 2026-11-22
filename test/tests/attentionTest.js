@@ -168,6 +168,10 @@ describe("Attention", function () {
 		this.dispatch("unload");
 	};
 
+	it("exposes the default presenter used by the integration layer", function () {
+		assert.isFunction(Zotero.Attention.getDefaultPresenter);
+	});
+
 	it("presents a parented modal dialog and attaches focus handling", function () {
 		let win = new FakeWindow({ readyState: "loading" });
 		let opened;

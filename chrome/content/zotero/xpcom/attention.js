@@ -356,4 +356,18 @@ Zotero.Attention = new function () {
 		}
 	};
 
+	this._defaultPresenter = null;
+
+	this.getDefaultPresenter = function () {
+		if (this._defaultPresenter) return this._defaultPresenter;
+		var alerts = null;
+		try {
+			alerts = Components.classes["@mozilla.org/alerts-service;1"]
+				.getService(Components.interfaces.nsIAlertsService);
+		}
+		catch (e) {}
+		this._defaultPresenter = new this.Presenter(new this.AppAdapter({ alerts }));
+		return this._defaultPresenter;
+	};
+
 };
