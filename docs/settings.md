@@ -212,11 +212,11 @@ First slice:
   database maintenance remains in Advanced.
 - OpenURL/Locate moved from General to Library & Files; the Locate menu deep link now opens that
   pane.
-- Language & Region, Notes → Note behaviour, General → Groups, Cite → Citation Options, Library &
-  Files → File Handling and Library & Files → Attachment Titles are now registry descriptors
-  (`simpleSections`) rendered by the preferences shell. Citation Options uses the descriptor
-  `before` selector to stay above the citation-dialog section. Checkboxes still use the existing
-  preference binding, and labels resolve through the existing DTD/FTL string path.
+- Language & Region, Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite →
+  Citation Options, Library & Files → File Handling and Library & Files → Attachment Titles are now
+  registry descriptors (`simpleSections`) rendered by the preferences shell. The renderer supports
+  checkbox and radio controls, ordered insertion, and labels through the existing DTD/FTL string
+  path; controls still use the existing preference binding.
 
 Phase 2 is otherwise complete except for migrating the remaining simple rows to descriptors and a
 final deep-link pass for sections that move later. The first descriptor section is live.

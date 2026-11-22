@@ -182,6 +182,8 @@ describe("Settings manifest navigation", function () {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
 			assert.ok(win.document.getElementById("simple-section-citation-options"));
 			assert.ok(win.document.getElementById("citation-paper-url"));
+			assert.ok(win.document.getElementById("simple-section-citation-dialog"));
+			assert.ok(win.document.getElementById("citation-dialog-mode"));
 		}
 		finally {
 			win.close();

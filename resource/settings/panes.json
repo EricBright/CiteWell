@@ -255,7 +255,6 @@
       "paneId": "zotero-prefpane-cite",
       "titleKey": "zotero.preferences.citationOptions.caption",
       "descriptionKey": "zotero.preferences.export.citePaperJournalArticleURL.description",
-      "before": "#citation-dialog-title",
       "order": 20,
       "settings": [
         {
@@ -306,6 +305,34 @@
           "type": "checkbox",
           "preference": "extensions.zotero.showAttachmentFilenames",
           "labelKey": "preferences-attachment-titles-show-filenames"
+        }
+      ]
+    },
+    {
+      "id": "citation-dialog",
+      "paneId": "zotero-prefpane-cite",
+      "titleKey": "preferences-citation-dialog",
+      "order": 15,
+      "settings": [
+        {
+          "id": "citation-dialog-mode",
+          "type": "radio",
+          "preference": "extensions.zotero.integration.citationDialogMode",
+          "labelKey": "preferences-citation-dialog-mode",
+          "options": [
+            {
+              "value": "last-used",
+              "labelKey": "preferences-citation-dialog-mode-last-used"
+            },
+            {
+              "value": "library",
+              "labelKey": "preferences-citation-dialog-mode-library"
+            },
+            {
+              "value": "list",
+              "labelKey": "preferences-citation-dialog-mode-list"
+            }
+          ]
         }
       ]
     }

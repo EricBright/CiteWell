@@ -63,9 +63,10 @@ deployment cache by moving only CiteWell temp directories to a backup.
 Integrations, Notes & Annotations, and Import & Export are in place; the old Export pane is retired.
 Cite now sits immediately after General. File handling, file renaming, attachment titles, Language &
 Region, attachment base directory, data directory and OpenURL/Locate have moved. Language & Region,
-Notes → Note behaviour, General → Groups, Cite → Citation Options, File Handling and Attachment
-Titles are rendered from simple-section descriptors. Remaining work is converting the other simple
-rows and a final deep-link pass. See [settings.md](settings.md).
+Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite → Citation Options, File
+Handling and Attachment Titles are rendered from simple-section descriptors; the renderer now
+supports checkbox and radio controls. Remaining work is converting the other simple rows and a
+final deep-link pass. See [settings.md](settings.md).
 
 **Next actions:**
 

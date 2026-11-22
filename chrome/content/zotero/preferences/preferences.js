@@ -404,6 +404,25 @@ var Zotero_Preferences = {
 					checkbox.setAttribute('label', Zotero.getString(setting.labelKey));
 					groupbox.append(checkbox);
 				}
+				else if (setting.type === 'radio') {
+					let hbox = document.createXULElement('hbox');
+					hbox.setAttribute('align', 'center');
+					let label = document.createXULElement('label');
+					label.setAttribute('value', Zotero.getString(setting.labelKey));
+					label.setAttribute('control', setting.id);
+					let radioGroup = document.createXULElement('radiogroup');
+					radioGroup.id = setting.id;
+					radioGroup.setAttribute('orient', 'horizontal');
+					radioGroup.setAttribute('preference', setting.preference);
+					for (let option of setting.options || []) {
+						let radio = document.createXULElement('radio');
+						radio.setAttribute('value', option.value);
+						radio.setAttribute('label', Zotero.getString(option.labelKey));
+						radioGroup.append(radio);
+					}
+					hbox.append(label, radioGroup);
+					groupbox.append(hbox);
+				}
 				else {
 					throw new Error('Unsupported simple setting type: ' + setting.type);
 				}

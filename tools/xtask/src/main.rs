@@ -141,8 +141,18 @@ fn validate_settings_inner() -> Result<usize, String> {
                     .get("id")
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| format!("simple settings section {id} has a setting without id"))?;
-                if setting.get("type").and_then(|v| v.as_str()) != Some("checkbox") {
+                let setting_type = setting.get("type").and_then(|v| v.as_str());
+                if !matches!(setting_type, Some("checkbox") | Some("radio")) {
                     return Err(format!("simple setting {setting_id} has unsupported type"));
+                }
+                if setting_type == Some("radio") {
+                    let options = setting
+                        .get("options")
+                        .and_then(|v| v.as_array())
+                        .ok_or_else(|| format!("simple setting {setting_id} is missing options[]"))?;
+                    if options.len() < 2 {
+                        return Err(format!("simple setting {setting_id} has too few radio options"));
+                    }
                 }
                 if setting.get("preference").and_then(|v| v.as_str()).is_none() {
                     return Err(format!("simple setting {setting_id} is missing preference"));
