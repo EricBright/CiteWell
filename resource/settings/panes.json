@@ -50,20 +50,20 @@
       }
     },
     {
-      "id": "zotero-prefpane-export",
-      "label": "zotero.preferences.prefpane.export",
+      "id": "zotero-prefpane-import-export",
+      "rawLabel": "Import & Export",
       "icon": "chrome://zotero/skin/20/universal/export.svg",
       "order": 30,
       "status": "active",
       "content": {
         "type": "custom",
-        "src": "chrome://zotero/content/preferences/preferences_export.xhtml",
+        "src": "chrome://zotero/content/preferences/preferences_import_export.xhtml",
         "scripts": [
-          "chrome://zotero/content/preferences/preferences_export.js"
+          "chrome://zotero/content/preferences/preferences_export.js",
+          "chrome://zotero/content/preferences/preferences_library.js"
         ],
         "defaultXUL": true
-      },
-      "helpURL": "https://www.zotero.org/support/preferences/export"
+      }
     },
     {
       "id": "zotero-prefpane-cite",
@@ -113,7 +113,7 @@
     },
     {
       "id": "zotero-prefpane-library",
-      "rawLabel": "Library",
+      "rawLabel": "Library & Files",
       "icon": "chrome://zotero/skin/20/universal/folder-open.svg",
       "order": 60,
       "status": "active",
@@ -172,6 +172,12 @@
       "paneId": "zotero-prefpane-advanced",
       "status": "retired",
       "reason": "PDF indexing is removed; the setting no longer has a supported target."
+    },
+    {
+      "id": "zotero-prefpane-export",
+      "paneId": "zotero-prefpane-import-export",
+      "status": "merged",
+      "reason": "Quick Copy is now part of Import & Export; the old Export pane is no longer registered."
     }
   ]
 }

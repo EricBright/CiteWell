@@ -43,16 +43,6 @@ Zotero_Preferences.Library = {
 
 		await this._refreshCurrent();
 		this._renderLocations();
-		if (document.getElementById("library-notes-migrate")) {
-			await this._refreshNoteMigration();
-		}
-		if (document.getElementById("library-annotations-export")) {
-			await this._refreshAnnotationExport();
-		}
-		await this.rescan();
-		await this._showLastResult();
-		await this._renderRestorePoints();
-		await this._refreshPending();
 	},
 
 	uninit: function () {
@@ -209,22 +199,26 @@ Zotero_Preferences.Library = {
 			this._current = { path: Zotero.DataDirectory.dir, empty: false, items: null };
 		}
 
-		this._el("library-current-path").textContent = this._current.path;
-		this._el("library-replace-confirm").hidden = this._current.empty;
-		this._el("library-replace").hidden = this._current.empty;
-		if (this._current.empty) {
-			this._el("library-replace-confirm").checked = false;
+		var currentPath = this._el("library-current-path");
+		var currentStatus = this._el("library-current-status");
+		var replaceConfirm = this._el("library-replace-confirm");
+		var replace = this._el("library-replace");
+		if (currentPath) currentPath.textContent = this._current.path;
+		if (replaceConfirm) replaceConfirm.hidden = this._current.empty;
+		if (replace) replace.hidden = this._current.empty;
+		if (this._current.empty && replaceConfirm) {
+			replaceConfirm.checked = false;
 		}
-		if (this._current.empty) {
-			this._el("library-current-status").textContent
-				= "Empty — ready for a first import.";
-		}
-		else {
-			this._el("library-current-status").textContent
-				= `${this._count(this._current.items)} items, `
-				+ `${this._count(this._current.collections)} collections, `
-				+ `${this._count(this._current.savedSearches)} saved searches. `
-				+ "This library can be replaced with a backup kept as a restore point.";
+		if (currentStatus) {
+			if (this._current.empty) {
+				currentStatus.textContent = "Empty — ready for a first import.";
+			}
+			else {
+				currentStatus.textContent = `${this._count(this._current.items)} items, `
+					+ `${this._count(this._current.collections)} collections, `
+					+ `${this._count(this._current.savedSearches)} saved searches. `
+					+ "This library can be replaced with a backup kept as a restore point.";
+			}
 		}
 		this.updateButtons();
 	},
@@ -591,10 +585,13 @@ Zotero_Preferences.Library = {
 		var healthy = !!this._inspected?.healthy && !!this._selected?.exists;
 		var pending = this._pendingImport || this._pendingRestore || this._busy;
 		var adopt = healthy && !!this._current?.empty && !pending;
+		var confirm = this._el("library-replace-confirm");
 		var replace = healthy && !this._current?.empty
-			&& this._el("library-replace-confirm").checked && !pending;
-		this._el("library-import").disabled = !adopt;
-		this._el("library-replace").disabled = !replace;
+			&& confirm && confirm.checked && !pending;
+		var importButton = this._el("library-import");
+		var replaceButton = this._el("library-replace");
+		if (importButton) importButton.disabled = !adopt;
+		if (replaceButton) replaceButton.disabled = !replace;
 	},
 
 	cancelImport: async function () {
@@ -779,11 +776,14 @@ Zotero_Preferences.Library = {
 			"library-replace-confirm",
 			"library-replace",
 		]) {
-			this._el(id).disabled = disabled;
+			var element = this._el(id);
+			if (element) element.disabled = disabled;
 		}
 		if (disabled) {
-			this._el("library-import").disabled = true;
-			this._el("library-replace").disabled = true;
+			var importButton = this._el("library-import");
+			var replaceButton = this._el("library-replace");
+			if (importButton) importButton.disabled = true;
+			if (replaceButton) replaceButton.disabled = true;
 		}
 	},
 };
@@ -800,5 +800,18 @@ Zotero_Preferences.Notes = {
 
 	exportAnnotations: function () {
 		return Zotero_Preferences.Library.exportAnnotations();
+	}
+};
+
+Zotero_Preferences.ImportExport = {
+	init: async function () {
+		await Zotero_Preferences.Library._refreshCurrent();
+		await Zotero_Preferences.Library.rescan();
+		await Zotero_Preferences.Library._showLastResult();
+		await Zotero_Preferences.Library._renderRestorePoints();
+		await Zotero_Preferences.Library._refreshPending();
+		if (Zotero_Preferences.Export) {
+			await Zotero_Preferences.Export.init();
+		}
 	}
 };

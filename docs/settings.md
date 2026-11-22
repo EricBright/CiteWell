@@ -5,7 +5,8 @@ For the full documentation index, see [README.md](../README.md).
 Status: **Phase 0 inventory complete; Phase 1 structure manifest implemented; Phase 2 first slice
 in progress.** Pane order, labels, icons, custom content sources and retirement metadata now come
 from [`resource/settings/panes.json`](../resource/settings/panes.json). The first Phase 2 slice adds
-an **Integrations** pane and a **Notes & Annotations** pane. No preference key has changed.
+an **Integrations** pane, a **Notes & Annotations** pane, and an **Import & Export** pane; the old
+Export pane has been merged into it. No preference key has changed.
 
 ## Why this exists
 
@@ -199,9 +200,13 @@ First slice:
 - The retired PDF indexing control remains removed from Advanced → Search.
 - The legacy PDF annotation export remains visible in Notes & Annotations and is marked
   `migration-only`, so users do not lose their one-time export path.
+- Import & Export now contains Quick Copy, import from Zotero, restore points and last-import
+  status. The old standalone Export pane is retired.
+- Library is now labelled Library & Files and contains current-library/location controls; its old
+  import sections were removed.
 
-Remaining Phase 2 work: split Library into Library & Files / Import & Export, move file/data controls
-into Library & Files, migrate simple controls to descriptors, and update deep links.
+Remaining Phase 2 work: move file/data controls into Library & Files, migrate simple controls to
+descriptors, and update deep links.
 
 ## Registry shape
 

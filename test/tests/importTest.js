@@ -91,11 +91,30 @@ describe("Library import", function () {
 			}
 			await Zotero.Promise.delay(1500);
 			assert.ok(win.document.getElementById("zotero-prefpane-library"));
-			assert.ok(win.document.getElementById("library-import"));
+			assert.ok(win.document.getElementById("library-current-path"));
 			assert.include(
 				win.document.getElementById("library-current-path").textContent,
 				"Zotero"
 			);
+		}
+		finally {
+			if (win) win.close();
+		}
+	});
+
+	it("should open the Import & Export pane", async function () {
+		this.timeout(60000);
+		let win;
+		try {
+			win = Zotero.Utilities.Internal.openPreferences("zotero-prefpane-import-export");
+			if (win.document.readyState !== "complete") {
+				await new Promise(resolve => win.addEventListener("load", resolve, { once: true }));
+			}
+			await Zotero.Promise.delay(1500);
+			assert.ok(win.document.getElementById("zotero-prefpane-import-export"));
+			assert.ok(win.document.getElementById("library-import"));
+			assert.ok(win.document.getElementById("zotero-quickCopy-menu"));
+			assert.ok(win.document.getElementById("library-restore-points"));
 		}
 		finally {
 			if (win) win.close();

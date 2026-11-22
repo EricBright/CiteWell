@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `8c9c0532…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `ee934cfe…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `8c9c0532e8378eee0dc01726879624dccf594646da039e6ec4259e8a2e3a45e0`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `ee934cfe8562bf2a5ba69953da3299c6e2a36cbed0b2ae35ec314c1af86637a2`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,7 +44,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`8c9c0532e8378eee0dc01726879624dccf594646da039e6ec4259e8a2e3a45e0`, 133,421,560 bytes). The
+`ee934cfe8562bf2a5ba69953da3299c6e2a36cbed0b2ae35ec314c1af86637a2`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
@@ -55,11 +55,12 @@ and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and re
 session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
 deployment cache by moving only CiteWell temp directories to a backup.
 
-**Settings information architecture:** Phase 2 has started. The manifest now supports nine panes
-and the new Integrations and Notes & Annotations panes are in place. Note behaviour, note migration
-and legacy PDF annotation export have moved out of General and Library. The retired PDF index
-control is gone. Remaining Phase 2 work is the Library/Files/Import split, simple-control descriptors
-and deep-link updates. See [settings.md](settings.md).
+**Settings information architecture:** Phase 2 is taking shape. The manifest now supports ten
+panes: Integrations, Notes & Annotations, and Import & Export are in place; the old Export pane is
+retired. Note behaviour, note migration, legacy PDF annotation export, Quick Copy, import, restore
+points and last-import status have moved. Current library/location controls remain in Library &
+Files. Remaining work is moving file/data controls there, simple-control descriptors and deep links.
+See [settings.md](settings.md).
 
 **Next actions:**
 
