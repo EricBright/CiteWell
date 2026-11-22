@@ -196,6 +196,20 @@
           "labelKey": "preferences-advanced-enable-bidi-ui"
         }
       ]
+    },
+    {
+      "id": "note-behaviour",
+      "paneId": "zotero-prefpane-notes",
+      "titleKey": "preferences-note-title",
+      "order": 10,
+      "settings": [
+        {
+          "id": "open-note-in-new-window",
+          "type": "checkbox",
+          "preference": "extensions.zotero.openNoteInNewWindow",
+          "labelKey": "preferences-note-open-in-new-window"
+        }
+      ]
     }
   ]
 }
