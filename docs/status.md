@@ -22,13 +22,13 @@ push target. The product branch may diverge without limit.
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
-| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; only `editorInstance` serialization utilities remain |
+| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions; dialog insert/edit/cancel; multi-item citations, locators and style switching; 100-field Refresh; Unlink keeps text; bibliography with paragraph styling; Add Note footnote; table-cell citation; all persist across save/reopen. The `CITEWELL_M1_TEST` hooks are gone, `citewell-lo-core` is no longer packaged, the packaged OXT passes the selftest, and the AppImage is rebuilt. Not done: the add-only install in the real LibreOffice profile (on request), the citation explorer, and the undo/save-listener port. The real profile is untouched (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
-| Docs | README index, Rust docs gate, D1–D36 |
+| Docs | README index, Rust docs gate, D1–D37 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
@@ -47,22 +47,15 @@ plan.
    the current OXT, the test hooks are removed, `citewell-lo-core` is no longer packaged and the
    selftest runs. Remaining optional work: install the current OXT in the real profile on request
    (add-only, D35), exercise the citation explorer, and port the undo context/save listener.
-2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
-   migration, embedded-image copying, note-editor bundle removal, excerpts and full-text
-   re-indexing are done. A read-only viewer replaces the editable element; note tabs work. Next:
-   decide whether the note-window shell earns its place and trim the remaining `editorInstance`
-   serialization utilities.
-3. **D30 — close the remaining annotation utility code.** Reader, document worker, pdf.js,
-   previews, read-aloud UI, annotation controls, Add Note from Annotations, citation-dialog
-   annotation mode and annotation agent verbs are removed. Sidecars export from Library
-   preferences. Item-pane tests are 73/73; the citation dialog is 43/44 with one pre-existing
-   locator-parser failure. Next: trim `editorInstance` utilities used only by quick-copy/Mendeley
-   annotation serialization.
-4. **R31 — translator safeguards.** Keep updates and the Firefox/Google Docs paths working; add
-   sandbox/permissions/integrity/rollback and test both integrations.
-5. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
+2. **D29/D30 — done 2026-11-22.** The `editorInstance` module and annotation serialization are
+   removed, the obsolete annotation-to-note tests are gone, the citation-dialog locator test is
+   locale-aware and 44/44, and the note window/tab is a read-only legacy surface (D37). See
+   [notes.md](notes.md).
+3. **R31 — translator safeguards (next).** Keep updates and the Firefox/Google Docs paths working;
+   add sandbox/permissions/integrity/rollback and test both integrations.
+4. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
    note conversion step targets `.md` attachments.
-6. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents so the
+5. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents so the
    frozen Node build can be retired.
 
 ## Commands

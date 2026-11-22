@@ -683,6 +683,19 @@ channel for transaction-0 events. Rejected: growing the HTTP endpoints — it re
 protocol piecemeal. Rejected: keeping the Rust core in the data path for continuity — no
 user-facing behaviour depends on it.
 
+## D37 — The legacy note window stays as a read-only view
+
+**Date:** 2026-11-22 · **Status:** accepted · **Reversible:** until legacy `itemNotes` rows are gone
+
+The note tab and window shell (`note.xhtml`, `note.js`, `elements/noteEditor.js`) stay, but only to
+display legacy `itemNotes` rows, most of which are in Trash. The element forces view mode, the
+`editorInstance` module and its annotation serialization are gone, and nothing in the shell saves
+or serializes note content. Removing the shell would leave a restored legacy note with no view, so
+it remains until the legacy rows are removed. New notes are `.md` attachments opened by the host.
+
+Rejected: deleting the shell now — it would strand restored legacy notes. Rejected: restoring an
+editing surface — D29 makes the host the editor.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

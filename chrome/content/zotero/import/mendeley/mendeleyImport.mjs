@@ -1075,27 +1075,8 @@ Zotero_Import_Mendeley.prototype._translateNotebookToNoteContent = async functio
 			case 'freetext':
 				return block.freetext?.value?.text ? `<p>${block.freetext?.value?.text}</p>` : '';
 			case 'annotation': {
-				const idURI = block.annotation?.id;
-				if (idURI) {
-					const match = idURI.match(/https:\/\/api.mendeley.com\/annotations\/v2\/([0-9a-fA-F-]+)/);
-					if (match) {
-						const annotationUUID = match[1];
-						let annotation = await this._getItemByRelation(
-							libraryID,
-							'mendeleyDB:annotationUUID',
-							annotationUUID
-						);
-						if (annotation) {
-							let attachmentItem = Zotero.Items.get(annotation.parentID);
-							let jsonAnnotation = await Zotero.Annotations.toJSON(annotation);
-							jsonAnnotation.attachmentItemID = attachmentItem.id;
-							jsonAnnotation.id = annotation.key;
-
-							const { html } = Zotero.EditorInstanceUtilities.serializeAnnotations([jsonAnnotation]);
-							return html;
-						}
-					}
-				}
+				// Annotations are data, not note content, in CiteWell (D30).
+				return '';
 			}
 		}
 		return '';

@@ -47,7 +47,7 @@ async function onLoad() {
 	let ref;
 
 	noteEditor = document.getElementById('zotero-note-editor');
-	noteEditor.mode = 'edit';
+	noteEditor.mode = 'view';
 	noteEditor.viewMode = 'window';
 	
 	// Set font size from pref

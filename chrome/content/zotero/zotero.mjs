@@ -102,7 +102,6 @@ const xpcomFilesLocal = [
 	'libraryImport',
 	'dictionaries',
 	'duplicates',
-	'editorInstance',
 	'feedReader',
 	'fileDragDataProvider',
 	'fulltext',

@@ -1,6 +1,6 @@
 # Notes as Markdown file attachments
 
-Status: **core built; disposable library migrated; editor bundle removed; read-only fallback.**
+Status: **complete: disposable library migrated; editor bundle and `editorInstance` removed; read-only legacy view.**
 Companion to [decisions.md](decisions.md) D29 and D20.
 
 ## Goal
@@ -84,10 +84,11 @@ offered in a normal build.
 ## Removal
 
 The `note-editor` submodule and its `js-build` build path are removed. `elements/noteEditor.js` is
-now a read-only text view for legacy rows; note tabs still open through it. The editable
-`editorInstance` helpers remain only for annotation-to-note creation and will go with D30. Note
-editor tests that asserted ProseMirror behaviour are removed; migration, external-open and note-tab
-coverage remains. The `note.markdownStorage` preference is gone.
+a read-only text view for legacy rows; note tabs and the note window still open through it (D37).
+The `editorInstance` module, its annotation serialization, quick-copy/Mendeley annotation
+serialization and the annotation-to-note tests are removed. Note editor tests that asserted
+ProseMirror behaviour are gone; migration, external-open and note-tab coverage remains. The
+`note.markdownStorage` preference is gone.
 
 ## Exit criteria
 

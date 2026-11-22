@@ -457,7 +457,7 @@ Zotero.Notes = new function () {
 	 * @param {number} itemID
 	 * @param {Object} location - Not implemented yet
 	 * @param {Object} options
-	 * @returns {Promise<Zotero.EditorInstance | null>} Instance of Zotero.EditorInstance for the note.
+	 * @returns {Promise<Object|null>} Read-only note view instance.
 	 * If the note tab is opened in background (unloaded), returns null.
 	 */
 	this.open = async function (itemID, location, { title, tabIndex, tabID, openInBackground, openInWindow, allowDuplicate, preventJumpback, parentItemKey } = {}) {
@@ -481,7 +481,7 @@ Zotero.Notes = new function () {
 			throw new Error('Item does not exist');
 		}
 
-		// Instance of EditorInstance
+		// Read-only note view instance
 		let editorInstance;
 		// Instance of note-editor CE
 		let noteEditor;
@@ -736,6 +736,26 @@ Zotero.Notes = new function () {
 		this.replaceAllItemKeys(item, new Map([[fromItemKey, toItemKey]]));
 	};
 
+	this.getItemFromURIs = async function (uris) {
+		for (let uri of uris) {
+			try {
+				let item = await Zotero.URI.getURIItem(uri);
+				if (item && !item.deleted) {
+					return item;
+				}
+			}
+			catch (e) {
+			}
+			let replacer = await Zotero.Relations.getByPredicateAndObject(
+				'item', Zotero.Relations.replacedItemPredicate, uri
+			);
+			if (replacer.length && !replacer[0].deleted) {
+				return replacer[0];
+			}
+		}
+		return null;
+	};
+
 	this.getExportableNote = async function (item) {
 		if (!item.isNote()) {
 			throw new Error('Item is not a note');
@@ -770,7 +790,7 @@ Zotero.Notes = new function () {
 					citation = JSON.parse(decodeURIComponent(citation));
 					for (let citationItem of citation.citationItems) {
 						// Get itemData from existing item
-						let item = await Zotero.EditorInstance.getItemFromURIs(citationItem.uris);
+						let item = await Zotero.Notes.getItemFromURIs(citationItem.uris);
 						if (item) {
 							citationItem.itemData = Zotero.Cite.System.prototype.retrieveItem(item);
 						}

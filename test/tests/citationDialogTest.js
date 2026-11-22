@@ -1057,18 +1057,21 @@ describe("Citation Dialog", function () {
 			});
 
 			it("is a valid textual locator with other text", function () {
+				const full = Zotero.Cite.getLocatorString("chapter").toLowerCase();
+				const short = Zotero.Cite.getLocatorString("chapter", "short").toLowerCase();
+				const shortNoPunctuation = short.replace(/[.,]/g, "");
 				let locators = [
-					{ str: 'history of the US chapter  "one and two"', locatorStr: 'chapter  "one and two"' },
-					{ str: 'history of the US chapter"one and two"', locatorStr: 'chapter"one and two"' },
-					{ str: 'history of the US chap. "one and two"', locatorStr: 'chap. "one and two"' },
-					{ str: 'history of the US chap."one and two"', locatorStr: 'chap."one and two"' },
-					{ str: 'history of the US chap    "one and two"', locatorStr: 'chap    "one and two"' },
-					{ str: 'history of the US chap"one and two"', locatorStr: 'chap"one and two"' }
+					{ str: `history of the US ${full}  "one and two"`, locatorStr: `${full}  "one and two"` },
+					{ str: `history of the US ${full}"one and two"`, locatorStr: `${full}"one and two"` },
+					{ str: `history of the US ${short} "one and two"`, locatorStr: `${short} "one and two"` },
+					{ str: `history of the US ${short}"one and two"`, locatorStr: `${short}"one and two"` },
+					{ str: `history of the US ${shortNoPunctuation}    "one and two"`, locatorStr: `${shortNoPunctuation}    "one and two"` },
+					{ str: `history of the US ${shortNoPunctuation}"one and two"`, locatorStr: `${shortNoPunctuation}"one and two"` }
 				];
 				
 				for (let locatorObj of locators) {
 					let locator = dialog.Helpers.extractLocator(locatorObj.str);
-					assert.isOk(locator);
+					assert.isOk(locator, locatorObj.str);
 					assert.equal(locator.label, 'chapter');
 					assert.equal(locator.locator, 'one and two');
 					assert.equal(locator.onlyLocator, false);
