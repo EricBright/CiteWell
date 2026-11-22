@@ -55,15 +55,22 @@ and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and re
 session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
 deployment cache by moving only CiteWell temp directories to a backup.
 
+**Settings information architecture:** Phase 0 inventory is complete in
+[settings.md](settings.md). No settings UI has moved yet. The current panes, scripts, deep links,
+tests and proposed eight-tab layout are mapped there. Lock the open choices (Notes tab vs subpane,
+Locate destination, Word-processor placement and Feeds placement) before Phase 1.
+
 **Next actions:**
 
-1. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
+1. Lock the settings taxonomy, then add the Phase 1 structure manifest and render existing pane
+   fragments as custom sections. Do not move preference controls or change preference keys yet.
+2. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
    log. Distinguish an invisible dialog from a document-operation hang.
-2. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
+3. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
    `CITEWELL_TEST_ATTENTION=deny` for the attention fallback.
-3. Finish the native attention path: D-Bus/systemd integration is user-scoped and visible in Cite
+4. Finish the native attention path: D-Bus/systemd integration is user-scoped and visible in Cite
    preferences → System integration; verify the systemd unit and notification fallback.
-4. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
+5. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
 
 ## Pick up here
 

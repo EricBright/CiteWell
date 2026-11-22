@@ -37,14 +37,14 @@ to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `
 
 | Path | Contents |
 |---|---|
-| `chrome/` | Application UI: XUL/XHTML, custom elements, React, XPCOM |
-| `resource/` | Third-party JS and runtime resources bundled into the app |
+| `chrome/` | Application UI and XPCOM |
+| `resource/` | Bundled runtime resources |
 | `scss/` | Styles, compiled to CSS during the build |
-| `js-build/` | Babel, Sass, and browserify build pipeline |
-| `app/` | Packaging, platform runtimes, icons, installers |
-| `test/` | Mocha/Chai tests and support code |
-| `docs/` | On-demand documentation, indexed below |
-| `tools/` | CiteWell tooling, written in Rust |
+| `js-build/` | Legacy JS build pipeline |
+| `app/` | Packaging and platform runtimes |
+| `test/` | Tests and support code |
+| `docs/` | On-demand documentation |
+| `tools/` | Rust tooling |
 
 ## Documentation index
 
@@ -56,7 +56,7 @@ budget by `tools/docs-check`. Everything else is on-demand.
 | `README.md` | always | starting any session | Identity, commands, repository map, this index |
 | `AGENTS.md` | always | working as an AI agent | Agent contract: language rule, naming invariant, doc rules |
 | `roadmap.md` | on-demand | choosing what to work on | Now / Next / Later, not-doing, exit criteria |
-| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, next work, commands, pitfalls |
+| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, next work, pitfalls |
 | `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
 | `COPYING` | once | legal questions | Full AGPL-3.0 text |
 | `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
@@ -75,6 +75,7 @@ budget by `tools/docs-check`. Everything else is on-demand.
 | `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation, fallbacks, tests |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
+| `docs/settings.md` | on-demand | reorganizing settings or adding a pane | Inventory, target tabs, registry rules |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License
