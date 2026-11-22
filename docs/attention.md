@@ -22,6 +22,41 @@ a broken prompt.
 4. Background progress never steals focus. Interactive dialogs may request it.
 5. Notifications are deduplicated and suppressed when the window already has focus.
 
+## Decisions (2026-11-22)
+
+- Required desktops: **KDE Plasma Wayland**, **GNOME Wayland**, and **XWayland** as the fallback.
+  The current development machine is KDE Plasma.
+- For LibreOffice-originated actions, the **InfoBar** is the first visible fallback at the 3 s
+  escalation. A desktop notification is the fallback when the InfoBar provider is unavailable;
+  a native message box is the last resort.
+- Citation and document-preferences dialogs are **parented and modal** to the CiteWell main window.
+- A **D-Bus application activation path and a systemd user unit** are allowed. The AppImage must
+  install them automatically, document their paths, provide a clear removal command, and make the
+  integration visible to installers/updaters rather than hiding it.
+- A **test-only focus-denial hook** (environment-gated, absent from release behaviour) plus a fake
+  clock, fake adapters, and a manual KDE/GNOME/XWayland matrix is the testing contract.
+- The accepted floor when a compositor refuses activation and notifications are disabled is
+  **taskbar urgency plus a changed title**, with the LibreOffice InfoBar when the action came from
+  Writer. The owner accepts this limitation.
+
+## System integration
+
+This is planned, not implemented yet.
+
+The AppImage will install a user-scoped systemd unit and a D-Bus activation file on first run. The
+exact unit type and D-Bus interface must follow the capability audit; systemd does not grant
+window focus, so the D-Bus path is an **activation request**, not a guarantee.
+
+Transparency requirements:
+
+- a first-run notice naming every file written and how to remove it;
+- an explicit `--remove-integration` command (and a documented `--no-integration` option);
+- the files listed in [packaging.md](packaging.md) and this page;
+- an AppImage updater that replaces the executable must not silently leave an old unit pointing at
+  a removed path. Gear Lever/AppImageUpdate cannot run an uninstall hook, so the removal command
+  and documentation are the explicit contract; the app rewrites stale paths on the next launch
+  when possible.
+
 ## Scope
 
 | Surface | Owns | Fallback |
@@ -135,8 +170,10 @@ document content or personal data.
 - Does LibreOffice 26.8 expose a supported InfoBar provider to the Python UNO shim?
 - Who can run the manual KDE/notification-disabled checks? GNOME and XWayland are available here;
   KDE Wayland is the required second target.
-- Which systemd user-unit packaging shape is acceptable: a D-Bus-activated service, a desktop
-  autostart, or no unit at all when the AppImage is already running?
+- Does the AppImage's first-run installer have a stable writable path for the unit when the
+  AppImage is moved? The unit must be rewritten or clearly reported as stale.
+- Can Gear Lever/AppImageUpdate be given a documented removal step without pretending they run
+  uninstall hooks? They cannot remove user units themselves.
 
 ## Implemented so far
 

@@ -82,6 +82,21 @@ AppImages need FUSE. If FUSE is unavailable, `./CiteWell-x86_64.AppImage --appim
 works but is slow (it unpacks on every start). Gecko's content processes and user namespaces can
 interact badly under some sandbox configurations; test on a clean profile before trusting a build.
 
+## Attention system integration
+
+The attention design calls for an automatically installed, user-scoped systemd unit and D-Bus
+activation file. This is **not implemented yet**; the paths and exact unit type are pending the
+Wayland/Gecko capability audit.
+
+When implemented, the AppImage must make the integration visible:
+
+- name every file written on first run, in a visible notice and in this document;
+- provide `--remove-integration` and `--no-integration`;
+- rewrite a stale executable path after an AppImage update, or clearly report that it is stale;
+- document that Gear Lever and AppImageUpdate replace files but do not run uninstall hooks, so
+  removing the AppImage does not remove the user unit or D-Bus file;
+- keep the integration user-scoped; no system-wide files or services.
+
 ## Not done yet
 
 - **Flatpak**: a later option. The same `AppDir` content can feed `flatpak-builder`; nothing is
