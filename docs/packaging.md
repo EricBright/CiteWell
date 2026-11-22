@@ -84,18 +84,26 @@ interact badly under some sandbox configurations; test on a clean profile before
 
 ## Attention system integration
 
-The attention design calls for an automatically installed, user-scoped systemd unit and D-Bus
-activation file. This is **not implemented yet**; the paths and exact unit type are pending the
-Wayland/Gecko capability audit.
+`AppRun` installs a user-scoped systemd unit and D-Bus activation file on a normal launch when
+`APPIMAGE` is set and an explicit `-datadir` is present. The files are:
 
-When implemented, the AppImage must make the integration visible:
+| Path | Purpose |
+|---|---|
+| `~/.config/systemd/user/citewell-attention.service` | Runs the AppImage with `--attention-activate --datadir <dir>` |
+| `~/.local/share/dbus-1/services/org.citewell.CiteWell.service` | Starts that unit through `systemctl --user` |
+| `~/.config/citewell/integration.txt` | Records the exact paths, executable and data directory |
 
-- name every file written on first run, in a visible notice and in this document;
-- provide `--remove-integration` and `--no-integration`;
-- rewrite a stale executable path after an AppImage update, or clearly report that it is stale;
-- document that Gear Lever and AppImageUpdate replace files but do not run uninstall hooks, so
-  removing the AppImage does not remove the user unit or D-Bus file;
-- keep the integration user-scoped; no system-wide files or services.
+The launcher prints every path it writes, the removal command and the opt-out flag. The interface
+is:
+
+- `--no-integration` — do not install the files;
+- `--install-integration` — install them explicitly;
+- `--remove-integration` — remove exactly the files recorded in the manifest.
+
+The integration is user-scoped; there are no system-wide files. Gear Lever and AppImageUpdate
+replace or remove the AppImage but do not run uninstall hooks, so deleting the AppImage leaves the
+unit and D-Bus file until `--remove-integration` is run. This is documented here and in the
+launcher notice; the next launch rewrites a stale executable path when possible.
 
 ## Not done yet
 

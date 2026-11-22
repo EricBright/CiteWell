@@ -228,6 +228,20 @@ describe("Attention", function () {
 		assert.equal(messages.length, 0);
 	});
 
+	it("honours the test-only focus-denial hook", function () {
+		let win = new FakeWindow({ focused: true });
+		let denied = new Zotero.Attention.AppAdapter({
+			forceUnfocused: true,
+			activate: () => {},
+			notify: () => {},
+		});
+		let appClock = new FakeClock();
+		let appController = new Zotero.Attention.Controller(denied, { clock: appClock });
+		appController.watch(win);
+		appClock.advance(3000);
+		assert.equal(appController.getEntry(win).focused, false);
+	});
+
 	it("does not focus a progress presenter on open", function () {
 		let win = new FakeWindow();
 		let activated = 0;

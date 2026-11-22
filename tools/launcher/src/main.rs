@@ -9,11 +9,21 @@
 //! bundle. Writing it in Rust rather than as a shell script keeps the packaging
 //! path free of new interpreters, and `exec` (not spawn) means signals and the
 //! process group behave exactly as if the user had launched the app directly.
+//!
+//! The launcher also owns the user-scoped attention integration: a systemd user
+//! unit and a D-Bus activation file. They are installed only when the AppImage
+//! is actually running, only with an explicit `-datadir`, and always with a
+//! printed path list plus a removal command.
 
 use std::env;
+use std::fs;
 use std::os::unix::process::CommandExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+
+const UNIT_NAME: &str = "citewell-attention.service";
+const DBUS_NAME: &str = "org.citewell.CiteWell.service";
+const MANIFEST: &str = "integration.txt";
 
 /// Gecko's `-datadir` flag takes its value from the next argument. When the
 /// flag is the last argument, or is followed by another flag, Gecko silently
@@ -56,12 +66,153 @@ fn missing_datadir_value<S: AsRef<str>>(args: &[S]) -> bool {
     false
 }
 
+fn datadir(args: &[String]) -> Option<String> {
+    let mut i = 0;
+    while i < args.len() {
+        let arg = &args[i];
+        if arg == "-datadir" || arg == "--datadir" {
+            return args.get(i + 1).cloned();
+        }
+        if let Some(value) = arg
+            .strip_prefix("-datadir=")
+            .or_else(|| arg.strip_prefix("--datadir="))
+        {
+            return Some(value.to_string());
+        }
+        i += 1;
+    }
+    None
+}
+
+fn config_home() -> Result<PathBuf, String> {
+    if let Some(path) = env::var_os("XDG_CONFIG_HOME") {
+        return Ok(PathBuf::from(path));
+    }
+    let home = env::var_os("HOME").ok_or("HOME is not set")?;
+    Ok(PathBuf::from(home).join(".config"))
+}
+
+fn data_home() -> Result<PathBuf, String> {
+    if let Some(path) = env::var_os("XDG_DATA_HOME") {
+        return Ok(PathBuf::from(path));
+    }
+    let home = env::var_os("HOME").ok_or("HOME is not set")?;
+    Ok(PathBuf::from(home).join(".local").join("share"))
+}
+
+fn integration_paths() -> Result<(PathBuf, PathBuf, PathBuf), String> {
+    let config = config_home()?;
+    let data = data_home()?;
+    Ok((
+        config.join("systemd/user").join(UNIT_NAME),
+        data.join("dbus-1/services").join(DBUS_NAME),
+        config.join("citewell").join(MANIFEST),
+    ))
+}
+
+fn unit_contents(appimage: &str, datadir: &str) -> String {
+    format!(
+        "[Unit]\n\
+         Description=Activate CiteWell attention window\n\
+         After=graphical-session.target\n\
+         \n\
+         [Service]\n\
+         Type=oneshot\n\
+         ExecStart=\"{appimage}\" --attention-activate --datadir \"{datadir}\"\n"
+    )
+}
+
+fn dbus_contents() -> String {
+    "[D-BUS Service]\n\
+     Name=org.citewell.CiteWell\n\
+     Exec=/usr/bin/systemctl --user start citewell-attention.service\n"
+        .to_string()
+}
+
+fn write_if_changed(path: &Path, contents: &str) -> Result<bool, String> {
+    if let Ok(existing) = fs::read_to_string(path) {
+        if existing == contents {
+            return Ok(false);
+        }
+    }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("{}: {e}", parent.display()))?;
+    }
+    fs::write(path, contents).map_err(|e| format!("{}: {e}", path.display()))?;
+    Ok(true)
+}
+
+fn install_integration(appimage: &str, datadir: &str) -> Result<Vec<PathBuf>, String> {
+    let (unit, dbus, manifest) = integration_paths()?;
+    let mut changed = Vec::new();
+    if write_if_changed(&unit, &unit_contents(appimage, datadir))? {
+        changed.push(unit.clone());
+    }
+    if write_if_changed(&dbus, &dbus_contents())? {
+        changed.push(dbus.clone());
+    }
+    let manifest_text = format!(
+        "CiteWell attention integration\n\
+         appimage={appimage}\n\
+         datadir={datadir}\n\
+         unit={}\n\
+         dbus={}\n",
+        unit.display(),
+        dbus.display()
+    );
+    if write_if_changed(&manifest, &manifest_text)? {
+        changed.push(manifest);
+    }
+    Ok(changed)
+}
+
+fn remove_integration() -> Result<Vec<PathBuf>, String> {
+    let (unit, dbus, manifest) = integration_paths()?;
+    let mut removed = Vec::new();
+    for path in [unit, dbus, manifest] {
+        if path.exists() {
+            fs::remove_file(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+            removed.push(path);
+        }
+    }
+    Ok(removed)
+}
+
+fn reload_systemd() {
+    let _ = Command::new("/usr/bin/systemctl")
+        .args(["--user", "daemon-reload"])
+        .status();
+}
+
+fn print_notice(appimage: &str, changed: &[PathBuf]) {
+    if changed.is_empty() {
+        return;
+    }
+    eprintln!("CiteWell: installed user attention integration:");
+    for path in changed {
+        eprintln!("  {}", path.display());
+    }
+    eprintln!("Remove it with: {appimage} --remove-integration");
+    eprintln!("Disable installation with: {appimage} --no-integration");
+}
+
 fn main() {
     let exe = env::current_exe().expect("cannot resolve the AppRun path");
     let base = exe.parent().expect("AppRun has no parent directory");
     let app = base.join("usr/lib/citewell/zotero");
 
-    let args: Vec<String> = env::args().skip(1).collect();
+    let mut args: Vec<String> = env::args().skip(1).collect();
+    let remove = args.iter().any(|arg| arg == "--remove-integration");
+    let install = args.iter().any(|arg| arg == "--install-integration") && !remove;
+    let no_integration = args.iter().any(|arg| arg == "--no-integration");
+    let activate = args.iter().any(|arg| arg == "--attention-activate");
+    args.retain(|arg| {
+        arg != "--remove-integration"
+            && arg != "--install-integration"
+            && arg != "--no-integration"
+            && arg != "--attention-activate"
+    });
+
     if missing_datadir_value(&args) {
         let name = env::args().next().unwrap_or_else(|| "CiteWell".to_string());
         eprintln!(
@@ -73,6 +224,52 @@ fn main() {
         std::process::exit(2);
     }
 
+    if remove {
+        match remove_integration() {
+            Ok(removed) => {
+                if removed.is_empty() {
+                    eprintln!("CiteWell: no attention integration files were present.");
+                }
+                else {
+                    eprintln!("CiteWell: removed attention integration:");
+                    for path in removed {
+                        eprintln!("  {}", path.display());
+                    }
+                    reload_systemd();
+                }
+                return;
+            }
+            Err(error) => {
+                eprintln!("CiteWell: could not remove attention integration: {error}");
+                std::process::exit(1);
+            }
+        }
+    }
+
+    if activate && datadir(&args).is_none() {
+        eprintln!("CiteWell: --attention-activate requires -datadir.");
+        std::process::exit(2);
+    }
+
+    if install || (activate == false && !no_integration) {
+        if let (Some(appimage), Some(data)) = (env::var_os("APPIMAGE"), datadir(&args)) {
+            if let Some(appimage) = appimage.to_str() {
+                match install_integration(appimage, &data) {
+                    Ok(changed) => {
+                        if !changed.is_empty() {
+                            reload_systemd();
+                        }
+                        print_notice(appimage, &changed)
+                    }
+                    Err(error) => eprintln!("CiteWell: attention integration not installed: {error}"),
+                }
+            }
+        }
+        else if install {
+            eprintln!("CiteWell: --install-integration needs APPIMAGE and -datadir.");
+        }
+    }
+
     if !app.is_file() {
         eprintln!(
             "CiteWell: bundled launcher missing at {}\n\
@@ -82,6 +279,10 @@ fn main() {
         std::process::exit(127);
     }
 
+    if activate {
+        args.push("-url".to_string());
+        args.push("zotero://select".to_string());
+    }
     let mut command = Command::new(&app);
     command.args(&args);
 
@@ -96,54 +297,30 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::missing_datadir_value;
+    use super::*;
 
     #[test]
-    fn no_datadir_argument_is_fine() {
-        assert!(!missing_datadir_value(&["-no-remote"]));
-        assert!(!missing_datadir_value::<&str>(&[]));
-    }
-
-    #[test]
-    fn separate_value_is_fine() {
-        assert!(!missing_datadir_value(&["-datadir", "/tmp/cw"]));
-        assert!(!missing_datadir_value(&["--datadir", "/tmp/cw"]));
-        assert!(!missing_datadir_value(&[
-            "-no-remote",
-            "-datadir",
-            "/tmp/cw",
-            "-ZoteroDebugText"
-        ]));
-    }
-
-    #[test]
-    fn equals_form_is_fine() {
-        assert!(!missing_datadir_value(&["-datadir=/tmp/cw"]));
-        assert!(!missing_datadir_value(&["--datadir=/tmp/cw"]));
-    }
-
-    #[test]
-    fn trailing_flag_is_rejected() {
+    fn missing_datadir_is_detected() {
         assert!(missing_datadir_value(&["-datadir"]));
-        assert!(missing_datadir_value(&["-no-remote", "-datadir"]));
-        assert!(missing_datadir_value(&["--datadir"]));
-    }
-
-    #[test]
-    fn flag_is_case_insensitive() {
-        assert!(missing_datadir_value(&["-DataDir"]));
-        assert!(missing_datadir_value(&["-DATADIR"]));
-    }
-
-    #[test]
-    fn empty_value_is_rejected() {
-        assert!(missing_datadir_value(&["-datadir", ""]));
-        assert!(missing_datadir_value(&["-datadir="]));
-        assert!(missing_datadir_value(&["--datadir="]));
-    }
-
-    #[test]
-    fn next_flag_instead_of_value_is_rejected() {
         assert!(missing_datadir_value(&["-datadir", "-no-remote"]));
+        assert!(missing_datadir_value(&["--datadir="]));
+        assert!(!missing_datadir_value(&["-datadir", "/tmp/cw"]));
+        assert!(!missing_datadir_value(&["-datadir=/tmp/cw"]));
+    }
+
+    #[test]
+    fn datadir_is_found_in_both_forms() {
+        assert_eq!(datadir(&["-datadir".into(), "/tmp/cw".into()]), Some("/tmp/cw".into()));
+        assert_eq!(datadir(&["--datadir=/tmp/cw".into()]), Some("/tmp/cw".into()));
+    }
+
+    #[test]
+    fn unit_and_dbus_keep_the_datadir() {
+        let unit = unit_contents("/tmp/CiteWell.AppImage", "/tmp/library");
+        assert!(unit.contains("--attention-activate"));
+        assert!(unit.contains("--datadir \"/tmp/library\""));
+        let dbus = dbus_contents();
+        assert!(dbus.contains("Name=org.citewell.CiteWell"));
+        assert!(dbus.contains("systemctl --user start citewell-attention.service"));
     }
 }

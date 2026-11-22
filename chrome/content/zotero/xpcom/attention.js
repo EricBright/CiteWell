@@ -208,8 +208,16 @@ Zotero.Attention = new function () {
 		var alerts = options.alerts;
 		var notifier = options.notify;
 		var showMessage = options.showMessage;
+		var forceUnfocused = options.forceUnfocused;
+		if (forceUnfocused === undefined) {
+			try {
+				forceUnfocused = Services.env.get("CITEWELL_TEST_ATTENTION") === "deny";
+			}
+			catch (e) {}
+		}
 		var adapter = {
 			isFocused: function (window) {
+				if (forceUnfocused) return false;
 				try {
 					return !!(window && !window.closed && window.document && window.document.hasFocus());
 				}

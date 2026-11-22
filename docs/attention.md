@@ -1,6 +1,6 @@
 # Attention and window presentation
 
-**Status:** accepted 2026-11-22; state machine, presenter and app adapter implemented; app dialogs and progress are integrated. LibreOffice notification/message-box fallback is implemented; system activation and the test hook are pending.
+**Status:** accepted 2026-11-22; state machine, presenter, app adapter, app-dialog/progress integration, LibreOffice notification/message-box fallback, the test hook and the user-scoped systemd/D-Bus installer are implemented. Manual KDE/GNOME/XWayland verification remains.
 
 CiteWell must never leave a person waiting on a prompt that is behind another window. This page
 defines the attention contract, the escalation ladder, the platform-specific fallbacks, and the
@@ -59,21 +59,23 @@ the 3 s and 10 s steps.
 
 ## System integration
 
-This is planned, not implemented yet.
+The AppImage `AppRun` installs a user-scoped systemd unit and D-Bus activation file on a normal
+launch when `APPIMAGE` is set and an explicit `-datadir` is present:
 
-The AppImage will install a user-scoped systemd unit and a D-Bus activation file on first run. The
-exact unit type and D-Bus interface must follow the capability audit; systemd does not grant
-window focus, so the D-Bus path is an **activation request**, not a guarantee.
+- `~/.config/systemd/user/citewell-attention.service`
+- `~/.local/share/dbus-1/services/org.citewell.CiteWell.service`
+- `~/.config/citewell/integration.txt` (the exact paths and current executable/data directory)
 
-Transparency requirements:
+The D-Bus file starts `citewell-attention.service` through `systemctl --user`; the unit runs the
+AppImage with `--attention-activate --datadir <dir>`. The activation entry point uses the existing
+`zotero://select` path, so it requests activation rather than bypassing the compositor. systemd does
+not grant window focus.
 
-- a first-run notice naming every file written and how to remove it;
-- an explicit `--remove-integration` command (and a documented `--no-integration` option);
-- the files listed in [packaging.md](packaging.md) and this page;
-- an AppImage updater that replaces the executable must not silently leave an old unit pointing at
-  a removed path. Gear Lever/AppImageUpdate cannot run an uninstall hook, so the removal command
-  and documentation are the explicit contract; the app rewrites stale paths on the next launch
-  when possible.
+`--no-integration` suppresses installation, `--install-integration` forces it, and
+`--remove-integration` removes exactly the files recorded in the manifest. The launcher prints the
+paths and both commands whenever it writes or removes anything. Gear Lever and AppImageUpdate
+cannot run uninstall hooks, so the removal command and [packaging.md](packaging.md) are the explicit
+contract; the next launch rewrites a stale executable path.
 
 ## Scope
 
@@ -168,6 +170,10 @@ tests must fail. A green suite alone is not evidence.
 - notification adapter: supported, unavailable, click callback;
 - LO InfoBar adapter: available, unavailable, message/fallback;
 - capability probes: portal absent, D-Bus absent, XWayland only.
+
+The test-only hook is `CITEWELL_TEST_ATTENTION=deny`: it forces the adapter's focus check to fail so
+the KDE/GNOME/XWayland manual matrix can exercise the 1/3/10 s fallback deliberately. It has no
+effect unless the environment variable is set.
 
 ### Manual matrix
 
