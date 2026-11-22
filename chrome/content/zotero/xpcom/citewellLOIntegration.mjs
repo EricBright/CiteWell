@@ -252,6 +252,14 @@ async function handleEvent(connection, payload) {
 		await runM2Test(connection, command);
 		return;
 	}
+	if (command === "m4note" && Services.env.get("CITEWELL_M1_TEST") === "1") {
+		await runM4Note(connection);
+		return;
+	}
+	if (command === "m4bib" && Services.env.get("CITEWELL_M1_TEST") === "1") {
+		await runM4Bibliography(connection);
+		return;
+	}
 	try {
 		await Zotero.Integration.execCommand("LibreOffice", command, null);
 	}
@@ -261,12 +269,22 @@ async function handleEvent(connection, payload) {
 	connection.sendEvent({ command: "done" });
 }
 
+async function waitForIntegrationWindow(timeout = 15000) {
+	const start = Date.now();
+	while (Date.now() - start < timeout) {
+		const win = Zotero.Integration.currentWindow;
+		if (win && !win.closed) return win;
+		await Zotero.Promise.delay(200);
+	}
+	return null;
+}
+
 async function runDialogTest(connection, insert) {
 	const promise = Zotero.Integration.execCommand("LibreOffice", "addEditCitation", null);
 	setTimeout(async () => {
 		try {
-			const win = Zotero.Integration.currentWindow;
-			if (!win || win.closed) {
+			const win = await waitForIntegrationWindow();
+			if (!win) {
 				log("dialog test: no citation window");
 				return;
 			}
@@ -302,8 +320,8 @@ async function runM2Test(connection, command) {
 	const promise = Zotero.Integration.execCommand("LibreOffice", integrationCommand, null);
 	setTimeout(async () => {
 		try {
-			const win = Zotero.Integration.currentWindow;
-			if (!win || win.closed) {
+			const win = await waitForIntegrationWindow();
+			if (!win) {
 				log("m2 test: no dialog window");
 				return;
 			}
@@ -325,6 +343,43 @@ async function runM2Test(connection, command) {
 				win.document.querySelector("dialog").acceptDialog();
 				log("m2 test: switched to Chicago author-date");
 			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+	}, 3000);
+	try {
+		await promise;
+	}
+	finally {
+		connection.sendEvent({ command: "done" });
+	}
+}
+
+async function runM4Bibliography(connection) {
+	try {
+		await Zotero.Integration.execCommand("LibreOffice", "addEditBibliography", null);
+	}
+	finally {
+		connection.sendEvent({ command: "done" });
+	}
+}
+
+async function runM4Note(connection) {
+	const promise = Zotero.Integration.execCommand("LibreOffice", "addNote", null);
+	setTimeout(async () => {
+		try {
+			const win = await waitForIntegrationWindow();
+			if (!win) {
+				log("m4 note test: no dialog window");
+				return;
+			}
+			const items = (await Zotero.Items.getAll(Zotero.Libraries.userLibraryID))
+				.filter(item => item.isRegularItem() && !item.deleted);
+			const io = win.arguments[0].wrappedJSObject;
+			io.citation.citationItems = [{ id: items[0].id, locator: "", label: "page" }];
+			io.accept();
+			log("m4 note test: accepted item " + items[0].id);
 		}
 		catch (e) {
 			Zotero.logError(e);

@@ -46,6 +46,8 @@ COMMANDS = {
     "vnd.citewell.m1cancel:": "m1cancel",
     "vnd.citewell.m2multi:": "m2multi",
     "vnd.citewell.m2style:": "m2style",
+    "vnd.citewell.m4note:": "m4note",
+    "vnd.citewell.m4bib:": "m4bib",
     "vnd.citewell.health:": "selftest",
 }
 

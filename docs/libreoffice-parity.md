@@ -1,6 +1,6 @@
 # LibreOffice parity plan
 
-Status: **M3 core passed 2026-11-22; M4 is next.** Companion to
+Status: **M4 core passed 2026-11-22; M5 is next.** Companion to
 [libreoffice.md](libreoffice.md), which holds the architecture history and the option analysis,
 and to decisions D34–D36, which hold the *why*. This page is the execution contract: what feature
 parity means, which layer owns what, and how each milestone is proved.
@@ -132,7 +132,7 @@ double. No automatic repair of LibreOffice state (D35).
 | M1 | document and field commands; Add/Edit Citation | **passed:** insert, edit with a locator, and cancel through the real dialog; adjacent fields stay separate |
 | M2 | session, style, multiple items, locators, edit existing | **passed:** two-item citation with a locator; APA → Chicago author-date through document preferences; the dialog stays responsive while commands run |
 | M3 | refresh, unlink, document preferences | **passed:** 100 fields refresh in ~20 s; Unlink removes every field and keeps the text |
-| M4 | bibliography, Add Note, citation explorer | the bibliography regenerates after a style change; footnote citation works |
+| M4 | bibliography, Add Note, citation explorer | **passed:** APA bibliography entry, footnote citation and table-cell citation, all persisting across save/reopen |
 | M5 | polish, self-test, compatibility message | fresh isolated-profile install; stale-OXT message tested |
 
 ## Test layers
@@ -150,7 +150,9 @@ dialogs for verification. They are test-only and go with the fake shim at M3.
 
 ## Known gaps
 
-- Footnotes and tables are not exercised; the bibliography and Add Note fields are M4.
+- `setBibliographyStyle` is a no-op, so the bibliography text is correct but paragraph indents,
+  spacing and tab stops are not applied.
+- Editing an existing bibliography and the citation explorer were not exercised.
 - The reference implementation's undo context and save listener are not ported yet.
 - The production message box for Unlink confirmation is implemented but the self-test harness
   auto-confirms it, so the interactive path still needs a manual check.

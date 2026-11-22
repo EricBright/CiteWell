@@ -59,14 +59,19 @@ class Field(object):
 
     def set_code(self, code):
         old_name = self.raw_name
+        old_text = self.anchor.getString()
         new_name = raw_name(code)
         self.named.setName(new_name)
         self.raw_name = new_name
-        # Renaming can recreate the mark; refresh the anchor so later calls see
-        # the live one.  The app re-applies the formatted text afterwards.
+        # Renaming disposes the old mark.  Re-attach it over the previous text
+        # so a field never becomes empty between setCode and setText; the
+        # bibliography path depends on that, and the app re-applies rich text
+        # for citations anyway.
         self.content = self.named
         self.anchor = self.named.getAnchor()
         self.document._renamed(self, old_name, new_name)
+        if old_text:
+            self.set_text(old_text, False)
 
     # -- content ----------------------------------------------------------
 
@@ -241,7 +246,14 @@ class Document(object):
     def insert_field(self, field_type="ReferenceMark", note_type=0):
         controller = self.component.getCurrentController()
         view_cursor = controller.getViewCursor()
-        cursor = self.text.createTextCursorByRange(view_cursor)
+        text_object = view_cursor.getText()
+        cursor = text_object.createTextCursorByRange(view_cursor)
+        if note_type in (1, 2):
+            service = "com.sun.star.text.Footnote" if note_type == 1 else "com.sun.star.text.Endnote"
+            note = self.component.createInstance(service)
+            text_object.insertTextContent(cursor, note, True)
+            note_text = note.getText()
+            cursor = note_text.createTextCursorByRange(note)
         cursor.setString(PLACEHOLDER)
         raw = raw_name("")
         mark = self.component.createInstance("com.sun.star.text.ReferenceMark")
@@ -254,8 +266,9 @@ class Document(object):
         view_cursor = controller.getViewCursor()
         for field in self.fields(field_type):
             try:
-                starts = self.text.compareRegionStarts(field.anchor, view_cursor)
-                ends = self.text.compareRegionEnds(field.anchor, view_cursor)
+                text_object = view_cursor.getText()
+                starts = text_object.compareRegionStarts(field.anchor, view_cursor)
+                ends = text_object.compareRegionEnds(field.anchor, view_cursor)
             except Exception:
                 continue
             if starts >= 0 and ends <= 0:
@@ -270,8 +283,9 @@ class Document(object):
     def insert_text(self, text):
         controller = self.component.getCurrentController()
         view_cursor = controller.getViewCursor()
-        cursor = self.text.createTextCursorByRange(view_cursor)
-        self.text.insertString(cursor, text, False)
+        text_object = view_cursor.getText()
+        cursor = text_object.createTextCursorByRange(view_cursor)
+        text_object.insertString(cursor, text, False)
 
     # -- lifecycle --------------------------------------------------------
 
