@@ -1,0 +1,5 @@
+# Approved exceptions to the Rust-first rule (D4/D12).
+# Format: <decision-id> <exact-path>
+# Add a path only after the decision record exists; repo-guard rejects anything else.
+D38 chrome/content/zotero/xpcom/attention.js
+D38 test/tests/attentionTest.js

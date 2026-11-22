@@ -3,7 +3,8 @@
 // Licensed under the GNU Affero General Public License, version 3 or later.
 // See COPYING and NOTICE.
 
-//! Dependency-free guard for the CiteWell dependency freeze (D32).
+//! Dependency-free guard for the CiteWell dependency freeze (D32) and the
+//! Rust-first language policy (D4, D12, D38).
 //!
 //! It rejects staged changes that would reintroduce a package manager or a
 //! tracked dependency tree, and it checks that the repository's npm
@@ -20,6 +21,8 @@ use std::process::{Command, ExitCode};
 
 const LOCKFILES: [&str; 2] = ["package-lock.json", "npm-shrinkwrap.json"];
 const NPM_CONFIG: &str = ".npmrc";
+const EXCEPTIONS_FILE: &str = "tools/policy-exceptions.txt";
+const DECISIONS_FILE: &str = "docs/decisions.md";
 const NPM_BUILD_FILES: [&str; 3] = [
     "js-build/note-editor.js",
     "js-build/reader.js",
@@ -50,7 +53,7 @@ fn main() -> ExitCode {
     }
 
     let mut problems = Vec::new();
-    let changed = match mode {
+    let changed = match mode.clone() {
         Mode::Staged => git_lines(&["diff", "--cached", "--name-only", "--diff-filter=ACMRD"]),
         Mode::Range(range) => git_lines(&["diff", "--name-only", "--diff-filter=ACMRD", &range]),
     };
@@ -62,6 +65,37 @@ fn main() -> ExitCode {
     for path in &changed {
         if let Some(reason) = forbidden_path(path) {
             problems.push(format!("{path}: {reason}"));
+        }
+    }
+
+    let added = match mode.clone() {
+        Mode::Staged => git_name_status(&["diff", "--cached", "--name-status", "--diff-filter=A"]),
+        Mode::Range(range) => {
+            git_name_status(&["diff", "--name-status", "--diff-filter=A", &range])
+        }
+    };
+    let added = match added {
+        Ok(lines) => lines,
+        Err(error) => return fail(&error),
+    };
+    let exceptions = match load_exceptions() {
+        Ok(exceptions) => exceptions,
+        Err(error) => return fail(&error),
+    };
+    for path in added {
+        if let Some(language) = code_language(&path) {
+            let decision = exceptions.iter()
+                .find(|(_, allowed)| allowed == &path)
+                .map(|(decision, _)| decision.clone());
+            match decision {
+                Some(decision) if decision_exists(&decision) => {}
+                Some(decision) => problems.push(format!(
+                    "{path}: exception names unknown decision {decision}; add the decision record"
+                )),
+                None => problems.push(format!(
+                    "{path}: new {language} file; Rust is the default (D4/D12). Stop and ask, or add an explicit path to {EXCEPTIONS_FILE} with an accepted decision"
+                )),
+            }
         }
     }
 
@@ -90,15 +124,97 @@ fn main() -> ExitCode {
     }
 
     if problems.is_empty() {
-        println!("repo-guard: dependency freeze holds");
+        println!("repo-guard: dependency freeze and language policy hold");
         ExitCode::SUCCESS
     } else {
         for problem in &problems {
             eprintln!("error: {problem}");
         }
-        eprintln!("repo-guard: {} problem(s); see D32", problems.len());
+        eprintln!("repo-guard: {} problem(s); see D4/D12/D32", problems.len());
         ExitCode::FAILURE
     }
+}
+
+fn git_name_status(args: &[&str]) -> Result<Vec<String>, String> {
+    let output = Command::new("git")
+        .args(args)
+        .output()
+        .map_err(|error| format!("could not run git: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| line.split_once('\t').map(|(_, path)| path.to_string()))
+        .filter(|path| !path.is_empty())
+        .collect())
+}
+
+fn code_language(path: &str) -> Option<&'static str> {
+    for (extension, language) in [
+        (".js", "JavaScript"),
+        (".jsx", "JavaScript"),
+        (".mjs", "JavaScript"),
+        (".cjs", "JavaScript"),
+        (".py", "Python"),
+        (".sh", "shell"),
+    ] {
+        if path.ends_with(extension) {
+            return Some(language);
+        }
+    }
+    None
+}
+
+fn repo_file(path: &str) -> std::path::PathBuf {
+    if let Ok(output) = Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .output()
+    {
+        if output.status.success() {
+            let root = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !root.is_empty() {
+                return std::path::Path::new(&root).join(path);
+            }
+        }
+    }
+    std::path::PathBuf::from(path)
+}
+
+fn load_exceptions() -> Result<Vec<(String, String)>, String> {
+    let text = match std::fs::read_to_string(repo_file(EXCEPTIONS_FILE)) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(format!("{EXCEPTIONS_FILE}: {error}")),
+    };
+    let mut exceptions = Vec::new();
+    for (number, line) in text.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let mut parts = line.split_whitespace();
+        let decision = parts.next().unwrap_or("");
+        let path = parts.next().unwrap_or("");
+        if decision.is_empty() || path.is_empty() || parts.next().is_some() {
+            return Err(format!(
+                "{EXCEPTIONS_FILE}:{}: expected '<decision> <path>'",
+                number + 1
+            ));
+        }
+        exceptions.push((decision.to_string(), path.to_string()));
+    }
+    Ok(exceptions)
+}
+
+fn decision_exists(decision: &str) -> bool {
+    std::fs::read_to_string(repo_file(DECISIONS_FILE))
+        .map(|text| text.contains(&format!("## {decision}")))
+        .unwrap_or(false)
 }
 
 #[derive(Clone)]
@@ -192,6 +308,25 @@ mod tests {
         assert!(forbidden_path("node_modules/x/index.js").is_some());
         assert!(forbidden_path("connectors/node_modules/x").is_some());
         assert!(forbidden_path("docs/node_modules.md").is_none());
+    }
+
+    #[test]
+    fn attention_exception_has_a_decision_record() {
+        let exceptions = load_exceptions().expect("exception manifest");
+        assert!(exceptions.iter().any(|(decision, path)| {
+            decision == "D38" && path == "chrome/content/zotero/xpcom/attention.js"
+        }));
+        assert!(decision_exists("D38"));
+    }
+
+    #[test]
+    fn new_code_languages_are_recognized() {
+        assert_eq!(code_language("a.js"), Some("JavaScript"));
+        assert_eq!(code_language("a.mjs"), Some("JavaScript"));
+        assert_eq!(code_language("a.py"), Some("Python"));
+        assert_eq!(code_language("a.sh"), Some("shell"));
+        assert_eq!(code_language("a.rs"), None);
+        assert_eq!(code_language("a.json"), None);
     }
 
     #[test]

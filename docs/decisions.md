@@ -696,6 +696,23 @@ it remains until the legacy rows are removed. New notes are `.md` attachments op
 Rejected: deleting the shell now — it would strand restored legacy notes. Rejected: restoring an
 editing surface — D29 makes the host the editor.
 
+## D38 — UI attention orchestration stays JavaScript
+
+**Date:** 2026-11-22 · **Status:** accepted · **Reversible:** when a Rust/WASM UI boundary exists
+
+The attention controller and presenter are Gecko UI orchestration: they create and parent windows,
+observe focus and unload, request taskbar attention, and call notifications. D12 permits UI work in
+JavaScript, but adding a new module required an explicit exception. This is that narrow exception.
+
+It applies only to `chrome/content/zotero/xpcom/attention.js` and its Mocha test
+`test/tests/attentionTest.js`. It does not cover catalogue logic, data, formatting, networking or
+future native activation; the D-Bus/systemd helper and other services remain Rust. The exception is
+machine-readable in `tools/policy-exceptions.txt` and enforced by `repo-guard`.
+
+Rejected: a Rust/WASM timer core for the 1/3/10 s scheduler — the state is trivial, while every
+observable effect is a Gecko window API; the extra build target and interop would add complexity
+without removing JavaScript from the UI.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

@@ -46,6 +46,9 @@ R6 requires changing behaviour in a JavaScript UI. The rule is therefore:
 - Editing existing JavaScript: **allowed** (minimal, in place).
 - Adding a new JavaScript module or a new JS build target: **not allowed** without a recorded
   decision.
+`repo-guard` enforces this on every commit: an added `.js`, `.jsx`, `.mjs`, `.cjs`, `.py` or `.sh`
+file fails unless its exact path is listed in `tools/policy-exceptions.txt` under a decision record.
+The failure tells the author to stop and ask. This is intentionally a gate, not a prose reminder.
 - New user-visible functionality should ship as WASM or a sidecar, with JS reduced to a thin
   call site.
 
