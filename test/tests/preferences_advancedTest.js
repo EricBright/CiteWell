@@ -172,6 +172,30 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("keeps Cite immediately after General", async function () {
+		await Zotero.PreferencePanes.loadBuiltInPanes();
+		let ids = Zotero.PreferencePanes.builtInPanes
+			.filter(pane => !pane.requiresOnlineSync && !pane.parent)
+			.map(pane => pane.id);
+		assert.isBelow(ids.indexOf("zotero-prefpane-general"), ids.indexOf("zotero-prefpane-cite"));
+		assert.equal(ids.indexOf("zotero-prefpane-cite"), ids.indexOf("zotero-prefpane-general") + 1);
+	});
+
+	it("loads Library & Files with file controls", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-library"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("zotero-prefpane-file-handling-groupbox"));
+			assert.ok(win.document.getElementById("file-renaming-configure-button"));
+			assert.ok(win.document.getElementById("library-current-path"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("loads the Notes & Annotations pane", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-notes"

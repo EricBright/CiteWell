@@ -1,25 +1,25 @@
 <!--
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2006–2022 Center for History and New Media
                      George Mason University, Fairfax, Virginia, USA
                      http://zotero.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 -->
 
@@ -27,15 +27,15 @@
 	<vbox class="main-section" id="zotero-prefpane-advanced-general-tab">
 		<groupbox id="zotero-prefpane-advanced-miscellaneous" aria-label="&zotero.preferences.miscellaneous;">
 			<label><html:h2>&zotero.preferences.miscellaneous;</html:h2></label>
-			
+
 			<hbox align="center">
 				<checkbox label="&zotero.preferences.autoUpdate;" preference="extensions.zotero.automaticScraperUpdates" native="true"/>
 				<button id="updateButton" label="&zotero.preferences.updateNow;"
 					oncommand="Zotero_Preferences.Advanced.updateTranslators()"/>
 			</hbox>
-			
+
 			<checkbox label="&zotero.preferences.reportTranslationFailure;" preference="extensions.zotero.reportTranslationFailure" native="true"/>
-			
+
 			<checkbox
 				id="zotero-prefpane-advanced-enable-local-api"
 				data-l10n-id="preferences-advanced-enable-local-api"
@@ -66,27 +66,19 @@
 			</vbox>
 		</groupbox>
 
-		<groupbox aria-labelledby="preferences-advanced-language-and-region-title">
-			<label><html:h2 id="preferences-advanced-language-and-region-title" data-l10n-id="preferences-advanced-language-and-region-title"/></label>
 
-			<checkbox
-				data-l10n-id="preferences-advanced-enable-bidi-ui"
-				preference="bidi.browser.ui"
-				native="true"
-			/>
-		</groupbox>
 	</vbox>
-	
+
 	<vbox class="main-section" role="group" aria-label="&zotero.preferences.advanced.filesAndFolders;">
 		<html:h1>&zotero.preferences.advanced.filesAndFolders;</html:h1>
 
 		<groupbox aria-label="&zotero.preferences.attachmentBaseDir.caption;" aria-description="&zotero.preferences.attachmentBaseDir.message;">
 			<label><html:h2>&zotero.preferences.attachmentBaseDir.caption;</html:h2></label>
-			
+
 			<vbox>
 				<description>&zotero.preferences.attachmentBaseDir.message;</description>
 			</vbox>
-			
+
 			<hbox align="center">
 				<label id="baseAttachmentPathLabel" value="&zotero.preferences.attachmentBaseDir.basePath;"/>
 				<html:input type="text" id="baseAttachmentPath"
@@ -101,19 +93,19 @@
 					oncommand="Zotero_Preferences.Attachment_Base_Directory.choosePath()"
 					aria-describedby="baseAttachmentPathLabel"/>
 			</hbox>
-			
+
 			<hbox class="preferences-button-group">
 				<button id="resetBasePath"
 					label="&zotero.preferences.attachmentBaseDir.resetBasePath;"
 					oncommand="Zotero_Preferences.Attachment_Base_Directory.clearPath()"
 					data-search-strings="attachmentBasePath.clearBasePath.message"/>
 			</hbox>
-			
+
 		</groupbox>
-		
+
 		<groupbox aria-label="&zotero.preferences.dataDir;">
 			<label><html:h2>&zotero.preferences.dataDir;</html:h2></label>
-			
+
 			<hbox align="center">
 				<label id="data-dir-label" data-l10n-id="preferences-advanced-data-dir" control="data-dir-path"></label>
 				<html:input type="text" id="data-dir-path" preference="extensions.zotero.dataDir"
@@ -122,12 +114,12 @@
 					aria-describedby="data-dir-label"
 					oncommand="Zotero_Preferences.Advanced.dataDirUpdate(true)"/>
 			</hbox>
-			
+
 			<vbox id="command-line-data-dir" hidden="true">
 				<description id="command-line-data-dir-path"/>
 				<label value="&zotero.preferences.dataDir.viaCommandLine;"/>
 			</vbox>
-			
+
 			<hbox class="preferences-button-group">
 				<button label="&zotero.preferences.dataDir.reveal;"
 					oncommand="Zotero.DataDirectory.reveal()"/>
@@ -141,10 +133,10 @@
 					oncommand="Zotero_Preferences.Advanced.migrateDataDirectory()" hidden="true"/>
 			</hbox>
 		</groupbox>
-		
+
 		<groupbox aria-label="&zotero.preferences.dbMaintenance;">
 			<label><html:h2>&zotero.preferences.dbMaintenance;</html:h2></label>
-			
+
 			<hbox id="db-maintenance-options">
 				<button label="&zotero.preferences.dbMaintenance.integrityCheck;"
 					oncommand="Zotero_Preferences.Advanced.runIntegrityCheck(this)"/>
@@ -157,7 +149,7 @@
 
 	<html:div class="main-section" id="zotero-prefpane-advanced-keys-tab" role="group" aria-label="&zotero.preferences.advanced.keys;">
 		<html:h1>&zotero.preferences.advanced.keys;</html:h1>
-	
+
 		<html:div id="zotero-keys-grid">
 			<html:label for="textbox-newItem">&zotero.preferences.keys.newItem;</html:label>
 			<html:label class="modifier"/>
@@ -191,9 +183,9 @@
 			<html:label class="modifier"/>
 			<html:input type="text" id="textbox-toggleAllRead" maxlength="1" size="1" preference="extensions.zotero.keys.toggleAllRead"/>
 		</html:div>
-		
+
 		<label class="statusLine" value="&zotero.preferences.keys.changesTakeEffect;"/>
-		
+
 		<separator/>
 	</html:div>
 	<vbox class="main-section" id="zotero-prefpane-advanced-feeds-tab" role="group" aria-label="&zotero.preferences.feeds;">
@@ -212,7 +204,7 @@
 				</hbox>
 			</hbox>
 		</groupbox>
-		
+
 		<groupbox id="zotero-prefpane-advanced-feeds-feedDefaults" aria-label="&zotero.preferences.feeds.feedDefaults;">
 			<label><html:h2>&zotero.preferences.feeds.feedDefaults;</html:h2></label>
 			<hbox>
@@ -247,18 +239,18 @@
 
 		<groupbox aria-label="&zotero.preferences.search.fulltextCache;">
 			<label><html:h2>&zotero.preferences.search.fulltextCache;</html:h2></label>
-			
+
 			<hbox align="center">
 				<html:label for="fulltext-maxLength">&zotero.preferences.fulltext.textMaxLength;</html:label>
 				<html:input id="fulltext-maxLength" type="text" size="10" preference="extensions.zotero.fulltext.textMaxLength"/>
 				<html:label>(&zotero.preferences.default; 500000)</html:label>
 			</hbox>
-	
+
 		</groupbox>
-		
+
 		<groupbox id="fulltext-stats" tabindex="0" aria-label="&zotero.preferences.search.indexStats;" aria-describedby="fulltext-stats-grid">
 			<label><html:h2>&zotero.preferences.search.indexStats;</html:h2></label>
-			
+
 			<vbox id="fulltext-stats-status">
 				<hbox align="center" id="fulltext-stats-progress-box" hidden="true">
 					<html:progress id="fulltext-stats-progress" value="0" max="1"/>
@@ -285,9 +277,9 @@
 					<label id="fulltext-stats-notes"/>
 				</hbox>
 			</vbox>
-		</groupbox>	
+		</groupbox>
 	</vbox>
-	
+
 	<vbox>
 		<hbox id="zotero-prefpane-advanced-open-buttons" align="center">
 			<button id="config-editor"

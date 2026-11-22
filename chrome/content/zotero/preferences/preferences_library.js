@@ -24,7 +24,7 @@
 
 /* global Zotero_Preferences */
 
-const { FilePicker } = ChromeUtils.importESModule("chrome://zotero/content/modules/filePicker.mjs");
+var { FilePicker } = ChromeUtils.importESModule("chrome://zotero/content/modules/filePicker.mjs");
 
 Zotero_Preferences.Library = {
 	_candidates: [],

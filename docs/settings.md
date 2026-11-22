@@ -6,7 +6,9 @@ Status: **Phase 0 inventory complete; Phase 1 structure manifest implemented; Ph
 in progress.** Pane order, labels, icons, custom content sources and retirement metadata now come
 from [`resource/settings/panes.json`](../resource/settings/panes.json). The first Phase 2 slice adds
 an **Integrations** pane, a **Notes & Annotations** pane, and an **Import & Export** pane; the old
-Export pane has been merged into it. No preference key has changed.
+Export pane has been merged into it. Cite now sits immediately after General. File handling, file
+renaming, attachment-title controls and Language & Region have moved to their task panes. No
+preference key has changed.
 
 ## Why this exists
 
@@ -149,15 +151,15 @@ Eight visible panes, plus Account/Sync when online:
 | Tab | Sections |
 |---|---|
 | **General** | Appearance, Language & Region, item-pane header, Behaviour (automatic tags, trash, group copy) |
-| **Library & Files** | Current library, locations, item lookup/OpenURL, file handling, file renaming, attachment titles, data directory, attachment base directory |
-| **Notes & Annotations** | Note opening, Markdown migration, legacy annotation export |
 | **Citations & Writing** | Styles, citation dialog, citation options |
+| **Notes & Annotations** | Note opening, Markdown migration, legacy annotation export |
 | **Import & Export** | Import from Zotero, restore points, last import, Quick Copy |
 | **Integrations** | LibreOffice extension, system integration, Word-processor/Google Docs bridges and the hidden upgrade group |
 | **Agent & API** | Agent access, local API, authorizations, audit |
+| **Library & Files** | Current library, locations, item lookup/OpenURL, file handling, file renaming, attachment titles, data directory, attachment base directory |
 | **Advanced** | Database maintenance, search index, feeds, keyboard shortcuts, translator updates/diagnostics |
 
-Recommended defaults (to lock before Phase 1):
+Locked defaults:
 
 - **Notes & Annotations** is a standalone tab.
 - **Locate/OpenURL** belongs in **Library & Files**.
@@ -202,11 +204,13 @@ First slice:
   `migration-only`, so users do not lose their one-time export path.
 - Import & Export now contains Quick Copy, import from Zotero, restore points and last-import
   status. The old standalone Export pane is retired.
-- Library is now labelled Library & Files and contains current-library/location controls; its old
-  import sections were removed.
+- Library & Files now contains current-library/location controls plus file handling, file renaming,
+  attachment titles and the OpenURL resolver is still pending a later split.
+- Language & Region moved from Advanced to General.
+- Cite is ordered immediately after General; the settings test asserts that adjacency.
 
-Remaining Phase 2 work: move file/data controls into Library & Files, migrate simple controls to
-descriptors, and update deep links.
+Remaining Phase 2 work: move the OpenURL resolver and the Advanced data/base-directory controls,
+migrate simple controls to descriptors, and update deep links.
 
 ## Registry shape
 

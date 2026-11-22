@@ -1,25 +1,25 @@
 <!--
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2006–2022 Center for History and New Media
                      George Mason University, Fairfax, Virginia, USA
                      http://zotero.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 -->
 <vbox id="zotero-prefpane-general"
@@ -30,11 +30,11 @@
 		<!-- Load file renaming dialog strings for search keywords -->
 		<html:link rel="localization" href="fileRenaming.ftl"/>
 	</linkset>
-	
+
 	<vbox class="main-section">
 		<groupbox aria-labelledby="preferences-appearance-title">
 			<label><html:h2 id="preferences-appearance-title" data-l10n-id="preferences-appearance-title"/></label>
-		
+
 			<groupbox aria-labelledby="color-scheme-label">
 				<hbox align="center">
 					<label id="color-scheme-label" data-l10n-id="preferences-color-scheme"/>
@@ -45,7 +45,7 @@
 					</radiogroup>
 				</hbox>
 			</groupbox>
-		
+
 			<hbox align="center">
 				<label value="&zotero.bibliography.locale.label;" control="locale-menu"/>
 				<menulist id="locale-menu"
@@ -88,62 +88,13 @@
 				</hbox>
 			</vbox>
 		</groupbox>
-		
-		<groupbox id="zotero-prefpane-file-handling-groupbox" aria-label="&zotero.preferences.fileHandling;">
-			<label><html:h2>&zotero.preferences.fileHandling;</html:h2></label>
-			
-			<vbox>
-				<checkbox label="&zotero.preferences.downloadAssociatedFiles;"
-					preference="extensions.zotero.downloadAssociatedFiles"
-					native="true"
-				/>
-				<checkbox data-l10n-id="preferences-auto-recognize-files"
-					preference="extensions.zotero.autoRecognizeFiles"
-					native="true"
-				/>
-				<checkbox id="automaticSnapshots-checkbox"
-					label="&zotero.preferences.automaticSnapshots;"
-					preference="extensions.zotero.automaticSnapshots"
-					native="true"
-				/>
-			</vbox>
-		
-		</groupbox>
-		
-		<groupbox id="zotero-prefpane-file-renaming-groupbox" aria-labelledby="preferences-file-renaming-title" aria-describedby="preferences-file-renaming-intro">
-			<label><html:h2 id="preferences-file-renaming-title" data-l10n-id="preferences-file-renaming-title"/></label>
 
-			<vbox align="start">
-				<label id="preferences-file-renaming-intro" data-l10n-id="preferences-file-renaming-intro"/>
-				<separator class="thin"/>
-				<button id="file-renaming-configure-button"
-					data-l10n-id="preferences-file-renaming-configure-button"
-					data-search-strings="file-renaming-format-title, file-renaming-format-template, file-renaming-auto-rename-files"
-					oncommand="Zotero_Preferences.General.openFileRenamingDialog()"
-				/>
-			</vbox>
-		</groupbox>
-		
-		<groupbox>
-			<label><html:h2 data-l10n-id="preferences-attachment-titles-title"/></label>
-			
-			<description data-l10n-id="preferences-attachment-titles-intro">
-				<label is="zotero-text-link" href="https://www.zotero.org/support/kb/attachment_title_vs_filename" data-l10n-name="wiki-link"/>
-			</description>
-			
-			<checkbox
-				data-l10n-id="preferences-attachment-titles-show-filenames"
-				preference="extensions.zotero.showAttachmentFilenames"
-				native="true"
-			/>
-		</groupbox>
-		
 		<groupbox id="zotero-prefpane-locate-groupbox" aria-label="&zotero.preferences.prefpane.locate;" aria-describedby="preferences-locate-library-lookup-intro">
 			<label><html:h2>&zotero.preferences.prefpane.locate;</html:h2></label>
-			
+
 			<label id="preferences-locate-library-lookup-intro" data-l10n-id="preferences-locate-library-lookup-intro"/>
 			<separator class="thin"/>
-			
+
 			<hbox align="center">
 				<label control="openurl-menu" data-l10n-id="preferences-locate-resolver"></label>
 				<menulist id="openurl-menu" native="true">
@@ -156,7 +107,7 @@
 					</menupopup>
 				</menulist>
 			</hbox>
-			
+
 			<hbox style="display: flex; align-items: center;">
 				<label control="openURLServerField" data-l10n-id="preferences-locate-base-url"/>
 				<html:input type="text" id="openURLServerField" style="flex: 1;"
@@ -165,12 +116,12 @@
 					dir="ltr"
 				/>
 			</hbox>
-			
+
 		</groupbox>
-		
+
 		<groupbox id="zotero-prefpane-miscellaneous-groupbox" aria-label="&zotero.preferences.miscellaneous;">
 			<label><html:h2>&zotero.preferences.miscellaneous;</html:h2></label>
-			
+
 			<checkbox label="&zotero.preferences.automaticTags;" preference="extensions.zotero.automaticTags" native="true"/>
 			<hbox align="center">
 				<label id="trashAutoEmpty-label1" value="&zotero.preferences.trashAutoEmptyDaysPre;"/>
@@ -190,6 +141,15 @@
 				<checkbox label="&zotero.preferences.groups.childLinks;" preference="extensions.zotero.groups.copyChildLinks" native="true"/>
 				<checkbox label="&zotero.preferences.groups.tags;" preference="extensions.zotero.groups.copyTags" native="true"/>
 			</vbox>
+		</groupbox>
+		<groupbox aria-labelledby="preferences-advanced-language-and-region-title">
+			<label><html:h2 id="preferences-advanced-language-and-region-title" data-l10n-id="preferences-advanced-language-and-region-title"/></label>
+
+			<checkbox
+				data-l10n-id="preferences-advanced-enable-bidi-ui"
+				preference="bidi.browser.ui"
+				native="true"
+			/>
 		</groupbox>
 	</vbox>
 </vbox>
