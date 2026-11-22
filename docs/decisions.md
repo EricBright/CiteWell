@@ -615,7 +615,8 @@ updates without review — third-party translator code runs with app privileges.
 
 ## D34 — CiteWell owns its LibreOffice integration
 
-**Date:** 2026-11-21 · **Status:** accepted · **Reversible:** until the first CiteWell OXT ships
+**Date:** 2026-11-21 · **Status:** accepted; transport and implementation superseded by D36 ·
+**Reversible:** until the first CiteWell OXT ships
 
 CiteWell does not reuse Zotero's LibreOffice extension identity or transport. The target
 contract is a CiteWell-owned OXT, display name and installer, with extension id
@@ -655,6 +656,32 @@ rewrites are prohibited in the installer. The installer must fail closed before 
 and every failure message must state what failed, that nothing else was changed, what the
 user can do next, and where technical details are logged. Recovery advice must never ask the
 user to reset or delete their LibreOffice profile.
+
+## D36 — The LibreOffice protocol lives in the app
+
+**Date:** 2026-11-22 · **Status:** accepted · **Reversible:** until M2 ships
+
+The LibreOffice adapter follows the shape of the reference implementation: the CiteWell app owns
+the listening socket on 23121 and the Python UNO shim connects as a client. The protocol is
+bidirectional — a menu click is a transaction-0 command from the shim, and the app sends numbered
+document commands back while its citation dialog is open — so a relay process in the middle adds a
+second protocol and a push channel without adding a feature.
+
+This supersedes D34's transport and implementation clauses. Identity, ports, sentinel, installer
+rules and the rejection of the Java OXT stand. `citewell-lo-core` leaves the runtime path; the
+protocol test double is Python, because std-only JSON in Rust costs more than the simulation is
+worth. The shim may be replaced — for example by C++ behind the same protocol — if Python in
+LibreOffice becomes unavailable or UNO threading proves unworkable.
+
+The socket is token-authenticated (`<data-dir>/lo-token`, mode 0600), versioned by a `hello`
+handshake, capped at 8 MiB per frame, and restricted to an allowlisted command set. Frames are the
+same `uint32` transaction id, `uint32` length, JSON payload shape as the reference protocol, so
+behaviour can be compared directly.
+
+Rejected: a Rust relay between the app and the shim — it duplicates the transport and needs a push
+channel for transaction-0 events. Rejected: growing the HTTP endpoints — it re-derives the same
+protocol piecemeal. Rejected: keeping the Rust core in the data path for continuity — no
+user-facing behaviour depends on it.
 
 ## Dead ends
 

@@ -1,8 +1,10 @@
 # LibreOffice integration
 
-Status: **Option B working; inherited Zotero integration disabled and removed from packaging.
-The CiteWell OXT installs, its menu dispatches, and it inserts the selected item's formatted
-citation in an isolated Writer profile.** Companion to [decisions.md](decisions.md) D34 and D35.
+Status: **Scaffold working; the parity rewrite is planned.** The inherited Zotero integration is
+disabled and removed from packaging. The CiteWell OXT installs, its menu dispatches, and it inserts
+a selected item's APA citation in an isolated Writer profile — a placeholder, not the target. The
+target is feature parity with Zotero's LibreOffice menu through CiteWell's own adapter:
+[libreoffice-parity.md](libreoffice-parity.md). Companion to [decisions.md](decisions.md) D34–D36.
 
 ## Identity and transport
 
@@ -161,12 +163,17 @@ Use an isolated LibreOffice profile, never the owner’s real one:
   old 23116 path is not used.
 - Remove test profiles and OXT copies through Trash.
 
-## Decisions needed
+## Decisions
 
-1. **Selected: option B.** No LibreOffice SDK and no new dependencies; only a restrained Python
-   UNO shim is added. Option A remains deferred and option C is rejected.
-2. Should the inherited OXT be removed from packaging now, so it cannot be
-   installed by accident while the replacement is built?
-3. Is a hard refusal when 23121 is already bound acceptable?
+1. **Option B, then superseded by D36.** No LibreOffice SDK and no new dependencies; the Python
+   UNO shim is the adapter, but the protocol now lives in the app rather than in a Rust relay.
+   Option A (C++ shim) remains a drop-in replacement behind the same protocol; option C is
+   rejected.
+2. The inherited OXT is not offered for installation and is no longer packaged.
+3. A bound 23121 fails closed with a message; there is no fallback port and no silent mode switch.
+4. Every install is add-only (D35); repair is a reinstall, never profile surgery.
+
+The execution plan, command surface, security contract and milestones are in
+[libreoffice-parity.md](libreoffice-parity.md).
 
 *For the full documentation index, see [../README.md](../README.md).*

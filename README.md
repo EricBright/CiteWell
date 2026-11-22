@@ -22,9 +22,8 @@ Work in progress and scope: [roadmap.md](roadmap.md).
 
 ## Quick start
 
-Requirements: Node 18 or later, [Git LFS](https://git-lfs.com/), and the platform tools in
-[app/README.md](app/README.md). npm is retired (D32): the dependency tree is frozen, and a fresh
-clone cannot install it.
+Requirements: Node 18+, [Git LFS](https://git-lfs.com/), and the tools in
+[app/README.md](app/README.md). npm is retired (D32); a fresh clone cannot install the frozen tree.
 
 ```bash
 git clone --recursive https://github.com/EricBright/CiteWell
@@ -32,9 +31,8 @@ cd CiteWell
 app/scripts/build_and_run      # build and launch with debug output
 ```
 
-While developing, run `node js-build/watch.js` in a second terminal to rebuild JS and Sass on save, then
-`app/scripts/build_and_run -n` to relaunch without rebuilding. Tests run inside a built app:
-`test/runtests.sh`. Build output lands in `app/staging/`.
+Run `node js-build/watch.js` to rebuild JS and Sass on save, then `app/scripts/build_and_run -n`
+to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `app/staging/`.
 
 ## Repository map
 
@@ -51,9 +49,8 @@ While developing, run `node js-build/watch.js` in a second terminal to rebuild J
 
 ## Documentation index
 
-`README.md` is the only always-tier document for humans: it is read at the start of every
-session and held to a word budget by `tools/docs-check`. Everything else is on-demand — read it
-to answer one question, not to get oriented.
+`README.md` is the only always-tier document: it is read every session and held to a word
+budget by `tools/docs-check`. Everything else is on-demand.
 
 | File | Tier | Read it when | Purpose |
 |---|---|---|---|
@@ -74,6 +71,8 @@ to answer one question, not to get oriented.
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
+| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants, milestones |
+| `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and honest trade-offs |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
