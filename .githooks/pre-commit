@@ -1,3 +1,4 @@
 #!/bin/sh
-# Dependency freeze gate (D32). The check itself is Rust; this is only Git glue.
-exec cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --staged
+# Dependency freeze gate (D32) and settings manifest check. The checks are Rust; this is Git glue.
+cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --staged || exit 1
+cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings || exit 1

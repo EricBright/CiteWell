@@ -69,7 +69,8 @@ describe("Library import", function () {
 		assert.equal(Zotero.LibraryImport.formatBytes(1024 * 1024 * 1536), "1.5 GB");
 	});
 
-	it("should register the Library preferences pane", function () {
+	it("should register the Library preferences pane", async function () {
+		await Zotero.PreferencePanes.loadBuiltInPanes();
 		let pane = Zotero.PreferencePanes.builtInPanes.find(
 			item => item.id === "zotero-prefpane-library"
 		);

@@ -35,79 +35,61 @@
  * @memberof Zotero
  */
 Zotero.PreferencePanes = {
-	builtInPanes: Object.freeze([
-		{
-			id: 'zotero-prefpane-general',
-			label: 'zotero.preferences.prefpane.general',
-			image: 'chrome://zotero/skin/20/universal/cog.svg',
-			src: 'chrome://zotero/content/preferences/preferences_general.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_general.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/general',
-		},
-		{
-			id: 'zotero-prefpane-account',
-			label: 'preferences-pane-account',
-			image: 'chrome://zotero/skin/20/universal/account.svg',
-			src: 'chrome://zotero/content/preferences/preferences_account.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_account.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/sync',
-		},
-		{
-			id: 'zotero-prefpane-export',
-			label: 'zotero.preferences.prefpane.export',
-			image: 'chrome://zotero/skin/20/universal/export.svg',
-			src: 'chrome://zotero/content/preferences/preferences_export.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_export.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/export',
-		},
-		{
-			id: 'zotero-prefpane-cite',
-			label: 'zotero.preferences.prefpane.cite',
-			image: 'chrome://zotero/skin/20/universal/cite.svg',
-			src: 'chrome://zotero/content/preferences/preferences_cite.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_cite.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/cite',
-		},
-		{
-			id: 'zotero-prefpane-agent',
-			rawLabel: 'Agent access',
-			image: 'chrome://zotero/skin/20/universal/magic-wand.svg',
-			src: 'chrome://zotero/content/preferences/preferences_agent.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_agent.js'],
-			defaultXUL: true,
-		},
-		{
-			id: 'zotero-prefpane-library',
-			rawLabel: 'Library',
-			image: 'chrome://zotero/skin/20/universal/folder-open.svg',
-			src: 'chrome://zotero/content/preferences/preferences_library.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_library.js'],
-			defaultXUL: true,
-		},
-		{
-			id: 'zotero-prefpane-advanced',
-			label: 'zotero.preferences.prefpane.advanced',
-			image: 'chrome://zotero/skin/20/universal/wrench-screwdriver.svg',
-			src: 'chrome://zotero/content/preferences/preferences_advanced.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_advanced.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/advanced',
-		},
-		{
-			id: 'zotero-subpane-reset-sync',
-			parent: 'zotero-prefpane-account',
-			label: 'zotero.preferences.subpane.resetSync',
-			src: 'chrome://zotero/content/preferences/preferences_sync_reset.xhtml',
-			scripts: ['chrome://zotero/content/preferences/preferences_account.js'],
-			defaultXUL: true,
-			helpURL: 'https://www.zotero.org/support/preferences/sync#reset',
-		}
-	].filter(pane => ZOTERO_CONFIG.ONLINE_SYNC
-		|| !['zotero-prefpane-account', 'zotero-subpane-reset-sync'].includes(pane.id))),
+	builtInPanes: [],
+
+	builtInPanesPromise: null,
+
+	retired: [],
+
+	/**
+	 * Load pane structure from the versioned settings manifest. Pane content is
+	 * still a custom fragment in Phase 1; later phases can add section metadata
+	 * without changing the shell.
+	 */
+	async loadBuiltInPanes() {
+		if (this.builtInPanesPromise) return this.builtInPanesPromise;
+		this.builtInPanesPromise = (async () => {
+			let manifest = JSON.parse(
+				await Zotero.File.getContentsFromURLAsync(
+					'resource://zotero/settings/panes.json'
+				)
+			);
+			if (manifest.version !== 1 || !Array.isArray(manifest.panes)) {
+				throw new Error('Invalid settings pane manifest');
+			}
+			let panes = manifest.panes
+				.filter(pane => ZOTERO_CONFIG.ONLINE_SYNC || !pane.requiresOnlineSync)
+				.sort((a, b) => a.order - b.order)
+				.map(pane => {
+					if (!pane.id || (!pane.label && !pane.rawLabel)) {
+						throw new Error('Invalid settings pane entry');
+					}
+					if (!pane.content || pane.content.type !== 'custom') {
+						throw new Error(
+							'Unsupported settings pane content for ' + pane.id
+						);
+					}
+					return {
+						id: pane.id,
+						label: pane.label,
+						rawLabel: pane.rawLabel,
+						image: pane.icon,
+						parent: pane.parent,
+						order: pane.order,
+						status: pane.status,
+						src: pane.content.src,
+						scripts: pane.content.scripts || [],
+						stylesheets: pane.content.stylesheets || [],
+						defaultXUL: pane.content.defaultXUL !== false,
+						helpURL: pane.helpURL,
+					};
+				});
+			this.builtInPanes = Object.freeze(panes);
+			this.retired = Object.freeze(manifest.retired || []);
+			return this.builtInPanes;
+		})();
+		return this.builtInPanesPromise;
+	},
 
 	pluginPanes: [],
 

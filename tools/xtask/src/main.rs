@@ -21,6 +21,7 @@ usage: cargo run -p xtask -- <command>
 commands:
   appimage    assemble and package the staged Linux build as an AppImage
   connectors  build the Firefox connector and package it as an XPI
+  validate-settings  validate resource/settings/panes.json
   help        show this message
 ";
 
@@ -29,6 +30,7 @@ fn main() -> ExitCode {
     match args.first().map(String::as_str) {
         Some("appimage") => appimage(),
         Some("connectors") => connectors(),
+        Some("validate-settings") => validate_settings(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
             ExitCode::SUCCESS
@@ -38,6 +40,96 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn validate_settings() -> ExitCode {
+    match validate_settings_inner() {
+        Ok(count) => {
+            println!("settings: {count} panes valid");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("xtask: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn validate_settings_inner() -> Result<usize, String> {
+    let root = repo_root();
+    let path = root.join("resource/settings/panes.json");
+    let text = fs::read_to_string(&path)
+        .map_err(|e| format!("reading {}: {e}", path.display()))?;
+    let value: serde_json::Value = serde_json::from_str(&text)
+        .map_err(|e| format!("parsing {}: {e}", path.display()))?;
+    if value.get("version").and_then(|v| v.as_u64()) != Some(1) {
+        return Err("settings manifest version must be 1".to_string());
+    }
+    let panes = value
+        .get("panes")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| "settings manifest is missing panes[]".to_string())?;
+    if panes.is_empty() {
+        return Err("settings manifest has no panes".to_string());
+    }
+    let mut ids = std::collections::BTreeSet::new();
+    for pane in panes {
+        let id = pane
+            .get("id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| "settings pane is missing id".to_string())?;
+        if !ids.insert(id.to_string()) {
+            return Err(format!("duplicate settings pane id: {id}"));
+        }
+        if pane.get("label").and_then(|v| v.as_str()).is_none()
+            && pane.get("rawLabel").and_then(|v| v.as_str()).is_none()
+        {
+            return Err(format!("settings pane {id} is missing label/rawLabel"));
+        }
+        if pane.get("order").and_then(|v| v.as_i64()).is_none() {
+            return Err(format!("settings pane {id} is missing numeric order"));
+        }
+        let content = pane
+            .get("content")
+            .ok_or_else(|| format!("settings pane {id} is missing content"))?;
+        if content.get("type").and_then(|v| v.as_str()) != Some("custom") {
+            return Err(format!("settings pane {id} has unsupported content type"));
+        }
+        if content.get("src").and_then(|v| v.as_str()).is_none() {
+            return Err(format!("settings pane {id} is missing content.src"));
+        }
+        let scripts = content
+            .get("scripts")
+            .and_then(|v| v.as_array())
+            .ok_or_else(|| format!("settings pane {id} is missing content.scripts[]"))?;
+        if scripts.iter().any(|script| script.as_str().is_none()) {
+            return Err(format!("settings pane {id} has a non-string script"));
+        }
+    }
+    for pane in panes {
+        if let Some(parent) = pane.get("parent").and_then(|v| v.as_str()) {
+            if !ids.contains(parent) {
+                return Err(format!("settings pane has unknown parent: {parent}"));
+            }
+        }
+    }
+    if let Some(retired) = value.get("retired") {
+        let retired = retired
+            .as_array()
+            .ok_or_else(|| "settings manifest retired must be an array".to_string())?;
+        for item in retired {
+            let id = item
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| "retired settings entry is missing id".to_string())?;
+            if let Some(pane_id) = item.get("paneId").and_then(|v| v.as_str()) {
+                if !ids.contains(pane_id) {
+                    return Err(format!("retired settings entry {id} has unknown paneId {pane_id}"));
+                }
+            }
+        }
+    }
+    Ok(panes.len())
 }
 
 fn connectors() -> ExitCode {

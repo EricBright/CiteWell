@@ -111,6 +111,7 @@ describe("Agent bridge", function () {
 	});
 
 	it("should register and load the preferences pane", async function () {
+		await Zotero.PreferencePanes.loadBuiltInPanes();
 		let pane = Zotero.PreferencePanes.builtInPanes.find(p => p.id == 'zotero-prefpane-agent');
 		assert.ok(pane);
 		assert.equal(pane.rawLabel, "Agent access");

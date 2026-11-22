@@ -36,7 +36,7 @@ var Zotero_Preferences = {
 	
 	_mutationObservers: new Map(),
 
-	init: function () {
+	init: async function () {
 		this.navigation = document.getElementById('prefs-navigation');
 		this.content = document.getElementById('prefs-content');
 		this.helpContainer = document.getElementById('prefs-help-container');
@@ -55,6 +55,12 @@ var Zotero_Preferences = {
 
 		this.searchField.focus();
 		
+		try {
+			await Zotero.PreferencePanes.loadBuiltInPanes();
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
 		Zotero.PreferencePanes.builtInPanes.forEach(pane => this._addPane(pane));
 		if (Zotero.PreferencePanes.pluginPanes.length) {
 			this.navigation.append(document.createElement('hr'));

@@ -13,6 +13,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate the settings manifest
+        run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings
+
       - name: Reject package, lockfile, and node_modules changes
         run: |
           set -eu

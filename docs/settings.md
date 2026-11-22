@@ -1,210 +1,198 @@
-For the full documentation index, see [README.md](../README.md).
+# Status and resumption
 
-# Settings information architecture
+Last updated 2026-11-22 · branch `citewell` · companion to
+[roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
+This page holds only what a fresh session needs to start without re-deriving it.
 
-Status: **Phase 0 inventory**. No settings UI has been moved yet. This document is the
-source map for the settings registry work and the proposed tab reorganization.
+## Direction
 
-## Why this exists
+CiteWell is a citation catalogue (D28), not a research workspace. There is no PDF viewer, PDF
+annotation UI, PDF full-text search, in-app note editor, or plugin execution in the target product.
+PDFs open in the host; notes are Markdown file attachments edited in the host; plugins are parked.
 
-The current panes grew around upstream implementation history. The same user task is often split
-across panes, while implementation details occupy their own sections. Examples:
+Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
+push target. The product branch may diverge without limit.
 
-- Note behaviour is in General, note migration is in Library, and legacy annotation export is in
-  Library.
-- File handling and renaming are in General; data and attachment base directories are in Advanced.
-- System integration is inside Cite.
-- Export contains only Quick Copy.
-- General and Advanced both contain sections named "Miscellaneous".
+## Where the project stands
 
-The target is not "more tabs for their own sake". The target is one semantic settings document that
-owns pane, section, label, order, search alias and visibility metadata, rendered by the presentation
-layer. Complex workflows remain custom components; they are placed by the registry, not generated
-from raw preference values.
-
-## Principles
-
-1. **UI-only reorganization.** Preference keys and stored values do not change. No settings data
-   migration is part of this work.
-2. **Preserve pane IDs until the links are migrated.** Pane IDs are used by deep links, tests and
-   `lastSelectedPrefPane`.
-3. **One section belongs to one task.** A section may move; it must not be duplicated.
-4. **Custom is a first-class section type.** Library import/restore, Agent setup, style management
-   and data-directory migration are not generic form rows.
-5. **No new JavaScript for the registry phase.** The renderer starts in the existing preferences
-   shell; complex sections keep their existing scripts. A new module would require a decision
-   record.
-6. **Localizable from the start.** New labels use FTL keys; do not add more raw English labels.
-7. **The registry is data, not executable policy.** It may say "visible when preference X equals Y";
-   it may not contain arbitrary functions or expressions.
-
-## Current inventory
-
-### General
-
-Source: [preferences_general.xhtml](../chrome/content/zotero/preferences/preferences_general.xhtml).
-Script: `preferences_general.js`.
-
-| Section | Contents / keys | Script concern | Proposed destination |
-|---|---|---|---|
-| Appearance | Colour scheme, bibliography locale, item-pane header and its bibliography style/locale | General init also initializes locale menu | General |
-| File Handling | `downloadAssociatedFiles`, `autoRecognizeFiles`, `automaticSnapshots` | General | Library & Files |
-| File Renaming | File-renaming dialog | General | Library & Files |
-| Attachment Titles | `showAttachmentFilenames` | General | Library & Files |
-| Notes | `openNoteInNewWindow` | General | Notes & Annotations |
-| Locate | OpenURL resolver and base URL | General | Library & Files |
-| Miscellaneous | `automaticTags`, `trashAutoEmptyDays` | General | General → Behaviour |
-| Groups | Copy child notes/files/annotations/links/tags | General | General → Behaviour |
-
-### Library
-
-Source: [preferences_library.xhtml](../chrome/content/zotero/preferences/preferences_library.xhtml).
-Script: `preferences_library.js`. This pane is mostly workflow, not preference rows.
-
-| Section | Contents | Script concern | Proposed destination |
-|---|---|---|---|
-| Current library | Open/move/replace active library | `preferences_library.js` | Library & Files |
-| Locations | Per-component paths | same | Library & Files |
-| Notes | Markdown migration and verification | same | Notes & Annotations |
-| PDF annotations | One-time legacy annotation export | same | Notes & Annotations → Migration |
-| Import from Zotero | Adopt-copy, replace, staged import | same | Import & Export |
-| Restore points | Backups and restore | same | Import & Export |
-| Last import | Last result | same | Import & Export |
-
-### Export
-
-Source: [preferences_export.xhtml](../chrome/content/zotero/preferences/preferences_export.xhtml).
-Script: `preferences_export.js`.
-
-| Section | Contents | Proposed destination |
-|---|---|---|
-| Quick Copy | `export.quickCopy.dragLimit`, format/site editor | Import & Export |
-
-### Cite
-
-Source: [preferences_cite.xhtml](../chrome/content/zotero/preferences/preferences_cite.xhtml).
-Script: `preferences_cite.jsx`.
-
-| Section | Contents | Script concern | Proposed destination |
-|---|---|---|---|
-| Styles | Style manager table and installed styles | `styles` deep link | Citations & Writing |
-| Citation Dialog | `integration.citationDialogMode` | Cite | Citations & Writing |
-| Citation Options | `export.citePaperJournalArticleURL` | Cite | Citations & Writing |
-| Tools | Word-processor tools / template upgrade | `#wordProcessors` deep link | Integrations |
-| LibreOffice | OXT install/repair, status, logs | `preferences_cite.jsx` | Integrations |
-| System integration | systemd/D-Bus attention integration | Cite | Integrations |
-| Word Processors | Hidden group used by integration upgrade | `#wordProcessors` | Integrations |
-
-### Agent
-
-Source: [preferences_agent.xhtml](../chrome/content/zotero/preferences/preferences_agent.xhtml).
-Script: `preferences_agent.js`.
-
-| Section | Contents | Proposed destination |
-|---|---|---|
-| Agent access / Connection / Setup / Capabilities / Skill / Audit | `agent.enabled`, token/endpoint, setup guidance, audit | Agent & API |
-
-### Advanced
-
-Source: [preferences_advanced.xhtml](../chrome/content/zotero/preferences/preferences_advanced.xhtml).
-Script: `preferences_advanced.js`.
-
-| Section | Contents / keys | Proposed destination |
-|---|---|---|
-| Miscellaneous | `automaticScraperUpdates`, translator update/failure reporting, local API | Advanced; local API → Agent & API |
-| Language & Region | `bidi.browser.ui` | General |
-| Files and Folders | `baseAttachmentPath`, `dataDir`, database maintenance | Library & Files; database maintenance → Advanced |
-| Keys | Keyboard shortcuts | Advanced |
-| Feeds | Feed defaults, TTL, cleanup and sorting | Advanced → Feeds subpane |
-| Search | Full-text cache, index statistics | Advanced → Search subpane |
-
-### Account
-
-Source: [preferences_account.xhtml](../chrome/content/zotero/preferences/preferences_account.xhtml).
-Hidden while `ONLINE_SYNC` is false. Keep the pane and its reset subpane conditional; it is not part
-of the visible eight.
-
-## Deep links and tests
-
-| Entry point | Current target | Must update when |
-|---|---|---|
-| [integration.js](../chrome/content/zotero/xpcom/integration.js) | Cite pane, `#wordProcessors` | Word-processor tools move |
-| [bibliography.js](../chrome/content/zotero/bibliography.js) | Cite pane, `#styles` | Styles move |
-| [locateMenu.js](../chrome/content/zotero/locateMenu.js) | General pane, `#zotero-prefpane-locate-groupbox` | Locate moves |
-| [itemPaneHeader.js](../chrome/content/zotero/elements/itemPaneHeader.js) | General pane | General changes |
-| [zoteroPane.xhtml](../chrome/content/zotero/zoteroPane.xhtml) | Agent pane | Agent pane ID changes |
-| [preferences_advancedTest.js](../test/tests/preferences_advancedTest.js) | Advanced pane | Base-directory or file controls move |
-| [importTest.js](../test/tests/importTest.js) | Library pane registration/open | Library splits |
-| [agentTest.js](../test/tests/agentTest.js) | Agent pane | Agent moves |
-| [bibliographyTest.js](../test/tests/bibliographyTest.js) | Cite pane selection | Cite splits |
-| [preferences_accountTest.js](../test/tests/preferences_accountTest.js) | Account pane | Sync remains conditional |
-
-## Target layout
-
-Eight visible panes, plus Account/Sync when online:
-
-| Tab | Sections |
+| Area | State |
 |---|---|
-| **General** | Appearance, Language & Region, item-pane header, Behaviour (automatic tags, trash, group copy) |
-| **Library & Files** | Current library, locations, item lookup/OpenURL, file handling, file renaming, attachment titles, data directory, attachment base directory |
-| **Notes & Annotations** | Note opening, Markdown migration, legacy annotation export |
-| **Citations & Writing** | Styles, citation dialog, citation options |
-| **Import & Export** | Import from Zotero, restore points, last import, Quick Copy |
-| **Integrations** | LibreOffice extension, system integration, Word-processor/Google Docs bridges and the hidden upgrade group |
-| **Agent & API** | Agent access, local API, authorizations, audit |
-| **Advanced** | Database maintenance, search index, feeds, keyboard shortcuts, translator updates/diagnostics |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `5acee812…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
+| Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
+| Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
+| Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
+| Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
+| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
+| Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
+| Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
+| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, parented modal dialogs, independent dialogs when the main window is minimized, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** a reported Writer freeze after accepting document preferences is still under diagnosis; see Handoff. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
+| Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
+| Docs | README index, Rust docs gate, D1–D38 |
+| CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
-Recommended defaults (to lock before Phase 1):
+Artifacts are local and gitignored:
 
-- **Notes & Annotations** is a standalone tab.
-- **Locate/OpenURL** belongs in **Library & Files**.
-- Word-processor bridges belong in **Integrations**; Citation settings stay formatting-focused.
-- **Feeds** is an Advanced subpane, not a top-level tab.
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `5acee8125e273988bad32dffcbc6a713a7c1b785e2d44c133bc5999108431fd0`)
+- `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
-## Registry shape
+The obsolete R26 editor work was preserved before reverting at
+`~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
+(sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
+plan.
 
-Phase 1 introduces a data document for structure only:
+## Handoff 2026-11-22
 
-```text
-pane:    id, labelKey, icon, order, helpURL, visibility
-section: id, paneId, labelKey, descriptionKey, order, visibility
-setting: id, sectionId, type, preferenceKey, labelKey, descriptionKey,
-         searchAliases, options, visibility
-custom:  id, sectionId, component, script, order
+The AppImage is at `~/AppImages/citewell.appimage` (sha256
+`5acee8125e273988bad32dffcbc6a713a7c1b785e2d44c133bc5999108431fd0`, 133,421,560 bytes). The
+current branch is `citewell`; push only to `origin`.
+
+**Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
+preferences dialog appears, and accepting it can leave Writer frozen. The persistent shim log
+(`~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`) shows a 120 s socket timeout
+with no app commands after the dialog. The minimized-main-window fix, unparented integration dialogs, citation character-format reset
+and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and reproduce with that build before changing the
+session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
+deployment cache by moving only CiteWell temp directories to a backup.
+
+**Settings information architecture:** Phase 1 structure manifest is implemented in
+[settings.md](settings.md): panes load from `resource/settings/panes.json`, the manifest is
+validated in Rust and by the pre-commit hook, and obsolete PDF index UI has been removed. Pane
+sections have not moved between tabs yet. Phase 2 is the section split and simple-control migration.
+
+**Next actions:**
+
+1. Lock the settings taxonomy, then add the Phase 1 structure manifest and render existing pane
+   fragments as custom sections. Do not move preference controls or change preference keys yet.
+2. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
+   log. Distinguish an invisible dialog from a document-operation hang.
+3. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
+   `CITEWELL_TEST_ATTENTION=deny` for the attention fallback.
+4. Finish the native attention path: D-Bus/systemd integration is user-scoped and visible in Cite
+   preferences → System integration; verify the systemd unit and notification fallback.
+5. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
+
+## Pick up here
+
+1. **LibreOffice attention/freeze regression** — see Handoff. The OXT installer repair and toolbar
+   schema fixes are shipped; the remaining work is diagnosis of the post-preferences freeze and the
+   KDE/GNOME/XWayland matrix.
+2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
+3. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents.
+4. **R32 optional follow-ups** — citation explorer and undo/save listener.
+5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+   model changes.
+
+## Commands
+
+Fetch the Gecko runtime once per version (gitignored):
+
+```bash
+app/scripts/fetch_xulrunner -p l -a x86_64
 ```
 
-The renderer maps `type` to existing XUL/HTML controls. `custom` selects an existing component;
-it does not receive arbitrary JavaScript from the data file. A small predicate vocabulary handles
-visibility, for example `pref-equals` and `platform`. The document is versioned and validated by
-Rust tooling; the runtime renderer lives in the existing preferences shell.
+Build. Use the existing Node tree; **do not run npm** (D32). Clean rebuild after assets or runtime
+changes, trashing `build/` and `.signatures.json` with `gio trash`, never `rm` (D26):
 
-## Migration phases
+```bash
+gio trash -f build .signatures.json
+node js-build/build.js
+app/scripts/dir_build -p l
+cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
+```
 
-**Phase 0 — inventory.** This document. Lock the target taxonomy and decision points.
+The note-editor is no longer part of the build: the submodule and bundle are gone, and
+`elements/noteEditor.js` is a read-only legacy viewer. Do not restore the npm build to make a
+build pass.
 
-**Phase 1 — structure manifest.** Add the pane/section registry and render the current pane
-fragments as custom sections. No preference control is converted yet. This delivers tab order,
-section order, labels, search metadata, deep-link IDs and the documentation inventory.
+Run without touching the real library:
 
-**Phase 2 — simple controls.** Convert appearance, language/region, behaviour, file handling,
-attachment titles and similar basic rows to descriptors. Keep Library workflows, Agent, Styles,
-data migration and Advanced tool panels custom.
+```bash
+./dist/CiteWell-x86_64.AppImage -datadir "$HOME/CiteWellData"
+```
 
-**Phase 3 — reuse.** Generate settings-search metadata, docs inventory and tests from the registry.
-Do not build a general-purpose form builder or a mini-language for custom workflows.
+Docs, Rust tests, agent tests, connector:
 
-## Guardrails for implementation
+```bash
+cargo run --manifest-path tools/docs-check/Cargo.toml
+cargo run --manifest-path tools/Cargo.toml -p repo-guard -- --staged
+cargo run --manifest-path tools/Cargo.toml -p xtask -- validate-settings
+python3 -m unittest discover -s test/lo
+cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
+cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
+test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js
+cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
+```
 
-- Keep pane IDs stable until every caller and test is updated; changing an ID is a separate
-  mechanical commit.
-- Never duplicate a preference key between panes. Validation rejects duplicates and unregistered
-  keys.
-- A moved section must move its script behaviour or explicitly reuse the owner script. Avoid
-  loading the same initializer twice with duplicate listeners.
-- New labels get FTL keys. Keep raw labels only where the existing pane already has them, and
-  convert them during the relevant phase.
-- Search aliases and help URLs belong in the registry, not in per-pane special cases.
-- The settings search must remain able to find moved controls; test by searching for a moved label
-  and its old alias if one exists.
-- Account remains hidden unless `ONLINE_SYNC`; do not make the eight-tab canvas depend on it.
-- No preference key, data-directory path or stored value changes as part of the reorg.
+Agent bridge quick check (app must be running; token appears in the data dir):
+
+```bash
+tools/target/debug/citewell agent ping --data-dir "$HOME/CiteWellData"
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | tools/target/debug/citewell mcp --data-dir "$HOME/CiteWellData"
+```
+
+## Pitfalls learned the hard way
+
+| Pitfall | Handling |
+|---|---|
+| Trashing `build/` without `.signatures.json` | Sass skips everything and the bundle loses platform CSS. `xtask` refuses to package that now; trash both |
+| Putting working files under `build/` | Zotero zips `build/` into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
+| Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
+| `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
+| `-datadir "~/…"` | Quoted `~` is not expanded; use `"$HOME/…"` |
+| `-datadir` with no value | Gecko ignored it and opened `~/Zotero`; the Rust `AppRun` now exits 2 |
+| XHTML changes not copied by a test build | `node js-build/build.js` then `app/scripts/dir_build -p l` before trusting the staged app |
+| `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |
+| Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
+| Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |
+| Import helper missing in a source build | Build it with `cargo build -p citewell-import`; the AppImage carries its own copy |
+| Tests using the real library | `test/runtests.sh` passes `-datadir "$TEMPDIR/Zotero"` and a temporary `XDG_CONFIG_HOME`; `resetDB()`/`resetData()` refuse `~/CiteWell` |
+| `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
+| Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
+| npm | Retired. Do not install, update, audit or add packages; `repo-guard` rejects package/lock changes and restored npm fallbacks (D32) |
+| New JavaScript/Python/shell file | `repo-guard` rejects added code unless its exact path is in `tools/policy-exceptions.txt` under a decision record (D4/D12/D38) |
+| Stale LibreOffice deployment | Not an Extension Manager entry. The installer moves only CiteWell `lu*.tmp_` cache dirs to `~/.cache/citewell/lo-repair/` and retries; never reset the profile |
+
+## Facts worth not re-litigating
+
+- Linux uses Firefox **153.7.0esr** (D15); Mac/Windows pins stay at 140.17 because they are not
+  built (D13).
+- `ONLINE_SYNC: false` in [resource/config.mjs](../resource/config.mjs); `ONLINE_LIBRARY: false`
+  in the connector. Code still exists (R19).
+- SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
+  file-based store is *not doing*; export is the portability answer. PDF text leaves the index
+  under D30; Markdown notes and annotation sidecars stay in it.
+- Local API and agent bridge listen on `127.0.0.1:23120` (D16/D17). The CLI never opens SQLite.
+  Reads on `/api/` are local-unauthenticated; `/agent/v1` needs the 0600 token and
+  `X-CiteWell-Agent: 1`, audits every call, and has no destructive verbs.
+- KDE/KWin draws the frame and its buttons (D18); external links and files go through `xdg-open`.
+- CiteWell has its own profile, data directory and port (D19). Zotero's paths are never opened;
+  import is explicit only.
+- **Zotero is canonical.** The current `~/CiteWell` database and storage are disposable test data
+  until CiteWell stabilizes (D27); they are not the authoritative library.
+- **Nothing is deleted.** Manual removals go to Trash with `gio trash` (or the session trash under
+  `~/.local/share/dsh-trash/` when `/tmp` is refused); `rm` is not used (D26).
+- **The disposable library is migrated:** 82 legacy notes became `.md` attachments, no failures, and
+  the old rows are in Trash. The database backup is `~/CiteWell/zotero.sqlite.pre-markdown-notes.bak`
+  (10,321,920 bytes). The ProseMirror editor bundle is gone; trashed/restored legacy notes open in a
+  read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
+  D30. Do not rerun the migration on this library.
+- **PDF behavior is external-only:** no reader or pdf.js ships; PDFs open in the host; PDF text is
+  not indexed; annotation creation/listing, annotation-to-note actions and the citation-dialog
+  annotation mode are gone. Existing annotations export to sidecars. Do not add PDF features back.
+- **Plugins are parked:** `PLUGINS_ENABLED` is false and the loader returns early. Keep the code, but do
+  not re-enable it without a decision and a tested flag.
+- Translators keep their update channel; safeguards must not freeze updates or break the Firefox /
+  Google Docs paths (D33).
+- `citewell mcp` exposes 17 tools; verified with initialize, tools/list and tools/call.
+- `SKILL.md` is the downloadable agent skill (Help → Agents and SKILL.md, or Agent access).
+- The connector identity lives in `connectors/brand.json`; `xtask` substitutes tokens and fails on
+  hardcoded English product names.
+- The styles page opens in CiteWell's internal viewer; a clicked `.csl` installs through the style
+  MIME handler. The external browser still downloads, so Add from file remains the fallback.
+- The Google Docs integration is vendored, not a submodule, because it had to be patched. Its
+  sync-dependent parts remain gated by D14.
+
+*For the full documentation index, see [../README.md](../README.md).*

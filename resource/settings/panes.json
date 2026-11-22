@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "panes": [
+    {
+      "id": "zotero-prefpane-general",
+      "label": "zotero.preferences.prefpane.general",
+      "icon": "chrome://zotero/skin/20/universal/cog.svg",
+      "order": 10,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_general.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_general.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/general"
+    },
+    {
+      "id": "zotero-prefpane-account",
+      "label": "preferences-pane-account",
+      "icon": "chrome://zotero/skin/20/universal/account.svg",
+      "order": 20,
+      "status": "active",
+      "requiresOnlineSync": true,
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_account.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_account.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/sync"
+    },
+    {
+      "id": "zotero-prefpane-export",
+      "label": "zotero.preferences.prefpane.export",
+      "icon": "chrome://zotero/skin/20/universal/export.svg",
+      "order": 30,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_export.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_export.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/export"
+    },
+    {
+      "id": "zotero-prefpane-cite",
+      "label": "zotero.preferences.prefpane.cite",
+      "icon": "chrome://zotero/skin/20/universal/cite.svg",
+      "order": 40,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_cite.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_cite.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/cite"
+    },
+    {
+      "id": "zotero-prefpane-agent",
+      "rawLabel": "Agent access",
+      "icon": "chrome://zotero/skin/20/universal/magic-wand.svg",
+      "order": 50,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_agent.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_agent.js"],
+        "defaultXUL": true
+      }
+    },
+    {
+      "id": "zotero-prefpane-library",
+      "rawLabel": "Library",
+      "icon": "chrome://zotero/skin/20/universal/folder-open.svg",
+      "order": 60,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_library.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_library.js"],
+        "defaultXUL": true
+      }
+    },
+    {
+      "id": "zotero-prefpane-advanced",
+      "label": "zotero.preferences.prefpane.advanced",
+      "icon": "chrome://zotero/skin/20/universal/wrench-screwdriver.svg",
+      "order": 70,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_advanced.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_advanced.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/advanced"
+    },
+    {
+      "id": "zotero-subpane-reset-sync",
+      "parent": "zotero-prefpane-account",
+      "label": "zotero.preferences.subpane.resetSync",
+      "order": 80,
+      "status": "active",
+      "requiresOnlineSync": true,
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_sync_reset.xhtml",
+        "scripts": ["chrome://zotero/content/preferences/preferences_account.js"],
+        "defaultXUL": true
+      },
+      "helpURL": "https://www.zotero.org/support/preferences/sync#reset"
+    }
+  ],
+  "retired": [
+    {
+      "id": "pdf-annotations",
+      "paneId": "zotero-prefpane-library",
+      "status": "migration-only",
+      "reason": "PDF viewing and annotation are removed; the pane only exports legacy annotations once."
+    },
+    {
+      "id": "fulltext.pdfMaxPages",
+      "paneId": "zotero-prefpane-advanced",
+      "status": "retired",
+      "reason": "PDF indexing is removed; the setting no longer has a supported target."
+    }
+  ]
+}
