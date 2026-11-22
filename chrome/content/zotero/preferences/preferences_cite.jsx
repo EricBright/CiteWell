@@ -637,3 +637,11 @@ Zotero_Preferences.Cite = {
 		alert(Zotero.getString('styles.installError', "This"));
 	}
 }
+
+Zotero_Preferences.Integrations = {
+	init: async function () {
+		await Zotero_Preferences.Cite.refreshSystemIntegration();
+		document.querySelector('#zotero-prefpane-integrations')
+			.addEventListener('showing', () => Zotero_Preferences.Cite.refreshSystemIntegration());
+	}
+};

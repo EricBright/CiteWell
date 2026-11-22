@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `f39cb242…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `2d473fad…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `f39cb242f1c219c9098399aee283213bf10a6c8c8f8f605e4d9d9ec78e92c142`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `2d473fad0b4abfc7b7aee67b1b7771a107d3b9de59a8fa79ebefde67fd899247`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,7 +44,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`f39cb242f1c219c9098399aee283213bf10a6c8c8f8f605e4d9d9ec78e92c142`, 133,421,560 bytes). The
+`2d473fad0b4abfc7b7aee67b1b7771a107d3b9de59a8fa79ebefde67fd899247`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
@@ -55,15 +55,16 @@ and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and re
 session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
 deployment cache by moving only CiteWell temp directories to a backup.
 
-**Settings information architecture:** Phase 0 inventory is complete in
-[settings.md](settings.md). No settings UI has moved yet. The current panes, scripts, deep links,
-tests and proposed eight-tab layout are mapped there. Lock the open choices (Notes tab vs subpane,
-Locate destination, Word-processor placement and Feeds placement) before Phase 1.
+**Settings information architecture:** Phase 2 has started. The manifest now supports nine panes
+and the new Integrations pane contains LibreOffice and system integration, moved out of Cite. The
+retired PDF index control is gone. Remaining Phase 2 work is the Library/Files/Import split, Notes &
+Annotations, simple-control descriptors and deep-link updates. See [settings.md](settings.md).
 
 **Next actions:**
 
-1. Lock the settings taxonomy, then add the Phase 1 structure manifest and render existing pane
-   fragments as custom sections. Do not move preference controls or change preference keys yet.
+1. Continue Phase 2: split Library into Library & Files / Import & Export, create Notes &
+   Annotations, move file/data sections, and migrate simple controls without changing preference
+   keys.
 2. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
    log. Distinguish an invisible dialog from a document-operation hang.
 3. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use

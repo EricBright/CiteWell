@@ -10,7 +10,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_general.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_general.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_general.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/general"
@@ -25,7 +27,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_account.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_account.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_account.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/sync"
@@ -39,7 +43,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_export.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_export.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_export.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/export"
@@ -53,10 +59,27 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_cite.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_cite.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_cite.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/cite"
+    },
+    {
+      "id": "zotero-prefpane-integrations",
+      "rawLabel": "Integrations",
+      "icon": "chrome://zotero/skin/20/universal/magic-wand.svg",
+      "order": 45,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_integrations.xhtml",
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_cite.js"
+        ],
+        "defaultXUL": true
+      }
     },
     {
       "id": "zotero-prefpane-agent",
@@ -67,7 +90,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_agent.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_agent.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_agent.js"
+        ],
         "defaultXUL": true
       }
     },
@@ -80,7 +105,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_library.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_library.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_library.js"
+        ],
         "defaultXUL": true
       }
     },
@@ -93,7 +120,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_advanced.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_advanced.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_advanced.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/advanced"
@@ -108,7 +137,9 @@
       "content": {
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_sync_reset.xhtml",
-        "scripts": ["chrome://zotero/content/preferences/preferences_account.js"],
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_account.js"
+        ],
         "defaultXUL": true
       },
       "helpURL": "https://www.zotero.org/support/preferences/sync#reset"

@@ -155,3 +155,33 @@ describe("Advanced Preferences", function () {
 		})
 	})
 })
+
+describe("Settings manifest navigation", function () {
+	it("loads the Integrations pane from the manifest", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-integrations"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("zotero-prefpane-integrations"));
+			assert.ok(win.document.getElementById("citewell-lo-install"));
+			assert.ok(win.document.getElementById("citewell-integration-repair"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
+	it("does not expose the retired PDF indexing control", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.isNull(win.document.getElementById("fulltext-pdfMaxPages"));
+		}
+		finally {
+			win.close();
+		}
+	});
+});
