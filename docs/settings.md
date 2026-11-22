@@ -90,7 +90,7 @@ Script: `preferences_cite.jsx`.
 | Styles | Style manager table and installed styles | `styles` deep link | Citations & Writing |
 | Citation Dialog | `integration.citationDialogMode` | Cite | Citations & Writing |
 | Citation Options | `export.citePaperJournalArticleURL` | Cite | Citations & Writing |
-| Tools | Word-processor tools / template upgrade | `#wordProcessors` deep link | Citations & Writing or Integrations |
+| Tools | Word-processor tools / template upgrade | `#wordProcessors` deep link | Integrations |
 | LibreOffice | OXT install/repair, status, logs | `preferences_cite.jsx` | Integrations |
 | System integration | systemd/D-Bus attention integration | Cite | Integrations |
 | Word Processors | Hidden group used by integration upgrade | `#wordProcessors` | Integrations |
@@ -148,18 +148,18 @@ Eight visible panes, plus Account/Sync when online:
 | **General** | Appearance, Language & Region, item-pane header, Behaviour (automatic tags, trash, group copy) |
 | **Library & Files** | Current library, locations, item lookup/OpenURL, file handling, file renaming, attachment titles, data directory, attachment base directory |
 | **Notes & Annotations** | Note opening, Markdown migration, legacy annotation export |
-| **Citations & Writing** | Styles, citation dialog, citation options, Word processors |
+| **Citations & Writing** | Styles, citation dialog, citation options |
 | **Import & Export** | Import from Zotero, restore points, last import, Quick Copy |
-| **Integrations** | LibreOffice extension, system integration, Word/Google Docs bridges |
+| **Integrations** | LibreOffice extension, system integration, Word-processor/Google Docs bridges and the hidden upgrade group |
 | **Agent & API** | Agent access, local API, authorizations, audit |
 | **Advanced** | Database maintenance, search index, feeds, keyboard shortcuts, translator updates/diagnostics |
 
-Open decisions:
+Recommended defaults (to lock before Phase 1):
 
-- Whether **Notes & Annotations** is a standalone tab or a subpane of **Library & Files**.
-- Whether Word-processor bridges belong in **Citations & Writing** or **Integrations**.
-- Whether **Locate/OpenURL** belongs in **Library & Files** or **Citations & Writing**.
-- Whether **Feeds** is an Advanced subpane or its own tab.
+- **Notes & Annotations** is a standalone tab.
+- **Locate/OpenURL** belongs in **Library & Files**.
+- Word-processor bridges belong in **Integrations**; Citation settings stay formatting-focused.
+- **Feeds** is an Advanced subpane, not a top-level tab.
 
 ## Registry shape
 
