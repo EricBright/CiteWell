@@ -43,6 +43,17 @@ Zotero_Preferences.General = {
 			menuitem.setAttribute('label', Zotero.appName);
 		}
 
+		if (document.getElementById('openurl-primary-popup')) {
+			this._initLocateUI();
+		}
+		this.refreshLocale();
+		this._initItemPaneHeaderUI();
+	},
+
+	uninit: function () {
+	},
+
+	_initLocateUI: function () {
 		// Set OpenURL resolver drop-down to last-known name or "custom" placeholder
 		let resolverName = Zotero.getString("general.custom");
 		if (Zotero.Prefs.get('openURL.resolver')) {
@@ -52,12 +63,6 @@ Zotero_Preferences.General = {
 			}
 		}
 		document.getElementById('openurl-primary-popup').firstChild.setAttribute('label', resolverName);
-		
-		this.refreshLocale();
-		this._initItemPaneHeaderUI();
-	},
-
-	uninit: function () {
 	},
 
 	_getAutomaticLocaleMenuLabel: function () {
@@ -566,3 +571,9 @@ Zotero_Preferences.General = {
 		}
 	}
 }
+
+Zotero_Preferences.Locate = {
+	init: function () {
+		Zotero_Preferences.General._initLocateUI();
+	}
+};

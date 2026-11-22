@@ -210,9 +210,12 @@ First slice:
 - Cite is ordered immediately after General; the settings test asserts that adjacency.
 - Attachment base-directory and data-directory controls moved from Advanced to Library & Files;
   database maintenance remains in Advanced.
+- OpenURL/Locate moved from General to Library & Files; the Locate menu deep link now opens that
+  pane.
 
-Remaining Phase 2 work: move the OpenURL resolver, migrate simple controls to descriptors, and
-update the remaining deep links.
+Remaining Phase 2 work: migrate simple controls to descriptors. The deep links are now aligned
+with the moved sections; Catalog/Word-processor links still need their final pass when those
+sections move.
 
 ## Registry shape
 
