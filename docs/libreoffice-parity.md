@@ -1,6 +1,6 @@
 # LibreOffice parity plan
 
-Status: **agreed 2026-11-22; implementation starts at M0.** Companion to
+Status: **M0 passed 2026-11-22; M1 is next.** Companion to
 [libreoffice.md](libreoffice.md), which holds the architecture history and the option analysis,
 and to decisions D34–D36, which hold the *why*. This page is the execution contract: what feature
 parity means, which layer owns what, and how each milestone is proved.
@@ -128,9 +128,9 @@ double. No automatic repair of LibreOffice state (D35).
 
 | Milestone | Deliverable | Acceptance |
 |---|---|---|
-| M0 | transport, hello/token, field create/read/update, RTF insert | isolated profile: the field survives save and reopen; no deadlock while the app shows a modal window |
+| M0 | transport, hello/token, field create/read/update, RTF insert | **passed:** field survives save and reopen; wrong token rejected; isolated profile only |
 | M1 | document and field commands; Add/Edit Citation | the dialog edits a citation; a second citation inserts at the cursor; cancel leaves the document unchanged |
-| M2 | session, style, multiple items, locators, edit existing | one-item and two-item citations with locators round-trip through edit |
+| M2 | session, style, multiple items, locators, edit existing | one-item and two-item citations with locators round-trip through edit; no deadlock while the citation dialog is open |
 | M3 | refresh, unlink, document preferences | a 100-field golden document refreshes; unlink leaves plain text |
 | M4 | bibliography, Add Note, citation explorer | the bibliography regenerates after a style change; footnote citation works |
 | M5 | polish, self-test, compatibility message | fresh isolated-profile install; stale-OXT message tested |
@@ -145,9 +145,19 @@ double. No automatic repair of LibreOffice state (D35).
 - An isolated Writer profile per milestone; the real profile only through the add-only install
   action, on request.
 
+## Known gaps
+
+- Consecutive citations inserted at the very end of a document can extend the previous field; the
+  rich-text paragraph isolation from the reference implementation belongs in M1.
+- Unlink after a save/reload needs a reliable mark-removal path; it is an M3 item.
+- `cursorInField` is implemented but not exercised; footnotes, tables and bibliography fields are
+  M4.
+- The reference implementation's undo context, save listener and footnote handling are not ported
+  yet.
+
 ## Retirement list
 
-- `citewell-lo-core` leaves the runtime path at M0 and is removed from packaging after M2 unless a
+- `citewell-lo-core` left the runtime path at M0 and is removed from packaging after M2 unless a
   real job appears. The test double is Python: std-only JSON in Rust costs more than the simulation
   is worth.
 - `/citation` and `/health` on 23121 are replaced by the protocol; the "Check CiteWell" menu entry

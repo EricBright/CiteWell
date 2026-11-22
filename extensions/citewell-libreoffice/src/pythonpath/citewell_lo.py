@@ -1,112 +1,63 @@
 # -*- coding: utf-8 -*-
-"""CiteWell LibreOffice bridge scaffold.
+"""CiteWell LibreOffice menu dispatcher.
 
 Copyright © 2026 Eric Bright.
 Licensed under the GNU Affero General Public License, version 3 or later.
 
-The document-side shim is deliberately small: it maps the CiteWell menu URL
-to a health check against CiteWell on 127.0.0.1:23121. Citation insertion and
-the Rust core protocol are added later behind this boundary.
-
-Patterns adapted with permission from the owner's Zarnegar LibreOffice
-extension (AGPL-3.0-or-later).
+The dispatcher is deliberately thin: it maps a menu URL to a protocol command.
+Citation formatting and document state belong to CiteWell; the document
+adapter lives in citewell_doc and the transport in citewell_comm.
 """
 
-import datetime
-import json
 import os
+import sys
 import traceback
-import urllib.error
-import urllib.request
 
-_LOG_PATH = os.environ.get("CITEWELL_LO_LOG", "/tmp/citewell_lo.log")
+# The Python loader executes components by URL and does not add the extension's
+# pythonpath to sys.path, so sibling modules need it explicitly.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
 
-
-def _early(message):
-    try:
-        with open(_LOG_PATH, "a") as handle:
-            stamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-            handle.write("%s pid=%d %s\n" % (stamp, os.getpid(), message))
-    except Exception:
-        pass
-
-
-_early("module import start")
-import uno
 import unohelper
+
 try:
     from com.sun.star.frame import XDispatchProvider, XDispatch
     from com.sun.star.lang import XServiceInfo
 except Exception:
-    _early("UNO import failed\n%s" % traceback.format_exc())
-    raise
-_early("module import complete")
+    from com.sun.star.frame import XDispatchProvider, XDispatch
+    from com.sun.star.lang import XServiceInfo
+
+import citewell_comm
 
 IMPL_PROVIDER = "org.citewell.comp.LibreOffice.Provider"
 IMPL_DISPATCH = "org.citewell.comp.LibreOffice.Dispatch"
 SERVICE = "org.citewell.LibreOffice"
-HEALTH_URL = "http://127.0.0.1:23121/health"
-CITATION_URL = "http://127.0.0.1:23121/citation"
-LOG_PATH = _LOG_PATH
+
+COMMANDS = {
+    "vnd.citewell.cite:": "addEditCitation",
+    "vnd.citewell.bibliography:": "addEditBibliography",
+    "vnd.citewell.refresh:": "refresh",
+    "vnd.citewell.unlink:": "removeCodes",
+    "vnd.citewell.docprefs:": "setDocPrefs",
+    "vnd.citewell.note:": "addNote",
+    "vnd.citewell.m0test:": "m0test",
+    "vnd.citewell.health:": "selftest",
+}
 
 
 def _log(message):
     try:
-        with open(LOG_PATH, "a") as handle:
-            stamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-            handle.write("%s pid=%d %s\n" % (stamp, os.getpid(), message))
+        with open(citewell_comm._log_path(), "a") as handle:
+            handle.write("shim pid=%d %s\n" % (os.getpid(), message))
     except Exception:
         pass
 
 
-def _health():
+def _show_message(context, text):
     try:
-        with urllib.request.urlopen(HEALTH_URL, timeout=1) as response:
-            return response.status, response.read(256).decode("utf-8", "replace")
-    except Exception as exc:
-        return None, str(exc)
-
-
-def _citation():
-    try:
-        with urllib.request.urlopen(CITATION_URL, timeout=15) as response:
-            citation = response.read(8192).decode("utf-8").strip()
-    except urllib.error.HTTPError as exc:
-        detail = exc.read(2048).decode("utf-8", "replace").strip()
-        raise RuntimeError(detail or "CiteWell could not produce a citation.") from None
-    except Exception as exc:
-        raise RuntimeError("CiteWell is not running.") from exc
-    if not citation:
-        raise RuntimeError("Select one or more items in CiteWell first.")
-    return citation
-
-
-def _insert_citation(ctx):
-    desktop = ctx.ServiceManager.createInstanceWithContext(
-        "com.sun.star.frame.Desktop", ctx
-    )
-    document = desktop.CurrentComponent
-    if document is None:
-        components = desktop.Components.createEnumeration()
-        while components.hasMoreElements():
-            candidate = components.nextElement()
-            if hasattr(candidate, "getText"):
-                document = candidate
-                break
-    if document is None:
-        raise RuntimeError("Open a Writer document first.")
-    text = document.getText()
-    cursor = text.createTextCursor()
-    cursor.gotoEnd(False)
-    citation = _citation()
-    text.insertString(cursor, " " + citation, False)
-    return citation
-
-
-def _show_message(ctx, text):
-    try:
-        toolkit = ctx.ServiceManager.createInstanceWithContext(
-            "com.sun.star.awt.Toolkit", ctx
+        toolkit = context.ServiceManager.createInstanceWithContext(
+            "com.sun.star.awt.Toolkit", context
         )
         box = toolkit.createMessageBox(None, 1, 1, "CiteWell", text)
         box.execute()
@@ -115,8 +66,8 @@ def _show_message(ctx, text):
 
 
 class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
-    def __init__(self, ctx, *args):
-        self.ctx = ctx
+    def __init__(self, context, *args):
+        self.context = context
 
     def getImplementationName(self):
         return IMPL_DISPATCH
@@ -128,27 +79,27 @@ class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
         return (SERVICE,)
 
     def dispatch(self, url, args):
+        command = COMMANDS.get(url.Complete)
         message = None
-        try:
-            if url.Complete.startswith("vnd.citewell.cite:"):
-                citation = _insert_citation(self.ctx)
-                message = "Inserted: %s" % citation
-                _log("citation inserted: %s" % citation)
-            else:
-                status, body = _health()
-                if status == 200:
-                    message = "CiteWell is running."
-                    _log("health ok: %s" % body)
-                else:
-                    message = ("CiteWell is not running.\n"
-                               "Start CiteWell and try again.")
-                    _log("health failed: %r" % (body,))
-        except Exception as exc:
-            message = str(exc) or "CiteWell could not insert a citation."
-            _log("dispatch failed\n%s" % traceback.format_exc())
+        failed = False
+        if command is None:
+            message = "This CiteWell action is not available in this build."
+            failed = True
+            _log("unknown URL: %s" % url.Complete)
+        else:
+            try:
+                citewell_comm.trigger(self.context, command)
+                if command == "m0test":
+                    message = "CiteWell connection test passed."
+            except Exception as exc:  # noqa: BLE001 - show to the user
+                failed = True
+                message = str(exc) or "CiteWell could not complete the action."
+                _log("dispatch failed: %s\n%s" % (exc, traceback.format_exc()))
         if os.environ.get("CITEWELL_LO_SELFTEST"):
+            _log("selftest result: %r failed=%s" % (message, failed))
             return
-        _show_message(self.ctx, message)
+        if message:
+            _show_message(self.context, message)
 
     def addStatusListener(self, listener, url):
         pass
@@ -158,8 +109,8 @@ class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
 
 
 class Provider(unohelper.Base, XServiceInfo, XDispatchProvider):
-    def __init__(self, ctx, *args):
-        self.ctx = ctx
+    def __init__(self, context, *args):
+        self.context = context
 
     def getImplementationName(self):
         return IMPL_PROVIDER
@@ -172,7 +123,7 @@ class Provider(unohelper.Base, XServiceInfo, XDispatchProvider):
 
     def queryDispatch(self, url, target, flags):
         if url.Complete.startswith("vnd.citewell."):
-            return Dispatch(self.ctx)
+            return Dispatch(self.context)
         return None
 
     def queryDispatches(self, requests):
@@ -180,6 +131,7 @@ class Provider(unohelper.Base, XServiceInfo, XDispatchProvider):
             self.queryDispatch(request.FeatureURL, request.FrameName, request.SearchFlags)
             for request in requests
         )
+
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation(Provider, IMPL_PROVIDER, (SERVICE,))

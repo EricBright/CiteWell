@@ -5,3 +5,6 @@ build/
 tmp
 app/win/codesign
 dist/
+
+__pycache__/
+*.pyc

@@ -26,7 +26,7 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **Inherited integration disabled and no longer packaged.** Option B scaffold is in `extensions/citewell-libreoffice/`: CiteWell id/name, port 23121, Python UNO provider and Addons menu. OXT builds and installs in an isolated Flatpak profile; an in-process Basic macro activates it, its health check succeeds, and **Insert Citation** inserts a formatted citation for the selected CiteWell item into a Writer document (APA by default); the `vnd.citewell.*` protocol handler is registered so the menu actions dispatch correctly; missing selection now produces an actionable message. Rust `citewell-lo-core` is packaged and launched by the app; `/health` verified on 23121; it exits when CiteWell dies. The CiteWell OXT is packaged at `integration/libreoffice/`; Cite preferences now has a Flatpak-aware install action. The current real-profile OXT predates the latest citation/error handling; refresh it only through the add-only install action. Host LibreOffice is 26.8.3.1 Flatpak. Plan: [libreoffice-parity.md](libreoffice-parity.md) |
+| LibreOffice | **M0 passed 2026-11-22.** The app hosts the protocol on 23121 and the Python UNO shim connects with a token; hello, field create/read/update, RTF insertion, document-data round-trip, save/reopen and wrong-token rejection were verified in isolated Writer profiles. The six menu actions are not wired yet; M1 is next. `citewell-lo-core` is no longer launched and stays packaged until M2. The real profile is untouched; the installer is add-only (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D36 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
@@ -43,12 +43,12 @@ plan.
 
 ## Pick up here
 
-1. **R32 — LibreOffice citation integration (next).** Execute
-   [libreoffice-parity.md](libreoffice-parity.md): the app owns the protocol on 23121, the Python
-   shim is the document adapter, and the six menu actions come from the app's existing session and
-   citation-dialog layer. Start at M0 (transport, field create/read/update, RTF) before touching
-   the menu. **The installer is add-only (D35); never repair or remove another extension or
-   profile state.** Test against an isolated profile, not the real one.
+1. **R32 — LibreOffice parity, M1 next.** M0 passed: transport, token handshake, field
+   create/read/update, RTF, document data, save/reopen and token rejection work in isolated
+   profiles. M1 adds the rest of the document/field commands and wires Add/Edit Citation to the
+   app's existing dialog. Follow [libreoffice-parity.md](libreoffice-parity.md). **The installer is
+   add-only (D35); never repair or remove another extension or profile state.** Test against an
+   isolated profile, not the real one.
 2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
    migration, embedded-image copying, note-editor bundle removal, excerpts and full-text
    re-indexing are done. A read-only viewer replaces the editable element; note tabs work. Next:
@@ -99,6 +99,7 @@ Docs, Rust tests, agent tests, connector:
 
 ```bash
 cargo run --manifest-path tools/docs-check/Cargo.toml
+python3 -m unittest discover -s test/lo
 cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
 cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
 test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js
