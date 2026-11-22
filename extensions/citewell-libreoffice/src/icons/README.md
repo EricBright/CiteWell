@@ -18,7 +18,10 @@ For every action used by the toolbar:
 used for `ImageSmallHCURL` and `ImageBigHCURL`. Files are PNG with transparency.
 Actions that only appear in the menu do not need icons.
 
-Source SVGs live in `<set>/source/` and use `{{ink}}` and `{{accent}}` tokens.
+Source SVGs live in `<set>/source/` as normal, valid SVGs using the light
+palette (`#333333` ink, `#C62828` accent), so they open visibly in a vector
+editor. The renderer recolours those literals for the dark pair; it also
+accepts `{{ink}}`/`{{accent}}` placeholders if a future set prefers tokens.
 Owner-supplied originals for specific icons are kept unchanged under
 `<set>/source/owner/` with their own README.
 They are the editable originals, not used at runtime. `render_icons.py` renders

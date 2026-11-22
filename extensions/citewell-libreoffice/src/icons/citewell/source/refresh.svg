@@ -3,8 +3,8 @@
   <title>citewell-refresh.svg</title>
   <g id="Layer_1" data-name="Layer 1">
     <g>
-      <path d="M217.6 128 C217.6 177.485 177.485 217.6 128 217.6 C78.515 217.6 38.4 177.485 38.4 128 C38.4 78.515 78.515 38.4 128 38.4" fill="none" stroke="{{ink}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="113.381,21.928 163.552,46.986 109.754,66.067" fill="{{ink}}" stroke="{{ink}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M217.6 128 C217.6 177.485 177.485 217.6 128 217.6 C78.515 217.6 38.4 177.485 38.4 128 C38.4 78.515 78.515 38.4 128 38.4" fill="none" stroke="#333333" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="113.381,21.928 163.552,46.986 109.754,66.067" fill="#333333" stroke="#333333" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
     </g>
   </g>
 </svg>

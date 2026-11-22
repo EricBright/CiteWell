@@ -11,6 +11,7 @@ does not need ImageMagick. Run from anywhere:
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -52,6 +53,16 @@ def main():
                 rendered = svg.replace("{{ink}}", colors["ink"]).replace(
                     "{{accent}}", colors["accent"]
                 )
+                if mode == "dark":
+                    # Source SVGs carry the light palette so they open normally in
+                    # vector editors; recolour those literals for the dark pair.
+                    for key in ("ink", "accent"):
+                        rendered = re.sub(
+                            re.escape(palette["light"][key]),
+                            colors[key],
+                            rendered,
+                            flags=re.IGNORECASE,
+                        )
                 path = os.path.join(temp, "%s-%s.svg" % (action, mode))
                 with open(path, "w", encoding="utf-8") as handle:
                     handle.write(rendered)
