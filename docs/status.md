@@ -26,7 +26,7 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, parented modal dialogs, independent dialogs when the main window is minimized, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** a reported Writer freeze after accepting document preferences is still under diagnosis; see Handoff. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
+| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** a reported Writer freeze after accepting document preferences is still under diagnosis; see Handoff. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
@@ -50,13 +50,14 @@ The AppImage is at `~/AppImages/citewell.appimage` (sha256
 `845cd13484ac492946547e67bd9a13732c0152976f855bee79f3366ee49ae99c`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
-**Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
-preferences dialog appears, and accepting it can leave Writer frozen. The persistent shim log
-(`~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`) shows a 120 s socket timeout
-with no app commands after the dialog. The minimized-main-window fix, unparented integration dialogs, citation character-format reset
-and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and reproduce with that build before changing the
-session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
-deployment cache by moving only CiteWell temp directories to a backup.
+**Previous post-preferences freeze:** the last diagnosis showed a 120 s shim timeout with no app
+commands after accepting document preferences. The unparented integration dialogs, minimized-window
+handling, citation character-format reset and Addons-schema fixes are all in the current AppImage.
+Confirm the flow once in the manual matrix before treating it as fully closed. If it recurs, the
+persistent shim log is at
+`~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`. Do not reset the LibreOffice
+profile; the installer repairs stale deployment cache by moving only CiteWell temp directories to a
+backup.
 
 **Settings information architecture:** Phases 0–3 are implemented. The manifest supports ten panes;
 Integrations, Notes & Annotations and Import & Export are in place; the old Export pane is retired.
@@ -68,15 +69,14 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 **Next actions:**
 
-1. Continue Phase 2: split Library into Library & Files / Import & Export, create Notes &
-   Annotations, move file/data sections, and migrate simple controls without changing preference
-   keys.
-2. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
-   log. Distinguish an invisible dialog from a document-operation hang.
-3. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
+1. Confirm the post-preferences citation flow with the current AppImage/OXT in Writer. If it
+   recurs, keep Writer open and read the persistent shim log before changing architecture.
+2. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
    `CITEWELL_TEST_ATTENTION=deny` for the attention fallback.
-4. Finish the native attention path: D-Bus/systemd integration is user-scoped and visible in Cite
-   preferences → System integration; verify the systemd unit and notification fallback.
+3. Verify the user-scoped systemd/D-Bus integration from Cite preferences → Integrations, including
+   the repair/remove paths.
+4. Review the reorganized settings once end-to-end; Phases 0–3 are complete and further custom-
+   section conversion is optional.
 5. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
 
 ## Pick up here
