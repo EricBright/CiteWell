@@ -114,80 +114,105 @@ def generate_xcu(manifest, icon_set):
     toolbar = manifest["toolbar"]
     context = "com.sun.star.text.TextDocument, com.sun.star.text.GlobalDocument"
 
+    def prop(name, value, indent, lang=False):
+        extra = ' xml:lang="en-US"' if lang else ''
+        return (
+            '%s<prop oor:name="%s" oor:type="xs:string"%s><value>%s</value></prop>'
+            % (" " * indent, name, extra, escape(value))
+        )
+
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        '<o:items xmlns:o="http://openoffice.org/2001/registry">',
-        '  <item o:path="/org.openoffice.Office.Addons">',
-        '    <node o:name="AddonUI">',
-        '      <node o:name="OfficeMenuBar">',
-        '        <node o:name="org.citewell.libreoffice" o:op="replace">',
-        title_prop(menu["title"], 10).rstrip("\n"),
-        '          <node o:name="Submenu">',
+        '<oor:component-data xmlns:oor="http://openoffice.org/2001/registry" '
+        'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+        'oor:name="Addons" oor:package="org.openoffice.Office">',
+        '  <node oor:name="AddonUI">',
+        '    <node oor:name="OfficeMenuBar">',
+        '      <node oor:name="org.citewell.libreoffice" oor:op="replace">',
+        prop("Title", menu["title"], 8, True),
+        '        <node oor:name="Submenu">',
     ]
 
     for index, item in enumerate(menu["items"], 1):
         if item == "-":
             lines += [
-                '            <node o:name="%d" o:op="replace">' % index,
-                '              <prop o:name="URL"><value>private:separator</value></prop>',
-                "            </node>",
+                '          <node oor:name="%d" oor:op="replace">' % index,
+                prop("URL", "private:separator", 12),
+                '          </node>',
             ]
             continue
         action = actions[item]
         lines += [
-            '            <node o:name="%d" o:op="replace">' % index,
-            '              <prop o:name="URL"><value>%s</value></prop>' % escape(action["url"]),
-            title_prop(action["title"], 14).rstrip("\n"),
-            "            </node>",
+            '          <node oor:name="%d" oor:op="replace">' % index,
+            prop("URL", action["url"], 12),
+            prop("Title", action["title"], 12, True),
+            '          </node>',
         ]
 
     lines += [
-        "          </node>",
-        "        </node>",
-        "      </node>",
-        '      <node o:name="OfficeToolBar">',
-        '        <node o:name="%s" o:op="replace">' % escape(toolbar["id"]),
-        title_prop(toolbar["title"], 10).rstrip("\n"),
+        '        </node>',
+        '      </node>',
+        '    </node>',
+        '    <node oor:name="OfficeToolBar">',
+        '      <node oor:name="%s" oor:op="replace">' % toolbar["id"],
+        prop("Title", toolbar["title"], 8, True),
     ]
 
     for index, item in enumerate(toolbar["items"], 1):
         if item == "-":
             lines += [
-                '          <node o:name="m%d" o:op="replace">' % index,
-                '            <prop o:name="URL"><value>private:separator</value></prop>',
-                "          </node>",
+                '        <node oor:name="m%d" oor:op="replace">' % index,
+                prop("URL", "private:separator", 10),
+                '        </node>',
             ]
             continue
         action = actions[item]
         lines += [
-            '          <node o:name="m%d" o:op="replace">' % index,
-            '            <prop o:name="Context"><value>%s</value></prop>' % context,
-            '            <prop o:name="URL"><value>%s</value></prop>' % escape(action["url"]),
-            title_prop(action["title"], 12).rstrip("\n"),
-            '            <prop o:name="Target"><value>_self</value></prop>',
-            "          </node>",
+            '        <node oor:name="m%d" oor:op="replace">' % index,
+            prop("Context", context, 10),
+            prop("URL", action["url"], 10),
+            prop("Title", action["title"], 10, True),
+            prop("Target", "_self", 10),
+            '        </node>',
         ]
 
     lines += [
-        "        </node>",
-        "      </node>",
-        '      <node o:name="Images">',
+        '      </node>',
+        '    </node>',
+        '    <node oor:name="Images">',
     ]
     for action_id in toolbar["items"]:
         if action_id == "-":
             continue
         action = actions[action_id]
-        if action.get("icon"):
-            lines.append(image_node(action_id, action, icon_set, 8).rstrip("\n"))
+        if not action.get("icon"):
+            continue
+        icon = action["icon"]
+        base = "%%origin%%/icons/%s/%s" % (icon_set, icon)
+        lines += [
+            '      <node oor:name="org.citewell.images.%s" oor:op="replace">' % action_id,
+            prop("URL", action["url"], 8),
+            '        <node oor:name="UserDefinedImages">',
+            prop("ImageSmallURL", base + "_16.png", 10),
+            prop("ImageBigURL", base + "_26.png", 10),
+        ]
+        icons = os.path.join(SRC, "icons", icon_set)
+        if os.path.isfile(os.path.join(icons, icon + "_dark_16.png")):
+            lines += [
+                prop("ImageSmallHCURL", base + "_dark_16.png", 10),
+                prop("ImageBigHCURL", base + "_dark_26.png", 10),
+            ]
+        lines += [
+            '        </node>',
+            '      </node>',
+        ]
     lines += [
-        "      </node>",
-        "    </node>",
-        "  </item>",
-        "</o:items>",
-        "",
+        '    </node>',
+        '  </node>',
+        '</oor:component-data>',
+        '',
     ]
     return "\n".join(lines)
-
 
 def main():
     parser = argparse.ArgumentParser()
