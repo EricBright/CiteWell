@@ -113,6 +113,46 @@ fn validate_settings_inner() -> Result<usize, String> {
             }
         }
     }
+    if let Some(sections) = value.get("simpleSections") {
+        let sections = sections
+            .as_array()
+            .ok_or_else(|| "settings simpleSections must be an array".to_string())?;
+        for section in sections {
+            let id = section
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| "simple settings section is missing id".to_string())?;
+            let pane_id = section
+                .get("paneId")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| format!("simple settings section {id} is missing paneId"))?;
+            if !ids.contains(pane_id) {
+                return Err(format!("simple settings section {id} has unknown paneId {pane_id}"));
+            }
+            if section.get("titleKey").and_then(|v| v.as_str()).is_none() {
+                return Err(format!("simple settings section {id} is missing titleKey"));
+            }
+            let settings = section
+                .get("settings")
+                .and_then(|v| v.as_array())
+                .ok_or_else(|| format!("simple settings section {id} is missing settings[]"))?;
+            for setting in settings {
+                let setting_id = setting
+                    .get("id")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| format!("simple settings section {id} has a setting without id"))?;
+                if setting.get("type").and_then(|v| v.as_str()) != Some("checkbox") {
+                    return Err(format!("simple setting {setting_id} has unsupported type"));
+                }
+                if setting.get("preference").and_then(|v| v.as_str()).is_none() {
+                    return Err(format!("simple setting {setting_id} is missing preference"));
+                }
+                if setting.get("labelKey").and_then(|v| v.as_str()).is_none() {
+                    return Err(format!("simple setting {setting_id} is missing labelKey"));
+                }
+            }
+        }
+    }
     if let Some(retired) = value.get("retired") {
         let retired = retired
             .as_array()

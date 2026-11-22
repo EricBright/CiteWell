@@ -349,6 +349,7 @@ var Zotero_Preferences = {
 			let heading = document.createElement('h1');
 			heading.textContent = pane.rawLabel;
 			pane.container.append(contentFragment);
+			this._renderSimpleSections(pane.id, pane.container);
 			if (pane.container.querySelector('.main-section')) {
 				pane.container.querySelector('.main-section').prepend(heading);
 			}
@@ -372,6 +373,38 @@ var Zotero_Preferences = {
 		};
 		pane.loadPromise = rest();
 		await pane.loadPromise;
+	},
+
+	_renderSimpleSections(paneId, container) {
+		let sections = Zotero.PreferencePanes.simpleSections
+			.filter(section => section.paneId === paneId)
+			.sort((a, b) => (a.order || 0) - (b.order || 0));
+		for (let section of sections) {
+			let groupbox = document.createXULElement('groupbox');
+			groupbox.id = 'simple-section-' + section.id;
+			let heading = document.createXULElement('label');
+			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
+			h2.id = section.id + '-title';
+			h2.setAttribute('data-l10n-id', section.titleKey);
+			heading.append(h2);
+			groupbox.append(heading);
+			groupbox.setAttribute('aria-labelledby', h2.id);
+
+			for (let setting of section.settings || []) {
+				if (setting.type === 'checkbox') {
+					let checkbox = document.createXULElement('checkbox');
+					checkbox.id = setting.id;
+					checkbox.setAttribute('preference', setting.preference);
+					checkbox.setAttribute('native', 'true');
+					checkbox.setAttribute('data-l10n-id', setting.labelKey);
+					groupbox.append(checkbox);
+				}
+				else {
+					throw new Error('Unsupported simple setting type: ' + setting.type);
+				}
+			}
+			container.append(groupbox);
+		}
 	},
 
 	/**

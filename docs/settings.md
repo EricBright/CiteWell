@@ -212,10 +212,11 @@ First slice:
   database maintenance remains in Advanced.
 - OpenURL/Locate moved from General to Library & Files; the Locate menu deep link now opens that
   pane.
+- Language & Region is now a registry descriptor (`simpleSections`) rendered into General by the
+  preferences shell; its checkbox still uses the existing preference binding.
 
-Remaining Phase 2 work: migrate simple controls to descriptors. The deep links are now aligned
-with the moved sections; Catalog/Word-processor links still need their final pass when those
-sections move.
+Phase 2 is otherwise complete except for migrating the remaining simple rows to descriptors and a
+final deep-link pass for sections that move later. The first descriptor section is live.
 
 ## Registry shape
 

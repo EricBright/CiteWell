@@ -157,6 +157,20 @@ describe("Advanced Preferences", function () {
 })
 
 describe("Settings manifest navigation", function () {
+	it("renders the Language & Region descriptor in General", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-general"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("simple-section-language-region"));
+			assert.ok(win.document.getElementById("bidi-ui"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("loads the Integrations pane from the manifest", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-integrations"

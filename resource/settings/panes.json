@@ -181,5 +181,21 @@
       "status": "merged",
       "reason": "Quick Copy is now part of Import & Export; the old Export pane is no longer registered."
     }
+  ],
+  "simpleSections": [
+    {
+      "id": "language-region",
+      "paneId": "zotero-prefpane-general",
+      "titleKey": "preferences-advanced-language-and-region-title",
+      "order": 10,
+      "settings": [
+        {
+          "id": "bidi-ui",
+          "type": "checkbox",
+          "preference": "bidi.browser.ui",
+          "labelKey": "preferences-advanced-enable-bidi-ui"
+        }
+      ]
+    }
   ]
 }
