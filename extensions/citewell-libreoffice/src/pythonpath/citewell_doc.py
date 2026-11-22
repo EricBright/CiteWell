@@ -72,7 +72,12 @@ class Field(object):
         self.anchor = self.named.getAnchor()
         self.document._renamed(self, old_name, new_name)
         if old_text and self.kind != "TextSection":
-            self.set_text(old_text, False)
+            # setCode is called after setText and rewrites the same range.
+            # Reinserting the text can fall back into an empty superscript
+            # span left by the reset; clear the character formatting once more
+            # after the code-preserving rewrite.
+            reset = self.kind == "ReferenceMark" and self.code.startswith("ITEM")
+            self.set_text(old_text, False, reset)
 
     # -- content ----------------------------------------------------------
 

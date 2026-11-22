@@ -144,8 +144,8 @@ moves only CiteWell's `lu*.tmp_` deployment cache directories to
 record and all profile data. A failure reports the backup and
 LibreOffice's `uno_packages/cache/log.txt`; Cite preferences also has **Open repair backups…**.
 
-Whenever citation text is rewritten, the app asks the document layer to reset the citation text's
-character style and superscript/direct character formatting. The old formatting lives on the text
+Whenever citation text is rewritten, including the code-preserving `setCode` rewrite, the document
+layer clears the citation text's character style and superscript/direct character formatting. The old formatting lives on the text
 portions inside the reference mark; resetting the mark anchor alone does not remove it. Author-date
 output then inherits the surrounding paragraph and character style instead of carrying a previous
 note-style superscript.
