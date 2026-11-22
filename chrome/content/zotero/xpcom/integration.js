@@ -512,7 +512,7 @@ Zotero.Integration = new function () {
 			modal: true,
 			parent: Zotero.getMainWindow(),
 			kind: "dialog",
-			surface: "app",
+			surface: "libreoffice",
 		});
 		Zotero.Integration.currentWindow = window;
 		
@@ -523,7 +523,7 @@ Zotero.Integration = new function () {
 			if(window.newWindow) {
 				window = window.newWindow;
 				Zotero.Integration.currentWindow = window;
-				presenter.watchWindow(window, { kind: "dialog", surface: "app" });
+				presenter.watchWindow(window, { kind: "dialog", surface: "libreoffice" });
 				window.addEventListener("unload", listener, false);
 				return;
 			}

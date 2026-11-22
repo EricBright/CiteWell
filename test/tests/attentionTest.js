@@ -196,6 +196,38 @@ describe("Attention", function () {
 		assert.deepEqual(adapter.calls, ["urgency:dialog", "title:true", "title:clear"]);
 	});
 
+	it("falls back to a Writer message when notification is unavailable", function () {
+		let win = new FakeWindow();
+		let messages = [];
+		let appAdapter = new Zotero.Attention.AppAdapter({
+			activate: () => {},
+			showMessage: (entry, text) => messages.push(text),
+		});
+		let appClock = new FakeClock();
+		let appController = new Zotero.Attention.Controller(appAdapter, { clock: appClock });
+		appController.watch(win, { surface: "libreoffice" });
+		appClock.advance(3000);
+		assert.equal(messages.length, 0);
+		appClock.advance(7000);
+		assert.equal(messages.length, 1);
+		assert.match(messages[0], /behind another application/);
+	});
+
+	it("does not show a Writer message when the notification succeeded", function () {
+		let win = new FakeWindow();
+		let messages = [];
+		let appAdapter = new Zotero.Attention.AppAdapter({
+			activate: () => {},
+			notify: () => {},
+			showMessage: (entry, text) => messages.push(text),
+		});
+		let appClock = new FakeClock();
+		let appController = new Zotero.Attention.Controller(appAdapter, { clock: appClock });
+		appController.watch(win, { surface: "libreoffice" });
+		appClock.advance(10000);
+		assert.equal(messages.length, 0);
+	});
+
 	it("does not focus a progress presenter on open", function () {
 		let win = new FakeWindow();
 		let activated = 0;

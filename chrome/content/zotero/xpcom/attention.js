@@ -207,6 +207,7 @@ Zotero.Attention = new function () {
 		var activate = options.activate || (win => Zotero.Utilities.Internal.activate(win));
 		var alerts = options.alerts;
 		var notifier = options.notify;
+		var showMessage = options.showMessage;
 		var adapter = {
 			isFocused: function (window) {
 				try {
@@ -257,18 +258,32 @@ Zotero.Attention = new function () {
 
 			showBanner: function (entry) {
 				adapter.setTitleCue(entry, true);
-				adapter.notify(entry);
+				var notified = adapter.notify(entry);
+				// A LibreOffice action has one further local surface: a Writer
+				// message box. Use it only when the notification path failed;
+				// the user already accepted this fallback.
+				if (!notified && entry.surface === "libreoffice" && showMessage && !entry.messageShown) {
+					entry.messageShown = true;
+					try {
+						showMessage(entry, entry.notificationText);
+					}
+					catch (e) {
+						adapter.log("attention document message failed", e);
+					}
+				}
 			},
 
 			notify: function (entry) {
-				if (entry.notified) return;
-				entry.notified = true;
+				if (entry.notificationAttempted) return entry.notificationOK;
+				entry.notificationAttempted = true;
 				var text = entry.kind === "progress"
 					? "CiteWell is still working. Open CiteWell to see the progress."
 					: "A CiteWell window may be behind another application. Click to bring it forward.";
+				entry.notificationText = text;
 				try {
 					if (notifier) {
 						notifier(entry, text);
+						entry.notificationOK = true;
 					}
 					else if (alerts && alerts.showAlertNotification) {
 						alerts.showAlertNotification(
@@ -281,11 +296,17 @@ Zotero.Attention = new function () {
 							null,
 							"citewell-attention"
 						);
+						entry.notificationOK = true;
+					}
+					else {
+						entry.notificationOK = false;
 					}
 				}
 				catch (e) {
+					entry.notificationOK = false;
 					adapter.log("attention notification failed", e);
 				}
+				return entry.notificationOK;
 			},
 
 			log: function (message, error) {
@@ -366,7 +387,15 @@ Zotero.Attention = new function () {
 				.getService(Components.interfaces.nsIAlertsService);
 		}
 		catch (e) {}
-		this._defaultPresenter = new this.Presenter(new this.AppAdapter({ alerts }));
+		this._defaultPresenter = new this.Presenter(new this.AppAdapter({
+			alerts,
+			showMessage: (entry, text) => {
+				var doc = Zotero.Integration && Zotero.Integration.currentDoc;
+				if (doc && doc.displayAlert) {
+					doc.displayAlert(text, 1, 0).catch(e => Zotero.logError(e));
+				}
+			},
+		}));
 		return this._defaultPresenter;
 	};
 

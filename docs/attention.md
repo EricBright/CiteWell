@@ -1,6 +1,6 @@
 # Attention and window presentation
 
-**Status:** accepted 2026-11-22; state machine, presenter and app adapter implemented; app dialogs and progress are integrated. LibreOffice InfoBar, system activation and the test hook are pending.
+**Status:** accepted 2026-11-22; state machine, presenter and app adapter implemented; app dialogs and progress are integrated. LibreOffice notification/message-box fallback is implemented; system activation and the test hook are pending.
 
 CiteWell must never leave a person waiting on a prompt that is behind another window. This page
 defines the attention contract, the escalation ladder, the platform-specific fallbacks, and the
@@ -176,13 +176,15 @@ another workspace, LibreOffice fullscreen, notification service disabled, and a 
 desktop. Record the observed escalation. Real compositor focus cannot be asserted reliably in CI;
 the manual matrix is the complement, not a replacement, for the state-machine tests.
 
-### Real-window integration
+### LibreOffice fallback
 
 `Zotero.Integration.displayDialog()` opens citation, document-preferences, bibliography and
 selection dialogs through the presenter as parented modal windows. `Zotero.Integration.Progress`
 uses the same presenter with `kind: "progress"` and `focusOnOpen: false`, so background progress
-never steals focus and gets the 10 s banner instead of immediate urgency. The LibreOffice adapter,
-system activation and the test hook remain.
+never steals focus and gets the 10 s banner instead of immediate urgency. For LibreOffice-originated dialogs, the app attempts the notification at 3 s. If the notification
+API is unavailable or throws, the 10 s banner sends a message to `Zotero.Integration.currentDoc`
+so Writer displays a native message box. If the notification succeeded, no second message box is
+shown; Do Not Disturb remains the accepted blind spot.
 
 ### Instrumentation
 
