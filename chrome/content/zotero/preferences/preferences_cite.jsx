@@ -296,52 +296,15 @@ Zotero_Preferences.Cite = {
 
 	_repairStaleCiteWellDeployment: async function (flatpak) {
 		var profile = this._libreOfficeProfile(flatpak);
-		var parents = [
-			PathUtils.join(profile, "uno_packages", "cache", "uno_packages"),
-			PathUtils.join(profile, "extensions", "tmp", "extensions"),
-		];
 		var backup = PathUtils.join(
 			Services.dirsvc.get("Home", Ci.nsIFile).path,
 			".cache", "citewell", "lo-repair", String(Date.now())
 		);
-		var moved = [];
-		for (var parent of parents) {
-			var children;
-			try {
-				children = await IOUtils.getChildren(parent);
-			}
-			catch (e) {
-				continue;
-			}
-			for (var child of children) {
-				var name = child.split(/[\\/]/).pop();
-				if (!name || !/^lu.*\.tmp_$/.test(name)) continue;
-				var entries;
-				try {
-					entries = await IOUtils.getChildren(child);
-				}
-				catch (e) {
-					continue;
-				}
-				var containsCiteWell = entries.some(function (entry) {
-					return entry.toLowerCase().includes("citewell");
-				});
-				if (!containsCiteWell) continue;
-				var destination = PathUtils.join(backup, name);
-				await IOUtils.makeDirectory(backup, {
-					createAncestors: true,
-					ignoreExisting: true,
-				});
-				var suffix = 1;
-				while (await IOUtils.exists(destination)) {
-					destination = PathUtils.join(backup, name + "-" + suffix++);
-				}
-				await IOUtils.move(child, destination);
-				moved.push(destination);
-			}
-		}
+		// Only the deployment map is stale. Do not move cache/package
+		// directories: a valid installed package also contains "CiteWell" and
+		// moving it would turn a usable installation into another stale entry.
 		var pmap = await this._removeCiteWellPmapEntry(profile, backup);
-		return { backup, moved, pmap };
+		return { backup, moved: [], pmap };
 	},
 
 	// Add only the CiteWell OXT. This action must never remove, replace or

@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `b810d5f5…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `07089d4f…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `b810d5f5df780aa28cf241f0185773b4c9882c2bbb3281ae1b5e24a673df775b`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `07089d4f0ab80f4679b0b236a65459d75529a32ee56cf9bb53da2cdbd09839c9`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,14 +44,14 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`b810d5f5df780aa28cf241f0185773b4c9882c2bbb3281ae1b5e24a673df775b`, 133,421,560 bytes). The
+`07089d4f0ab80f4679b0b236a65459d75529a32ee56cf9bb53da2cdbd09839c9`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
 preferences dialog appears, and accepting it can leave Writer frozen. The persistent shim log
 (`~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`) shows a 120 s socket timeout
-with no app commands after the dialog. The minimized-main-window fix and the Addons-schema fix are
-in the AppImage; reinstall the OXT add-only and reproduce with that build before changing the
+with no app commands after the dialog. The minimized-main-window fix, unparented integration dialogs and the Addons-schema fix are in
+the AppImage; reinstall the OXT add-only and reproduce with that build before changing the
 session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
 deployment cache by moving only CiteWell temp directories to a backup.
 

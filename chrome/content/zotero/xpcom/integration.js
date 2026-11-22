@@ -509,13 +509,18 @@ Zotero.Integration = new function () {
 			name: '',
 			features: options || '',
 			io: io ? io : null,
-			modal: true,
-			parent: Zotero.getMainWindow(),
+			// Integration dialogs must not be modal children of the CiteWell
+			// main window. If the main window is raised behind LibreOffice, the
+			// child can be created but never brought forward, leaving the
+			// extension waiting until it times out. Open an independent window
+			// and let the attention controller raise/notify it.
+			modal: false,
+			parent: null,
 			kind: "dialog",
 			surface: "libreoffice",
 		});
 		Zotero.Integration.currentWindow = window;
-		
+
 		var deferred = Zotero.Promise.defer();
 		var listener = function () {
 			if(window.location.toString() === "about:blank") return;

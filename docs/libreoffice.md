@@ -144,6 +144,11 @@ moves only CiteWell's `lu*.tmp_` deployment cache directories to
 record and all profile data. A failure reports the backup and
 LibreOffice's `uno_packages/cache/log.txt`; Cite preferences also has **Open repair backups…**.
 
+Integration dialogs are opened unparented. A modal child of a main window that is behind
+LibreOffice can be created without ever being raised; the document-preferences dialog then appears
+to close, the citation dialog never becomes visible, and the shim times out. The attention
+controller focuses and, if needed, notifies the independent dialog instead.
+
 The app hosts the protocol on `127.0.0.1:23121` and checks `<data-dir>/lo-token`;
 the shim connects, authenticates, serves document commands and posts menu
 events. The OXT is packaged in the AppImage under `integration/libreoffice/`;

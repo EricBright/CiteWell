@@ -175,6 +175,8 @@ class Connection(object):
                     continue
                 raise ProtocolError("CiteWell sent an invalid event.")
             try:
+                command = payload[0] if isinstance(payload, list) and payload else "?"
+                log("request %s" % command)
                 result = dispatch(self.context, payload)
                 self._send(transaction, result)
             except Exception as exc:  # noqa: BLE001 - report to the app

@@ -218,6 +218,7 @@ async function handleEvent(connection, payload) {
 	if (command === "done") return;
 	if (command === "hello") {
 		const ok = payload.protocol === PROTOCOL && payload.token === _token;
+		log(`hello protocol=${payload.protocol} tokenMatch=${payload.token === _token} tokenLength=${payload.token ? payload.token.length : 0}`);
 		connection.sendEvent({
 			command: "helloResult",
 			ok,
