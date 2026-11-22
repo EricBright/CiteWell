@@ -35,6 +35,7 @@ upstream merges are not roadmap items.
 | R19 | Remove the sync subsystem: `xpcom/sync`, `preferences_account`, WebDAV storage, connector online code | The switch hides it now; deletion should be deliberate | No sync code remains and the build has no dead paths |
 | R20 | Obsidian/Markdown export: one-way first, design in [docs/export.md](docs/export.md) | Portability without giving up SQLite; becomes mostly a copy of the `.md` attachments | 10k-item export under a minute, vault opens with working links, second run changes nothing |
 | R21 | Update metadata: SHA-256 checksums and `.zsync` files beside the AppImage | Gear Lever/AppImageUpdate need a checksum and a zsync file | A release publishes `.AppImage`, `.sha256` and `.zsync`; Gear Lever offers the update |
+| R33 | Numeric-style citation renumbering: measure and batch field updates | Correctness first; numbered styles are inherently O(k) per insertion and no numeric batching exists yet; benchmark before optimising | 200-citation insertion in the middle stays under 1 s and 500 under 3 s; only changed fields are rewritten |
 
 ## Not doing
 
