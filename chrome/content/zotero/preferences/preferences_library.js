@@ -43,8 +43,12 @@ Zotero_Preferences.Library = {
 
 		await this._refreshCurrent();
 		this._renderLocations();
-		await this._refreshNoteMigration();
-		await this._refreshAnnotationExport();
+		if (document.getElementById("library-notes-migrate")) {
+			await this._refreshNoteMigration();
+		}
+		if (document.getElementById("library-annotations-export")) {
+			await this._refreshAnnotationExport();
+		}
 		await this.rescan();
 		await this._showLastResult();
 		await this._renderRestorePoints();
@@ -760,6 +764,7 @@ Zotero_Preferences.Library = {
 
 	_setStatus: function (text, isError = false) {
 		var element = this._el("library-import-status");
+		if (!element) return;
 		element.textContent = text || "";
 		element.className = "library-status" + (isError ? " library-error" : "");
 	},
@@ -781,4 +786,19 @@ Zotero_Preferences.Library = {
 			this._el("library-replace").disabled = true;
 		}
 	},
+};
+
+Zotero_Preferences.Notes = {
+	init: async function () {
+		await Zotero_Preferences.Library._refreshNoteMigration();
+		await Zotero_Preferences.Library._refreshAnnotationExport();
+	},
+
+	migrateNotes: function () {
+		return Zotero_Preferences.Library.migrateNotes();
+	},
+
+	exportAnnotations: function () {
+		return Zotero_Preferences.Library.exportAnnotations();
+	}
 };

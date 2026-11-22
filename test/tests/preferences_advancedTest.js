@@ -172,6 +172,22 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("loads the Notes & Annotations pane", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-notes"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("zotero-prefpane-notes"));
+			assert.ok(win.document.getElementById("open-note-in-new-window"));
+			assert.ok(win.document.getElementById("library-notes-migrate"));
+			assert.ok(win.document.getElementById("library-annotations-export"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("does not expose the retired PDF indexing control", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-advanced"

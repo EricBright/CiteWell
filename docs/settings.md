@@ -5,8 +5,7 @@ For the full documentation index, see [README.md](../README.md).
 Status: **Phase 0 inventory complete; Phase 1 structure manifest implemented; Phase 2 first slice
 in progress.** Pane order, labels, icons, custom content sources and retirement metadata now come
 from [`resource/settings/panes.json`](../resource/settings/panes.json). The first Phase 2 slice adds
-an **Integrations** pane and moves LibreOffice and system integration out of Cite. No preference key
-has changed.
+an **Integrations** pane and a **Notes & Annotations** pane. No preference key has changed.
 
 ## Why this exists
 
@@ -192,13 +191,17 @@ First slice:
   [preferences_integrations.xhtml](../chrome/content/zotero/preferences/preferences_integrations.xhtml).
 - LibreOffice extension installation and system-integration controls moved out of Cite.
 - Existing `preferences_cite.js` behavior is reused; no new script module was added.
+- New `zotero-prefpane-notes` pane, backed by
+  [preferences_notes.xhtml](../chrome/content/zotero/preferences/preferences_notes.xhtml).
+- Note behaviour moved out of General; note migration and legacy PDF annotation export moved out of
+  Library. `preferences_library.js` now exposes a small `Notes` initializer while retaining the
+  migration methods.
 - The retired PDF indexing control remains removed from Advanced → Search.
-- Library's legacy PDF annotation export remains marked `migration-only` until the Notes &
-  Annotations split, so users do not lose their one-time export path.
+- The legacy PDF annotation export remains visible in Notes & Annotations and is marked
+  `migration-only`, so users do not lose their one-time export path.
 
-Remaining Phase 2 work: split Library into Library & Files / Import & Export, create Notes &
-Annotations, move file/data controls into Library & Files, migrate simple controls to descriptors,
-and update the deep links that still point at General/Cite sections.
+Remaining Phase 2 work: split Library into Library & Files / Import & Export, move file/data controls
+into Library & Files, migrate simple controls to descriptors, and update deep links.
 
 ## Registry shape
 

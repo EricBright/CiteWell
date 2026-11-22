@@ -35,6 +35,21 @@
       "helpURL": "https://www.zotero.org/support/preferences/sync"
     },
     {
+      "id": "zotero-prefpane-notes",
+      "rawLabel": "Notes & Annotations",
+      "icon": "chrome://zotero/skin/20/universal/note.svg",
+      "order": 25,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_notes.xhtml",
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_library.js"
+        ],
+        "defaultXUL": true
+      }
+    },
+    {
       "id": "zotero-prefpane-export",
       "label": "zotero.preferences.prefpane.export",
       "icon": "chrome://zotero/skin/20/universal/export.svg",
