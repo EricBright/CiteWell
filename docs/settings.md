@@ -2,8 +2,7 @@ For the full documentation index, see [README.md](../README.md).
 
 # Settings information architecture
 
-Status: **Phase 0 inventory complete; Phase 1 structure manifest implemented; Phase 2 first slice
-in progress.** Pane order, labels, icons, custom content sources and retirement metadata now come
+Status: **Phases 0–3 implemented.** Pane order, labels, icons, custom content sources and retirement metadata now come
 from [`resource/settings/panes.json`](../resource/settings/panes.json). The first Phase 2 slice adds
 an **Integrations** pane, a **Notes & Annotations** pane, and an **Import & Export** pane; the old
 Export pane has been merged into it. Cite now sits immediately after General. File handling, file
@@ -236,8 +235,9 @@ First slice:
   checkbox and radio controls, ordered insertion, and labels through the existing DTD/FTL string
   path; controls still use the existing preference binding.
 
-Phase 2 is otherwise complete except for migrating the remaining simple rows to descriptors and a
-final deep-link pass for sections that move later. The first descriptor section is live.
+Phase 3 is complete: search aliases, documentation coverage, duplicate validation and cleanup are in
+place. Further conversion of the remaining complex custom sections is optional and should be driven
+by need, not by a desire to make every control generic.
 
 ## Phase 3 implementation
 

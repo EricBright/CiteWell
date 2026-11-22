@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `a5842863…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `845cd134…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -31,13 +31,12 @@ push target. The product branch may diverge without limit.
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
-Build note: the settings-descriptor work after commit `ff4fe7daf` is source-only until a new
-AppImage is requested. The last built AppImage remains the `a5842863…` artifact below; do not
-assume the installed AppImage contains newer settings changes.
+Build note: the settings-descriptor work is now included in the current AppImage built for the
+end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `a58428633efd746a35dec04f48a50f2a0528272a423fb94f628c0ed62b787c3d`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `845cd13484ac492946547e67bd9a13732c0152976f855bee79f3366ee49ae99c`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -48,7 +47,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`a58428633efd746a35dec04f48a50f2a0528272a423fb94f628c0ed62b787c3d`, 133,421,560 bytes). The
+`845cd13484ac492946547e67bd9a13732c0152976f855bee79f3366ee49ae99c`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
@@ -59,16 +58,13 @@ and the Addons-schema fix are in the AppImage; reinstall the OXT add-only and re
 session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
 deployment cache by moving only CiteWell temp directories to a backup.
 
-**Settings information architecture:** Phase 2 is taking shape. The manifest supports ten panes;
-Integrations, Notes & Annotations, and Import & Export are in place; the old Export pane is retired.
-Cite now sits immediately after General. File handling, file renaming, attachment titles, Language &
-Region, attachment base directory, data directory and OpenURL/Locate have moved. Language & Region,
-Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite → Citation Options, File
-Handling, Attachment Titles, General → Behaviour and Advanced → Translator updates are rendered
-from simple-section descriptors; the renderer supports checkbox, radio, numeric and fixed-action
-button controls. Phase 3 has started: descriptor search aliases feed the existing settings search, and the manifest
-validator now enforces documentation coverage plus duplicate-ID/preference checks. The old Export XHTML is retired; legacy PDF annotation export remains migration-only. Remaining
-work is any further simple-row conversion. See [settings.md](settings.md).
+**Settings information architecture:** Phases 0–3 are implemented. The manifest supports ten panes;
+Integrations, Notes & Annotations and Import & Export are in place; the old Export pane is retired.
+Cite follows General. File handling, file renaming, attachment titles, Language & Region, base/data
+directories and OpenURL/Locate have moved. The descriptor renderer supports checkbox, radio, numeric
+and fixed-action button controls. Search aliases, documentation coverage, duplicate checks and
+cleanup are in place. Remaining conversion of complex custom sections is optional. See
+[settings.md](settings.md).
 
 **Next actions:**
 
