@@ -218,7 +218,10 @@ describe("Settings manifest navigation", function () {
 		});
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.ok(win.document.getElementById("zotero-prefpane-file-handling-groupbox"));
+			assert.ok(win.document.getElementById("simple-section-file-handling"));
+			assert.ok(win.document.getElementById("file-auto-recognize"));
+			assert.ok(win.document.getElementById("simple-section-attachment-titles"));
+			assert.ok(win.document.getElementById("attachment-show-filenames"));
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
 			assert.ok(win.document.getElementById("baseAttachmentPath"));
 			assert.ok(win.document.getElementById("data-dir-path"));

@@ -265,6 +265,49 @@
           "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
         }
       ]
+    },
+    {
+      "id": "file-handling",
+      "paneId": "zotero-prefpane-library",
+      "titleKey": "zotero.preferences.fileHandling",
+      "before": "#zotero-prefpane-file-renaming-groupbox",
+      "order": 10,
+      "settings": [
+        {
+          "id": "file-download-associated",
+          "type": "checkbox",
+          "preference": "extensions.zotero.downloadAssociatedFiles",
+          "labelKey": "zotero.preferences.downloadAssociatedFiles"
+        },
+        {
+          "id": "file-auto-recognize",
+          "type": "checkbox",
+          "preference": "extensions.zotero.autoRecognizeFiles",
+          "labelKey": "preferences-auto-recognize-files"
+        },
+        {
+          "id": "file-automatic-snapshots",
+          "type": "checkbox",
+          "preference": "extensions.zotero.automaticSnapshots",
+          "labelKey": "zotero.preferences.automaticSnapshots"
+        }
+      ]
+    },
+    {
+      "id": "attachment-titles",
+      "paneId": "zotero-prefpane-library",
+      "titleKey": "preferences-attachment-titles-title",
+      "descriptionKey": "preferences-attachment-titles-intro",
+      "before": "#baseAttachmentPath",
+      "order": 20,
+      "settings": [
+        {
+          "id": "attachment-show-filenames",
+          "type": "checkbox",
+          "preference": "extensions.zotero.showAttachmentFilenames",
+          "labelKey": "preferences-attachment-titles-show-filenames"
+        }
+      ]
     }
   ]
 }

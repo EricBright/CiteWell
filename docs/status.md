@@ -31,6 +31,10 @@ push target. The product branch may diverge without limit.
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
+Build note: the settings-descriptor work after commit `ff4fe7daf` is source-only until a new
+AppImage is requested. The last built AppImage remains the `a5842863…` artifact below; do not
+assume the installed AppImage contains newer settings changes.
+
 Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `a58428633efd746a35dec04f48a50f2a0528272a423fb94f628c0ed62b787c3d`)
@@ -59,9 +63,9 @@ deployment cache by moving only CiteWell temp directories to a backup.
 Integrations, Notes & Annotations, and Import & Export are in place; the old Export pane is retired.
 Cite now sits immediately after General. File handling, file renaming, attachment titles, Language &
 Region, attachment base directory, data directory and OpenURL/Locate have moved. Language & Region,
-Notes → Note behaviour, General → Groups and Cite → Citation Options are rendered from
-simple-section descriptors. Remaining work is converting the other simple rows and a final
-deep-link pass. See [settings.md](settings.md).
+Notes → Note behaviour, General → Groups, Cite → Citation Options, File Handling and Attachment
+Titles are rendered from simple-section descriptors. Remaining work is converting the other simple
+rows and a final deep-link pass. See [settings.md](settings.md).
 
 **Next actions:**
 
