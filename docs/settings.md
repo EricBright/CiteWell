@@ -212,8 +212,9 @@ First slice:
   database maintenance remains in Advanced.
 - OpenURL/Locate moved from General to Library & Files; the Locate menu deep link now opens that
   pane.
-- Language & Region and Notes → Note behaviour are now registry descriptors (`simpleSections`)
-  rendered by the preferences shell; checkboxes still use the existing preference binding.
+- Language & Region, Notes → Note behaviour and General → Groups are now registry descriptors
+  (`simpleSections`) rendered by the preferences shell; checkboxes still use the existing preference
+  binding, and labels resolve through the existing DTD/FTL string path.
 
 Phase 2 is otherwise complete except for migrating the remaining simple rows to descriptors and a
 final deep-link pass for sections that move later. The first descriptor section is live.

@@ -165,6 +165,9 @@ describe("Settings manifest navigation", function () {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
 			assert.ok(win.document.getElementById("simple-section-language-region"));
 			assert.ok(win.document.getElementById("bidi-ui"));
+			assert.ok(win.document.getElementById("simple-section-groups"));
+			assert.ok(win.document.getElementById("groups-copy-tags"));
+			assert.isAbove(win.document.getElementById("groups-copy-tags").label.length, 0);
 		}
 		finally {
 			win.close();

@@ -210,6 +210,45 @@
           "labelKey": "preferences-note-open-in-new-window"
         }
       ]
+    },
+    {
+      "id": "groups",
+      "paneId": "zotero-prefpane-general",
+      "titleKey": "zotero.preferences.groups",
+      "descriptionKey": "zotero.preferences.groups.whenCopyingInclude",
+      "order": 20,
+      "settings": [
+        {
+          "id": "groups-copy-childNotes",
+          "type": "checkbox",
+          "preference": "extensions.zotero.groups.copyChildNotes",
+          "labelKey": "zotero.preferences.groups.childNotes"
+        },
+        {
+          "id": "groups-copy-childFiles",
+          "type": "checkbox",
+          "preference": "extensions.zotero.groups.copyChildFileAttachments",
+          "labelKey": "zotero.preferences.groups.childFiles"
+        },
+        {
+          "id": "groups-copy-annotations",
+          "type": "checkbox",
+          "preference": "extensions.zotero.groups.copyAnnotations",
+          "labelKey": "zotero.preferences.groups.annotations"
+        },
+        {
+          "id": "groups-copy-childLinks",
+          "type": "checkbox",
+          "preference": "extensions.zotero.groups.copyChildLinks",
+          "labelKey": "zotero.preferences.groups.childLinks"
+        },
+        {
+          "id": "groups-copy-tags",
+          "type": "checkbox",
+          "preference": "extensions.zotero.groups.copyTags",
+          "labelKey": "zotero.preferences.groups.tags"
+        }
+      ]
     }
   ]
 }

@@ -385,10 +385,15 @@ var Zotero_Preferences = {
 			let heading = document.createXULElement('label');
 			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
 			h2.id = section.id + '-title';
-			h2.setAttribute('data-l10n-id', section.titleKey);
+			h2.textContent = Zotero.getString(section.titleKey);
 			heading.append(h2);
 			groupbox.append(heading);
 			groupbox.setAttribute('aria-labelledby', h2.id);
+			if (section.descriptionKey) {
+				let description = document.createXULElement('description');
+				description.textContent = Zotero.getString(section.descriptionKey);
+				groupbox.append(description);
+			}
 
 			for (let setting of section.settings || []) {
 				if (setting.type === 'checkbox') {
@@ -396,7 +401,7 @@ var Zotero_Preferences = {
 					checkbox.id = setting.id;
 					checkbox.setAttribute('preference', setting.preference);
 					checkbox.setAttribute('native', 'true');
-					checkbox.setAttribute('data-l10n-id', setting.labelKey);
+					checkbox.setAttribute('label', Zotero.getString(setting.labelKey));
 					groupbox.append(checkbox);
 				}
 				else {
