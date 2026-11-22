@@ -90,7 +90,7 @@ interact badly under some sandbox configurations; test on a clean profile before
 | Path | Purpose |
 |---|---|
 | `~/.config/systemd/user/citewell-attention.service` | Runs the AppImage with `--attention-activate --datadir <dir>` |
-| `~/.local/share/dbus-1/services/org.citewell.CiteWell.service` | Starts that unit through `systemctl --user` |
+| `~/.local/share/dbus-1/services/ca.sophy.CiteWell.service` | Starts that unit through `systemctl --user` |
 | `~/.config/citewell/integration.txt` | Records the exact paths, executable and data directory |
 
 The launcher prints every path it writes, the removal command and the opt-out flag. The interface

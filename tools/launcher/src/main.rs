@@ -22,7 +22,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const UNIT_NAME: &str = "citewell-attention.service";
-const DBUS_NAME: &str = "org.citewell.CiteWell.service";
+const DBUS_NAME: &str = "ca.sophy.CiteWell.service";
+const LEGACY_DBUS_NAME: &str = "org.citewell.CiteWell.service";
 const MANIFEST: &str = "integration.txt";
 
 /// Gecko's `-datadir` flag takes its value from the next argument. When the
@@ -110,6 +111,11 @@ fn integration_paths() -> Result<(PathBuf, PathBuf, PathBuf), String> {
     ))
 }
 
+fn legacy_dbus_path() -> Result<PathBuf, String> {
+    let data = data_home()?;
+    Ok(data.join("dbus-1/services").join(LEGACY_DBUS_NAME))
+}
+
 fn unit_contents(appimage: &str, datadir: &str) -> String {
     format!(
         "[Unit]\n\
@@ -124,7 +130,7 @@ fn unit_contents(appimage: &str, datadir: &str) -> String {
 
 fn dbus_contents() -> String {
     "[D-BUS Service]\n\
-     Name=org.citewell.CiteWell\n\
+     Name=ca.sophy.CiteWell\n\
      Exec=/usr/bin/systemctl --user start citewell-attention.service\n"
         .to_string()
 }
@@ -148,6 +154,12 @@ fn install_integration(appimage: &str, datadir: &str) -> Result<Vec<PathBuf>, St
     if write_if_changed(&unit, &unit_contents(appimage, datadir))? {
         changed.push(unit.clone());
     }
+    // The previous build used an unowned org.citewell namespace. Remove only
+    // that exact known file when migrating; never remove anything else.
+    let legacy = legacy_dbus_path()?;
+    if legacy.exists() {
+        fs::remove_file(&legacy).map_err(|e| format!("{}: {e}", legacy.display()))?;
+    }
     if write_if_changed(&dbus, &dbus_contents())? {
         changed.push(dbus.clone());
     }
@@ -168,8 +180,9 @@ fn install_integration(appimage: &str, datadir: &str) -> Result<Vec<PathBuf>, St
 
 fn remove_integration() -> Result<Vec<PathBuf>, String> {
     let (unit, dbus, manifest) = integration_paths()?;
+    let legacy = legacy_dbus_path()?;
     let mut removed = Vec::new();
-    for path in [unit, dbus, manifest] {
+    for path in [unit, dbus, legacy, manifest] {
         if path.exists() {
             fs::remove_file(&path).map_err(|e| format!("{}: {e}", path.display()))?;
             removed.push(path);
@@ -342,7 +355,7 @@ mod tests {
         assert!(unit.contains("--attention-activate"));
         assert!(unit.contains("--datadir \"/tmp/library\""));
         let dbus = dbus_contents();
-        assert!(dbus.contains("Name=org.citewell.CiteWell"));
+        assert!(dbus.contains("Name=ca.sophy.CiteWell"));
         assert!(dbus.contains("systemctl --user start citewell-attention.service"));
     }
 }

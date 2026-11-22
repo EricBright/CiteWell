@@ -63,7 +63,7 @@ The AppImage `AppRun` installs a user-scoped systemd unit and D-Bus activation f
 launch when `APPIMAGE` is set and an explicit `-datadir` is present:
 
 - `~/.config/systemd/user/citewell-attention.service`
-- `~/.local/share/dbus-1/services/org.citewell.CiteWell.service`
+- `~/.local/share/dbus-1/services/ca.sophy.CiteWell.service`
 - `~/.config/citewell/integration.txt` (the exact paths and current executable/data directory)
 
 The D-Bus file starts `citewell-attention.service` through `systemctl --user`; the unit runs the

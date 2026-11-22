@@ -41,13 +41,20 @@ For identifiers that did not exist in Zotero, use the narrowest conventional for
 |---|---|---|
 | Prose, UI, notices | **CiteWell** | “CiteWell needs your attention”, settings labels |
 | Protocol, URL, environment, paths | lowercase `citewell` | `vnd.citewell.*`, `CITEWELL_*`, `~/.config/citewell`, `citewell-attention.service` |
-| D-Bus well-known name | reverse-DNS with the product name as the final element | `org.citewell.CiteWell` |
+| D-Bus well-known name | reverse-DNS with the product name as the final element | `ca.sophy.CiteWell` |
 | Command-line executable | lowercase `citewell` | `citewell status` |
 | Existing Zotero-owned identifiers | `zotero`, never changed | `zotero://`, `Zotero.*`, data directory |
 
 The current systemd unit, D-Bus file, manifest path and protocol prefix already follow this rule.
 Do not rename an existing wire prefix, service name or preference key just to make the spelling
 prettier; compatibility wins over consistency.
+The D-Bus name is `ca.sophy.CiteWell`; `sophy.ca` is owned by the project owner. The earlier
+`org.citewell.CiteWell` name was retired because `citewell.org` is not owned.
+
+The LibreOffice UNO service and Addons node names still contain `org.citewell` as internal
+implementation identifiers. They are not D-Bus names, are scoped to this extension, and were left
+unchanged to avoid leaving stale menu/toolbar nodes in existing profiles. Renaming them is a
+separate compatibility change, not a namespace claim.
 
 ## What may be renamed with care
 
