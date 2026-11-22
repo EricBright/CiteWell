@@ -315,10 +315,37 @@ class Document(object):
             self.manager.log("message box failed\n%s" % __import__("traceback").format_exc())
             return 0
 
-    def set_bibliography_style(self, *args):
-        # Bibliography styling is an M4 item; accepting the call keeps the
-        # document-preferences path from failing.
-        self.manager.log("setBibliographyStyle: not applied yet")
+    def set_bibliography_style(self, first_line_indent, body_indent, line_spacing,
+                               entry_spacing, tab_stops, tab_stop_count):
+        mm_per_100_twip = 25.4 / 1440 * 100
+        families = self.component.getStyleFamilies()
+        paragraph_styles = families.getByName("ParagraphStyles")
+        try:
+            style = paragraph_styles.getByName("Bibliography 1")
+        except Exception:
+            style = self.component.createInstance("com.sun.star.style.ParagraphStyle")
+            paragraph_styles.insertByName("Bibliography 1", style)
+            try:
+                style.setParentStyle("Default")
+            except Exception:
+                pass
+        style.setPropertyValue("ParaFirstLineIndent", int(first_line_indent * mm_per_100_twip))
+        style.setPropertyValue("ParaLeftMargin", int(body_indent * mm_per_100_twip))
+        spacing = uno.createUnoStruct("com.sun.star.style.LineSpacing")
+        spacing.Mode = 0  # LineSpacingMode.MINIMUM
+        spacing.Height = int(line_spacing * mm_per_100_twip)
+        style.setPropertyValue("ParaLineSpacing", spacing)
+        style.setPropertyValue("ParaBottomMargin", int(entry_spacing * mm_per_100_twip))
+        stops = []
+        for index in range(int(tab_stop_count)):
+            stop = uno.createUnoStruct("com.sun.star.style.TabStop")
+            stop.Position = int(tab_stops[index] * mm_per_100_twip)
+            stop.Alignment = 0  # TabAlign.LEFT
+            stops.append(stop)
+        style.setPropertyValue(
+            "ParaTabStops", uno.Any("[]com.sun.star.style.TabStop", tuple(stops))
+        )
+        self.manager.log("setBibliographyStyle applied")
         return None
 
     def complete(self):

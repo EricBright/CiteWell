@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT and Rust `citewell-lo-core` packaged; bridge launched; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `f8d2e609…`, 133,564,920 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `576264f5…`, 133,368,312 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -26,14 +26,14 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **M4 core verified 2026-11-22.** Six menu actions; dialog insert/edit/cancel; multi-item citations, locators, style switching; 100-field Refresh; Unlink keeps text; an APA bibliography entry; Add Note footnote citation; a citation inside a table cell. All persist after save/reopen. Remaining M5: AppImage rebuild, add-only install in the real profile on request, removal of the test hooks, bibliography paragraph styling and the citation-explorer check. `citewell-lo-core` stays packaged until the M5 cleanup. The real profile is untouched (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
+| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions; dialog insert/edit/cancel; multi-item citations, locators and style switching; 100-field Refresh; Unlink keeps text; bibliography with paragraph styling; Add Note footnote; table-cell citation; all persist across save/reopen. The `CITEWELL_M1_TEST` hooks are gone, `citewell-lo-core` is no longer packaged, the packaged OXT passes the selftest, and the AppImage is rebuilt. Not done: the add-only install in the real LibreOffice profile (on request), the citation explorer, and the undo/save-listener port. The real profile is untouched (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D36 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,564,920 bytes; sha256 `f8d2e60934c6ee0ae07f0c17dd68fc96e42c6d060d31229ed42dada67611be5c`)
+- `dist/CiteWell-x86_64.AppImage` (133,368,312 bytes; sha256 `576264f5b734772104c3afc4e360e2bd8430029f08c746668bce23cde3efeb22`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -43,11 +43,10 @@ plan.
 
 ## Pick up here
 
-1. **R32 — LibreOffice parity, M5 next.** M4 core passed: bibliography, Add Note footnotes and
-   table-cell citations. M5 covers the AppImage rebuild, the add-only real-profile refresh on
-   request, removal of the test hooks, bibliography paragraph styling and the final packaging
-   checks. Follow [libreoffice-parity.md](libreoffice-parity.md). **The installer is add-only
-   (D35); never repair or remove another extension or profile state.**
+1. **R32 — LibreOffice parity is complete; optional follow-ups.** M5 passed: the AppImage carries
+   the current OXT, the test hooks are removed, `citewell-lo-core` is no longer packaged and the
+   selftest runs. Remaining optional work: install the current OXT in the real profile on request
+   (add-only, D35), exercise the citation explorer, and port the undo context/save listener.
 2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
    migration, embedded-image copying, note-editor bundle removal, excerpts and full-text
    re-indexing are done. A read-only viewer replaces the editable element; note tabs work. Next:

@@ -510,12 +510,6 @@ fn appimage_inner() -> Result<PathBuf, String> {
     copy(&importer, &importer_dest)?;
     make_executable(&importer_dest)?;
 
-    // The LibreOffice bridge is a separate Rust sidecar on 127.0.0.1:23121.
-    let lo_core = build_lo_core(&root)?;
-    let lo_core_dest = app_dest.join("citewell-lo-core");
-    copy(&lo_core, &lo_core_dest)?;
-    make_executable(&lo_core_dest)?;
-
     // The CiteWell-owned OXT is built from extension source, never copied from
     // Zotero. A Python builder is used because the OXT format is a ZIP plus
     // Python UNO sources; no Python package dependencies are involved.
@@ -603,26 +597,6 @@ fn build_lo_extension(root: &Path) -> Result<PathBuf, String> {
         return Err(format!("LibreOffice OXT missing at {}", oxt.display()));
     }
     Ok(oxt)
-}
-
-fn build_lo_core(root: &Path) -> Result<PathBuf, String> {
-    let status = Command::new(env::var("CARGO").unwrap_or_else(|_| "cargo".to_string()))
-        .current_dir(root.join("tools"))
-        .args(["build", "--release", "--quiet", "-p", "citewell-lo-core"])
-        .status()
-        .map_err(|e| format!("building the LibreOffice bridge: {e}"))?;
-    if !status.success() {
-        return Err(format!("cargo build for the LibreOffice bridge failed ({status})"));
-    }
-
-    let binary = root.join("tools/target/release/citewell-lo-core");
-    if !binary.is_file() {
-        return Err(format!(
-            "LibreOffice bridge binary missing at {}",
-            binary.display()
-        ));
-    }
-    Ok(binary)
 }
 
 fn build_launcher(root: &Path) -> Result<PathBuf, String> {

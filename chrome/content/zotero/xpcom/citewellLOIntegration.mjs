@@ -22,7 +22,6 @@ let _server = null;
 let _compatServer = null;
 let _token = null;
 let _connection = null;
-let _dialogTestCount = 0;
 
 function log(message) {
 	Zotero.debug("CiteWellLO: " + message);
@@ -211,7 +210,7 @@ class Connection {
 
 /**
  * A transaction-0 message from the shim.  Menu commands run through the normal
- * integration session; "m0test" is the transport/field smoke test.
+ * integration session; "selftest" is the transport/field smoke test.
  */
 async function handleEvent(connection, payload) {
 	const command = payload && payload.command;
@@ -238,26 +237,8 @@ async function handleEvent(connection, payload) {
 		}
 		return;
 	}
-	if (command === "m0test") {
-		await runM0Test(connection);
-		return;
-	}
-	if ((command === "m1insert" || command === "m1cancel")
-			&& Services.env.get("CITEWELL_M1_TEST") === "1") {
-		await runDialogTest(connection, command === "m1insert");
-		return;
-	}
-	if ((command === "m2multi" || command === "m2style")
-			&& Services.env.get("CITEWELL_M1_TEST") === "1") {
-		await runM2Test(connection, command);
-		return;
-	}
-	if (command === "m4note" && Services.env.get("CITEWELL_M1_TEST") === "1") {
-		await runM4Note(connection);
-		return;
-	}
-	if (command === "m4bib" && Services.env.get("CITEWELL_M1_TEST") === "1") {
-		await runM4Bibliography(connection);
+	if (command === "selftest") {
+		await runSelfTest(connection);
 		return;
 	}
 	try {
@@ -269,131 +250,7 @@ async function handleEvent(connection, payload) {
 	connection.sendEvent({ command: "done" });
 }
 
-async function waitForIntegrationWindow(timeout = 15000) {
-	const start = Date.now();
-	while (Date.now() - start < timeout) {
-		const win = Zotero.Integration.currentWindow;
-		if (win && !win.closed) return win;
-		await Zotero.Promise.delay(200);
-	}
-	return null;
-}
-
-async function runDialogTest(connection, insert) {
-	const promise = Zotero.Integration.execCommand("LibreOffice", "addEditCitation", null);
-	setTimeout(async () => {
-		try {
-			const win = await waitForIntegrationWindow();
-			if (!win) {
-				log("dialog test: no citation window");
-				return;
-			}
-			if (insert) {
-				const items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID);
-				const item = items.find(candidate => candidate.isRegularItem() && !candidate.deleted);
-				if (!item) throw new Error("dialog test: no regular item in the library");
-				const io = win.arguments[0].wrappedJSObject;
-				const locator = _dialogTestCount++ === 0 ? "" : "42";
-				io.citation.citationItems = [{ id: item.id, locator, label: "page" }];
-				io.accept();
-				log("dialog test: accepted item " + item.id);
-			}
-			else {
-				win.close();
-				log("dialog test: closed the dialog");
-			}
-		}
-		catch (e) {
-			Zotero.logError(e);
-		}
-	}, 2500);
-	try {
-		await promise;
-	}
-	finally {
-		connection.sendEvent({ command: "done" });
-	}
-}
-
-async function runM2Test(connection, command) {
-	const integrationCommand = command === "m2style" ? "setDocPrefs" : "addEditCitation";
-	const promise = Zotero.Integration.execCommand("LibreOffice", integrationCommand, null);
-	setTimeout(async () => {
-		try {
-			const win = await waitForIntegrationWindow();
-			if (!win) {
-				log("m2 test: no dialog window");
-				return;
-			}
-			if (command === "m2multi") {
-				const items = (await Zotero.Items.getAll(Zotero.Libraries.userLibraryID))
-					.filter(item => item.isRegularItem() && !item.deleted);
-				if (items.length < 2) throw new Error("m2 test: need two regular items");
-				const io = win.arguments[0].wrappedJSObject;
-				io.citation.citationItems = [
-					{ id: items[0].id, locator: "", label: "page" },
-					{ id: items[1].id, locator: "5", label: "page" }
-				];
-				io.accept();
-				log("m2 test: accepted two items");
-			}
-			else {
-				const configurator = win.document.querySelector("#style-configurator");
-				configurator.style = "http://www.zotero.org/styles/chicago-author-date";
-				win.document.querySelector("dialog").acceptDialog();
-				log("m2 test: switched to Chicago author-date");
-			}
-		}
-		catch (e) {
-			Zotero.logError(e);
-		}
-	}, 3000);
-	try {
-		await promise;
-	}
-	finally {
-		connection.sendEvent({ command: "done" });
-	}
-}
-
-async function runM4Bibliography(connection) {
-	try {
-		await Zotero.Integration.execCommand("LibreOffice", "addEditBibliography", null);
-	}
-	finally {
-		connection.sendEvent({ command: "done" });
-	}
-}
-
-async function runM4Note(connection) {
-	const promise = Zotero.Integration.execCommand("LibreOffice", "addNote", null);
-	setTimeout(async () => {
-		try {
-			const win = await waitForIntegrationWindow();
-			if (!win) {
-				log("m4 note test: no dialog window");
-				return;
-			}
-			const items = (await Zotero.Items.getAll(Zotero.Libraries.userLibraryID))
-				.filter(item => item.isRegularItem() && !item.deleted);
-			const io = win.arguments[0].wrappedJSObject;
-			io.citation.citationItems = [{ id: items[0].id, locator: "", label: "page" }];
-			io.accept();
-			log("m4 note test: accepted item " + items[0].id);
-		}
-		catch (e) {
-			Zotero.logError(e);
-		}
-	}, 3000);
-	try {
-		await promise;
-	}
-	finally {
-		connection.sendEvent({ command: "done" });
-	}
-}
-
-async function runM0Test(connection) {
+async function runSelfTest(connection) {
 	const app = new Application(connection);
 	const doc = await app.getActiveDocument();
 	const field = await doc.insertField("ReferenceMark", 0);
@@ -415,9 +272,9 @@ async function runM0Test(connection) {
 	}
 	if (readBack !== documentData) problems.push("document data did not round-trip");
 	const ok = problems.length === 0;
-	log("m0test " + (ok ? "passed" : "failed: " + problems.join("; ")));
+	log("selftest " + (ok ? "passed" : "failed: " + problems.join("; ")));
 	connection.sendEvent({
-		command: "m0testResult",
+		command: "selftestResult",
 		ok,
 		detail: ok ? "transport and field round-trip" : problems.join("; ")
 	});

@@ -1,6 +1,6 @@
 # LibreOffice integration
 
-Status: **M4 core of the parity rewrite passed 2026-11-22; M5 is next.** The inherited Zotero integration is
+Status: **M5 passed 2026-11-22; the parity rewrite is complete.** The inherited Zotero integration is
 disabled and removed from packaging. The CiteWell OXT installs, its menu dispatches, and it inserts
 a selected item's APA citation in an isolated Writer profile — a placeholder, not the target. The
 target is feature parity with Zotero's LibreOffice menu through CiteWell's own adapter:
@@ -123,33 +123,32 @@ The practical choices are therefore:
 Rejected by D34. It is convenient, but it breaks identity, can replace Zotero's
 extension, and can route commands to the wrong library.
 
-## Scaffold status
+## Current implementation
 
-`extensions/citewell-libreoffice/` now contains the CiteWell-owned OXT source:
+`extensions/citewell-libreoffice/` contains the CiteWell-owned OXT:
 
 - id `citewell-libreoffice-integration@sophy.ca`, version `0.1.0`;
-- `components.xml` with a Python UNO provider and an Addons menu;
+- `components.xml` with a Python UNO provider and a six-item Addons menu;
 - `ProtocolHandler.xcu` mapping `vnd.citewell.*` to that provider;
-- health and citation dispatch through `http://127.0.0.1:23121`;
-- a small build script and README with attribution to the owner's AGPL Zarnegar
-  extension.
+- Python shim modules (`citewell_lo`, `citewell_comm`, `citewell_doc`,
+  `citewell_protocol`) with no third-party packages;
+- `build.py`, which builds the OXT with Python's `zipfile`.
 
-Verified: the OXT builds and `unopkg` installs it into an isolated Flatpak
-LibreOffice profile under `~/.cache` (test profile removed through Trash). The
-component service could not be activated over the URP test bridge: the bridge
-is disposed when the Python provider is requested. A control with the Zarnegar
-Python component behaves the same way, so this is a remote-creation limitation.
-An in-process Basic macro and `DispatchHelper` now exercise the menu protocol, run the
-health check, and insert the formatted citation returned by `/citation` into a Writer
-document. The test used an isolated profile only; the protocol registration is what makes
-the Addons menu work instead of falling back to an OS error. A missing selection is
-reported as “Select one or more items in CiteWell first.” rather than an HTTP code. The Rust
-`citewell-lo-core` crate supplies the same `/health` response on 23121 and is now
-packaged in the AppImage and launched by CiteWell; a parent-pid watchdog stops it
-when the app exits. The CiteWell OXT is packaged under
-`integration/libreoffice/CiteWell_LibreOffice_Integration.oxt`; Cite preferences
-now offers a Flatpak-aware install action, which still needs an end-to-end test
-against a disposable LibreOffice profile.
+The app hosts the protocol on `127.0.0.1:23121` and checks `<data-dir>/lo-token`;
+the shim connects, authenticates, serves document commands and posts menu
+events. The OXT is packaged in the AppImage under `integration/libreoffice/`;
+Cite preferences offers the add-only Flatpak install (D35).
+
+Verified in isolated Writer profiles: insert, edit and cancel through the
+citation dialog; two-item citations with locators; APA → Chicago author-date
+switching; a 100-field refresh; Unlink that keeps the text; an APA bibliography
+with paragraph styling; Add Note footnotes; a citation inside a table cell; and
+save/reopen for all of them. `vnd.citewell.health:` runs the transport and field
+selftest. The real profile has not been touched.
+
+Known gaps: the citation explorer was not exercised, the undo context and save
+listener are not ported, and the interactive Unlink confirmation still needs a
+manual check (the selftest harness auto-confirms it).
 
 ## Test plan
 

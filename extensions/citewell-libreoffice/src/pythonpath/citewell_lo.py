@@ -41,14 +41,7 @@ COMMANDS = {
     "vnd.citewell.unlink:": "removeCodes",
     "vnd.citewell.docprefs:": "setDocPrefs",
     "vnd.citewell.note:": "addNote",
-    "vnd.citewell.m0test:": "m0test",
-    "vnd.citewell.m1insert:": "m1insert",
-    "vnd.citewell.m1cancel:": "m1cancel",
-    "vnd.citewell.m2multi:": "m2multi",
-    "vnd.citewell.m2style:": "m2style",
-    "vnd.citewell.m4note:": "m4note",
-    "vnd.citewell.m4bib:": "m4bib",
-    "vnd.citewell.health:": "selftest",
+        "vnd.citewell.health:": "selftest",
 }
 
 
@@ -95,7 +88,7 @@ class Dispatch(unohelper.Base, XServiceInfo, XDispatch):
         else:
             try:
                 citewell_comm.trigger(self.context, command)
-                if command == "m0test":
+                if command == "selftest":
                     message = "CiteWell connection test passed."
             except Exception as exc:  # noqa: BLE001 - show to the user
                 failed = True

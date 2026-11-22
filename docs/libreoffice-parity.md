@@ -1,6 +1,6 @@
 # LibreOffice parity plan
 
-Status: **M4 core passed 2026-11-22; M5 is next.** Companion to
+Status: **M5 core passed 2026-11-22; the parity rewrite is complete.** Companion to
 [libreoffice.md](libreoffice.md), which holds the architecture history and the option analysis,
 and to decisions D34–D36, which hold the *why*. This page is the execution contract: what feature
 parity means, which layer owns what, and how each milestone is proved.
@@ -133,7 +133,7 @@ double. No automatic repair of LibreOffice state (D35).
 | M2 | session, style, multiple items, locators, edit existing | **passed:** two-item citation with a locator; APA → Chicago author-date through document preferences; the dialog stays responsive while commands run |
 | M3 | refresh, unlink, document preferences | **passed:** 100 fields refresh in ~20 s; Unlink removes every field and keeps the text |
 | M4 | bibliography, Add Note, citation explorer | **passed:** APA bibliography entry, footnote citation and table-cell citation, all persisting across save/reopen |
-| M5 | polish, self-test, compatibility message | fresh isolated-profile install; stale-OXT message tested |
+| M5 | polish, self-test, compatibility message | **passed:** AppImage rebuilt, hooks removed, `citewell-lo-core` out, packaged OXT passes the selftest; stale-token message verified earlier |
 
 ## Test layers
 
@@ -145,13 +145,9 @@ double. No automatic repair of LibreOffice state (D35).
 - An isolated Writer profile per milestone; the real profile only through the add-only install
   action, on request.
 
-Temporary `m1insert`, `m1cancel`, `m2multi` and `m2style` hooks behind `CITEWELL_M1_TEST` drive the
-dialogs for verification. They are test-only and go with the fake shim at M3.
-
 ## Known gaps
 
-- `setBibliographyStyle` is a no-op, so the bibliography text is correct but paragraph indents,
-  spacing and tab stops are not applied.
+- The add-only install in the real profile is an explicit user action and was not performed.
 - Editing an existing bibliography and the citation explorer were not exercised.
 - The reference implementation's undo context and save listener are not ported yet.
 - The production message box for Unlink confirmation is implemented but the self-test harness
@@ -159,11 +155,9 @@ dialogs for verification. They are test-only and go with the fake shim at M3.
 
 ## Retirement list
 
-- `citewell-lo-core` left the runtime path at M0 and is removed from packaging after M2 unless a
-  real job appears. The test double is Python: std-only JSON in Rust costs more than the simulation
-  is worth.
-- `/citation` and `/health` on 23121 are replaced by the protocol; the "Check CiteWell" menu entry
-  becomes a hidden `selftest`.
-- The end-of-document, APA-only insertion path is deleted with M1.
+- `citewell-lo-core` left the runtime path at M0 and is no longer packaged (M5).
+- The old `/citation` and `/health` endpoints were replaced by the protocol; `vnd.citewell.health:`
+  now runs the hidden `selftest`.
+- The end-of-document, APA-only insertion path was deleted with M1.
 
 *For the full documentation index, see [../README.md](../README.md).*
