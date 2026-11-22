@@ -113,6 +113,17 @@ fn validate_settings_inner() -> Result<usize, String> {
             }
         }
     }
+    let docs_path = root.join("docs/settings.md");
+    let docs = fs::read_to_string(&docs_path)
+        .map_err(|e| format!("reading {}: {e}", docs_path.display()))?;
+    for pane in panes {
+        let id = pane.get("id").and_then(|v| v.as_str()).unwrap();
+        if !docs.contains(id) {
+            return Err(format!("settings pane {id} is not documented in docs/settings.md"));
+        }
+    }
+    let mut setting_ids = std::collections::BTreeSet::new();
+    let mut preferences = std::collections::BTreeSet::new();
     if let Some(sections) = value.get("simpleSections") {
         let sections = sections
             .as_array()
@@ -136,11 +147,24 @@ fn validate_settings_inner() -> Result<usize, String> {
                 .get("settings")
                 .and_then(|v| v.as_array())
                 .ok_or_else(|| format!("simple settings section {id} is missing settings[]"))?;
+            if let Some(aliases) = section.get("searchAliases") {
+                if aliases.as_array().is_none_or(|items| items.iter().any(|item| item.as_str().is_none())) {
+                    return Err(format!("simple settings section {id} has invalid searchAliases"));
+                }
+            }
             for setting in settings {
                 let setting_id = setting
                     .get("id")
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| format!("simple settings section {id} has a setting without id"))?;
+                if !setting_ids.insert(setting_id.to_string()) {
+                    return Err(format!("duplicate simple setting id: {setting_id}"));
+                }
+                if let Some(alias_list) = setting.get("searchAliases") {
+                    if alias_list.as_array().is_none_or(|items| items.iter().any(|item| item.as_str().is_none())) {
+                        return Err(format!("simple setting {setting_id} has invalid searchAliases"));
+                    }
+                }
                 let setting_type = setting.get("type").and_then(|v| v.as_str());
                 if !matches!(setting_type, Some("checkbox") | Some("radio") | Some("number") | Some("button")) {
                     return Err(format!("simple setting {setting_id} has unsupported type"));
@@ -168,6 +192,11 @@ fn validate_settings_inner() -> Result<usize, String> {
                     && setting.get("preference").and_then(|v| v.as_str()).is_none()
                 {
                     return Err(format!("simple setting {setting_id} is missing preference"));
+                }
+                if let Some(pref) = setting.get("preference").and_then(|v| v.as_str()) {
+                    if !preferences.insert(pref.to_string()) {
+                        return Err(format!("duplicate simple preference key: {pref}"));
+                    }
                 }
                 if !matches!(setting_type, Some("number") | Some("button"))
                     && setting.get("labelKey").and_then(|v| v.as_str()).is_none()

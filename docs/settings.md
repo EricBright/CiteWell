@@ -43,6 +43,24 @@ from raw preference values.
 7. **The registry is data, not executable policy.** It may say "visible when preference X equals Y";
    it may not contain arbitrary functions or expressions.
 
+## Manifest pane IDs
+
+The manifest is the source of these IDs. The settings validator requires each one to remain
+documented.
+
+| Pane ID | Label |
+|---|---|
+| `zotero-prefpane-general` | zotero.preferences.prefpane.general |
+| `zotero-prefpane-account` | preferences-pane-account |
+| `zotero-prefpane-notes` | Notes & Annotations |
+| `zotero-prefpane-import-export` | Import & Export |
+| `zotero-prefpane-cite` | zotero.preferences.prefpane.cite |
+| `zotero-prefpane-integrations` | Integrations |
+| `zotero-prefpane-agent` | Agent access |
+| `zotero-prefpane-library` | Library & Files |
+| `zotero-prefpane-advanced` | zotero.preferences.prefpane.advanced |
+| `zotero-subpane-reset-sync` | zotero.preferences.subpane.resetSync |
+
 ## Current inventory
 
 ### General
@@ -220,6 +238,16 @@ First slice:
 
 Phase 2 is otherwise complete except for migrating the remaining simple rows to descriptors and a
 final deep-link pass for sections that move later. The first descriptor section is live.
+
+## Phase 3 implementation
+
+- Simple sections can declare `searchAliases`; the renderer exposes them through the existing
+  `data-search-strings-raw` search path, so a descriptor need not rely only on visible labels.
+- `validate-settings` now requires every manifest pane ID to appear in this document, rejects
+  duplicate simple setting IDs and duplicate preference keys, and validates alias arrays.
+- The manifest pane-ID table above is the documentation hook for that check.
+- Descriptor controls remain preference-bound through the shell; radio/number/button handlers are
+  validated where they are rendered.
 
 ## Registry shape
 

@@ -195,6 +195,12 @@
           "preference": "bidi.browser.ui",
           "labelKey": "preferences-advanced-enable-bidi-ui"
         }
+      ],
+      "searchAliases": [
+        "bidirectional",
+        "bidi",
+        "language",
+        "locale"
       ]
     },
     {
@@ -209,6 +215,10 @@
           "preference": "extensions.zotero.openNoteInNewWindow",
           "labelKey": "preferences-note-open-in-new-window"
         }
+      ],
+      "searchAliases": [
+        "new window",
+        "notes"
       ]
     },
     {
@@ -248,6 +258,12 @@
           "preference": "extensions.zotero.groups.copyTags",
           "labelKey": "zotero.preferences.groups.tags"
         }
+      ],
+      "searchAliases": [
+        "copy",
+        "annotations",
+        "files",
+        "tags"
       ]
     },
     {
@@ -263,6 +279,10 @@
           "preference": "extensions.zotero.export.citePaperJournalArticleURL",
           "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
         }
+      ],
+      "searchAliases": [
+        "citation url",
+        "journal article"
       ]
     },
     {
@@ -290,6 +310,11 @@
           "preference": "extensions.zotero.automaticSnapshots",
           "labelKey": "zotero.preferences.automaticSnapshots"
         }
+      ],
+      "searchAliases": [
+        "snapshots",
+        "recognize files",
+        "download files"
       ]
     },
     {
@@ -306,6 +331,10 @@
           "preference": "extensions.zotero.showAttachmentFilenames",
           "labelKey": "preferences-attachment-titles-show-filenames"
         }
+      ],
+      "searchAliases": [
+        "filename",
+        "attachment title"
       ]
     },
     {
@@ -334,6 +363,10 @@
             }
           ]
         }
+      ],
+      "searchAliases": [
+        "citation picker",
+        "dialog mode"
       ]
     },
     {
@@ -356,6 +389,11 @@
           "afterKey": "zotero.preferences.trashAutoEmptyDaysPost",
           "size": 2
         }
+      ],
+      "searchAliases": [
+        "automatic tags",
+        "trash",
+        "retention"
       ]
     },
     {
@@ -383,6 +421,10 @@
           "preference": "extensions.zotero.reportTranslationFailure",
           "labelKey": "zotero.preferences.reportTranslationFailure"
         }
+      ],
+      "searchAliases": [
+        "update translators",
+        "scraper"
       ]
     }
   ]

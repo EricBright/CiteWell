@@ -389,6 +389,13 @@ var Zotero_Preferences = {
 			heading.append(h2);
 			groupbox.append(heading);
 			groupbox.setAttribute('aria-labelledby', h2.id);
+			let aliases = [
+				...(section.searchAliases || []),
+				...(section.settings || []).flatMap(setting => setting.searchAliases || [])
+			];
+			if (aliases.length) {
+				groupbox.setAttribute('data-search-strings-raw', aliases.join(','));
+			}
 			if (section.descriptionKey) {
 				let description = document.createXULElement('description');
 				description.textContent = Zotero.getString(section.descriptionKey);
