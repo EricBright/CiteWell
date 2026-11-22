@@ -280,7 +280,7 @@ describe("Attention", function () {
 		appController.watch(win);
 		appClock.advance(1000);
 		assert.equal(win.attentionCount, 1);
-		assert.equal(activated, 1);
+		assert.equal(activated, 0);
 		assert.match(win.document.title, /CiteWell/);
 		appClock.advance(2000);
 		assert.equal(notifications.length, 1);

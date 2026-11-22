@@ -227,16 +227,18 @@ Zotero.Attention = new function () {
 			},
 
 			requestAttention: function (entry) {
+				// Focus the dialog, not the whole application. The platform
+				// activation helper is reserved for an explicit notification
+				// click; using it here made some compositors raise the main
+				// CiteWell window over the document.
+				try {
+					entry.window.focus();
+				}
+				catch (e) {}
 				try {
 					entry.window.getAttention();
 				}
 				catch (e) {}
-				try {
-					activate(entry.window);
-				}
-				catch (e) {
-					adapter.log("attention activation failed", e);
-				}
 			},
 
 			setTitleCue: function (entry, active) {
@@ -293,7 +295,30 @@ Zotero.Attention = new function () {
 						notifier(entry, text);
 						entry.notificationOK = true;
 					}
+					else if (alerts && alerts.showAlert) {
+						const AlertNotification = Components.Constructor(
+							"@mozilla.org/alert-notification;1",
+							"nsIAlertNotification"
+						);
+						const alert = new AlertNotification({
+							title: "CiteWell needs your attention",
+							text,
+							textClickable: true,
+						});
+						alerts.showAlert(alert, (subject, topic) => {
+							if (topic === "alertclickcallback") {
+								try {
+									activate(entry.window);
+								}
+								catch (e) {
+									adapter.log("attention notification click failed", e);
+								}
+							}
+						});
+						entry.notificationOK = true;
+					}
 					else if (alerts && alerts.showAlertNotification) {
+						// Older Gecko API; kept only as a compatibility fallback.
 						alerts.showAlertNotification(
 							"",
 							"CiteWell needs your attention",
@@ -395,15 +420,7 @@ Zotero.Attention = new function () {
 				.getService(Components.interfaces.nsIAlertsService);
 		}
 		catch (e) {}
-		this._defaultPresenter = new this.Presenter(new this.AppAdapter({
-			alerts,
-			showMessage: (entry, text) => {
-				var doc = Zotero.Integration && Zotero.Integration.currentDoc;
-				if (doc && doc.displayAlert) {
-					doc.displayAlert(text, 1, 0).catch(e => Zotero.logError(e));
-				}
-			},
-		}));
+		this._defaultPresenter = new this.Presenter(new this.AppAdapter({ alerts }));
 		return this._defaultPresenter;
 	};
 

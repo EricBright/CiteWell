@@ -187,10 +187,14 @@ the manual matrix is the complement, not a replacement, for the state-machine te
 `Zotero.Integration.displayDialog()` opens citation, document-preferences, bibliography and
 selection dialogs through the presenter as parented modal windows. `Zotero.Integration.Progress`
 uses the same presenter with `kind: "progress"` and `focusOnOpen: false`, so background progress
-never steals focus and gets the 10 s banner instead of immediate urgency. For LibreOffice-originated dialogs, the app attempts the notification at 3 s. If the notification
-API is unavailable or throws, the 10 s banner sends a message to `Zotero.Integration.currentDoc`
-so Writer displays a native message box. If the notification succeeded, no second message box is
-shown; Do Not Disturb remains the accepted blind spot.
+never steals focus and gets the 10 s banner instead of immediate urgency. The 1 s step focuses the dialog only (`window.focus()` plus taskbar attention); it no longer calls
+the platform activation helper, which made some compositors raise the whole CiteWell application.
+The 3 s step uses the modern `nsIAlertsService.showAlert` API. The earlier
+`showAlertNotification` call was stale and threw, which made the app fall through to a Writer
+message box. That box blocked the shim command loop and timed out, leaving the user with a frozen
+message; it is disabled until there is a nonblocking OXT surface. If notifications are unavailable
+or suppressed, the visible floor is taskbar urgency plus the changed title. Do Not Disturb remains
+the accepted blind spot.
 
 ### Instrumentation
 
