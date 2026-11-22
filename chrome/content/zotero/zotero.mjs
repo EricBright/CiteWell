@@ -54,6 +54,7 @@ const xpcomFilesAll = [
 	'prompt',
 	'profile',
 	'progressWindow',
+	'attention',
 	'proxy',
 	'translate/src/translation/translate',
 	'translate/src/translator',

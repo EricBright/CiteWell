@@ -1,6 +1,6 @@
 # Attention and window presentation
 
-**Status:** design draft, 2026-11-22. Not implemented.
+**Status:** accepted 2026-11-22; state machine implemented, presenter and platform adapters pending.
 
 CiteWell must never leave a person waiting on a prompt that is behind another window. This page
 defines the attention contract, the escalation ladder, the platform-specific fallbacks, and the
@@ -49,7 +49,8 @@ progress. A completed operation must never produce a notification.
 
 ## Escalation ladder
 
-Times are provisional and measured from the dialog's `load`/`pageshow`, not from command dispatch.
+The 1 s / 3 s / 10 s thresholds are accepted. They are measured from the dialog's
+`load`/`pageshow`, not from command dispatch.
 
 | Time | Interactive dialog | Progress window |
 |---|---|---|
@@ -71,17 +72,19 @@ Preferred order on Linux:
    a systemd user unit may provide activation-on-demand, but systemd does not grant focus.
 3. **XDG portal / `nsIAlertsService` notification** with a click-to-focus action.
 4. **X11/XWayland `_NET_ACTIVE_WINDOW`** only as a legacy fallback.
-5. **LibreOffice InfoBar** when the action originated in Writer; a message box only if the
-   InfoBar API is unavailable.
+5. **LibreOffice InfoBar at the 3 s escalation**, when the action originated in Writer; a desktop
+   notification if the InfoBar provider is unavailable, and a message box only as a last resort.
 
 No global hooks, synthetic clicks, system-wide always-on-top, or focus-stealing loops. Capability
 probes decide which step is available; failure degrades to the next step.
 
 ## LibreOffice fallback
 
-The yellow/blue banner is the LibreOffice InfoBar. It is the preferred LO-local fallback because
-it is non-modal and appears inside the window the user is already using. The OXT must probe for a
-supported InfoBar provider; if unavailable, a native message box is the last resort.
+The yellow/blue banner is the LibreOffice InfoBar. For LO-originated actions it is the **first**
+visible fallback, at the 3 s escalation, because it is non-modal and appears inside the window the
+user is already using. A desktop notification is the fallback when the InfoBar provider is not
+available; a native message box is the last resort. The OXT must probe the provider before using
+it.
 
 ## Test strategy
 
@@ -127,14 +130,22 @@ document content or personal data.
 
 ## Open questions
 
-- Which desktop environments are required targets beyond the current Wayland session?
-- Is a native desktop notification acceptable as the primary visible fallback, or should the
-  LibreOffice InfoBar always come first for LO-originated actions?
-- May citation and document-preferences dialogs be modal to the CiteWell main window?
-- Are the 1/3/10 second thresholds acceptable, or should they be shorter/longer?
-- Are we allowed to add a D-Bus application interface and a systemd user unit for activation?
-- Is a test-only focus-denial hook acceptable in development builds to exercise the fallback?
-- Who can run the manual KDE/Sway/notification-disabled checks?
+- Does Gecko 153.7 expose a Wayland activation token or portal call from chrome JS? This needs a
+  capability audit before the native path is promised.
+- Does LibreOffice 26.8 expose a supported InfoBar provider to the Python UNO shim?
+- Who can run the manual KDE/notification-disabled checks? GNOME and XWayland are available here;
+  KDE Wayland is the required second target.
+- Which systemd user-unit packaging shape is acceptable: a D-Bus-activated service, a desktop
+  autostart, or no unit at all when the AppImage is already running?
+
+## Implemented so far
+
+`chrome/content/zotero/xpcom/attention.js` holds the platform-free scheduler:
+`Zotero.Attention.Controller` with a fake-clock-friendly adapter contract. The deterministic
+tests in `test/tests/attentionTest.js` cover the 1/3/10 second sequence, focus cancellation,
+completion, progress windows, surface selection, adapter failure, duplicate watches and a second
+focus check at each stage. Removing focus cancellation makes the cancellation test fail; that
+mutation check is part of validating the tests, not a coverage claim.
 
 ## Acceptance
 
