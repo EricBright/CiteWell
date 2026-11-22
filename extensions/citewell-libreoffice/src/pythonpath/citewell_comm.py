@@ -269,7 +269,11 @@ def dispatch(context, message):
         if command == "Field_getText":
             return field.text
         if command == "Field_setText":
-            field.set_text(args[2], bool(args[3]) if len(args) > 3 else False)
+            field.set_text(
+                args[2],
+                bool(args[3]) if len(args) > 3 else False,
+                bool(args[4]) if len(args) > 4 else False,
+            )
             return None
         if command == "Field_delete":
             field.delete()

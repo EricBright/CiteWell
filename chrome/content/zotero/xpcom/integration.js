@@ -1436,10 +1436,14 @@ Zotero.Integration.Session.prototype._updateDocument = async function (forceCita
 					// for citations that were inserted with delay styling
 					var wasDelayed = citation.properties.formattedCitation
 						&& citation.properties.formattedCitation.includes(DELAYED_CITATION_RTF_STYLING);
+					var resetFormatting = forceCitations == FORCE_CITATIONS_RESET_TEXT;
 					if (this.outputFormat == 'rtf' && wasDelayed) {
-						isRich = await citationField.setText(`${DELAYED_CITATION_RTF_STYLING_CLEAR}{${formattedCitation}}`);
+						isRich = await citationField.setText(
+							`${DELAYED_CITATION_RTF_STYLING_CLEAR}{${formattedCitation}}`,
+							{ resetFormatting }
+						);
 					} else {
-						isRich = await citationField.setText(formattedCitation);
+						isRich = await citationField.setText(formattedCitation, { resetFormatting });
 					}
 					
 					citation.properties.formattedCitation = formattedCitation;
@@ -3000,7 +3004,7 @@ Zotero.Integration.Field = class {
 		return this._text;
 	}
 		
-	async setText(text) {
+	async setText(text, options = {}) {
 		this._text = null;
 		var isRich = false;
 		// If RTF wrap with RTF tags
@@ -3010,7 +3014,7 @@ Zotero.Integration.Field = class {
 			}
 			isRich = true;
 		}
-		await this._field.setText(text, isRich);
+		await this._field.setText(text, isRich, options.resetFormatting);
 		return isRich;
 	}
 };

@@ -76,7 +76,50 @@ class Field(object):
 
     # -- content ----------------------------------------------------------
 
-    def set_text(self, text, rich=False):
+    def _reset_character_formatting(self, cursor):
+        """Drop a citation's old character style/direct superscript.
+
+        A citation inserted in a note style can carry a superscript character
+        style. When the document switches to an author-date style, that style
+        is no longer valid; CSL output should inherit the surrounding text.
+        The formatting lives on text portions inside the reference-mark range,
+        not on the reference-mark anchor itself.
+        """
+        text_object = cursor.getText()
+        try:
+            paragraphs = text_object.createEnumeration()
+        except Exception:
+            return
+        while paragraphs.hasMoreElements():
+            paragraph = paragraphs.nextElement()
+            try:
+                if not paragraph.supportsService("com.sun.star.text.Paragraph"):
+                    continue
+                portions = paragraph.createEnumeration()
+            except Exception:
+                continue
+            while portions.hasMoreElements():
+                portion = portions.nextElement()
+                try:
+                    if portion.supportsService("com.sun.star.text.TextTable"):
+                        continue
+                    starts = text_object.compareRegionStarts(cursor, portion)
+                    ends = text_object.compareRegionEnds(cursor, portion)
+                    if starts < 0 or ends > 0:
+                        continue
+                    for name, value in (
+                        ("CharStyleName", ""),
+                        ("CharEscapement", 0),
+                        ("CharEscapementHeight", 100),
+                    ):
+                        try:
+                            portion.setPropertyValue(name, value)
+                        except Exception:
+                            pass
+                except Exception:
+                    continue
+
+    def set_text(self, text, rich=False, reset_formatting=False):
         if self.code.startswith("BIBL") or self.kind == "TextSection":
             if self.kind != "TextSection":
                 self._make_section()
@@ -125,6 +168,8 @@ class Field(object):
         self.named = mark
         self.content = mark
         self.anchor = mark.getAnchor()
+        if reset_formatting:
+            self._reset_character_formatting(self.anchor)
         if pre_break is not None:
             pre_break.setString("")
             post_break.setString("")
