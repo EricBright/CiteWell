@@ -122,7 +122,8 @@
         "src": "chrome://zotero/content/preferences/preferences_library.xhtml",
         "scripts": [
           "chrome://zotero/content/preferences/preferences_general.js",
-          "chrome://zotero/content/preferences/preferences_library.js"
+          "chrome://zotero/content/preferences/preferences_library.js",
+          "chrome://zotero/content/preferences/preferences_advanced.js"
         ],
         "defaultXUL": true
       }

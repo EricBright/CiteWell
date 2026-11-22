@@ -208,9 +208,11 @@ First slice:
   attachment titles and the OpenURL resolver is still pending a later split.
 - Language & Region moved from Advanced to General.
 - Cite is ordered immediately after General; the settings test asserts that adjacency.
+- Attachment base-directory and data-directory controls moved from Advanced to Library & Files;
+  database maintenance remains in Advanced.
 
-Remaining Phase 2 work: move the OpenURL resolver and the Advanced data/base-directory controls,
-migrate simple controls to descriptors, and update deep links.
+Remaining Phase 2 work: move the OpenURL resolver, migrate simple controls to descriptors, and
+update the remaining deep links.
 
 ## Registry shape
 

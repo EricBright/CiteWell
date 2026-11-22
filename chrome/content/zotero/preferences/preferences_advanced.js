@@ -47,10 +47,14 @@ Zotero_Preferences.Advanced = {
 			input.value = Zotero.Prefs.get(preferenceName);
 		}
 		
-		document.getElementById('baseAttachmentPath').addEventListener('syncfrompreference',
-			() => Zotero_Preferences.Attachment_Base_Directory.updateUI());
-		
-		this.onDataDirLoad();
+		var baseAttachmentPath = document.getElementById('baseAttachmentPath');
+		if (baseAttachmentPath) {
+			baseAttachmentPath.addEventListener('syncfrompreference',
+				() => Zotero_Preferences.Attachment_Base_Directory.updateUI());
+		}
+		if (document.getElementById('data-dir-path')) {
+			this.onDataDirLoad();
+		}
 
 		this.updateIndexStats();
 		this.updateLocalAPIUI();
@@ -788,5 +792,16 @@ Zotero_Preferences.Keys = {
 	capitalizePref: function (id) {
 		var elem = document.getElementById(id);
 		return Zotero.Prefs.get(elem.getAttribute('preference'), true).toUpperCase();
+	}
+};
+
+Zotero_Preferences.Files = {
+	init: async function () {
+		if (document.getElementById('baseAttachmentPath')) {
+			await Zotero_Preferences.Attachment_Base_Directory.updateUI();
+		}
+		if (document.getElementById('data-dir-path')) {
+			Zotero_Preferences.Advanced.onDataDirLoad();
+		}
 	}
 };

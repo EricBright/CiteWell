@@ -189,6 +189,8 @@ describe("Settings manifest navigation", function () {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
 			assert.ok(win.document.getElementById("zotero-prefpane-file-handling-groupbox"));
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
+			assert.ok(win.document.getElementById("baseAttachmentPath"));
+			assert.ok(win.document.getElementById("data-dir-path"));
 			assert.ok(win.document.getElementById("library-current-path"));
 		}
 		finally {

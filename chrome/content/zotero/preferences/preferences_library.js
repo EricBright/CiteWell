@@ -43,6 +43,9 @@ Zotero_Preferences.Library = {
 
 		await this._refreshCurrent();
 		this._renderLocations();
+		if (Zotero_Preferences.Files) {
+			await Zotero_Preferences.Files.init();
+		}
 	},
 
 	uninit: function () {
