@@ -235,6 +235,13 @@ mutation check is part of validating the tests, not a coverage claim.
 
 *For the full documentation index, see [../README.md](../README.md).*
 
+## Minimized main window
+
+A parented modal child of a minimized main window can remain invisible on Wayland, while the
+LibreOffice dispatch thread waits for the app. The presenter now opens an independent,
+non-modal dialog when the main window is minimized instead of restoring the whole application.
+The 17-test attention suite covers that branch.
+
 ## Shim logging
 
 The LibreOffice shim now writes to `$XDG_CACHE_HOME/citewell-lo/shim.log` by default (inside

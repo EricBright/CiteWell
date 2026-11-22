@@ -368,8 +368,25 @@ Zotero.Attention = new function () {
 
 		this.open = function (opts) {
 			var parent = opts.parent === undefined ? Zotero.getMainWindow() : opts.parent;
+			// A modal child of a minimized window can stay hidden on Wayland,
+			// leaving the integration waiting forever. If the main window is
+			// minimized, open an independent dialog instead of restoring the
+			// whole application over the document.
+			var parentForWindow = parent;
+			try {
+				if (
+					parent
+					&& parent.STATE_MINIMIZED !== undefined
+					&& parent.windowState === parent.STATE_MINIMIZED
+				) {
+					parentForWindow = null;
+				}
+			}
+			catch (e) {
+				parentForWindow = parent;
+			}
 			var features = ["chrome", "centerscreen"];
-			if (opts.modal) {
+			if (opts.modal && parentForWindow) {
 				// The user explicitly chose parented modal dialogs for actions
 				// that wait on input.
 				features.push("modal=yes", "dependent=yes");
@@ -378,7 +395,7 @@ Zotero.Attention = new function () {
 				features.push("dialog=no");
 			}
 			if (opts.features) features.push(opts.features);
-			var window = openWindow(parent, opts.url, opts.name || "", features.join(","), opts.io);
+			var window = openWindow(parentForWindow, opts.url, opts.name || "", features.join(","), opts.io);
 			if (!window) throw new Error("Attention presenter could not open " + opts.url);
 			this.watchWindow(window, opts);
 			return window;

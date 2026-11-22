@@ -242,6 +242,27 @@ describe("Attention", function () {
 		assert.equal(appController.getEntry(win).focused, false);
 	});
 
+	it("opens an unparented dialog when the main window is minimized", function () {
+		let win = new FakeWindow();
+		let opened;
+		let presenter = new Zotero.Attention.Presenter(adapter, {
+			clock,
+			activate: () => {},
+			openWindow: (parent, url, name, features) => {
+				opened = { parent, features };
+				return win;
+			},
+		});
+		presenter.open({
+			url: "chrome://citewell/test.xhtml",
+			modal: true,
+			parent: { windowState: 1, STATE_MINIMIZED: 1 },
+		});
+		assert.isNull(opened.parent);
+		assert.include(opened.features, "dialog=no");
+		assert.notInclude(opened.features, "modal=yes");
+	});
+
 	it("does not focus a progress presenter on open", function () {
 		let win = new FakeWindow();
 		let activated = 0;
