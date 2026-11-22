@@ -404,6 +404,19 @@ var Zotero_Preferences = {
 					checkbox.setAttribute('label', Zotero.getString(setting.labelKey));
 					groupbox.append(checkbox);
 				}
+				else if (setting.type === 'button') {
+					let button = document.createXULElement('button');
+					button.id = setting.id;
+					button.setAttribute('label', Zotero.getString(setting.labelKey));
+					let actions = {
+						'update-translators': () => Zotero_Preferences.Advanced.updateTranslators()
+					};
+					if (!actions[setting.action]) {
+						throw new Error('Unknown simple setting action: ' + setting.action);
+					}
+					button.addEventListener('command', actions[setting.action]);
+					groupbox.append(button);
+				}
 				else if (setting.type === 'number') {
 					let hbox = document.createXULElement('hbox');
 					hbox.setAttribute('align', 'center');

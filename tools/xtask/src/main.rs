@@ -142,8 +142,11 @@ fn validate_settings_inner() -> Result<usize, String> {
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| format!("simple settings section {id} has a setting without id"))?;
                 let setting_type = setting.get("type").and_then(|v| v.as_str());
-                if !matches!(setting_type, Some("checkbox") | Some("radio") | Some("number")) {
+                if !matches!(setting_type, Some("checkbox") | Some("radio") | Some("number") | Some("button")) {
                     return Err(format!("simple setting {setting_id} has unsupported type"));
+                }
+                if setting_type == Some("button") && setting.get("action").and_then(|v| v.as_str()).is_none() {
+                    return Err(format!("simple setting {setting_id} is missing action"));
                 }
                 if setting_type == Some("number") {
                     for key in ["beforeKey", "afterKey"] {
@@ -161,10 +164,12 @@ fn validate_settings_inner() -> Result<usize, String> {
                         return Err(format!("simple setting {setting_id} has too few radio options"));
                     }
                 }
-                if setting.get("preference").and_then(|v| v.as_str()).is_none() {
+                if setting_type != Some("button")
+                    && setting.get("preference").and_then(|v| v.as_str()).is_none()
+                {
                     return Err(format!("simple setting {setting_id} is missing preference"));
                 }
-                if setting_type != Some("number")
+                if !matches!(setting_type, Some("number") | Some("button"))
                     && setting.get("labelKey").and_then(|v| v.as_str()).is_none()
                 {
                     return Err(format!("simple setting {setting_id} is missing labelKey"));

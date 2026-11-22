@@ -357,6 +357,33 @@
           "size": 2
         }
       ]
+    },
+    {
+      "id": "translator-updates",
+      "paneId": "zotero-prefpane-advanced",
+      "titleKey": "preferences-translator-updates",
+      "before": "#zotero-prefpane-advanced-enable-local-api",
+      "order": 10,
+      "settings": [
+        {
+          "id": "translator-auto-update",
+          "type": "checkbox",
+          "preference": "extensions.zotero.automaticScraperUpdates",
+          "labelKey": "zotero.preferences.autoUpdate"
+        },
+        {
+          "id": "update-translators",
+          "type": "button",
+          "action": "update-translators",
+          "labelKey": "zotero.preferences.updateNow"
+        },
+        {
+          "id": "report-translation-failure",
+          "type": "checkbox",
+          "preference": "extensions.zotero.reportTranslationFailure",
+          "labelKey": "zotero.preferences.reportTranslationFailure"
+        }
+      ]
     }
   ]
 }

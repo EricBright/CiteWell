@@ -64,9 +64,9 @@ Integrations, Notes & Annotations, and Import & Export are in place; the old Exp
 Cite now sits immediately after General. File handling, file renaming, attachment titles, Language &
 Region, attachment base directory, data directory and OpenURL/Locate have moved. Language & Region,
 Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite → Citation Options, File
-Handling, Attachment Titles and General → Behaviour are rendered from simple-section descriptors;
-the renderer supports checkbox, radio and numeric controls. Remaining work is converting the other
-simple rows and a final deep-link pass. See [settings.md](settings.md).
+Handling, Attachment Titles, General → Behaviour and Advanced → Translator updates are rendered
+from simple-section descriptors; the renderer supports checkbox, radio, numeric and fixed-action
+button controls. Remaining work is converting the other simple rows. See [settings.md](settings.md).
 
 **Next actions:**
 

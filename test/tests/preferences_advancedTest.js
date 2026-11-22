@@ -193,6 +193,21 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders Translator updates in Advanced", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("simple-section-translator-updates"));
+			assert.ok(win.document.getElementById("translator-auto-update"));
+			assert.ok(win.document.getElementById("update-translators"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("loads the Integrations pane from the manifest", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-integrations"
