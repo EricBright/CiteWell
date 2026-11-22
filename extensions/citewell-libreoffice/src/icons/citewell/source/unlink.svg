@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="256" viewBox="0 0 256 256">
+  <title>citewell-unlink.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <polygon points="32,160 76.8,115.2 108.8,115.2 108.8,138.24 87.04,138.24 60.16,166.4 87.04,194.56 108.8,194.56 108.8,217.6 76.8,217.6" fill="none" stroke="{{ink}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon points="224,96 179.2,140.8 147.2,140.8 147.2,117.76 168.96,117.76 195.84,89.6 168.96,61.44 147.2,61.44 147.2,38.4 179.2,38.4" fill="none" stroke="{{ink}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M97.435 83.711 L28.81 21.811" fill="none" stroke="{{accent}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="162.843" y1="175.48" x2="224" y2="229.067" fill="none" stroke="{{accent}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="140.848" y1="191.412" x2="140.848" y2="222.545" fill="none" stroke="{{accent}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="115.64" y1="61.363" x2="115.64" y2="31.029" fill="none" stroke="{{accent}}" stroke-width="19.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

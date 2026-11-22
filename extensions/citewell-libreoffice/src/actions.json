@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "defaultIconSet": "citewell",
+  "menu": {
+    "title": "CiteWell",
+    "items": ["cite", "note", "bibliography", "-", "refresh", "docprefs", "unlink"]
+  },
+  "toolbar": {
+    "id": "org.citewell.libreoffice.toolbar",
+    "title": "CiteWell",
+    "items": ["cite", "note", "bibliography", "-", "refresh", "docprefs", "unlink"]
+  },
+  "actions": {
+    "cite": {
+      "command": "addEditCitation",
+      "url": "vnd.citewell.cite:",
+      "title": "Add/Edit Citation",
+      "icon": "cite"
+    },
+    "note": {
+      "command": "addNote",
+      "url": "vnd.citewell.note:",
+      "title": "Add Note",
+      "icon": "note"
+    },
+    "bibliography": {
+      "command": "addEditBibliography",
+      "url": "vnd.citewell.bibliography:",
+      "title": "Add/Edit Bibliography",
+      "icon": "bibliography"
+    },
+    "refresh": {
+      "command": "refresh",
+      "url": "vnd.citewell.refresh:",
+      "title": "Refresh",
+      "icon": "refresh"
+    },
+    "docprefs": {
+      "command": "setDocPrefs",
+      "url": "vnd.citewell.docprefs:",
+      "title": "Set Document Preferences",
+      "icon": "preferences"
+    },
+    "unlink": {
+      "command": "removeCodes",
+      "url": "vnd.citewell.unlink:",
+      "title": "Unlink Citations",
+      "icon": "unlink"
+    }
+  }
+}

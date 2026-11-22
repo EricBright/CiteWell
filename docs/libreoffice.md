@@ -128,16 +128,23 @@ extension, and can route commands to the wrong library.
 `extensions/citewell-libreoffice/` contains the CiteWell-owned OXT:
 
 - id `citewell-libreoffice-integration@sophy.ca`, version `0.1.0`;
-- `components.xml` with a Python UNO provider and a six-item Addons menu;
+- `components.xml` with a Python UNO provider; `actions.json` drives a six-item Addons
+  menu and toolbar;
 - `ProtocolHandler.xcu` mapping `vnd.citewell.*` to that provider;
 - Python shim modules (`citewell_lo`, `citewell_comm`, `citewell_doc`,
   `citewell_protocol`) with no third-party packages;
-- `build.py`, which builds the OXT with Python's `zipfile`.
+- `build.py`, which generates `Addons.xcu` from `actions.json` and builds the OXT with
+  Python's `zipfile`.
 
 The app hosts the protocol on `127.0.0.1:23121` and checks `<data-dir>/lo-token`;
 the shim connects, authenticates, serves document commands and posts menu
 events. The OXT is packaged in the AppImage under `integration/libreoffice/`;
 Cite preferences offers the add-only Flatpak install (D35).
+
+The menu, toolbar and shim command table share `src/actions.json`; adding an action is
+one manifest entry plus its command. Toolbar icons are selected at build time with
+`build.py --icon-set <name>`; `src/icons/README.md` defines the file contract, and
+`tools/render_icons.py` regenerates the committed 16 px/26 px PNGs from SVG sources.
 
 Verified in isolated Writer profiles: insert, edit and cancel through the
 citation dialog; two-item citations with locators; APA → Chicago author-date

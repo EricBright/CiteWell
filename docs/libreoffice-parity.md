@@ -24,8 +24,8 @@ not a reimplementation of the features.
 | Add Note | `Interface.addNote` | field inside a footnote or endnote |
 
 **Not ported:** Add Annotation — CiteWell removed PDF annotations (D30). Export/Import Document is
-deferred: the app supports it, the shim needs two more commands, and no menu exposes it today. A
-toolbar is optional polish after M5.
+deferred: the app supports it, the shim needs two more commands, and no menu exposes it today.
+The toolbar is delivered from the same action manifest as the menu.
 
 ## Layers and ownership
 
@@ -33,7 +33,7 @@ toolbar is optional polish after M5.
 |---|---|---|---|
 | App | JS (Gecko) | protocol server, sessions, dialog, citeproc, styles, document data | touch Writer objects |
 | Shim | Python (UNO) | document reads/writes, field identity, RTF insertion | format citations, resolve items, or store preferences |
-| Menu | XCU | six URLs and labels | contain logic |
+| UI | generated XCU | six URLs, labels and toolbar images | contain logic |
 | Test double | Python | scripted shim for app-side tests | ship in the AppImage |
 
 The invariant that keeps the boundary honest: **the shim has no business logic.** Anything that

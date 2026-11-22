@@ -9,6 +9,7 @@ Citation formatting and document state belong to CiteWell; the document
 adapter lives in citewell_doc and the transport in citewell_comm.
 """
 
+import json
 import os
 import sys
 import traceback
@@ -34,15 +35,20 @@ IMPL_PROVIDER = "org.citewell.comp.LibreOffice.Provider"
 IMPL_DISPATCH = "org.citewell.comp.LibreOffice.Dispatch"
 SERVICE = "org.citewell.LibreOffice"
 
-COMMANDS = {
-    "vnd.citewell.cite:": "addEditCitation",
-    "vnd.citewell.bibliography:": "addEditBibliography",
-    "vnd.citewell.refresh:": "refresh",
-    "vnd.citewell.unlink:": "removeCodes",
-    "vnd.citewell.docprefs:": "setDocPrefs",
-    "vnd.citewell.note:": "addNote",
-        "vnd.citewell.health:": "selftest",
-}
+def _load_commands():
+    path = os.path.join(_HERE, os.pardir, "actions.json")
+    with open(path, encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    commands = {
+        action["url"]: action["command"]
+        for action in manifest["actions"].values()
+    }
+    # The health endpoint is internal and is not part of the UI manifest.
+    commands["vnd.citewell.health:"] = "selftest"
+    return commands
+
+
+COMMANDS = _load_commands()
 
 
 def _log(message):
