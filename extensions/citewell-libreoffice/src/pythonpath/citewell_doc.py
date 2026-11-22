@@ -282,9 +282,24 @@ class Document(object):
             pass
 
     def display_alert(self, message, icon=0, buttons=0):
-        # The app owns user-facing dialogs; log for diagnosis.
+        # In the self-test harness, answer OK/Yes so unattended runs do not hang.
+        import os
+        if os.environ.get("CITEWELL_LO_SELFTEST"):
+            self.manager.log("displayAlert (auto-confirmed): %s" % message)
+            return 1
         self.manager.log("displayAlert: %s" % message)
-        return 0
+        try:
+            toolkit = self.context.ServiceManager.createInstanceWithContext(
+                "com.sun.star.awt.Toolkit", self.context
+            )
+            box = toolkit.createMessageBox(
+                None, 0, {0: 1, 1: 2, 2: 3, 3: 4}.get(int(buttons), 1),
+                "CiteWell", message
+            )
+            return box.execute()
+        except Exception:
+            self.manager.log("message box failed\n%s" % __import__("traceback").format_exc())
+            return 0
 
     def set_bibliography_style(self, *args):
         # Bibliography styling is an M4 item; accepting the call keeps the
