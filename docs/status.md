@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-21 · branch `citewell` · companion to
+Last updated 2026-11-22 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
@@ -19,16 +19,16 @@ push target. The product branch may diverge without limit.
 |---|---|
 | App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `4e009ea0…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
-| Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
+| Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar from the same manifest; dialog insert/edit/cancel; multi-item citations, locators and style switching; 100-field Refresh; Unlink keeps text; bibliography as a text section spanning every entry, with CSL paragraph formatting (hanging indent, line spacing, tab stops); Add Note footnote; table-cell citation; in-text ↔ footnote/endnote conversion; all persist across save/reopen and repeated style changes keep one bibliography field. The `CITEWELL_M1_TEST` hooks are gone, `citewell-lo-core` is no longer packaged, the packaged OXT passes the selftest, and the AppImage is rebuilt. Not done: the add-only install in the real LibreOffice profile (on request), the citation explorer, and the undo/save-listener port. The real profile is untouched (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
+| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, parented modal dialogs, independent dialogs when the main window is minimized, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** a reported Writer freeze after accepting document preferences is still under diagnosis; see Handoff. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
-| Docs | README index, Rust docs gate, D1–D37 |
+| Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Artifacts are local and gitignored:
@@ -41,23 +41,40 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
+## Handoff 2026-11-22
+
+The AppImage is at `~/AppImages/citewell.appimage` (sha256
+`4e009ea03deadbfc94051ab1115d9b90f02ca303adb08f46587563996cec2f9a`, 133,421,560 bytes). The
+current branch is `citewell`; push only to `origin`.
+
+**Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
+preferences dialog appears, and accepting it can leave Writer frozen. The persistent shim log
+(`~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`) shows a 120 s socket timeout
+with no app commands after the dialog. The minimized-main-window fix and the Addons-schema fix are
+in the AppImage; reinstall the OXT add-only and reproduce with that build before changing the
+session architecture. Do not reset the LibreOffice profile. The installer now repairs stale
+deployment cache by moving only CiteWell temp directories to a backup.
+
+**Next actions:**
+
+1. Reproduce the freeze with the new AppImage/OXT, keep Writer open, and read the persistent shim
+   log. Distinguish an invisible dialog from a document-operation hang.
+2. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
+   `CITEWELL_TEST_ATTENTION=deny` for the attention fallback.
+3. Finish the native attention path: D-Bus/systemd integration is user-scoped and visible in Cite
+   preferences → System integration; verify the systemd unit and notification fallback.
+4. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
+
 ## Pick up here
 
-1. **R32 — LibreOffice parity is complete; optional follow-ups.** M5 passed: the AppImage carries
-   the current OXT, the test hooks are removed, `citewell-lo-core` is no longer packaged and the
-   selftest runs. Remaining optional work: install the current OXT in the real profile on request
-   (add-only, D35), exercise the citation explorer, and port the undo context/save listener.
-2. **D29/D30 — done 2026-11-22.** The `editorInstance` module and annotation serialization are
-   removed, the obsolete annotation-to-note tests are gone, the citation-dialog locator test is
-   locale-aware and 44/44, and the note window/tab is a read-only legacy surface (D37). See
-   [notes.md](notes.md).
-3. **R31 — translator safeguards: parked by the owner (2026-11-22).** The translator integration
-   risk is accepted for now; revisit only if the threat model changes. Keep updates and the
-   Firefox/Google Docs paths working in the meantime.
-4. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
-   note conversion step targets `.md` attachments.
-5. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents so the
-   frozen Node build can be retired.
+1. **LibreOffice attention/freeze regression** — see Handoff. The OXT installer repair and toolbar
+   schema fixes are shipped; the remaining work is diagnosis of the post-preferences freeze and the
+   KDE/GNOME/XWayland matrix.
+2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
+3. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents.
+4. **R32 optional follow-ups** — citation explorer and undo/save listener.
+5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+   model changes.
 
 ## Commands
 
@@ -91,6 +108,7 @@ Docs, Rust tests, agent tests, connector:
 
 ```bash
 cargo run --manifest-path tools/docs-check/Cargo.toml
+cargo run --manifest-path tools/Cargo.toml -p repo-guard -- --staged
 python3 -m unittest discover -s test/lo
 cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
 cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
@@ -126,6 +144,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `gh` in this repo | Defaults to the fork; `gh` once resolved to `zotero/zotero` |
 | Upstream remote | Fetch-only (`pushurl = DISABLED`); never push or open upstream issues/PRs |
 | npm | Retired. Do not install, update, audit or add packages; `repo-guard` rejects package/lock changes and restored npm fallbacks (D32) |
+| New JavaScript/Python/shell file | `repo-guard` rejects added code unless its exact path is in `tools/policy-exceptions.txt` under a decision record (D4/D12/D38) |
+| Stale LibreOffice deployment | Not an Extension Manager entry. The installer moves only CiteWell `lu*.tmp_` cache dirs to `~/.cache/citewell/lo-repair/` and retries; never reset the profile |
 
 ## Facts worth not re-litigating
 
