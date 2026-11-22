@@ -335,6 +335,28 @@
           ]
         }
       ]
+    },
+    {
+      "id": "behaviour",
+      "paneId": "zotero-prefpane-general",
+      "titleKey": "zotero.preferences.miscellaneous",
+      "order": 30,
+      "settings": [
+        {
+          "id": "automatic-tags",
+          "type": "checkbox",
+          "preference": "extensions.zotero.automaticTags",
+          "labelKey": "zotero.preferences.automaticTags"
+        },
+        {
+          "id": "trash-auto-empty",
+          "type": "number",
+          "preference": "extensions.zotero.trashAutoEmptyDays",
+          "beforeKey": "zotero.preferences.trashAutoEmptyDaysPre",
+          "afterKey": "zotero.preferences.trashAutoEmptyDaysPost",
+          "size": 2
+        }
+      ]
     }
   ]
 }

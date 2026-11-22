@@ -168,6 +168,9 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("simple-section-groups"));
 			assert.ok(win.document.getElementById("groups-copy-tags"));
 			assert.isAbove(win.document.getElementById("groups-copy-tags").label.length, 0);
+			assert.ok(win.document.getElementById("simple-section-behaviour"));
+			assert.ok(win.document.getElementById("automatic-tags"));
+			assert.ok(win.document.getElementById("trash-auto-empty"));
 		}
 		finally {
 			win.close();

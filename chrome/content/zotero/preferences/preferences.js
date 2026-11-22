@@ -404,6 +404,21 @@ var Zotero_Preferences = {
 					checkbox.setAttribute('label', Zotero.getString(setting.labelKey));
 					groupbox.append(checkbox);
 				}
+				else if (setting.type === 'number') {
+					let hbox = document.createXULElement('hbox');
+					hbox.setAttribute('align', 'center');
+					let before = document.createXULElement('label');
+					before.setAttribute('value', Zotero.getString(setting.beforeKey));
+					let input = document.createElementNS('http://www.w3.org/1999/xhtml', 'input');
+					input.id = setting.id;
+					input.setAttribute('type', 'text');
+					input.setAttribute('size', String(setting.size || 4));
+					input.setAttribute('preference', setting.preference);
+					let after = document.createXULElement('label');
+					after.setAttribute('value', Zotero.getString(setting.afterKey));
+					hbox.append(before, input, after);
+					groupbox.append(hbox);
+				}
 				else if (setting.type === 'radio') {
 					let hbox = document.createXULElement('hbox');
 					hbox.setAttribute('align', 'center');
