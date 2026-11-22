@@ -55,7 +55,8 @@ class Field(object):
 
     @property
     def note_index(self):
-        return 0
+        container = self.document.note_container(self.anchor.getText())
+        return container[1] if container else 0
 
     def set_code(self, code):
         old_name = self.raw_name
@@ -158,6 +159,52 @@ class Field(object):
             controller.select(self.anchor)
         except Exception:
             pass
+
+    def convert(self, field_type, note_type):
+        """Move a citation between body text and footnotes/endnotes."""
+        container = self.document.note_container(self.anchor.getText())
+        if note_type == 0:
+            if container:
+                self._convert_to_body(container[0])
+            return
+        if container:
+            return
+        self._convert_to_note(note_type)
+
+    def _convert_to_note(self, note_type):
+        body = self.document.text
+        position = body.createTextCursorByRange(self.anchor.getStart())
+        service = "com.sun.star.text.Footnote" if note_type == 1 else "com.sun.star.text.Endnote"
+        note = self.document.component.createInstance(service)
+        body.insertTextContent(position, note, True)
+
+        self.anchor.setString("")
+        self.document._unregister(self)
+
+        note_text = note.getText()
+        cursor = note_text.createTextCursorByRange(note)
+        cursor.setString(PLACEHOLDER)
+        mark = self.document.component.createInstance("com.sun.star.text.ReferenceMark")
+        mark.setName(self.raw_name)
+        mark.attach(cursor)
+        self.named = mark
+        self.content = mark
+        self.anchor = mark.getAnchor()
+        self.document._register(mark, "ReferenceMark")
+
+    def _convert_to_body(self, note):
+        body = self.document.text
+        position = body.createTextCursorByRange(note.getAnchor())
+        body.removeTextContent(note)
+        position.setString(PLACEHOLDER)
+        mark = self.document.component.createInstance("com.sun.star.text.ReferenceMark")
+        mark.setName(self.raw_name)
+        mark.attach(position)
+        self.document._unregister(self)
+        self.named = mark
+        self.content = mark
+        self.anchor = mark.getAnchor()
+        self.document._register(mark, "ReferenceMark")
 
     # -- ordering ---------------------------------------------------------
 
@@ -277,6 +324,24 @@ class Document(object):
 
     def can_insert_field(self, field_type="ReferenceMark"):
         return True
+
+    def note_container(self, text_object):
+        for getter, kind in (("getFootnotes", 1), ("getEndnotes", 2)):
+            supplier = getattr(self.component, getter, None)
+            if supplier is None:
+                continue
+            try:
+                notes = supplier()
+            except Exception:
+                continue
+            for index in range(notes.getCount()):
+                note = notes.getByIndex(index)
+                try:
+                    if note.getText() == text_object:
+                        return note, index + 1, kind
+                except Exception:
+                    continue
+        return None
 
     # -- insertion --------------------------------------------------------
 

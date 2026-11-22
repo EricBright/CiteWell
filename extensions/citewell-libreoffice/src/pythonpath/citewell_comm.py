@@ -264,5 +264,8 @@ def dispatch(context, message):
         if command == "Field_select":
             field.select()
             return None
+        if command == "Field_convert":
+            field.convert(args[2], int(args[3]) if len(args) > 3 else 0)
+            return None
 
     raise ProtocolError("Unsupported command: %s" % command)

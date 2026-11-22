@@ -391,6 +391,14 @@ class Document {
 		return this._send("insertText", [text]);
 	}
 
+	async convert(fields, fieldType, noteTypes) {
+		for (let i = 0; i < fields.length; i++) {
+			await this.connection.sendCommand("Field_convert", [
+				this.id, fields[i].index, fieldType, noteTypes[i]
+			]);
+		}
+	}
+
 	complete() {
 		return this._send("complete", []);
 	}
