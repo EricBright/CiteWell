@@ -234,3 +234,10 @@ mutation check is part of validating the tests, not a coverage claim.
 - Removing a fallback makes a test fail.
 
 *For the full documentation index, see [../README.md](../README.md).*
+
+## Shim logging
+
+The LibreOffice shim now writes to `$XDG_CACHE_HOME/citewell-lo/shim.log` by default (inside
+Flatpak: `~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`), with a timestamp on
+each line. `CITEWELL_LO_LOG` still overrides it. This survives closing LibreOffice; the previous
+`/tmp` log did not, which is why the latest freeze left no trace.

@@ -12,6 +12,7 @@ import json
 import os
 import socket
 import struct
+import time
 import traceback
 
 import citewell_doc
@@ -28,13 +29,26 @@ _documents = None
 
 
 def _log_path():
-    return os.environ.get("CITEWELL_LO_LOG", "/tmp/citewell_lo.log")
+    explicit = os.environ.get("CITEWELL_LO_LOG")
+    if explicit:
+        return explicit
+    cache = os.environ.get("XDG_CACHE_HOME") or os.path.join(
+        os.path.expanduser("~"), ".cache"
+    )
+    directory = os.path.join(cache, "citewell-lo")
+    try:
+        os.makedirs(directory, exist_ok=True)
+    except Exception:
+        return "/tmp/citewell_lo.log"
+    return os.path.join(directory, "shim.log")
 
 
 def log(message):
     try:
         with open(_log_path(), "a") as handle:
-            handle.write("shim pid=%d %s\n" % (os.getpid(), message))
+            handle.write(
+                "shim pid=%d %.3f %s\n" % (os.getpid(), time.time(), message)
+            )
     except Exception:
         pass
 
