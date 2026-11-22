@@ -96,8 +96,8 @@ Script: `preferences_library.js`. This pane is mostly workflow, not preference r
 
 ### Export
 
-Source: [preferences_export.xhtml](../chrome/content/zotero/preferences/preferences_export.xhtml).
-Script: `preferences_export.js`.
+Source: [preferences_import_export.xhtml](../chrome/content/zotero/preferences/preferences_import_export.xhtml).
+Script: `preferences_export.js` and `preferences_library.js`.
 
 | Section | Contents | Proposed destination |
 |---|---|---|
@@ -248,6 +248,16 @@ final deep-link pass for sections that move later. The first descriptor section 
 - The manifest pane-ID table above is the documentation hook for that check.
 - Descriptor controls remain preference-bound through the shell; radio/number/button handlers are
   validated where they are rendered.
+
+## Cleanup decisions
+
+- The old `preferences_export.xhtml` is retired; Quick Copy lives in
+  `preferences_import_export.xhtml`, and the old Export pane is recorded as a retired manifest
+  entry.
+- Legacy PDF annotation export stays in Notes & Annotations as `migration-only` until the
+  migration window closes. It is not a supported PDF feature.
+- The hidden Word-processor integration group stays in Cite for now; it is the target of the
+  integration upgrade deep link and is not part of the Linux presentation.
 
 ## Registry shape
 

@@ -67,8 +67,8 @@ Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite →
 Handling, Attachment Titles, General → Behaviour and Advanced → Translator updates are rendered
 from simple-section descriptors; the renderer supports checkbox, radio, numeric and fixed-action
 button controls. Phase 3 has started: descriptor search aliases feed the existing settings search, and the manifest
-validator now enforces documentation coverage plus duplicate-ID/preference checks. Remaining work
-is the cleanup decisions and any remaining simple-row conversions. See [settings.md](settings.md).
+validator now enforces documentation coverage plus duplicate-ID/preference checks. The old Export XHTML is retired; legacy PDF annotation export remains migration-only. Remaining
+work is any further simple-row conversion. See [settings.md](settings.md).
 
 **Next actions:**
 
