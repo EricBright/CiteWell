@@ -198,4 +198,159 @@ Zotero.Attention = new function () {
 			return entries.size;
 		};
 	};
+	/**
+	 * The default app-side adapter. The notification and activation calls are
+	 * injectable so tests can exercise them without a compositor or an alert
+	 * daemon.
+	 */
+	this.AppAdapter = function (options = {}) {
+		var activate = options.activate || (win => Zotero.Utilities.Internal.activate(win));
+		var alerts = options.alerts;
+		var notifier = options.notify;
+		var adapter = {
+			isFocused: function (window) {
+				try {
+					return !!(window && !window.closed && window.document && window.document.hasFocus());
+				}
+				catch (e) {
+					return false;
+				}
+			},
+
+			requestAttention: function (entry) {
+				try {
+					entry.window.getAttention();
+				}
+				catch (e) {}
+				try {
+					activate(entry.window);
+				}
+				catch (e) {
+					adapter.log("attention activation failed", e);
+				}
+			},
+
+			setTitleCue: function (entry, active) {
+				var doc = entry.window && entry.window.document;
+				if (!doc) return;
+				if (active) {
+					if (entry.originalTitle === undefined) {
+						entry.originalTitle = doc.title;
+					}
+					doc.title = "⚠ CiteWell — waiting for you";
+				}
+				else {
+					adapter.clearTitleCue(entry);
+				}
+			},
+
+			clearTitleCue: function (entry) {
+				var doc = entry.window && entry.window.document;
+				if (!doc || entry.originalTitle === undefined) return;
+				doc.title = entry.originalTitle;
+				entry.originalTitle = undefined;
+			},
+
+			escalate: function (entry) {
+				adapter.notify(entry);
+			},
+
+			showBanner: function (entry) {
+				adapter.setTitleCue(entry, true);
+				adapter.notify(entry);
+			},
+
+			notify: function (entry) {
+				if (entry.notified) return;
+				entry.notified = true;
+				var text = entry.kind === "progress"
+					? "CiteWell is still working. Open CiteWell to see the progress."
+					: "A CiteWell window may be behind another application. Click to bring it forward.";
+				try {
+					if (notifier) {
+						notifier(entry, text);
+					}
+					else if (alerts && alerts.showAlertNotification) {
+						alerts.showAlertNotification(
+							"",
+							"CiteWell needs your attention",
+							text,
+							true,
+							null,
+							{ observe: () => activate(entry.window) },
+							null,
+							"citewell-attention"
+						);
+					}
+				}
+				catch (e) {
+					adapter.log("attention notification failed", e);
+				}
+			},
+
+			log: function (message, error) {
+				if (options.log) options.log(message, error);
+				else if (Zotero && Zotero.logError) Zotero.logError(error || message);
+			},
+		};
+		return adapter;
+	};
+
+	/**
+	 * Opens a window, attaches the controller, and returns the window.
+	 */
+	this.Presenter = function (adapter, options = {}) {
+		var controller = options.controller || new Zotero.Attention.Controller(adapter, options);
+		this.controller = controller;
+		var openWindow = options.openWindow || function (parent, url, name, features, io) {
+			if (parent && typeof parent.openDialog === "function") {
+				return parent.openDialog(url, name, features, io);
+			}
+			return Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+				.getService(Components.interfaces.nsIWindowWatcher)
+				.openWindow(null, url, name, features, io);
+		};
+
+		this.open = function (opts) {
+			var parent = opts.parent === undefined ? Zotero.getMainWindow() : opts.parent;
+			var features = ["chrome", "centerscreen"];
+			if (opts.modal) {
+				// The user explicitly chose parented modal dialogs for actions
+				// that wait on input.
+				features.push("modal=yes", "dependent=yes");
+			}
+			else {
+				features.push("dialog=no");
+			}
+			if (opts.features) features.push(opts.features);
+			var window = openWindow(parent, opts.url, opts.name || "", features.join(","), opts.io);
+			if (!window) throw new Error("Attention presenter could not open " + opts.url);
+			this.watchWindow(window, opts);
+			return window;
+		};
+
+		this.watchWindow = function (window, opts = {}) {
+			var watched = false;
+			var watch = function () {
+				if (watched) return;
+				watched = true;
+				controller.watch(window, {
+					kind: opts.kind || "dialog",
+					surface: opts.surface || "app",
+					requiresInput: opts.requiresInput,
+				});
+			};
+			window.addEventListener("focus", () => controller.focus(window));
+			window.addEventListener("unload", () => controller.close(window));
+			window.addEventListener("load", watch);
+			if (window.document && window.document.readyState === "complete") {
+				watch();
+			}
+			try {
+				Zotero.Utilities.Internal.activate(window);
+			}
+			catch (e) {}
+		}
+	};
+
 };

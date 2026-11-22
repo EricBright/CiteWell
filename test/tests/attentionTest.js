@@ -143,6 +143,78 @@ describe("Attention", function () {
 		assert.deepEqual(adapter.calls, ["urgency:dialog", "title:true"]);
 	});
 
+
+	function FakeWindow(options = {}) {
+		this.listeners = {};
+		this.closed = false;
+		this.attentionCount = 0;
+		this.document = {
+			title: options.title || "Original title",
+			readyState: options.readyState || "complete",
+			hasFocus: () => !!options.focused,
+		};
+	}
+	FakeWindow.prototype.addEventListener = function (name, fn) {
+		(this.listeners[name] = this.listeners[name] || []).push(fn);
+	};
+	FakeWindow.prototype.dispatch = function (name) {
+		for (let fn of this.listeners[name] || []) fn();
+	};
+	FakeWindow.prototype.getAttention = function () {
+		this.attentionCount++;
+	};
+	FakeWindow.prototype.close = function () {
+		this.closed = true;
+		this.dispatch("unload");
+	};
+
+	it("presents a parented modal dialog and attaches focus handling", function () {
+		let win = new FakeWindow({ readyState: "loading" });
+		let opened;
+		let presenter = new Zotero.Attention.Presenter(adapter, {
+			clock,
+			openWindow: (parent, url, name, features) => {
+				opened = { parent, url, name, features };
+				return win;
+			},
+		});
+		let parent = {};
+		presenter.open({ url: "chrome://citewell/test.xhtml", name: "test", modal: true, parent });
+		assert.equal(opened.parent, parent);
+		assert.include(opened.features, "modal=yes");
+		assert.include(opened.features, "dependent=yes");
+		assert.notInclude(opened.features, "dialog=no");
+		win.dispatch("load");
+		clock.advance(1000);
+		assert.deepEqual(adapter.calls, ["urgency:dialog", "title:true"]);
+		win.dispatch("focus");
+		clock.advance(20000);
+		assert.deepEqual(adapter.calls, ["urgency:dialog", "title:true", "title:clear"]);
+	});
+
+	it("uses an app adapter for title cues, urgency and one notification", function () {
+		let win = new FakeWindow();
+		let activated = 0;
+		let notifications = [];
+		let appAdapter = new Zotero.Attention.AppAdapter({
+			activate: () => activated++,
+			notify: (entry, text) => notifications.push(text),
+		});
+		let appClock = new FakeClock();
+		let appController = new Zotero.Attention.Controller(appAdapter, { clock: appClock });
+		appController.watch(win);
+		appClock.advance(1000);
+		assert.equal(win.attentionCount, 1);
+		assert.equal(activated, 1);
+		assert.match(win.document.title, /CiteWell/);
+		appClock.advance(2000);
+		assert.equal(notifications.length, 1);
+		appClock.advance(7000);
+		assert.equal(notifications.length, 1);
+		appController.focus(win);
+		assert.equal(win.document.title, "Original title");
+	});
+
 	it("checks focus again at each stage", function () {
 		controller.watch(win);
 		clock.advance(1000);

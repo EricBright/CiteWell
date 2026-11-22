@@ -1219,7 +1219,8 @@ describe("Zotero.Integration", function () {
 					styleID,
 					locale: null,
 					hasBibliography: true,
-					bibliographyStyleHasBeenSet: true
+					bibliographyStyleHasBeenSet: true,
+					bibliographyStyleVersion: 1
 				},
 				prefs: {
 					fieldType: 'ReferenceMark',
@@ -1266,7 +1267,8 @@ describe("Zotero.Integration", function () {
 				styleID,
 				locale: 'en-US',
 				hasBibliography: false,
-				bibliographyStyleHasBeenSet: true
+				bibliographyStyleHasBeenSet: true,
+				bibliographyStyleVersion: 1
 			};
 			data.prefs = {
 				noteType: 1,

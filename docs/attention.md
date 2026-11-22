@@ -1,6 +1,6 @@
 # Attention and window presentation
 
-**Status:** accepted 2026-11-22; state machine implemented, presenter and platform adapters pending.
+**Status:** accepted 2026-11-22; state machine, presenter and app adapter implemented; LibreOffice/progress adapters and system integration pending.
 
 CiteWell must never leave a person waiting on a prompt that is behind another window. This page
 defines the attention contract, the escalation ladder, the platform-specific fallbacks, and the
@@ -158,6 +158,12 @@ another workspace, LibreOffice fullscreen, notification service disabled, and a 
 desktop. Record the observed escalation. Real compositor focus cannot be asserted reliably in CI;
 the manual matrix is the complement, not a replacement, for the state-machine tests.
 
+### Real-window integration
+
+`Zotero.Integration.displayDialog()` now opens citation, document-preferences, bibliography and
+selection dialogs through the presenter as parented modal windows. The LibreOffice and progress
+adapters are the next slices; the app adapter's notification call is still capability-dependent.
+
 ### Instrumentation
 
 Log the state transitions with the capability result, window type and elapsed time. Do not log
@@ -177,11 +183,13 @@ document content or personal data.
 
 ## Implemented so far
 
-`chrome/content/zotero/xpcom/attention.js` holds the platform-free scheduler:
+`chrome/content/zotero/xpcom/attention.js` holds the platform-free scheduler, the
+`AppAdapter` (focus, title cue, urgency, one notification) and the `Presenter` (parented modal
+opening and focus/unload wiring):
 `Zotero.Attention.Controller` with a fake-clock-friendly adapter contract. The deterministic
 tests in `test/tests/attentionTest.js` cover the 1/3/10 second sequence, focus cancellation,
-completion, progress windows, surface selection, adapter failure, duplicate watches and a second
-focus check at each stage. Removing focus cancellation makes the cancellation test fail; that
+completion, progress windows, surface selection, adapter failure, duplicate watches, a second
+focus check at each stage, modal/parent features, title cues and notification deduplication. Removing focus cancellation makes the cancellation test fail; that
 mutation check is part of validating the tests, not a coverage claim.
 
 ## Acceptance

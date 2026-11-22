@@ -503,16 +503,18 @@ Zotero.Integration = new function () {
 		await Zotero.Integration.currentSession?.progressBar.hide(true);
 		Zotero.Integration.currentWindowType = windowType;
 		
-		var allOptions = 'chrome,centerscreen';
-		// without this, Firefox gets raised with our windows under Compiz
-		if(Zotero.isLinux) allOptions += ',dialog=no';
-		if(options) allOptions += ','+options;
-		
-		var window = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-			.getService(Components.interfaces.nsIWindowWatcher)
-			.openWindow(null, url, '', allOptions, (io ? io : null));
+		var presenter = Zotero.Attention.getDefaultPresenter();
+		var window = presenter.open({
+			url,
+			name: '',
+			features: options || '',
+			io: io ? io : null,
+			modal: true,
+			parent: Zotero.getMainWindow(),
+			kind: "dialog",
+			surface: "app",
+		});
 		Zotero.Integration.currentWindow = window;
-		Zotero.Utilities.Internal.activate(window);
 		
 		var deferred = Zotero.Promise.defer();
 		var listener = function () {
@@ -521,6 +523,7 @@ Zotero.Integration = new function () {
 			if(window.newWindow) {
 				window = window.newWindow;
 				Zotero.Integration.currentWindow = window;
+				presenter.watchWindow(window, { kind: "dialog", surface: "app" });
 				window.addEventListener("unload", listener, false);
 				return;
 			}
