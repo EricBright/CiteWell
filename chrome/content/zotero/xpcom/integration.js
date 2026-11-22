@@ -1437,8 +1437,10 @@ Zotero.Integration.Session.prototype._updateDocument = async function (forceCita
 					// for citations that were inserted with delay styling
 					var wasDelayed = citation.properties.formattedCitation
 						&& citation.properties.formattedCitation.includes(DELAYED_CITATION_RTF_STYLING);
-					var resetFormatting = forceCitations == FORCE_CITATIONS_RESET_TEXT
-						|| this.citationStyleChanged;
+					// Citation text is generated content. Whenever it is
+					// rewritten, drop character formatting from the previous
+					// rendering so the new style inherits the surrounding text.
+					var resetFormatting = true;
 					if (this.outputFormat == 'rtf' && wasDelayed) {
 						isRich = await citationField.setText(
 							`${DELAYED_CITATION_RTF_STYLING_CLEAR}{${formattedCitation}}`,
