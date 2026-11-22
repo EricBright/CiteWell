@@ -10,11 +10,30 @@
           <node o:name="Submenu">
             <node o:name="1" o:op="replace">
               <prop o:name="URL"><value>vnd.citewell.cite:</value></prop>
-              <prop o:name="Title" xml:lang="en-US"><value>Insert Citation</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Add/Edit Citation</value></prop>
             </node>
             <node o:name="2" o:op="replace">
-              <prop o:name="URL"><value>vnd.citewell.health:</value></prop>
-              <prop o:name="Title" xml:lang="en-US"><value>Check CiteWell</value></prop>
+              <prop o:name="URL"><value>vnd.citewell.note:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Add Note</value></prop>
+            </node>
+            <node o:name="3" o:op="replace">
+              <prop o:name="URL"><value>vnd.citewell.bibliography:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Add/Edit Bibliography</value></prop>
+            </node>
+            <node o:name="4" o:op="replace">
+              <prop o:name="URL"><value>private:separator</value></prop>
+            </node>
+            <node o:name="5" o:op="replace">
+              <prop o:name="URL"><value>vnd.citewell.refresh:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Refresh</value></prop>
+            </node>
+            <node o:name="6" o:op="replace">
+              <prop o:name="URL"><value>vnd.citewell.docprefs:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Set Document Preferences</value></prop>
+            </node>
+            <node o:name="7" o:op="replace">
+              <prop o:name="URL"><value>vnd.citewell.unlink:</value></prop>
+              <prop o:name="Title" xml:lang="en-US"><value>Unlink Citations</value></prop>
             </node>
           </node>
         </node>

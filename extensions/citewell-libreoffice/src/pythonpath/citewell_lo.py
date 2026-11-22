@@ -42,6 +42,8 @@ COMMANDS = {
     "vnd.citewell.docprefs:": "setDocPrefs",
     "vnd.citewell.note:": "addNote",
     "vnd.citewell.m0test:": "m0test",
+    "vnd.citewell.m1insert:": "m1insert",
+    "vnd.citewell.m1cancel:": "m1cancel",
     "vnd.citewell.health:": "selftest",
 }
 

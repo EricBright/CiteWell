@@ -22,6 +22,7 @@ let _server = null;
 let _compatServer = null;
 let _token = null;
 let _connection = null;
+let _dialogTestCount = 0;
 
 function log(message) {
 	Zotero.debug("CiteWellLO: " + message);
@@ -241,6 +242,11 @@ async function handleEvent(connection, payload) {
 		await runM0Test(connection);
 		return;
 	}
+	if ((command === "m1insert" || command === "m1cancel")
+			&& Services.env.get("CITEWELL_M1_TEST") === "1") {
+		await runDialogTest(connection, command === "m1insert");
+		return;
+	}
 	try {
 		await Zotero.Integration.execCommand("LibreOffice", command, null);
 	}
@@ -248,6 +254,42 @@ async function handleEvent(connection, payload) {
 		Zotero.logError(e);
 	}
 	connection.sendEvent({ command: "done" });
+}
+
+async function runDialogTest(connection, insert) {
+	const promise = Zotero.Integration.execCommand("LibreOffice", "addEditCitation", null);
+	setTimeout(async () => {
+		try {
+			const win = Zotero.Integration.currentWindow;
+			if (!win || win.closed) {
+				log("dialog test: no citation window");
+				return;
+			}
+			if (insert) {
+				const items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID);
+				const item = items.find(candidate => candidate.isRegularItem() && !candidate.deleted);
+				if (!item) throw new Error("dialog test: no regular item in the library");
+				const io = win.arguments[0].wrappedJSObject;
+				const locator = _dialogTestCount++ === 0 ? "" : "42";
+				io.citation.citationItems = [{ id: item.id, locator, label: "page" }];
+				io.accept();
+				log("dialog test: accepted item " + item.id);
+			}
+			else {
+				win.close();
+				log("dialog test: closed the dialog");
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+	}, 2500);
+	try {
+		await promise;
+	}
+	finally {
+		connection.sendEvent({ command: "done" });
+	}
 }
 
 async function runM0Test(connection) {
@@ -339,6 +381,31 @@ class Document {
 		return this._send("setDocumentData", [data]);
 	}
 
+	setBibliographyStyle(firstLineIndent, bodyIndent, lineSpacing, lineSpacingUnit, tabStops, tabStopsUnit) {
+		return this._send("setBibliographyStyle", [
+			firstLineIndent, bodyIndent, lineSpacing, lineSpacingUnit, tabStops, tabStopsUnit
+		]);
+	}
+
+	convertPlaceholdersToFields(placeholderIDs, noteType, fieldType) {
+		return this._send("convertPlaceholdersToFields", [placeholderIDs, noteType, fieldType])
+			.then(result => {
+				const fields = [];
+				for (let i = 0; result && i < result[0].length; i++) {
+					fields.push(new Field(this.connection, this.id, result[0][i], result[1][i], result[2][i]));
+				}
+				return fields;
+			});
+	}
+
+	exportDocument(fieldType, importInstructions) {
+		return this._send("exportDocument", [fieldType, importInstructions]);
+	}
+
+	importDocument() {
+		return this._send("importDocument", []);
+	}
+
 	insertField(fieldType, noteType) {
 		return this._send("insertField", [fieldType, parseInt(noteType) || 0]).then(result => {
 			return new Field(this.connection, this.id, result[0], result[1], result[2]);
@@ -354,7 +421,8 @@ class Document {
 					this.id,
 					result[0][i],
 					result[1][i],
-					result[2][i]
+					result[2][i],
+					result[3] ? result[3][i] : -1
 				));
 			}
 			return fields;
@@ -375,12 +443,25 @@ class Document {
 }
 
 class Field {
-	constructor(connection, documentID, index, code, noteIndex) {
+	constructor(connection, documentID, index, code, noteIndex, adjacent) {
 		this.connection = connection;
 		this.documentID = documentID;
 		this.index = index;
 		this._code = code;
 		this.noteIndex = noteIndex;
+		this.adjacent = adjacent;
+	}
+
+	getNoteIndex() {
+		return this.noteIndex;
+	}
+
+	isAdjacentToNextField() {
+		return this.adjacent === 0;
+	}
+
+	equals(other) {
+		return this.index === other.index;
 	}
 
 	_send(command, args) {
@@ -436,6 +517,10 @@ class Field {
 
 	select() {
 		return this._send("select", []);
+	}
+
+	convert(fieldType, noteType) {
+		return this._send("convert", [fieldType, noteType]);
 	}
 }
 

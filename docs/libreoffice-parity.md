@@ -1,6 +1,6 @@
 # LibreOffice parity plan
 
-Status: **M0 passed 2026-11-22; M1 is next.** Companion to
+Status: **M1 core passed 2026-11-22; M2 is next.** Companion to
 [libreoffice.md](libreoffice.md), which holds the architecture history and the option analysis,
 and to decisions D34–D36, which hold the *why*. This page is the execution contract: what feature
 parity means, which layer owns what, and how each milestone is proved.
@@ -129,7 +129,7 @@ double. No automatic repair of LibreOffice state (D35).
 | Milestone | Deliverable | Acceptance |
 |---|---|---|
 | M0 | transport, hello/token, field create/read/update, RTF insert | **passed:** field survives save and reopen; wrong token rejected; isolated profile only |
-| M1 | document and field commands; Add/Edit Citation | the dialog edits a citation; a second citation inserts at the cursor; cancel leaves the document unchanged |
+| M1 | document and field commands; Add/Edit Citation | **passed:** insert, edit with a locator, and cancel through the real dialog; adjacent fields stay separate |
 | M2 | session, style, multiple items, locators, edit existing | one-item and two-item citations with locators round-trip through edit; no deadlock while the citation dialog is open |
 | M3 | refresh, unlink, document preferences | a 100-field golden document refreshes; unlink leaves plain text |
 | M4 | bibliography, Add Note, citation explorer | the bibliography regenerates after a style change; footnote citation works |
@@ -144,6 +144,9 @@ double. No automatic repair of LibreOffice state (D35).
   unlink, extract text, diff.
 - An isolated Writer profile per milestone; the real profile only through the add-only install
   action, on request.
+
+Temporary `m1insert` and `m1cancel` hooks behind `CITEWELL_M1_TEST` drive the dialog for
+verification. They are test-only and go with the fake shim at M2.
 
 ## Known gaps
 

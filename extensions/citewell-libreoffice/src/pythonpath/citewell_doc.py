@@ -13,6 +13,7 @@ import functools
 
 import uno
 from com.sun.star.beans import PropertyValue
+from com.sun.star.text.ControlCharacter import PARAGRAPH_BREAK
 
 from citewell_protocol import (
     MAX_PROPERTY_LENGTH,
@@ -79,6 +80,16 @@ class Field(object):
             # than inserting at a collapsed point.
             text_object.removeTextContent(self.content)
             cursor.setString("CITEWELL_PLACEHOLDER")
+        pre_break = None
+        post_break = None
+        if rich:
+            # Isolate the citation in its own paragraphs while replacing it.
+            # Without this, a citation at the end of the document can grow to
+            # absorb the next one.
+            pre_break = cursor.getStart()
+            post_break = cursor.getEnd()
+            text_object.insertControlCharacter(pre_break, PARAGRAPH_BREAK, True)
+            text_object.insertControlCharacter(post_break, PARAGRAPH_BREAK, True)
         if not text:
             cursor.setString("")
         elif rich:
@@ -103,6 +114,9 @@ class Field(object):
         self.named = mark
         self.content = mark
         self.anchor = mark.getAnchor()
+        if pre_break is not None:
+            pre_break.setString("")
+            post_break.setString("")
 
     def remove_code(self):
         """Keep the text, drop the field identity.
@@ -124,7 +138,14 @@ class Field(object):
 
     def delete(self):
         text_object = self.anchor.getText()
-        text_object.removeTextContent(self.content)
+        self.anchor.setString("")
+        try:
+            text_object.removeTextContent(self.content)
+        except Exception:
+            pass
+        self.document._unregister(self)
+        self.named = None
+        self.content = None
 
     def select(self):
         controller = self.document.component.getCurrentController()
@@ -261,9 +282,15 @@ class Document(object):
             pass
 
     def display_alert(self, message, icon=0, buttons=0):
-        # M0: log only; the app shows its own dialogs.
+        # The app owns user-facing dialogs; log for diagnosis.
         self.manager.log("displayAlert: %s" % message)
         return 0
+
+    def set_bibliography_style(self, *args):
+        # Bibliography styling is an M4 item; accepting the call keeps the
+        # document-preferences path from failing.
+        self.manager.log("setBibliographyStyle: not applied yet")
+        return None
 
     def complete(self):
         pass

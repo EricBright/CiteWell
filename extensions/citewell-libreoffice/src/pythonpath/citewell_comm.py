@@ -233,6 +233,9 @@ def dispatch(context, message):
     if command == "Document_insertText":
         document.insert_text(args[1])
         return None
+    if command == "Document_setBibliographyStyle":
+        document.set_bibliography_style(*args[1:])
+        return None
     if command == "Document_cleanup":
         document.cleanup()
         return None

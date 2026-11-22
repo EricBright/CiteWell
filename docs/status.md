@@ -26,7 +26,7 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **M0 passed 2026-11-22.** The app hosts the protocol on 23121 and the Python UNO shim connects with a token; hello, field create/read/update, RTF insertion, document-data round-trip, save/reopen and wrong-token rejection were verified in isolated Writer profiles. The six menu actions are not wired yet; M1 is next. `citewell-lo-core` is no longer launched and stays packaged until M2. The real profile is untouched; the installer is add-only (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
+| LibreOffice | **M1 core verified 2026-11-22.** App owns 23121; the Python shim uses a token handshake. The CiteWell menu has six actions, and Add/Edit Citation drives the existing dialog: insert, edit with a locator, and cancel all work in isolated Writer profiles; adjacent fields, RTF, document data and save/reopen pass. Remaining: multi-item citations, style switching, Refresh, bibliography, document preferences and Unlink. `citewell-lo-core` is no longer launched and stays packaged until M2. The real profile is untouched; the installer is add-only (D35). Plan: [libreoffice-parity.md](libreoffice-parity.md) |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D36 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
@@ -43,11 +43,11 @@ plan.
 
 ## Pick up here
 
-1. **R32 — LibreOffice parity, M1 next.** M0 passed: transport, token handshake, field
-   create/read/update, RTF, document data, save/reopen and token rejection work in isolated
-   profiles. M1 adds the rest of the document/field commands and wires Add/Edit Citation to the
-   app's existing dialog. Follow [libreoffice-parity.md](libreoffice-parity.md). **The installer is
-   add-only (D35); never repair or remove another extension or profile state.** Test against an
+1. **R32 — LibreOffice parity, M2 next.** M1 core passed: six menu actions, dialog insert/edit/
+   cancel, locators, adjacent fields, RTF and save/reopen in isolated profiles. M2 covers
+   multi-item citations, style switching and the remaining session edges; M3 adds Refresh, Unlink
+   and document preferences. Follow [libreoffice-parity.md](libreoffice-parity.md). **The installer
+   is add-only (D35); never repair or remove another extension or profile state.** Test against an
    isolated profile, not the real one.
 2. **D29 — finish the note surface** ([notes.md](notes.md)). Attachment creation, external open,
    migration, embedded-image copying, note-editor bundle removal, excerpts and full-text
