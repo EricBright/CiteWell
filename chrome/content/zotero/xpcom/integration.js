@@ -1289,6 +1289,7 @@ Zotero.Integration.Session.prototype.updateDocument = async function (forceCitat
 	this.progressBar.start();
 	await this._updateDocument(forceCitations, forceBibliography, ignoreCitationChanges)
 	this.progressBar.finishSegment();
+	this.citationStyleChanged = false;
 
 	var diff = this.timer.stop();
 	this.timer = null;
@@ -1436,7 +1437,8 @@ Zotero.Integration.Session.prototype._updateDocument = async function (forceCita
 					// for citations that were inserted with delay styling
 					var wasDelayed = citation.properties.formattedCitation
 						&& citation.properties.formattedCitation.includes(DELAYED_CITATION_RTF_STYLING);
-					var resetFormatting = forceCitations == FORCE_CITATIONS_RESET_TEXT;
+					var resetFormatting = forceCitations == FORCE_CITATIONS_RESET_TEXT
+						|| this.citationStyleChanged;
 					if (this.outputFormat == 'rtf' && wasDelayed) {
 						isRich = await citationField.setText(
 							`${DELAYED_CITATION_RTF_STYLING_CLEAR}{${formattedCitation}}`,
@@ -2012,6 +2014,7 @@ Zotero.Integration.Session.prototype.setData = async function (data, resetStyle)
 	this.data = data;
 	this.data.sessionID = this.sessionID;
 	if (data.style.styleID && (!oldStyle || oldStyle.styleID != data.style.styleID || resetStyle)) {
+		this.citationStyleChanged = true;
 		try {
 			await Zotero.Styles.init();
 			var getStyle = Zotero.Styles.get(data.style.styleID);
