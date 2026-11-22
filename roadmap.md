@@ -19,7 +19,6 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R31 | Translator safeguards without freezing updates (D33) | Capture is the product's main input; updates must keep working while third-party code is contained | Updates still install and roll back; Firefox and Google Docs insertion tested; permissions/sandbox documented |
 | R32 | LibreOffice feature parity: six menu actions, field-based citations, bibliography ([plan](docs/libreoffice-parity.md)) | The scaffold only inserts APA text at the end of the document; users expect Zotero's citation workflow | M5 passed 2026-11-22: add/edit citation, refresh, unlink, bibliography, Add Note and table fields; AppImage rebuilt; add-only install available on request |
 | R15 | Rust build toolchain: replace babel/browserify/sass with Rust equivalents | Removes the frozen Node build dependency | Bundles built by Rust tools pass the same tests |
 | R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` creates maintenance work, even without upstream parity | Written strategy; first string renamed without touching upstream locale files |
@@ -35,6 +34,7 @@ upstream merges are not roadmap items.
 | R19 | Remove the sync subsystem: `xpcom/sync`, `preferences_account`, WebDAV storage, connector online code | The switch hides it now; deletion should be deliberate | No sync code remains and the build has no dead paths |
 | R20 | Obsidian/Markdown export: one-way first, design in [docs/export.md](docs/export.md) | Portability without giving up SQLite; becomes mostly a copy of the `.md` attachments | 10k-item export under a minute, vault opens with working links, second run changes nothing |
 | R21 | Update metadata: SHA-256 checksums and `.zsync` files beside the AppImage | Gear Lever/AppImageUpdate need a checksum and a zsync file | A release publishes `.AppImage`, `.sha256` and `.zsync`; Gear Lever offers the update |
+| R31 | Translator safeguards without freezing updates (D33) | **Parked 2026-11-22 by owner**: Zotero's translator integration risk is accepted for now; revisit only if the threat model changes | Updates install/roll back; Firefox and Google Docs insertion tested; permissions/sandbox documented |
 | R33 | Numeric-style citation renumbering: measure and batch field updates | Correctness first; numbered styles are inherently O(k) per insertion and no numeric batching exists yet; benchmark before optimising | 200-citation insertion in the middle stays under 1 s and 500 under 3 s; only changed fields are rewritten |
 
 ## Not doing

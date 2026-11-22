@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `ddb833c3…`, 133,339,640 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `07d39dae…`, 127,396,344 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | One shape (book-section) in light/dark for app, connector, states and Google Docs |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,339,640 bytes; sha256 `ddb833c3a859530460fb3e26332d96abddac627f9693de94b0624e39383ab0d1`)
+- `dist/CiteWell-x86_64.AppImage` (127,396,344 bytes; sha256 `07d39dae08803f168f3303e0ddb56ce32c7ba7905f392beb2ee995c41620e91f`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -51,8 +51,9 @@ plan.
    removed, the obsolete annotation-to-note tests are gone, the citation-dialog locator test is
    locale-aware and 44/44, and the note window/tab is a read-only legacy surface (D37). See
    [notes.md](notes.md).
-3. **R31 — translator safeguards (next).** Keep updates and the Firefox/Google Docs paths working;
-   add sandbox/permissions/integrity/rollback and test both integrations.
+3. **R31 — translator safeguards: parked by the owner (2026-11-22).** The translator integration
+   risk is accepted for now; revisit only if the threat model changes. Keep updates and the
+   Firefox/Google Docs paths working in the meantime.
 4. **R24 Phase 2 — import merge** ([import.md](import.md)). Secondary to the removals above; the
    note conversion step targets `.md` attachments.
 5. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents so the
@@ -161,6 +162,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 - `SKILL.md` is the downloadable agent skill (Help → Agents and SKILL.md, or Agent access).
 - The connector identity lives in `connectors/brand.json`; `xtask` substitutes tokens and fails on
   hardcoded English product names.
+- The styles page opens in CiteWell's internal viewer; a clicked `.csl` installs through the style
+  MIME handler. The external browser still downloads, so Add from file remains the fallback.
 - The Google Docs integration is vendored, not a submodule, because it had to be patched. Its
   sync-dependent parts remain gated by D14.
 

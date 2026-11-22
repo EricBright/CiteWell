@@ -318,7 +318,10 @@ Zotero_Preferences.Cite = {
 	
 	
 	openStylesPage: function () {
-		Zotero.launchURL("https://www.zotero.org/styles/");
+		// Open in CiteWell's own viewer, not the external browser. The app
+		// registers a handler for application/vnd.citationstyles.style+xml, so a
+		// style clicked on this page installs directly instead of downloading.
+		Zotero.openInViewer("https://www.zotero.org/styles/");
 	},
 	
 	
