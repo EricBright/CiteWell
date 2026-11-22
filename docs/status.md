@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `4e009ea0…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `b810d5f5…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `4e009ea03deadbfc94051ab1115d9b90f02ca303adb08f46587563996cec2f9a`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `b810d5f5df780aa28cf241f0185773b4c9882c2bbb3281ae1b5e24a673df775b`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,7 +44,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`4e009ea03deadbfc94051ab1115d9b90f02ca303adb08f46587563996cec2f9a`, 133,421,560 bytes). The
+`b810d5f5df780aa28cf241f0185773b4c9882c2bbb3281ae1b5e24a673df775b`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document

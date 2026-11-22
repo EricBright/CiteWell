@@ -136,11 +136,13 @@ extension, and can route commands to the wrong library.
 - `build.py`, which generates `Addons.xcu` from `actions.json` and builds the OXT with
   Python's `zipfile`.
 
-If `unopkg` reports a stale package binding, the installer moves only CiteWell's
-`lu*.tmp_` deployment cache directories to `~/.cache/citewell/lo-repair/<timestamp>`, retries once,
-and never removes the LibreOffice profile, `extensions/`, or another extension. A failure reports
-the backup and LibreOffice's `uno_packages/cache/log.txt` path instead of sending the user to an
-Extension Manager entry that does not exist.
+If `unopkg` reports a stale package binding, the real stale record is the CiteWell entry in
+LibreOffice's binary `uno_packages/cache/uno_packages.pmap` — not an Extension Manager entry. The
+installer backs up that map, removes only the `citewell-libreoffice-integration@sophy.ca` record,
+moves only CiteWell's `lu*.tmp_` deployment cache directories to
+`~/.cache/citewell/lo-repair/<timestamp>`, retries once, and preserves every other extension's map
+record and all profile data. A failure reports the backup and
+LibreOffice's `uno_packages/cache/log.txt`; Cite preferences also has **Open repair backups…**.
 
 The app hosts the protocol on `127.0.0.1:23121` and checks `<data-dir>/lo-token`;
 the shim connects, authenticates, serves document commands and posts menu

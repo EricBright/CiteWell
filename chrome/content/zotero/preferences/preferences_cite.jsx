@@ -216,6 +216,19 @@ Zotero_Preferences.Cite = {
 		}
 	},
 
+	openLibreOfficeRepairFolder: async function () {
+		var status = document.getElementById("citewell-lo-status");
+		var dir = PathUtils.join(
+			Services.dirsvc.get("Home", Ci.nsIFile).path,
+			".cache", "citewell", "lo-repair"
+		);
+		if (!(await IOUtils.exists(dir))) {
+			status.textContent = "No LibreOffice repair backup exists yet.";
+			return;
+		}
+		await Zotero.File.reveal(dir);
+	},
+
 	_libreOfficeProfile: function (flatpak) {
 		var home = Services.dirsvc.get("Home", Ci.nsIFile).path;
 		if (flatpak) {
@@ -236,6 +249,51 @@ Zotero_Preferences.Cite = {
 	 * directories to a timestamped backup so unopkg can rebuild the entry.
 	 * Never remove the profile, extensions/, or another extension's data.
 	 */
+	_removeCiteWellPmapEntry: async function (profile, backup) {
+		var path = PathUtils.join(profile, "uno_packages", "cache", "uno_packages.pmap");
+		if (!(await IOUtils.exists(path))) return null;
+		var bytes = await IOUtils.read(path);
+		if (bytes.length < 4 || String.fromCharCode(...bytes.slice(0, 4)) !== "Pmp1") {
+			return null;
+		}
+		var entries = [];
+		var pos = 4;
+		while (pos < bytes.length) {
+			if (bytes[pos] !== 0xff) {
+				pos++;
+				continue;
+			}
+			var start = pos++;
+			var idStart = pos;
+			while (pos < bytes.length && bytes[pos] !== 0x0a) pos++;
+			var id = String.fromCharCode(...bytes.slice(idStart, pos));
+			pos++;
+			// temp dir, OXT file, media type, version, each ff-terminated
+			for (var field = 0; field < 4; field++) {
+				while (pos < bytes.length && bytes[pos] !== 0xff) pos++;
+				pos++;
+			}
+			while (pos < bytes.length && bytes[pos] !== 0x0a) pos++;
+			pos++;
+			entries.push({ start, end: pos, id });
+		}
+		var stale = entries.find(function (entry) {
+			return entry.id.toLowerCase().includes("citewell");
+		});
+		if (!stale) return null;
+		await IOUtils.makeDirectory(backup, {
+			createAncestors: true,
+			ignoreExisting: true,
+		});
+		var backupPath = PathUtils.join(backup, "uno_packages.pmap");
+		await IOUtils.write(backupPath, bytes);
+		var output = new Uint8Array(bytes.length - (stale.end - stale.start));
+		output.set(bytes.subarray(0, stale.start), 0);
+		output.set(bytes.subarray(stale.end), stale.start);
+		await IOUtils.write(path, output);
+		return backupPath;
+	},
+
 	_repairStaleCiteWellDeployment: async function (flatpak) {
 		var profile = this._libreOfficeProfile(flatpak);
 		var parents = [
@@ -282,7 +340,8 @@ Zotero_Preferences.Cite = {
 				moved.push(destination);
 			}
 		}
-		return { backup, moved };
+		var pmap = await this._removeCiteWellPmapEntry(profile, backup);
+		return { backup, moved, pmap };
 	},
 
 	// Add only the CiteWell OXT. This action must never remove, replace or
@@ -355,10 +414,10 @@ Zotero_Preferences.Cite = {
 				if (/Error binding package|NOT_EXISTING/i.test(detail)) {
 					status.textContent = "Repairing stale CiteWell deployment…";
 					var repair = await this._repairStaleCiteWellDeployment(flatpak);
-					if (!repair.moved.length) {
+					if (!repair.moved.length && !repair.pmap) {
 						throw new Error(
 							"LibreOffice has a stale deployment entry but no CiteWell "
-							+ "cache directory was found to move. Nothing was deleted. "
+							+ "cache entry was found to move. Nothing was deleted. "
 							+ "Log: " + PathUtils.join(
 								this._libreOfficeProfile(flatpak),
 								"uno_packages", "cache", "log.txt"
