@@ -39,6 +39,24 @@ a broken prompt.
   **taskbar urgency plus a changed title**, with the LibreOffice InfoBar when the action came from
   Writer. The owner accepts this limitation.
 
+## Capability audit (2026-11-22)
+
+On the current KDE Plasma Wayland session:
+
+- `XDG_SESSION_TYPE=wayland`, `XDG_CURRENT_DESKTOP=KDE`.
+- `XDG_ACTIVATION_TOKEN` is empty for a normally launched app.
+- The session bus is available, and `org.freedesktop.portal.Desktop` exposes the
+  `org.freedesktop.portal.Notification` interface.
+- The portal does **not** expose an `Activation` interface here. D-Bus application activation
+  therefore has to be designed around CiteWell's own activation entry point, not assumed from the
+  portal.
+- LibreOffice 26.8 does not expose `com.sun.star.frame.XInfoBarProvider` as a usable UNO type in
+  the Python probe. The InfoBar remains a desired fallback, but the implementation must treat it as
+  optional and fall back to a notification/message box.
+
+These findings do not change the escalation ladder; they determine which surface is available at
+the 3 s and 10 s steps.
+
 ## System integration
 
 This is planned, not implemented yet.
@@ -173,11 +191,12 @@ document content or personal data.
 
 ## Open questions
 
-- Does Gecko 153.7 expose a Wayland activation token or portal call from chrome JS? This needs a
-  capability audit before the native path is promised.
-- Does LibreOffice 26.8 expose a supported InfoBar provider to the Python UNO shim?
-- Who can run the manual KDE/notification-disabled checks? GNOME and XWayland are available here;
-  KDE Wayland is the required second target.
+- Gecko activation remains unresolved: there is no token on this session and no portal Activation
+  interface. The D-Bus/local activation entry point must be proven before promising native raise.
+- LibreOffice InfoBar is not exposed in this build; the notification/message-box fallback is the
+  realistic path until a supported interface is found.
+- The current KDE Wayland session is the primary manual target; GNOME Wayland and XWayland still
+  need a pass.
 - Does the AppImage's first-run installer have a stable writable path for the unit when the
   AppImage is moved? The unit must be rewritten or clearly reported as stale.
 - Can Gear Lever/AppImageUpdate be given a documented removal step without pretending they run
