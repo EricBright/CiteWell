@@ -216,12 +216,81 @@ Zotero_Preferences.Cite = {
 		}
 	},
 
+	_libreOfficeProfile: function (flatpak) {
+		var home = Services.dirsvc.get("Home", Ci.nsIFile).path;
+		if (flatpak) {
+			return PathUtils.join(
+				home, ".var", "app", "org.libreoffice.LibreOffice",
+				"config", "libreoffice", "4", "user"
+			);
+		}
+		return PathUtils.join(home, ".config", "libreoffice", "4", "user");
+	},
+
+	/**
+	 * Move only CiteWell deployment cache/temp directories aside.
+	 *
+	 * The LibreOffice deployment registry can retain an entry for a package
+	 * file that no longer exists. That entry is not an installed extension and
+	 * does not appear in Extension Manager. Move the stale CiteWell temp
+	 * directories to a timestamped backup so unopkg can rebuild the entry.
+	 * Never remove the profile, extensions/, or another extension's data.
+	 */
+	_repairStaleCiteWellDeployment: async function (flatpak) {
+		var profile = this._libreOfficeProfile(flatpak);
+		var parents = [
+			PathUtils.join(profile, "uno_packages", "cache", "uno_packages"),
+			PathUtils.join(profile, "extensions", "tmp", "extensions"),
+		];
+		var backup = PathUtils.join(
+			Services.dirsvc.get("Home", Ci.nsIFile).path,
+			".cache", "citewell", "lo-repair", String(Date.now())
+		);
+		var moved = [];
+		for (var parent of parents) {
+			var children;
+			try {
+				children = await IOUtils.getChildren(parent);
+			}
+			catch (e) {
+				continue;
+			}
+			for (var child of children) {
+				var name = child.split(/[\\/]/).pop();
+				if (!name || !/^lu.*\.tmp_$/.test(name)) continue;
+				var entries;
+				try {
+					entries = await IOUtils.getChildren(child);
+				}
+				catch (e) {
+					continue;
+				}
+				var containsCiteWell = entries.some(function (entry) {
+					return entry.toLowerCase().includes("citewell");
+				});
+				if (!containsCiteWell) continue;
+				var destination = PathUtils.join(backup, name);
+				await IOUtils.makeDirectory(backup, {
+					createAncestors: true,
+					ignoreExisting: true,
+				});
+				var suffix = 1;
+				while (await IOUtils.exists(destination)) {
+					destination = PathUtils.join(backup, name + "-" + suffix++);
+				}
+				await IOUtils.move(child, destination);
+				moved.push(destination);
+			}
+		}
+		return { backup, moved };
+	},
+
 	// Add only the CiteWell OXT. This action must never remove, replace or
 	// repair another extension or LibreOffice's deployment registry.
 	installLibreOffice: async function () {
 		var status = document.getElementById("citewell-lo-status");
 		var button = document.getElementById("citewell-lo-install");
-		var message = "Install the CiteWell extension for LibreOffice? "
+		var message = "Install or repair the CiteWell extension for LibreOffice? "
 			+ "Restart LibreOffice afterward.";
 		if (!Services.prompt.confirm(null, "Install CiteWell extension", message)) return;
 
@@ -284,13 +353,38 @@ Zotero_Preferences.Cite = {
 					throw new Error("Close LibreOffice completely, then try again.");
 				}
 				if (/Error binding package|NOT_EXISTING/i.test(detail)) {
-					throw new Error(
-						"LibreOffice has a stale CiteWell extension entry. "
-						+ "Open Tools → Extension Manager, remove the CiteWell entry, "
-						+ "then try again. Your other extensions will not be changed."
-					);
+					status.textContent = "Repairing stale CiteWell deployment…";
+					var repair = await this._repairStaleCiteWellDeployment(flatpak);
+					if (!repair.moved.length) {
+						throw new Error(
+							"LibreOffice has a stale deployment entry but no CiteWell "
+							+ "cache directory was found to move. Nothing was deleted. "
+							+ "Log: " + PathUtils.join(
+								this._libreOfficeProfile(flatpak),
+								"uno_packages", "cache", "log.txt"
+							)
+						);
+					}
+					status.textContent = "Retrying after moving " + repair.moved.length
+						+ " stale CiteWell cache item(s)…";
+					result = await install();
+					if (result.exitCode !== 0) {
+						var retryDetail = `${result.stdout}\n${result.stderr}`.trim();
+						Zotero.logError(new Error("unopkg repair retry failed: " + retryDetail));
+						throw new Error(
+							"LibreOffice still could not register the CiteWell extension. "
+							+ "The stale CiteWell cache was moved to " + repair.backup
+							+ " (nothing was deleted). Other extensions were not touched. "
+							+ "Log: " + PathUtils.join(
+								this._libreOfficeProfile(flatpak),
+								"uno_packages", "cache", "log.txt"
+							)
+						);
+					}
 				}
-				throw new Error("LibreOffice could not install the extension.");
+				else {
+					throw new Error("LibreOffice could not install the extension.");
+				}
 			}
 			status.textContent = "Installed. Restart LibreOffice.";
 			button.disabled = false;

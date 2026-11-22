@@ -136,6 +136,12 @@ extension, and can route commands to the wrong library.
 - `build.py`, which generates `Addons.xcu` from `actions.json` and builds the OXT with
   Python's `zipfile`.
 
+If `unopkg` reports a stale package binding, the installer moves only CiteWell's
+`lu*.tmp_` deployment cache directories to `~/.cache/citewell/lo-repair/<timestamp>`, retries once,
+and never removes the LibreOffice profile, `extensions/`, or another extension. A failure reports
+the backup and LibreOffice's `uno_packages/cache/log.txt` path instead of sending the user to an
+Extension Manager entry that does not exist.
+
 The app hosts the protocol on `127.0.0.1:23121` and checks `<data-dir>/lo-token`;
 the shim connects, authenticates, serves document commands and posts menu
 events. The OXT is packaged in the AppImage under `integration/libreoffice/`;
