@@ -1,6 +1,6 @@
 # LibreOffice parity plan
 
-Status: **M1 core passed 2026-11-22; M2 is next.** Companion to
+Status: **M2 core passed 2026-11-22; M3 is next.** Companion to
 [libreoffice.md](libreoffice.md), which holds the architecture history and the option analysis,
 and to decisions D34–D36, which hold the *why*. This page is the execution contract: what feature
 parity means, which layer owns what, and how each milestone is proved.
@@ -130,7 +130,7 @@ double. No automatic repair of LibreOffice state (D35).
 |---|---|---|
 | M0 | transport, hello/token, field create/read/update, RTF insert | **passed:** field survives save and reopen; wrong token rejected; isolated profile only |
 | M1 | document and field commands; Add/Edit Citation | **passed:** insert, edit with a locator, and cancel through the real dialog; adjacent fields stay separate |
-| M2 | session, style, multiple items, locators, edit existing | one-item and two-item citations with locators round-trip through edit; no deadlock while the citation dialog is open |
+| M2 | session, style, multiple items, locators, edit existing | **passed:** two-item citation with a locator; APA → Chicago author-date through document preferences; the dialog stays responsive while commands run |
 | M3 | refresh, unlink, document preferences | a 100-field golden document refreshes; unlink leaves plain text |
 | M4 | bibliography, Add Note, citation explorer | the bibliography regenerates after a style change; footnote citation works |
 | M5 | polish, self-test, compatibility message | fresh isolated-profile install; stale-OXT message tested |
@@ -145,16 +145,15 @@ double. No automatic repair of LibreOffice state (D35).
 - An isolated Writer profile per milestone; the real profile only through the add-only install
   action, on request.
 
-Temporary `m1insert` and `m1cancel` hooks behind `CITEWELL_M1_TEST` drive the dialog for
-verification. They are test-only and go with the fake shim at M2.
+Temporary `m1insert`, `m1cancel`, `m2multi` and `m2style` hooks behind `CITEWELL_M1_TEST` drive the
+dialogs for verification. They are test-only and go with the fake shim at M3.
 
 ## Known gaps
 
 - Consecutive citations inserted at the very end of a document can extend the previous field; the
   rich-text paragraph isolation from the reference implementation belongs in M1.
 - Unlink after a save/reload needs a reliable mark-removal path; it is an M3 item.
-- `cursorInField` is implemented but not exercised; footnotes, tables and bibliography fields are
-  M4.
+- Footnotes and tables are not exercised; the bibliography and Add Note fields are M4.
 - The reference implementation's undo context, save listener and footnote handling are not ported
   yet.
 

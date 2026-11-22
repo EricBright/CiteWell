@@ -247,6 +247,11 @@ async function handleEvent(connection, payload) {
 		await runDialogTest(connection, command === "m1insert");
 		return;
 	}
+	if ((command === "m2multi" || command === "m2style")
+			&& Services.env.get("CITEWELL_M1_TEST") === "1") {
+		await runM2Test(connection, command);
+		return;
+	}
 	try {
 		await Zotero.Integration.execCommand("LibreOffice", command, null);
 	}
@@ -284,6 +289,47 @@ async function runDialogTest(connection, insert) {
 			Zotero.logError(e);
 		}
 	}, 2500);
+	try {
+		await promise;
+	}
+	finally {
+		connection.sendEvent({ command: "done" });
+	}
+}
+
+async function runM2Test(connection, command) {
+	const integrationCommand = command === "m2style" ? "setDocPrefs" : "addEditCitation";
+	const promise = Zotero.Integration.execCommand("LibreOffice", integrationCommand, null);
+	setTimeout(async () => {
+		try {
+			const win = Zotero.Integration.currentWindow;
+			if (!win || win.closed) {
+				log("m2 test: no dialog window");
+				return;
+			}
+			if (command === "m2multi") {
+				const items = (await Zotero.Items.getAll(Zotero.Libraries.userLibraryID))
+					.filter(item => item.isRegularItem() && !item.deleted);
+				if (items.length < 2) throw new Error("m2 test: need two regular items");
+				const io = win.arguments[0].wrappedJSObject;
+				io.citation.citationItems = [
+					{ id: items[0].id, locator: "", label: "page" },
+					{ id: items[1].id, locator: "5", label: "page" }
+				];
+				io.accept();
+				log("m2 test: accepted two items");
+			}
+			else {
+				const configurator = win.document.querySelector("#style-configurator");
+				configurator.style = "http://www.zotero.org/styles/chicago-author-date";
+				win.document.querySelector("dialog").acceptDialog();
+				log("m2 test: switched to Chicago author-date");
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+	}, 3000);
 	try {
 		await promise;
 	}

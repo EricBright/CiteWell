@@ -1,6 +1,6 @@
 # LibreOffice integration
 
-Status: **M1 core of the parity rewrite passed 2026-11-22; M2 is next.** The inherited Zotero integration is
+Status: **M2 core of the parity rewrite passed 2026-11-22; M3 is next.** The inherited Zotero integration is
 disabled and removed from packaging. The CiteWell OXT installs, its menu dispatches, and it inserts
 a selected item's APA citation in an isolated Writer profile — a placeholder, not the target. The
 target is feature parity with Zotero's LibreOffice menu through CiteWell's own adapter:
