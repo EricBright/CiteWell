@@ -3763,10 +3763,17 @@ Zotero.Integration.Progress = class {
 		}.bind(this)};
 		io.wrappedJSObject = io;
 		io.isNote = this.isNote;
-		this.window = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-			.getService(Components.interfaces.nsIWindowWatcher)
-			.openWindow(null, 'chrome://zotero/content/integration/progressBar.xhtml', '', options, io);
-		Zotero.Utilities.Internal.activate(this.window);
+		this.window = Zotero.Attention.getDefaultPresenter().open({
+			url: 'chrome://zotero/content/integration/progressBar.xhtml',
+			name: '',
+			features: options,
+			io,
+			modal: false,
+			focusOnOpen: false,
+			parent: Zotero.getMainWindow(),
+			kind: "progress",
+			surface: "app",
+		});
 	}
 	async hide(fast=false) {
 		if (!this.window) return;

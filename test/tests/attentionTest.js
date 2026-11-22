@@ -192,6 +192,31 @@ describe("Attention", function () {
 		assert.deepEqual(adapter.calls, ["urgency:dialog", "title:true", "title:clear"]);
 	});
 
+	it("does not focus a progress presenter on open", function () {
+		let win = new FakeWindow();
+		let activated = 0;
+		let opened;
+		let presenter = new Zotero.Attention.Presenter(adapter, {
+			clock,
+			activate: () => activated++,
+			openWindow: (parent, url, name, features) => {
+				opened = features;
+				return win;
+			},
+		});
+		presenter.open({
+			url: "chrome://citewell/progress.xhtml",
+			modal: false,
+			focusOnOpen: false,
+			kind: "progress",
+		});
+		assert.equal(activated, 0);
+		assert.include(opened, "dialog=no");
+		assert.notInclude(opened, "modal=yes");
+		clock.advance(1000);
+		assert.deepEqual(adapter.calls, []);
+	});
+
 	it("uses an app adapter for title cues, urgency and one notification", function () {
 		let win = new FakeWindow();
 		let activated = 0;

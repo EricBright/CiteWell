@@ -302,6 +302,7 @@ Zotero.Attention = new function () {
 	this.Presenter = function (adapter, options = {}) {
 		var controller = options.controller || new Zotero.Attention.Controller(adapter, options);
 		this.controller = controller;
+		var activate = options.activate || (win => Zotero.Utilities.Internal.activate(win));
 		var openWindow = options.openWindow || function (parent, url, name, features, io) {
 			if (parent && typeof parent.openDialog === "function") {
 				return parent.openDialog(url, name, features, io);
@@ -346,10 +347,12 @@ Zotero.Attention = new function () {
 			if (window.document && window.document.readyState === "complete") {
 				watch();
 			}
-			try {
-				Zotero.Utilities.Internal.activate(window);
+			if (opts.focusOnOpen !== false) {
+				try {
+					activate(window);
+				}
+				catch (e) {}
 			}
-			catch (e) {}
 		}
 	};
 
