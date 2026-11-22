@@ -249,6 +249,22 @@
           "labelKey": "zotero.preferences.groups.tags"
         }
       ]
+    },
+    {
+      "id": "citation-options",
+      "paneId": "zotero-prefpane-cite",
+      "titleKey": "zotero.preferences.citationOptions.caption",
+      "descriptionKey": "zotero.preferences.export.citePaperJournalArticleURL.description",
+      "before": "#citation-dialog-title",
+      "order": 20,
+      "settings": [
+        {
+          "id": "citation-paper-url",
+          "type": "checkbox",
+          "preference": "extensions.zotero.export.citePaperJournalArticleURL",
+          "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
+        }
+      ]
     }
   ]
 }

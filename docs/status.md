@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `f0844630…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `a5842863…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -33,7 +33,7 @@ push target. The product branch may diverge without limit.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `f0844630d603d874edf92d5b7a9293aa2b1f1724095b4c80895c7f432cdd6e89`)
+- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `a58428633efd746a35dec04f48a50f2a0528272a423fb94f628c0ed62b787c3d`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,7 +44,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`f0844630d603d874edf92d5b7a9293aa2b1f1724095b4c80895c7f432cdd6e89`, 133,421,560 bytes). The
+`a58428633efd746a35dec04f48a50f2a0528272a423fb94f628c0ed62b787c3d`, 133,421,560 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Open issue:** after opening Writer → CiteWell toolbar → Add/Edit Citation, the document
@@ -59,8 +59,9 @@ deployment cache by moving only CiteWell temp directories to a backup.
 Integrations, Notes & Annotations, and Import & Export are in place; the old Export pane is retired.
 Cite now sits immediately after General. File handling, file renaming, attachment titles, Language &
 Region, attachment base directory, data directory and OpenURL/Locate have moved. Language & Region,
-Notes → Note behaviour and General → Groups are rendered from simple-section descriptors.
-Remaining work is converting the other simple rows and a final deep-link pass. See [settings.md](settings.md).
+Notes → Note behaviour, General → Groups and Cite → Citation Options are rendered from
+simple-section descriptors. Remaining work is converting the other simple rows and a final
+deep-link pass. See [settings.md](settings.md).
 
 **Next actions:**
 

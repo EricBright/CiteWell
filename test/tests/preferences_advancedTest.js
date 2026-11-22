@@ -174,6 +174,20 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders Citation Options in the Cite pane", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-cite"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.ok(win.document.getElementById("simple-section-citation-options"));
+			assert.ok(win.document.getElementById("citation-paper-url"));
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("loads the Integrations pane from the manifest", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-integrations"

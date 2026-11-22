@@ -408,7 +408,16 @@ var Zotero_Preferences = {
 					throw new Error('Unsupported simple setting type: ' + setting.type);
 				}
 			}
-			container.append(groupbox);
+			let before = section.before && container.querySelector(section.before);
+			while (before && before.parentNode && before.parentNode !== container) {
+				before = before.parentNode;
+			}
+			if (before && before.parentNode === container) {
+				container.insertBefore(groupbox, before);
+			}
+			else {
+				container.append(groupbox);
+			}
 		}
 	},
 
