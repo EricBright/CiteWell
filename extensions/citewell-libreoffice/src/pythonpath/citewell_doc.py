@@ -165,6 +165,11 @@ class Field(object):
         else:
             cursor.setString(text)
         self.anchor = self.content.getAnchor()
+        try:
+            paragraph = text_object.createTextCursorByRange(self.anchor)
+            paragraph.setPropertyValue("ParaStyleName", "Bibliography 1")
+        except Exception:
+            self.document.manager.log("could not apply Bibliography 1 paragraph style")
 
     def remove_code(self):
         """Keep the text, drop the field identity.
@@ -444,7 +449,11 @@ class Document(object):
         style.setPropertyValue("ParaFirstLineIndent", int(first_line_indent * mm_per_100_twip))
         style.setPropertyValue("ParaLeftMargin", int(body_indent * mm_per_100_twip))
         spacing = uno.createUnoStruct("com.sun.star.style.LineSpacing")
-        spacing.Mode = 0  # LineSpacingMode.MINIMUM
+        try:
+            from com.sun.star.style.LineSpacingMode import MINIMUM
+            spacing.Mode = MINIMUM
+        except Exception:
+            spacing.Mode = 1
         spacing.Height = int(line_spacing * mm_per_100_twip)
         style.setPropertyValue("ParaLineSpacing", spacing)
         style.setPropertyValue("ParaBottomMargin", int(entry_spacing * mm_per_100_twip))

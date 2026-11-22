@@ -142,7 +142,8 @@ Cite preferences offers the add-only Flatpak install (D35).
 Verified in isolated Writer profiles: insert, edit and cancel through the
 citation dialog; two-item citations with locators; APA → Chicago author-date
 switching; a 100-field refresh; Unlink that keeps the text; an APA bibliography
-with paragraph styling as a text section spanning all entries; Add Note footnotes; a citation inside a table cell; conversion
+as a text section spanning all entries, with the CSL hanging indent, line spacing and tab
+stops applied through the “Bibliography 1” paragraph style; Add Note footnotes; a citation inside a table cell; conversion
 between in-text and footnote/endnote fields when preferences change; and save/reopen for all of
 them. `vnd.citewell.health:` runs the transport and field
 selftest. The real profile has not been touched.

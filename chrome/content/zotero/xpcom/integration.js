@@ -25,6 +25,7 @@
 */
 
 const DATA_VERSION = 3;
+const BIBLIOGRAPHY_STYLE_VERSION = 2;
 
 // Specifies that citations should only be updated if changed
 const FORCE_CITATIONS_FALSE = 0;
@@ -1474,7 +1475,8 @@ Zotero.Integration.Session.prototype._updateDocument = async function (forceCita
 				
 				// Only set the bibliography style once so that customizations
 				// to Bibliography style in word processors are maintained
-				if(!this.data.style.bibliographyStyleHasBeenSet) {
+				if(!this.data.style.bibliographyStyleHasBeenSet
+						|| (this.data.style.bibliographyStyleVersion || 0) < BIBLIOGRAPHY_STYLE_VERSION) {
 					var bibStyle = Zotero.Cite.getBibliographyFormatParameters(bib);
 					
 					// set bibliography style
@@ -1483,6 +1485,7 @@ Zotero.Integration.Session.prototype._updateDocument = async function (forceCita
 					
 					// set bibliographyStyleHasBeenSet parameter to prevent further changes	
 					this.data.style.bibliographyStyleHasBeenSet = true;
+					this.data.style.bibliographyStyleVersion = BIBLIOGRAPHY_STYLE_VERSION;
 				}
 			}
 			
@@ -2700,7 +2703,7 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 	if (this.dataVersion == 4) {
 		// Filter style properties
 		let style = {};
-		for (let prop of ['styleID', 'locale', 'hasBibliography', 'bibliographyStyleHasBeenSet']) {
+		for (let prop of ['styleID', 'locale', 'hasBibliography', 'bibliographyStyleHasBeenSet', 'bibliographyStyleVersion']) {
 			style[prop] = this.style[prop];
 		}
 		return JSON.stringify({
@@ -2725,7 +2728,8 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 		'<style id="'+Zotero.Utilities.htmlSpecialChars(this.style.styleID)+'" '+
 			(this.style.locale ? 'locale="' + Zotero.Utilities.htmlSpecialChars(this.style.locale) + '" ': '') +
 			'hasBibliography="'+(this.style.hasBibliography ? "1" : "0")+'" '+
-			'bibliographyStyleHasBeenSet="'+(this.style.bibliographyStyleHasBeenSet ? "1" : "0")+'"/>'+
+			'bibliographyStyleHasBeenSet="'+(this.style.bibliographyStyleHasBeenSet ? "1" : "0")+'" '+
+			'bibliographyStyleVersion="'+(this.style.bibliographyStyleVersion || 1)+'"/>'+
 		(prefs ? '<prefs>'+prefs+'</prefs>' : '<prefs/>')+'</data>';
 };
 
@@ -2740,7 +2744,8 @@ Zotero.Integration.DocumentData.prototype.unserializeXML = function (xmlData) {
 	this.style = {"styleID":Zotero.Utilities.xpathText(doc, '/data/style[1]/@id'),
 		"locale":Zotero.Utilities.xpathText(doc, '/data/style[1]/@locale'),
 		"hasBibliography":(Zotero.Utilities.xpathText(doc, '/data/style[1]/@hasBibliography') == 1),
-		"bibliographyStyleHasBeenSet":(Zotero.Utilities.xpathText(doc, '/data/style[1]/@bibliographyStyleHasBeenSet') == 1)};
+		"bibliographyStyleHasBeenSet":(Zotero.Utilities.xpathText(doc, '/data/style[1]/@bibliographyStyleHasBeenSet') == 1),
+		"bibliographyStyleVersion":(parseInt(Zotero.Utilities.xpathText(doc, '/data/style[1]/@bibliographyStyleVersion')) || 1)};
 	this.prefs = {};
 	for (let pref of Zotero.Utilities.xpath(doc, '/data/prefs[1]/pref')) {
 		var name = pref.getAttribute("name");
