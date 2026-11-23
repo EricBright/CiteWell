@@ -47,20 +47,24 @@ plan.
 
 ## Handoff 2026-11-23 (Dedup report)
 
-- New branch `dedup-report` from `citewell`, not merged. It implements Phase 3a only: duplicate
-  candidates are reported, never skipped or deleted.
+- New branch `dedup-report` from `citewell`, not merged. It implements Phase 3a (report) and 3b
+  (opt-in exact-identifier skip; off by default).
 - After a merge, every source item is matched against items that existed before that merge, by
   DOI/ISBN/PMID and then a unique title+year. Ambiguous matches are recorded as ambiguous.
 - The report is `identity/duplicates-<session>.json`; `library-import-result.json` carries
   `duplicateReport` and `counts.duplicates`, and the merge completion line / Last import show the
   count and path.
-- Tests: `importTest.js` 14/14, including DOI duplicate detection and report-file contents. The
-  merge still adds every source item, so the report is additive evidence, not cleanup.
+- With the off-by-default “Skip items that exactly match an existing DOI/ISBN/PMID” checkbox, an
+  exact duplicate is not inserted; it is still placed in the recreated source collections, its
+  source key aliases to the kept item, and its child notes are not duplicated. Title/year matches
+  remain report-only, and existing metadata is never changed.
+- Tests: `importTest.js` 14/14, including DOI duplicate detection, report contents, exact-identifier
+  skip, collection placement and alias resolution.
 - Test AppImage: `~/AppImages/citewell-dedup-test.appimage`, version
   `10.0.9.SOURCE.cd469ae42`, sha256
   `58f456f1ed8ccfa739a59081e8e2ecd2d01df51553afb1df62892b6ad69c7af1`, 125,917,688 bytes.
-- Next: Phase 3b, an opt-in exact-identifier skip (with source collections still mapped and an
-  alias to the kept item), then reconsider interactive metadata merging.
+- Next: decide the post-report cleanup flow (interactive review or a dedup pass over existing
+  duplicates); automatic metadata merging remains out of scope.
 
 ## Handoff 2026-11-23 (Writer compatibility)
 
