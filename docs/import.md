@@ -111,9 +111,12 @@ Replace is never silently chosen. The source Zotero library is still read-only.
 Every replace, adopt and restore writes a restore point. The Library pane lists them with date,
 origin, item/collection counts and size. Restoring:
 
-1. Moves the current library into a new restore point.
-2. Swaps the selected restore point into place at the next start.
-3. Leaves both states recoverable: the previous current state is the new restore point.
+1. Inspects the selected point first; an empty or corrupt point is refused rather than swapped in.
+2. Names the restore point's item/collection counts and the current library's counts in the
+   confirmation.
+3. Moves the current library into a new restore point and swaps the selected one into place at the
+   next start.
+4. Leaves both states recoverable: the previous current state is the new restore point.
 
 Backups are kept until the person removes them. They live under `<data>/.import-backup/` and are
 shown in the Locations list.

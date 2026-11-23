@@ -763,6 +763,9 @@ Zotero_Preferences.Library = {
 				text += ` · ${this._count(counts.items)} items, `
 					+ `${this._count(counts.collections)} collections`;
 			}
+			else {
+				text += " · contents not recorded";
+			}
 			text += ` · ${this._formatBytes((backup.dbSize || 0) + (backup.storageSize || 0))}`;
 			label.value = text;
 
@@ -780,11 +783,46 @@ Zotero_Preferences.Library = {
 		if (this._busy || this._pendingImport || this._pendingRestore) return;
 		var ps = Services.prompt;
 		var when = backup.createdAt ? new Date(backup.createdAt).toLocaleString() : backup.id;
+
+		this._setStatus("Checking the restore point…");
+		var info;
+		try {
+			info = await Zotero.LibraryImport.inspect(backup.path);
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Could not read the restore point: ${e.message || e}`, true);
+			return;
+		}
+		if (!info.healthy) {
+			this._setStatus(
+				`That restore point failed its integrity check (${info.integrity}); restore cancelled.`,
+				true
+			);
+			return;
+		}
+		if (!info.items && !info.collections) {
+			this._setStatus(
+				"That restore point is empty; restoring it would not recover anything. Restore cancelled.",
+				true
+			);
+			return;
+		}
+
+		var current = this._current || { items: 0, collections: 0, empty: true };
 		var text = `Restore the library from ${when}?\n\n`
+			+ `Restore point: ${this._count(info.items)} items, `
+			+ `${this._count(info.collections)} collections, `
+			+ `${this._count(info.notes)} notes `
+			+ `(${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}).\n\n`
+			+ `Current library: ${current.empty
+				? "empty"
+				: `${this._count(current.items)} items, ${this._count(current.collections)} collections`}.\n\n`
 			+ "The current library will be kept as a new restore point. "
 			+ "CiteWell will restart, and Zotero is never affected.";
 		if (ps.confirmEx(window, "Restore library", text, ps.STD_YES_NO_BUTTONS,
 			null, null, null, null, {}) !== 0) {
+			this._setStatus("");
 			return;
 		}
 
