@@ -606,7 +606,7 @@ Zotero.LibraryImport = {
 	 * annotations and saved searches wait for Phase 3. The source is copied and
 	 * only that copy is read; the source database is hashed before and after.
 	 */
-	merge: async function (sourcePath, { onProgress = null } = {}) {
+	merge: async function (sourcePath, { onProgress = null, skipExactDuplicates = false } = {}) {
 		var current = await this.getCurrentLibraryInfo();
 		if (current.empty) {
 			throw new Error("CiteWell's library is empty; use the first-import path instead.");
@@ -683,7 +683,9 @@ Zotero.LibraryImport = {
 			onProgress?.(`Merging ${source.items.length} items and ${source.collections.length} collections…`);
 			var idRows = await Zotero.DB.columnQueryAsync("SELECT itemID FROM items WHERE libraryID=1");
 			var existingItemIDs = new Set((idRows || []).map(Number));
-			var result = await this._applyMergeSource(source, staging, onProgress, existingItemIDs);
+			var result = await this._applyMergeSource(
+				source, staging, onProgress, existingItemIDs, skipExactDuplicates
+			);
 			var duplicateReport = null;
 			if (result.duplicates.length) {
 				await Zotero.File.createDirectoryIfMissingAsync(this.identityDir);
@@ -717,6 +719,8 @@ Zotero.LibraryImport = {
 					attachments: result.notes,
 					notes: result.notes,
 					duplicates: result.duplicates.length,
+					skippedItems: result.skippedItems,
+					skippedNotes: result.skippedNotes,
 				},
 				duplicateReport,
 				warnings: result.warnings,
@@ -839,7 +843,8 @@ Zotero.LibraryImport = {
 		};
 	},
 
-	_applyMergeSource: async function (source, staging, onProgress, existingItemIDs = null) {
+	_applyMergeSource: async function (source, staging, onProgress, existingItemIDs = null,
+			skipExactDuplicates = false) {
 		var root;
 		var itemMap = new Map();
 		var collectionMap = new Map();
@@ -849,6 +854,10 @@ Zotero.LibraryImport = {
 		var collectionCount = 0;
 		var aliases = [];
 		var duplicates = [];
+		var skippedSourceIDs = new Set();
+		var importedItems = 0;
+		var skippedItems = 0;
+		var skippedNotes = 0;
 
 		var state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
@@ -919,6 +928,60 @@ Zotero.LibraryImport = {
 					warnings++;
 					continue;
 				}
+				let data = this._citationDataForSourceItem(source, row);
+				let match = null;
+				if (existingItemIDs?.size) {
+					try {
+						match = await this.findCitationMatches(
+							data,
+							{ allowedItemIDs: existingItemIDs }
+						);
+					}
+					catch (e) {
+						Zotero.logError(e);
+						warnings++;
+					}
+				}
+				if (match?.item) {
+					for (let candidate of [match.item]) {
+						duplicates.push({
+							sourceKey: row.key,
+							destKey: candidate.key,
+							title: data.title || "",
+							by: match.by,
+							ambiguous: false,
+							skipped: !!(skipExactDuplicates
+								&& ["DOI", "ISBN", "PMID"].includes(match.by)),
+						});
+					}
+					if (skipExactDuplicates && ["DOI", "ISBN", "PMID"].includes(match.by)) {
+						itemMap.set(row.itemID, match.item);
+						skippedSourceIDs.add(row.itemID);
+						aliases.push({
+							sourceLibraryID: row.libraryID,
+							sourceGroupID: source.groupIDs.get(row.libraryID) || null,
+							sourceKey: row.key,
+							destKey: match.item.key,
+						});
+						skippedItems++;
+						if (itemsDone + skippedItems === source.items.length) {
+							onProgress?.(`Items: ${itemsDone}/${source.items.length}`);
+						}
+						continue;
+					}
+				}
+				else if (match?.ambiguous?.length) {
+					for (let candidate of match.ambiguous) {
+						duplicates.push({
+							sourceKey: row.key,
+							destKey: candidate.key,
+							title: data.title || "",
+							by: match.by,
+							ambiguous: true,
+							skipped: false,
+						});
+					}
+				}
 				let item = new Zotero.Item(row.typeName);
 				item.libraryID = 1;
 				// Keep the source key when it is free so Writer documents that
@@ -965,30 +1028,8 @@ Zotero.LibraryImport = {
 					let date = new Date(String(value).replace(" ", "T") + "Z");
 					if (!isNaN(date.getTime())) item[property] = date.toISOString();
 				}
-				if (existingItemIDs?.size) {
-					try {
-						let data = this._citationDataForSourceItem(source, row);
-						let match = await this.findCitationMatches(
-							data,
-							{ allowedItemIDs: existingItemIDs }
-						);
-						let candidates = match.item ? [match.item] : match.ambiguous;
-						for (let candidate of candidates) {
-							duplicates.push({
-								sourceKey: row.key,
-								destKey: candidate.key,
-								title: data.title || "",
-								by: match.by,
-								ambiguous: !match.item,
-							});
-						}
-					}
-					catch (e) {
-						Zotero.logError(e);
-						warnings++;
-					}
-				}
 				await item.save();
+				importedItems++;
 				itemMap.set(row.itemID, item);
 				aliases.push({
 					sourceLibraryID: row.libraryID,
@@ -997,7 +1038,8 @@ Zotero.LibraryImport = {
 					destKey: item.key,
 				});
 				itemsDone++;
-				if (itemsDone % 25 === 0 || itemsDone === source.items.length) {
+				if (itemsDone % 25 === 0
+						|| itemsDone + skippedItems === source.items.length) {
 					onProgress?.(`Items: ${itemsDone}/${source.items.length}`);
 				}
 			}
@@ -1007,7 +1049,7 @@ Zotero.LibraryImport = {
 				if (!item) continue;
 				let mapped = [...new Set(collectionIDs.map(id => collectionMap.get(id)).filter(Boolean))];
 				if (!mapped.length) continue;
-				item.setCollections(mapped);
+				item.setCollections([...new Set([...item.getCollections(), ...mapped])]);
 				await item.save();
 			}
 
@@ -1017,12 +1059,13 @@ Zotero.LibraryImport = {
 				let item = itemMap.get(row.itemID);
 				if (!item) continue;
 				let groupRoot = await ensureGroupRoot(row.libraryID);
-				item.setCollections([groupRoot.id]);
+				item.setCollections([...new Set([...item.getCollections(), groupRoot.id])]);
 				await item.save();
 			}
 
 			for (let relation of source.relations) {
 				if (relation.predicate !== "dc:relation") continue;
+				if (skippedSourceIDs.has(relation.itemID)) continue;
 				let item = itemMap.get(relation.itemID);
 				let targetKey = String(relation.object).split("/items/").pop();
 				let targetID = source.itemIDByKey.get(targetKey);
@@ -1053,6 +1096,10 @@ Zotero.LibraryImport = {
 
 		var notesCount = 0;
 		for (let note of source.notes) {
+			if (note.parentItemID && skippedSourceIDs.has(note.parentItemID)) {
+				skippedNotes++;
+				continue;
+			}
 			let parent = note.parentItemID ? itemMap.get(note.parentItemID) : null;
 			let title = note.title || (parent?.getField("title") || "Note");
 			let html = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>`
@@ -1082,9 +1129,11 @@ Zotero.LibraryImport = {
 		}
 
 		return {
-			items: itemMap.size,
+			items: importedItems,
 			collections: collectionCount,
 			notes: notesCount,
+			skippedItems,
+			skippedNotes,
 			warnings,
 			aliases,
 			duplicates,

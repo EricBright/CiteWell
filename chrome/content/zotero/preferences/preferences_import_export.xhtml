@@ -29,6 +29,9 @@
 				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
 				<button id="library-cancel-restore" label="Cancel staged restore" oncommand="Zotero_Preferences.Library.cancelRestore()" hidden="true"/>
 			</hbox>
+			<checkbox id="library-merge-skip-exact"
+				label="Skip items that exactly match an existing DOI/ISBN/PMID"
+				preference="extensions.citewell.import.skipExactDuplicates"/>
 			<description class="library-muted">
 				Import builds the CiteWell library from the selected library when CiteWell is empty.
 				Merge adds the selected library's items, collections and notes to the current one.

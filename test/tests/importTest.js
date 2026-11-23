@@ -369,12 +369,14 @@ describe("Library import", function () {
 			let progress = [];
 			let result = await Zotero.LibraryImport.merge(source, {
 				onProgress: line => progress.push(line),
+				skipExactDuplicates: true,
 			});
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
 			assert.ok(progress.some(line => /^Items: [0-9]+\//.test(line)));
+			assert.equal(result.skippedItems, 1);
 			assert.ok(result.duplicates.some(entry => entry.sourceKey === duplicateKey
-				&& entry.destKey === existingDuplicate.key),
+				&& entry.destKey === existingDuplicate.key && entry.skipped),
 				`duplicates=${JSON.stringify(result.duplicates)} source=${duplicateKey} dest=${existingDuplicate.key}`);
 			assert.isTrue(await IOUtils.exists(result.duplicateReport));
 			let duplicateReport = JSON.parse(
@@ -409,6 +411,19 @@ describe("Library import", function () {
 				`http://zotero.org/users/local/test/items/${collisionKey}`,
 			]);
 			assert.equal(collisionAliasItem?.id, mergedCollision.id);
+			let duplicateAliasItem = await Zotero.LibraryImport.getItemForURIs([
+				`http://zotero.org/users/local/test/items/${duplicateKey}`,
+			]);
+			assert.equal(duplicateAliasItem?.id, existingDuplicate.id);
+			let duplicateDOIItems = items.filter((candidate) => {
+				try {
+					return candidate.getField("DOI") === "10.1234/dup";
+				}
+				catch (e) {
+					return false;
+				}
+			});
+			assert.lengthOf(duplicateDOIItems, 1);
 			assert.equal(merged.getCreators()[0].lastName, "Lovelace");
 			assert.include(merged.getTags().map(tag => tag.tag), "fixture");
 

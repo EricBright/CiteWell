@@ -574,6 +574,7 @@ Zotero_Preferences.Library = {
 		if (this._busy || !this._selected || !this._inspected || this._current?.empty) return;
 		var candidate = this._selected;
 		var info = this._inspected;
+		var skipExact = !!this._el("library-merge-skip-exact")?.checked;
 		var text = `Merge the Zotero library at\n\n${candidate.path}\n\n`
 			+ `CiteWell: ${this._plural(this._current?.regularItems ?? this._current?.items, "item", "items")}, `
 			+ `${this._plural(this._current?.collections, "collection", "collections")}.\n\n`
@@ -583,7 +584,11 @@ Zotero_Preferences.Library = {
 			+ "Items, collections and notes will be added to the current library. "
 			+ `${this._plural(info.attachments, "attachment", "attachments")} and `
 			+ `${this._plural(info.annotations, "annotation", "annotations")} are not imported yet. `
-			+ "A database backup is kept; Zotero is not modified.";
+			+ "A database backup is kept; Zotero is not modified."
+			+ (skipExact
+				? "\n\nItems with an exact DOI/ISBN/PMID match will be skipped and placed in the "
+					+ "imported collections."
+				: "");
 		var ps = Services.prompt;
 		if (ps.confirmEx(window, "Merge Zotero library", text,
 			ps.STD_YES_NO_BUTTONS, null, null, null, null, {}) !== 0) {
@@ -612,11 +617,15 @@ Zotero_Preferences.Library = {
 		try {
 			var result = await Zotero.LibraryImport.merge(candidate.path, {
 				onProgress: report,
+				skipExactDuplicates: skipExact,
 			});
 			this._el("library-progress").hidden = true;
 			var summary = `Merged ${this._plural(result.items, "item", "items")}, `
 				+ `${this._plural(result.collections, "collection", "collections")} and `
 				+ `${this._plural(result.notes, "note", "notes")} into the current library.`;
+			if (result.skippedItems) {
+				summary += ` Skipped ${this._plural(result.skippedItems, "exact duplicate", "exact duplicates")}.`;
+			}
 			if (result.duplicates?.length) {
 				summary += ` ${this._plural(result.duplicates.length, "possible duplicate", "possible duplicates")} reported.`;
 			}
@@ -901,6 +910,9 @@ Zotero_Preferences.Library = {
 			+ `${this._plural(counts.collections, "collection", "collections")} and `
 			+ `${this._plural(counts.attachments, "attachment", "attachments")}${when}. `
 			+ `Source fingerprint unchanged. Restore point: ${result.backup}`;
+		if (counts.skippedItems) {
+			element.textContent += ` Skipped ${this._plural(counts.skippedItems, "exact duplicate", "exact duplicates")}.`;
+		}
 		if (result.duplicateReport) {
 			element.textContent += ` ${this._plural(counts.duplicates, "possible duplicate", "possible duplicates")} `
 				+ `recorded in ${result.duplicateReport}.`;
