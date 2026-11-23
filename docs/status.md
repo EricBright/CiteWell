@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.d15ef6ed3`, sha256 `4a6d31a0…`, 125,925,880 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.00cdbf437`, sha256 `f8f65e7e…`, 125,929,976 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -36,8 +36,9 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,925,880 bytes; sha256
-  `4a6d31a09a4f0637df04c60a6f0047205e2020dff282315a6cb70980a4b71556`; stable Writer + dedup build)
+- `dist/CiteWell-x86_64.AppImage` (125,929,976 bytes; sha256
+  `f8f65e7e83e244e6766c81d8b5821fed7a375e8d7e4acb1d5dac98aac417b33d`; stable
+  attachments/resume build, version `10.0.9.SOURCE.00cdbf437`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -53,13 +54,12 @@ plan.
   project. `url` has two call sites; Sinon is test-only. Babel’s real job is JSX and ESM→CJS; Sass
   is the largest compiler surface.
 - R15 is documentation-only so far. No build pipeline code has changed.
-- Order: the `import-attachments` work is merged into `citewell`; build and install the stable
-  AppImage, then R15 phase 1 (golden baseline and deletion audit), JS decision (JSX removal vs
-  SWC/OXC), and a bounded Sass migration spike (native CSS vs grass/rsass). React replacement is
-  outside R15.
-- Branches: `citewell` now contains the attachments/resume work at `f662058a1`; the prior stable
-  is `d15ef6ed3`. Test build `~/AppImages/citewell-import-test.appimage` is `74c10b0fb`
-  (sha256 `4856a432…`), before the resume remap fix.
+- Order: the `import-attachments` work is merged and the stable AppImage is built and installed;
+  next is R15 phase 1 (golden baseline and deletion audit), JS decision (JSX removal vs SWC/OXC),
+  and a bounded Sass migration spike (native CSS vs grass/rsass). React replacement is outside R15.
+- Branches: `citewell` contains the attachments/resume work from `f662058a1`; the stable AppImage
+  reports `10.0.9.SOURCE.00cdbf437`. The prior stable is `d15ef6ed3`; the older test build is
+  `74c10b0fb` (sha256 `4856a432…`), before the resume remap fix.
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
 
 ## Handoff 2026-11-23 (Attachments)
@@ -80,7 +80,9 @@ plan.
   AppImage remains `~/AppImages/citewell-import-test.appimage`, version
   `10.0.9.SOURCE.74c10b0fb`, sha256
   `4856a432bf9fc4726948ba3bcc038b3612e121223a08bd52ecad5a2133838e37`, 125,929,976 bytes; it
-  predates the resume remap fix.
+  predates the resume remap fix. The stable `~/AppImages/citewell.appimage` now carries the fix:
+  `10.0.9.SOURCE.00cdbf437`, sha256 `f8f65e7e…`. Repair or reinstall the LibreOffice extension
+  from the updated app before testing a new Writer document.
 - Resumable merge batching is implemented: the item pass writes a checkpoint, and a rerun with the
   same source hash resumes the child passes without repeating items. Child creation is idempotent
   by title/annotation/search detection, and an attachment already present is remapped so its
