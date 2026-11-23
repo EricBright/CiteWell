@@ -152,7 +152,14 @@
 				this._nameField.value = search.name;
 			}
 			else if (search) {
-				this._search = search.clone();
+				// A search without a library (e.g., in Feeds) can't be clone()d
+				if (search.libraryID === null) {
+					this._search = new Zotero.Search();
+					this._search.fromJSON(search.toJSON());
+				}
+				else {
+					this._search = search.clone();
+				}
 			}
 			else {
 				this._search = new Zotero.Search();
@@ -239,11 +246,16 @@
 			}
 			// Set the libraries the search applies to: a temporary search spans all
 			// selected libraries, a saved search just its own. Used to scope value
-			// autocomplete and, when more than one library is involved, to drop the
-			// Collection/Saved Search condition, which can only resolve within one library.
+			// autocomplete and, when more than one library or a feed is involved, to drop
+			// the Collection/Saved Search conditions, which can only resolve within one
+			// regular library.
 			if (this.type === 'temporary') {
 				let libraryIDs = [];
 				for (let row of this._libraryView.getCollectionTreeRows()) {
+					if (row.isFeeds()) {
+						libraryIDs.push(...Zotero.Feeds.getAll().map(feed => feed.libraryID));
+						continue;
+					}
 					let id = row.ref && row.ref.libraryID;
 					if (id !== undefined && id !== null && !libraryIDs.includes(id)) {
 						libraryIDs.push(id);

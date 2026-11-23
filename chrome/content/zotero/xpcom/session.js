@@ -56,8 +56,29 @@ Zotero.Session = new function () {
 			}
 		}
 		_pendingPaneStates = _state.windows.filter(x => x.type == 'pane');
+		pinOnlyWindowLibraryTab(_pendingPaneStates);
 		_initialized = true;
 	};
+	
+	/**
+	 * Pin the library tab of a session's only main window, unless the window has a pinned tab
+	 * or the user unpinned the library tab
+	 *
+	 * @param {Object[]} paneStates
+	 */
+	function pinOnlyWindowLibraryTab(paneStates) {
+		if (paneStates.length != 1) {
+			return;
+		}
+		let tabs = paneStates[0].tabs || [];
+		if (tabs.some(x => x.pinned)) {
+			return;
+		}
+		let tab = tabs.find(x => x.type == 'library');
+		if (tab && !tab.data?.unpinned) {
+			tab.pinned = true;
+		}
+	}
 	
 	/**
 	 * The saved main-window states that haven't been restored into a window yet
@@ -124,6 +145,7 @@ Zotero.Session = new function () {
 			.concat([state]);
 		// Let the next window opened restore it
 		_pendingPaneStates = [state];
+		pinOnlyWindowLibraryTab(_pendingPaneStates);
 	};
 
 	/**

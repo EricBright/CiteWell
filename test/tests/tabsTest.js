@@ -6,6 +6,9 @@ describe("Zotero_Tabs", function() {
 		doc = win.document;
 		zp = win.ZoteroPane;
 		tabs = win.Zotero_Tabs;
+		// Start with an unpinned library tab, since the tests here pin, move, and close
+		// library tabs themselves
+		tabs.setPinned('zotero-pane', false);
 	});
 	
 	after(function () {
@@ -1594,6 +1597,52 @@ describe("Zotero_Tabs", function() {
 			}
 		});
 		
+		it("should raise a reader's window only when it's the front main window", async function () {
+			let attachment = await importPDFAttachment(item);
+			let readerState = {
+				type: 'pane',
+				geometry: {},
+				tabs: [
+					{
+						type: 'reader',
+						title: item.getField('title'),
+						selected: true,
+						data: { itemID: attachment.id }
+					}
+				]
+			};
+			let readerWin, libraryWin;
+			try {
+				readerWin = Zotero.openMainWindow({ sessionState: readerState });
+				let reader;
+				await waitForCallback(() => {
+					reader = Zotero.Reader.getByTabID(readerWin.Zotero_Tabs?.selectedID);
+					return reader;
+				}, 100, 50);
+				await reader._initPromise;
+				let raiseRequests = 0;
+				readerWin.addEventListener('framefocusrequested', () => raiseRequests++, true);
+				
+				await reader.focus();
+				assert.isAbove(raiseRequests, 0);
+				
+				// As when a window is restored after this one at startup
+				libraryWin = Zotero.openMainWindow({
+					sessionState: { type: 'pane', geometry: {}, tabs: [] }
+				});
+				await waitForCallback(() => libraryWin.ZoteroPane?.libraryView?.loaded, 100, 10);
+				raiseRequests = 0;
+				await reader.focus();
+				assert.equal(raiseRequests, 0);
+				// Focus still goes to the reader for when its window is brought forward
+				assert.equal(readerWin.document.activeElement, reader._iframe);
+			}
+			finally {
+				readerWin?.close();
+				libraryWin?.close();
+			}
+		});
+		
 		it("should open a library tab in a window restored without tabs", async function () {
 			let sessionState = { type: 'pane', geometry: {}, tabs: [] };
 			let newWin;
@@ -1605,6 +1654,100 @@ describe("Zotero_Tabs", function() {
 			}
 			finally {
 				newWin?.close();
+			}
+		});
+		
+		it("should pin the library tab of a window opened while no other main window is open", async function () {
+			assert.isFalse(!!win2.Zotero_Tabs._tabs.find(tab => win2.Zotero_Tabs.isLibraryTab(tab.id)).pinned);
+			// As at startup without a saved session
+			let panesStub = sinon.stub(Zotero, 'getZoteroPanes').returns([]);
+			let statesStub = sinon.stub(Zotero.Session, 'getPendingPaneStates').returns([]);
+			let newWin;
+			try {
+				newWin = Zotero.openMainWindow();
+				await waitForCallback(() => newWin.ZoteroPane?.libraryView?.loaded, 100, 10);
+				panesStub.restore();
+				statesStub.restore();
+				assert.isTrue(newWin.Zotero_Tabs._getTab(newWin.Zotero_Tabs.selectedID).tab.pinned);
+			}
+			finally {
+				panesStub.restore();
+				statesStub.restore();
+				newWin?.close();
+			}
+		});
+		
+		it("should pin the library tab of a session's only window unless the user unpinned it", async function () {
+			let path = PathUtils.join(Zotero.Profile.dir, 'session.json');
+			let contents = await IOUtils.exists(path) ? await IOUtils.readUTF8(path) : null;
+			let selectedID = tabs.selectedID;
+			let id;
+			try {
+				let sessionTabs = [{ type: 'library', selected: true }];
+				let session = { windows: [{ type: 'pane', tabs: sessionTabs }] };
+				await IOUtils.writeUTF8(path, JSON.stringify(session));
+				await Zotero.Session.init();
+				assert.isTrue(Zotero.Session.getPendingPaneStates()[0].tabs[0].pinned);
+				
+				// An unpinned tab stays unpinned after being unloaded
+				({ id } = await addLibraryTab());
+				tabs.setPinned(id, true);
+				tabs.setPinned(id, false);
+				tabs.select(zp.primaryLibraryView.tabID);
+				tabs.unload(id);
+				assert.equal(tabs._getTab(id).tab.type, 'library-unloaded');
+				sessionTabs[0] = tabs.getState()[tabs._getTab(id).tabIndex];
+				await IOUtils.writeUTF8(path, JSON.stringify(session));
+				await Zotero.Session.init();
+				assert.isUndefined(Zotero.Session.getPendingPaneStates()[0].tabs[0].pinned);
+			}
+			finally {
+				if (id) {
+					tabs.close(id, { skipWindowClose: true });
+				}
+				tabs.select(selectedID);
+				if (contents === null) {
+					await IOUtils.remove(path);
+				}
+				else {
+					await IOUtils.writeUTF8(path, contents);
+				}
+				await Zotero.Session.init();
+				for (let state of Zotero.Session.getPendingPaneStates()) {
+					Zotero.Session.removePendingPaneState(state);
+				}
+			}
+		});
+		
+		it("should title a reader tab restored without a title once its library loads", async function () {
+			let group = await createGroup();
+			let attachment = await importPDFAttachment(null, { libraryID: group.libraryID });
+			let title = await attachment.getTabTitle();
+			// As at startup, before the group's items have loaded
+			delete Zotero.Items._objectCache[attachment.id];
+			group._dataLoaded.item = false;
+			delete group._dataLoadedDeferreds.item;
+			let sessionState = {
+				type: 'pane',
+				geometry: {},
+				tabs: [
+					{ type: 'library', selected: true },
+					{ type: 'reader', title: '', data: { itemID: attachment.id } }
+				]
+			};
+			let newWin;
+			try {
+				newWin = Zotero.openMainWindow({ sessionState });
+				await waitForCallback(
+					() => newWin.Zotero_Tabs?._tabs.find(tab => tab.data.itemID == attachment.id)
+						?.title === title,
+					100,
+					20
+				);
+			}
+			finally {
+				newWin?.close();
+				await group.eraseTx();
 			}
 		});
 		
