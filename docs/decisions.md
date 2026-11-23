@@ -885,7 +885,7 @@ retired npm metadata while still rejecting a reintroduction or dependency change
 
 This retires the FTL-to-JSON/localize workflow and root ESLint. Locale files and the vendored test
 libraries remain; there is no in-repo tool to update them until R7. Reintroducing any npm tree
-requires owner approval under D32. The `connectors/` submodule keeps its own `node_modules` because
+requires owner approval under D32. The `connectors/` tree keeps its own `node_modules` because
 `xtask connectors` uses the upstream gulp build to preserve the Firefox connector; that tree is
 separate from the app build and is the remaining Node build dependency.
 
