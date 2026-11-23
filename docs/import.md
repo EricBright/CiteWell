@@ -139,10 +139,11 @@ Group libraries are shared libraries, not collections. CiteWell has no group syn
 imported into the personal library and each group gets a collection under the import root, preserving
 provenance without pretending the group still exists.
 
-The source summary lists regular items, collections, notes and attachments separately. Only the
-regular-item count is merged; attachments are skipped and do not appear in the merged item count.
-A progress popup reports item and note counts while the merge runs, and the pane keeps a green
-completion line and refreshes the destination counts and the main library when it finishes.
+The source summary lists regular items, collections, notes, attachments and annotations separately.
+The regular-item count is the merged item count; attachments, annotations and saved searches are
+reported separately. A progress popup reports item and note counts while the merge runs, and the
+pane keeps a green completion line and refreshes the destination counts and the main library when
+it finishes.
 Duplicate detection compares each source item only against items that existed before this merge,
 by DOI/ISBN/PMID and then a unique title+year; the report names both keys and whether the match was
 ambiguous. By default nothing is skipped. The merge dialog has an **off-by-default** option to skip
@@ -156,8 +157,10 @@ HTML attachments, then source attachment files are copied into CiteWell storage 
 their mapped parents; annotations follow their mapped attachment, and saved-search definitions are
 copied as definitions. A failed note, attachment or annotation is reported as a warning without
 aborting the rest. Attachments of skipped exact duplicates are not copied, so the kept item is not
-silently modified. Resumable batching is the remaining Phase 4 work. The source is opened **read-only**; a
-checksum before and after proves it was not modified.
+silently modified. If the merge is interrupted, the item checkpoint lets the next run resume the
+child passes; an attachment already copied before the interruption is remapped so its annotations
+still follow. The source is opened **read-only**; a checksum before and after proves it was not
+modified.
 
 Every merged item also gets an entry in the append-only identity log at
 `<data>/identity/aliases.jsonl`: source library/group and key, destination key, session and time.

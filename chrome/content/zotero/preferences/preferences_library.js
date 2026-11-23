@@ -627,7 +627,12 @@ Zotero_Preferences.Library = {
 				summary += ` Skipped ${this._plural(result.skippedItems, "exact duplicate", "exact duplicates")}.`;
 			}
 			if (result.skippedAttachments) {
-				summary += ` Skipped ${this._plural(result.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
+				summary += ` Skipped ${this._plural(result.skippedAttachments, "attachment", "attachments")} `
+					+ "already present or belonging to skipped duplicates.";
+			}
+			if (result.missingAttachments) {
+				summary += ` ${this._plural(result.missingAttachments, "source attachment", "source attachments")} `
+					+ "could not be copied because the file or link is unavailable.";
 			}
 			if (result.annotations) {
 				summary += ` Imported ${this._plural(result.annotations, "annotation", "annotations")}.`;
@@ -960,7 +965,12 @@ Zotero_Preferences.Library = {
 			element.textContent += ` Skipped ${this._plural(counts.skippedItems, "exact duplicate", "exact duplicates")}.`;
 		}
 		if (counts.skippedAttachments) {
-			element.textContent += ` Skipped ${this._plural(counts.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
+			element.textContent += ` Skipped ${this._plural(counts.skippedAttachments, "attachment", "attachments")} `
+				+ "already present or belonging to skipped duplicates.";
+		}
+		if (counts.missingAttachments) {
+			element.textContent += ` ${this._plural(counts.missingAttachments, "source attachment", "source attachments")} `
+				+ "could not be copied because the file or link is unavailable.";
 		}
 		if (counts.annotations) {
 			element.textContent += ` Imported ${this._plural(counts.annotations, "annotation", "annotations")}.`;

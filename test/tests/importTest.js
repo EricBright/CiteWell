@@ -334,6 +334,122 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should keep annotations when a resumed merge finds an existing attachment", async function () {
+		this.timeout(30000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "resume-source");
+		let staging = OS.Path.join(Zotero.DataDirectory.dir, "resume-staging");
+		try {
+			await resetData();
+			await Zotero.File.createDirectoryIfMissingAsync(source);
+
+			let item = new Zotero.Item("book");
+			item.libraryID = 1;
+			item.setField("title", "Resume fixture");
+			await item.saveTx();
+			let sourceKey = item.key;
+
+			let pdfPath = OS.Path.join(Zotero.DataDirectory.dir, "resume-source.pdf");
+			await Zotero.File.putContentsAsync(pdfPath, "%PDF-1.4\n%%EOF");
+			let sourceAttachment = await Zotero.Attachments.importFromFile({
+				file: pdfPath,
+				parentItemID: item.id,
+				title: "Resume PDF",
+				contentType: "application/pdf",
+			});
+			await IOUtils.remove(pdfPath, { ignoreAbsent: true });
+
+			let annotation = new Zotero.Item("annotation");
+			annotation.libraryID = 1;
+			annotation.parentID = sourceAttachment.id;
+			annotation.annotationType = "highlight";
+			annotation.annotationText = "Annotation on a previously copied attachment";
+			annotation.annotationPageLabel = "1";
+			annotation.annotationSortIndex = "00001|000001|00000";
+			annotation.annotationPosition = JSON.stringify({
+				pageIndex: 0,
+				rects: [[0, 0, 1, 1]],
+			});
+			await annotation.saveTx();
+
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			await Zotero.File.copyDirectory(
+				OS.Path.join(Zotero.DataDirectory.dir, "storage"),
+				OS.Path.join(source, "storage")
+			);
+			let sourceDb = new Zotero.DBConnection(
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			let inspected;
+			try {
+				inspected = await Zotero.LibraryImport._readMergeSource(sourceDb);
+			}
+			finally {
+				await sourceDb.closeDatabase(true);
+			}
+
+			await resetData();
+			let destination = new Zotero.Item("book");
+			destination.libraryID = 1;
+			destination._key = sourceKey;
+			destination.setField("title", "Resume fixture");
+			await destination.saveTx();
+
+			// Simulate an attachment copied by the interrupted first pass.
+			let existingPath = OS.Path.join(Zotero.DataDirectory.dir, "resume-existing.pdf");
+			await Zotero.File.putContentsAsync(existingPath, "%PDF-1.4\n%%EOF");
+			await Zotero.Attachments.importFromFile({
+				file: existingPath,
+				parentItemID: destination.id,
+				title: "Resume PDF",
+				contentType: "application/pdf",
+			});
+			await IOUtils.remove(existingPath, { ignoreAbsent: true });
+			await Zotero.File.createDirectoryIfMissingAsync(staging);
+
+			let result = await Zotero.LibraryImport._applyMergeSource(
+				inspected,
+				staging,
+				null,
+				null,
+				false,
+				source,
+				{
+					items: { [sourceKey]: destination.key },
+					skippedKeys: [],
+					notesCollectionID: 0,
+					collections: 0,
+					itemsImported: 1,
+					skippedItems: 0,
+					duplicates: [],
+				}
+			);
+			assert.equal(result.attachments, 0);
+			assert.equal(result.skippedAttachments, 1);
+			assert.equal(result.annotations, 1,
+				"an annotation must follow an attachment copied before the interruption");
+			let annotationIDs = await Zotero.DB.columnQueryAsync(
+				"SELECT itemID FROM itemAnnotations WHERE parentItemID=?",
+				[destination.getAttachments()[0]]
+			);
+			assert.lengthOf(annotationIDs, 1);
+			assert.equal(
+				Zotero.Items.get(annotationIDs[0]).annotationText,
+				"Annotation on a previously copied attachment"
+			);
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+			await IOUtils.remove(staging, { recursive: true, ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
+		}
+	});
+
 	it("should merge items, collections and notes without touching the source", async function () {
 		this.timeout(120000);
 		let source = OS.Path.join(Zotero.DataDirectory.dir, "import-test-merge-source");

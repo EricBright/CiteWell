@@ -1268,28 +1268,34 @@ Zotero.LibraryImport = {
 				if (!parent || !filePath || !(await IOUtils.exists(filePath))) {
 					missingAttachments++;
 				}
-				else if (this._hasChildAttachment(
-					parent,
-					attachment.title || PathUtils.filename(filePath),
-					attachment.contentType
-				)) {
-					skippedAttachments++;
-				}
 				else {
-					try {
-						let options = {
-							file: filePath,
-							parentItemID: parent.id,
-						};
-						if (attachment.title) options.title = attachment.title;
-						if (attachment.contentType) options.contentType = attachment.contentType;
-						let importedAttachment = await Zotero.Attachments.importFromFile(options);
-						attachmentMap.set(attachment.itemID, importedAttachment.id);
-						importedAttachments++;
+					let existingAttachment = this._findChildAttachment(
+						parent,
+						attachment.title || PathUtils.filename(filePath),
+						attachment.contentType
+					);
+					if (existingAttachment) {
+						// A resumed merge may already have copied this attachment.
+						// Map it so its annotations can still follow.
+						attachmentMap.set(attachment.itemID, existingAttachment.id);
+						skippedAttachments++;
 					}
-					catch (e) {
-						Zotero.logError(e);
-						warnings++;
+					else {
+						try {
+							let options = {
+								file: filePath,
+								parentItemID: parent.id,
+							};
+							if (attachment.title) options.title = attachment.title;
+							if (attachment.contentType) options.contentType = attachment.contentType;
+							let importedAttachment = await Zotero.Attachments.importFromFile(options);
+							attachmentMap.set(attachment.itemID, importedAttachment.id);
+							importedAttachments++;
+						}
+						catch (e) {
+							Zotero.logError(e);
+							warnings++;
+						}
 					}
 				}
 			}
@@ -2055,8 +2061,8 @@ Zotero.LibraryImport = {
 		await IOUtils.remove(this._checkpointPath(id), { ignoreAbsent: true });
 	},
 
-	_hasChildAttachment: function (parent, title, contentType) {
-		if (!parent || !title) return false;
+	_findChildAttachment: function (parent, title, contentType) {
+		if (!parent || !title) return null;
 		for (let id of parent.getAttachments()) {
 			let item = Zotero.Items.get(id);
 			if (!item) continue;
@@ -2069,10 +2075,14 @@ Zotero.LibraryImport = {
 			}
 			if (itemTitle === title
 					&& (!contentType || item.attachmentContentType === contentType)) {
-				return true;
+				return item;
 			}
 		}
-		return false;
+		return null;
+	},
+
+	_hasChildAttachment: function (parent, title, contentType) {
+		return !!this._findChildAttachment(parent, title, contentType);
 	},
 
 	_hasAnnotation: async function (parentID, type, text, position) {
