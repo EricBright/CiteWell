@@ -247,6 +247,8 @@ window.Zotero_File_Interface_Bibliography = new function () {
 			this.onBibWindowStyleChange(selectedStyleObj);
 			this.onDocPrefsWindowStyleChange(selectedStyleObj);
 		}
+		// The advanced-options rows change height with the style class (e.g.,
+		// note styles hide the bookmark row), so the window has to be resized.
 		this.updateWindowSize();
 	};
 
@@ -359,9 +361,24 @@ window.Zotero_File_Interface_Bibliography = new function () {
 	};
 
 	this.resizeWindow = function () {
+		// Don't lock min-height to the current height: when a style hides some
+		// advanced rows, the pinned height prevents the window from shrinking.
 		document.documentElement.style.removeProperty("min-height");
 		window.sizeToContent();
-		document.documentElement.style.minHeight = document.documentElement.clientHeight + "px";
+		
+		// On Wayland, sizeToContent() is applied asynchronously and the newly
+		// exposed area can stay unpainted until the window is resized again.
+		// Nudge the height once the resize has settled so the compositor gets
+		// a fresh full-size frame.
+		if (Zotero.isLinux) {
+			clearTimeout(this._resizeRepaintTimer);
+			this._resizeRepaintTimer = setTimeout(() => {
+				let width = window.outerWidth;
+				let height = window.outerHeight;
+				window.resizeTo(width, height + 1);
+				setTimeout(() => window.resizeTo(width, height), 50);
+			}, 100);
+		}
 	};
 
 	/**
