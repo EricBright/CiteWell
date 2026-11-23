@@ -581,8 +581,8 @@ Zotero_Preferences.Library = {
 			+ `Zotero: ${this._plural(info.regularItems ?? info.items, "item", "items")}, `
 			+ `${this._plural(info.collections, "collection", "collections")}, `
 			+ `${this._plural(info.notes, "note", "notes")}.\n\n`
-			+ "Items, collections, notes and attachments will be added to the current library. "
-			+ `${this._plural(info.annotations, "annotation", "annotations")} are not imported yet. `
+			+ "Items, collections, notes, attachments and annotations will be added to the current "
+			+ "library; saved-search definitions are copied as definitions. "
 			+ "A database backup is kept; Zotero is not modified."
 			+ (skipExact
 				? "\n\nItems with an exact DOI/ISBN/PMID match will be skipped and placed in the "
@@ -628,6 +628,12 @@ Zotero_Preferences.Library = {
 			}
 			if (result.skippedAttachments) {
 				summary += ` Skipped ${this._plural(result.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
+			}
+			if (result.annotations) {
+				summary += ` Imported ${this._plural(result.annotations, "annotation", "annotations")}.`;
+			}
+			if (result.savedSearches) {
+				summary += ` Copied ${this._plural(result.savedSearches, "saved search", "saved searches")}.`;
 			}
 			if (result.duplicates?.length) {
 				summary += ` ${this._plural(result.duplicates.length, "possible duplicate", "possible duplicates")} reported.`;
@@ -955,6 +961,12 @@ Zotero_Preferences.Library = {
 		}
 		if (counts.skippedAttachments) {
 			element.textContent += ` Skipped ${this._plural(counts.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
+		}
+		if (counts.annotations) {
+			element.textContent += ` Imported ${this._plural(counts.annotations, "annotation", "annotations")}.`;
+		}
+		if (counts.savedSearches) {
+			element.textContent += ` Copied ${this._plural(counts.savedSearches, "saved search", "saved searches")}.`;
 		}
 		if (result.duplicateReport) {
 			element.textContent += ` ${this._plural(counts.duplicates, "possible duplicate", "possible duplicates")} `

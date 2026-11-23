@@ -131,8 +131,8 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 | Collections | Tree recreated by name under an import root, then items assigned |
 | Notes | Written as an HTML file attachment under `storage/`; parent mapped. Never rendered, edited, indexed or opened in-app — the OS default HTML handler opens it |
 | Attachments | File copied from the source `storage/` into CiteWell storage as an imported-file attachment; parent mapped. Attachments of a skipped exact duplicate are not duplicated |
-| Annotations | Not imported yet; source rows are skipped |
-| Saved searches | Not imported yet; definitions are left alone |
+| Annotations | Copied to the mapped attachment; there is no in-app viewer, so they remain available to the one-time annotation export |
+| Saved searches | Definitions and conditions copied; results are not copied |
 | Duplicates | Reported to `identity/duplicates-<session>.json`. With the opt-in exact-identifier skip, DOI/ISBN/PMID matches are not inserted but are added to the imported collections and aliased; title/year matches are never skipped |
 
 Group libraries are shared libraries, not collections. CiteWell has no group sync, so their items are
@@ -153,9 +153,10 @@ title/year candidates remain report-only. No existing metadata is changed.
 The item and collection pass runs in a single transaction: a failure leaves the current library
 unchanged, and the database backup remains as the restore point. Notes are written afterwards as
 HTML attachments, then source attachment files are copied into CiteWell storage and attached to
-their mapped parents; a failed note or attachment is reported as a warning without aborting the
-rest. Attachments of skipped exact duplicates are not copied, so the kept item is not silently
-modified. Resumable batching is the remaining Phase 4 work. The source is opened **read-only**; a
+their mapped parents; annotations follow their mapped attachment, and saved-search definitions are
+copied as definitions. A failed note, attachment or annotation is reported as a warning without
+aborting the rest. Attachments of skipped exact duplicates are not copied, so the kept item is not
+silently modified. Resumable batching is the remaining Phase 4 work. The source is opened **read-only**; a
 checksum before and after proves it was not modified.
 
 Every merged item also gets an entry in the append-only identity log at
@@ -208,7 +209,7 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 |---|---|
 | 1 | Detector, dry run, adopt-copy, replace, restore points and checksum verification |
 | 2 | Merge regular items, collections, and notes as HTML attachments |
-| 3 | Attachments imported; annotations and saved searches still skipped |
+| 3 | Attachments, annotations and saved-search definitions imported |
 | 4 | Duplicate report and skip done; resumable merges remaining |
 
 *For the full documentation index, see [../README.md](../README.md).*

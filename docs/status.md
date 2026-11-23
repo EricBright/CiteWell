@@ -48,20 +48,21 @@ plan.
 ## Handoff 2026-11-23 (Attachments)
 
 - New branch `import-attachments` from `citewell`, not merged.
-- Merge now copies source attachment files into CiteWell storage as imported-file attachments and
-  maps them to their parents. Attachments belonging to a skipped exact duplicate are not copied;
-  missing files and failed copies increment warnings. The merge result and pane count attachments,
-  skipped attachments, and missing files.
+- Merge now copies source attachment files into CiteWell storage as imported-file attachments,
+  maps them to their parents, copies annotations onto the mapped attachments, and copies saved-
+  search definitions. Attachments belonging to a skipped exact duplicate are not copied; missing
+  files and failed copies increment warnings. Annotations have no in-app viewer; they are retained
+  for the one-time export.
 - The identity log is now part of import/replace/restore backups, and a restore writes the selected
   point's identity snapshot back into the active library. Old points without a snapshot keep the
   current chain rather than deleting it.
 - Tests: `importTest.js` 15/15, including attachment file content, parent mapping, skipped-duplicate
-  attachment policy and report scanning. Test AppImage:
+  attachment policy, annotation fields, saved-search definitions and report scanning. Test AppImage:
   `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.51196d137`, sha256
   `7a65be1ff049828b220d7e86fdb62f4c1996a699c1e2a4fd8b443a4a83aa0e25`, 125,921,784 bytes.
   Release builds and the stable AppImage are unchanged.
-- Next: decide whether annotations and saved searches are worth importing (annotations have no UI
-  here), then resumable merge batching, then R15.
+- Next: resumable merge batching (the remaining Phase 4 item), then R15. Imported annotations have
+  no in-app viewer; the one-time export remains their only consumer.
 
 ## Handoff 2026-11-23 (Dedup report)
 

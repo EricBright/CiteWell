@@ -718,11 +718,14 @@ Zotero.LibraryImport = {
 					collections: result.collections,
 					attachments: result.attachments,
 					notes: result.notes,
+					annotations: result.annotations,
+					savedSearches: result.savedSearches,
 					duplicates: result.duplicates.length,
 					skippedItems: result.skippedItems,
 					skippedNotes: result.skippedNotes,
 					skippedAttachments: result.skippedAttachments,
 					missingAttachments: result.missingAttachments,
+					skippedAnnotations: result.skippedAnnotations,
 				},
 				duplicateReport,
 				warnings: result.warnings,
@@ -800,6 +803,21 @@ Zotero.LibraryImport = {
 			WHERE ia.itemID NOT IN (SELECT itemID FROM deletedItems)
 			  AND ia.parentItemID IS NOT NULL
 		`);
+		var annotations = await q(`
+			SELECT a.itemID, a.parentItemID, a.type, a.text, a.comment, a.color,
+				a.pageLabel, a.sortIndex, a.position
+			FROM itemAnnotations a
+			JOIN items i ON i.itemID = a.itemID
+			WHERE a.itemID NOT IN (SELECT itemID FROM deletedItems)
+		`);
+		var savedSearches = await q(`
+			SELECT savedSearchID, savedSearchName AS name FROM savedSearches
+		`);
+		var savedSearchConditions = await q(`
+			SELECT savedSearchID, condition, operator, value
+			FROM savedSearchConditions
+			ORDER BY savedSearchID, searchConditionID
+		`);
 		var groups = await q(`SELECT groupID, libraryID, name FROM groups`);
 		var relations = await q(`
 			SELECT r.itemID, p.predicate, r.object
@@ -851,6 +869,9 @@ Zotero.LibraryImport = {
 			})),
 			notes,
 			attachments,
+			annotations,
+			savedSearches,
+			savedSearchConditions,
 			groupNames,
 			groupIDs,
 			relations,
@@ -876,6 +897,9 @@ Zotero.LibraryImport = {
 		var importedAttachments = 0;
 		var skippedAttachments = 0;
 		var missingAttachments = 0;
+		var importedAnnotations = 0;
+		var skippedAnnotations = 0;
+		var importedSearches = 0;
 
 		var state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
@@ -1147,6 +1171,7 @@ Zotero.LibraryImport = {
 		}
 
 		var processedAttachments = 0;
+		var attachmentMap = new Map();
 		for (let attachment of source.attachments) {
 			processedAttachments++;
 			if (skippedSourceIDs.has(attachment.parentItemID)) {
@@ -1177,7 +1202,8 @@ Zotero.LibraryImport = {
 						};
 						if (attachment.title) options.title = attachment.title;
 						if (attachment.contentType) options.contentType = attachment.contentType;
-						await Zotero.Attachments.importFromFile(options);
+						let importedAttachment = await Zotero.Attachments.importFromFile(options);
+						attachmentMap.set(attachment.itemID, importedAttachment.id);
 						importedAttachments++;
 					}
 					catch (e) {
@@ -1192,6 +1218,59 @@ Zotero.LibraryImport = {
 			}
 		}
 
+		var annotationTypes = ["", "highlight", "note", "image", "ink", "underline", "text"];
+		for (let annotation of source.annotations) {
+			let parentID = attachmentMap.get(annotation.parentItemID);
+			let type = annotationTypes[annotation.type];
+			let parent = parentID && Zotero.Items.get(parentID);
+			if (!parentID || !type || !parent?.attachmentReaderType) {
+				skippedAnnotations++;
+				continue;
+			}
+			try {
+				let item = new Zotero.Item("annotation");
+				item.libraryID = 1;
+				item.parentID = parentID;
+				item.annotationType = type;
+				if (annotation.text) item.annotationText = annotation.text;
+				if (annotation.comment) item.annotationComment = annotation.comment;
+				if (annotation.color) item.annotationColor = annotation.color;
+				if (annotation.pageLabel) item.annotationPageLabel = annotation.pageLabel;
+				if (annotation.sortIndex) item.annotationSortIndex = annotation.sortIndex;
+				if (annotation.position) item.annotationPosition = annotation.position;
+				await item.saveTx();
+				importedAnnotations++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				warnings++;
+			}
+		}
+
+		var conditionsBySearch = new Map();
+		for (let condition of source.savedSearchConditions) {
+			if (!conditionsBySearch.has(condition.savedSearchID)) {
+				conditionsBySearch.set(condition.savedSearchID, []);
+			}
+			conditionsBySearch.get(condition.savedSearchID).push(condition);
+		}
+		for (let saved of source.savedSearches) {
+			try {
+				let search = new Zotero.Search();
+				search.libraryID = 1;
+				search.name = saved.name;
+				for (let condition of conditionsBySearch.get(saved.savedSearchID) || []) {
+					search.addCondition(condition.condition, condition.operator, condition.value);
+				}
+				await search.saveTx();
+				importedSearches++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				warnings++;
+			}
+		}
+
 		return {
 			items: importedItems,
 			collections: collectionCount,
@@ -1201,6 +1280,9 @@ Zotero.LibraryImport = {
 			attachments: importedAttachments,
 			skippedAttachments,
 			missingAttachments,
+			annotations: importedAnnotations,
+			skippedAnnotations,
+			savedSearches: importedSearches,
 			warnings,
 			aliases,
 			duplicates,

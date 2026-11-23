@@ -373,6 +373,36 @@ describe("Library import", function () {
 			});
 			await IOUtils.remove(attachmentFile, { ignoreAbsent: true });
 
+			let pdfFile = OS.Path.join(Zotero.DataDirectory.dir, "source.pdf");
+			await Zotero.File.putContentsAsync(pdfFile, "%PDF-1.4\n%%EOF");
+			let pdfAttachment = await Zotero.Attachments.importFromFile({
+				file: pdfFile,
+				parentItemID: item.id,
+				title: "Source PDF",
+				contentType: "application/pdf",
+			});
+			await IOUtils.remove(pdfFile, { ignoreAbsent: true });
+			let annotation = new Zotero.Item("annotation");
+			annotation.libraryID = 1;
+			annotation.parentID = pdfAttachment.id;
+			annotation.annotationType = "highlight";
+			annotation.annotationText = "Highlighted source text";
+			annotation.annotationComment = "Source comment";
+			annotation.annotationColor = "#ffd400";
+			annotation.annotationPageLabel = "1";
+			annotation.annotationSortIndex = "00001|000001|00000";
+			annotation.annotationPosition = JSON.stringify({
+				pageIndex: 0,
+				rects: [[0, 0, 1, 1]],
+			});
+			await annotation.saveTx();
+
+			let savedSearch = new Zotero.Search();
+			savedSearch.libraryID = 1;
+			savedSearch.name = "Imported search fixture";
+			savedSearch.addCondition("title", "contains", "Merge");
+			await savedSearch.saveTx();
+
 			let note = new Zotero.Item("note");
 			note.libraryID = 1;
 			note.parentID = item.id;
@@ -432,7 +462,9 @@ describe("Library import", function () {
 			});
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
-			assert.isAtLeast(result.attachments, 1);
+			assert.isAtLeast(result.attachments, 2);
+			assert.isAtLeast(result.annotations, 1);
+			assert.isAtLeast(result.savedSearches, 1);
 			assert.ok(progress.some(line => /^Items: [0-9]+\//.test(line)));
 			assert.equal(result.skippedItems, 1);
 			assert.equal(result.skippedAttachments, 1);
@@ -496,7 +528,7 @@ describe("Library import", function () {
 
 			let attachments = merged.getAttachments()
 				.map(attachmentID => Zotero.Items.get(attachmentID));
-			assert.lengthOf(attachments, 2);
+			assert.lengthOf(attachments, 3);
 			let noteAttachment = attachments.find(candidate =>
 				candidate.attachmentContentType === "text/html"
 			);
@@ -513,6 +545,21 @@ describe("Library import", function () {
 			let fileAttachmentPath = await fileAttachment.getFilePathAsync();
 			assert.isTrue(await IOUtils.exists(fileAttachmentPath));
 			assert.equal(await Zotero.File.getContentsAsync(fileAttachmentPath), "attachment body");
+			let pdfAttachmentItem = attachments.find(candidate =>
+				candidate.attachmentContentType === "application/pdf"
+			);
+			assert.ok(pdfAttachmentItem);
+			assert.equal(pdfAttachmentItem.getField("title"), "Source PDF");
+			let annotationIDs = await Zotero.DB.columnQueryAsync(
+				"SELECT itemID FROM itemAnnotations WHERE parentItemID=?",
+				[pdfAttachmentItem.id]
+			);
+			assert.isAtLeast(annotationIDs.length, 1);
+			let importedAnnotation = Zotero.Items.get(annotationIDs[0]);
+			assert.equal(importedAnnotation.annotationText, "Highlighted source text");
+			assert.equal(importedAnnotation.annotationComment, "Source comment");
+			let savedSearches = await Zotero.Searches.getAll(1);
+			assert.ok(savedSearches.some(search => search.name === "Imported search fixture"));
 			assert.equal(items.filter(candidate => candidate.itemType === "note").length, 0);
 
 			let hashAfter = await Zotero.LibraryImport.hashFile(
