@@ -325,10 +325,21 @@ class Document(object):
 
     # -- document data ----------------------------------------------------
 
+    # Zotero stores document style and field preferences in the ZOTERO_PREF
+    # property (CSL_PREF is an older alias). CITEWELL_PREFS is only read for
+    # documents written by earlier CiteWell builds and mirrored on write so
+    # those builds can still open the document (D39).
+    PREFS_PROPERTIES = ("ZOTERO_PREF", "CSL_PREF", "CITEWELL_PREFS")
+
     def get_document_data(self):
-        return self.properties.get("CITEWELL_PREFS")
+        for name in self.PREFS_PROPERTIES:
+            value = self.properties.get(name)
+            if value:
+                return value
+        return ""
 
     def set_document_data(self, data):
+        self.properties.set("ZOTERO_PREF", data)
         self.properties.set("CITEWELL_PREFS", data)
 
     # -- fields -----------------------------------------------------------
@@ -337,6 +348,13 @@ class Document(object):
         marks = self.component.getReferenceMarks()
         for index in range(marks.getCount()):
             yield marks.getByIndex(index), "ReferenceMark"
+        try:
+            bookmarks = self.component.getBookmarks()
+        except Exception:
+            bookmarks = None
+        if bookmarks is not None:
+            for index in range(bookmarks.getCount()):
+                yield bookmarks.getByIndex(index), "Bookmark"
         try:
             sections = self.component.getTextSections()
         except Exception:
@@ -405,6 +423,11 @@ class Document(object):
             cursor = note_text.createTextCursorByRange(note)
         cursor.setString(PLACEHOLDER)
         raw = raw_name("")
+        if field_type == "Bookmark":
+            mark = self.component.createInstance("com.sun.star.text.Bookmark")
+            mark.setName(raw)
+            cursor.getText().insertTextContent(cursor, mark, True)
+            return self._register(mark, "Bookmark")
         mark = self.component.createInstance("com.sun.star.text.ReferenceMark")
         mark.setName(raw)
         mark.attach(cursor)

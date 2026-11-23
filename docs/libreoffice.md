@@ -42,6 +42,13 @@ Phases:
 Acceptance for a phase is a document that opens, refreshes, edits, saves and reopens in the other
 application without losing citations or bibliography entries.
 
+Implementation status (2026-11-23): phases 1–3 are on the `writer-compat` branch. The extension
+writes `ZOTERO_` markers, reads legacy `CITEWELL_` markers, reads `ZOTERO_PREF` / `CSL_PREF` /
+`CITEWELL_PREFS` and writes the first (mirroring the last for older builds), and scans both
+reference marks and bookmarks. Merge preserves a free source key and records the identity log for
+every item; citation resolution falls back to that chain after an exact URI and a replaced-item
+lookup. A real Zotero-created ODT round-trip and the Phase 4 dedup work are still to be run.
+
 ## Identity and transport
 
 CiteWell owns this integration. The target contract is:

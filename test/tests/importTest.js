@@ -69,6 +69,23 @@ describe("Library import", function () {
 		assert.equal(Zotero.LibraryImport.formatBytes(1024 * 1024 * 1536), "1.5 GB");
 	});
 
+	it("should follow identity aliases through a chain", function () {
+		let identity = Zotero.LibraryImport;
+		identity._identityKeys = new Map([
+			["AAAA1111", "BBBB2222"],
+			["BBBB2222", "CCCC3333"],
+		]);
+		identity._identityGroups = new Map([
+			["42/DDDD4444", "EEEE5555"],
+		]);
+		assert.equal(identity._resolveIdentityKey("AAAA1111", null), "CCCC3333");
+		assert.equal(identity._resolveIdentityKey("DDDD4444", "42"), "EEEE5555");
+		identity._identityKeys.set("CCCC3333", "AAAA1111");
+		assert.isNull(identity._resolveIdentityKey("AAAA1111", null));
+		identity._identityKeys = null;
+		identity._identityGroups = null;
+	});
+
 	it("should register the Library preferences pane", async function () {
 		await Zotero.PreferencePanes.loadBuiltInPanes();
 		let pane = Zotero.PreferencePanes.builtInPanes.find(
@@ -239,6 +256,7 @@ describe("Library import", function () {
 			item.setTags([{ tag: "fixture", type: 1 }]);
 			item.setCollections([child.id]);
 			await item.saveTx();
+			let sourceItemKey = item.key;
 
 			let note = new Zotero.Item("note");
 			note.libraryID = 1;
@@ -256,6 +274,10 @@ describe("Library import", function () {
 			);
 
 			await resetData();
+			let aliasesPath = OS.Path.join(Zotero.DataDirectory.dir, "identity", "aliases.jsonl");
+			await IOUtils.remove(aliasesPath, { ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
 			let existing = new Zotero.Item("book");
 			existing.libraryID = 1;
 			existing.setField("title", "Existing item");
@@ -277,6 +299,15 @@ describe("Library import", function () {
 					&& candidate.getField("title") === "Merge fixture"
 			);
 			assert.ok(merged);
+			assert.equal(merged.key, sourceItemKey, "merge should preserve a free source key");
+			let aliasText = await Zotero.File.getContentsAsync(aliasesPath);
+			let aliasEntries = aliasText.trim().split("\n").map(line => JSON.parse(line));
+			assert.ok(aliasEntries.some(entry => entry.sourceKey === sourceItemKey
+				&& entry.destKey === merged.key));
+			let aliasItem = await Zotero.LibraryImport.getItemForURIs([
+				`http://zotero.org/users/local/test/items/${sourceItemKey}`,
+			]);
+			assert.equal(aliasItem?.id, merged.id);
 			assert.equal(merged.getCreators()[0].lastName, "Lovelace");
 			assert.include(merged.getTags().map(tag => tag.tag), "fixture");
 
@@ -302,6 +333,12 @@ describe("Library import", function () {
 		}
 		finally {
 			await resetData();
+			await IOUtils.remove(
+				OS.Path.join(Zotero.DataDirectory.dir, "identity", "aliases.jsonl"),
+				{ ignoreAbsent: true }
+			);
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
 			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
 		}
 	});

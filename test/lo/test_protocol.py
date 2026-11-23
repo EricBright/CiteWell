@@ -21,8 +21,12 @@ class NamingTests(unittest.TestCase):
     def test_reads_zotero_prefixes(self):
         self.assertEqual(protocol.parse_code("ZOTERO_abc RND123"), "abc")
         self.assertEqual(protocol.parse_code(" CSL_abc RND123"), "abc")
+        self.assertEqual(protocol.parse_code(" ADDIN ZOTERO_abc RND123"), "abc")
 
-    def test_rnd_suffix_is_stripped(self):
+    def test_writes_zotero_prefix(self):
+        self.assertTrue(protocol.raw_name("ITEM CSL_CITATION {}").startswith("ZOTERO_"))
+
+    def test_legacy_citewell_prefix_is_still_read(self):
         self.assertEqual(protocol.parse_code("CITEWELL_" + "x" * 10 + " RNDABC"), "x" * 10)
 
     def test_plain_name_is_not_a_field(self):

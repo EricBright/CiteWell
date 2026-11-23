@@ -39,6 +39,7 @@ Zotero.LibraryImport = {
 	RESTORE_FILENAME: "library-restore-request.json",
 	RESULT_FILENAME: "library-import-result.json",
 	APPLY_MARKER: ".import-apply-in-progress",
+	IDENTITY_FILENAME: "aliases.jsonl",
 
 	get dataDir() {
 		return Zotero.DataDirectory.dir;
@@ -58,6 +59,14 @@ Zotero.LibraryImport = {
 
 	get resultPath() {
 		return PathUtils.join(this.profileDir, this.RESULT_FILENAME);
+	},
+
+	get identityDir() {
+		return PathUtils.join(this.dataDir, "identity");
+	},
+
+	get identityPath() {
+		return PathUtils.join(this.identityDir, this.IDENTITY_FILENAME);
 	},
 
 	/**
@@ -673,6 +682,13 @@ Zotero.LibraryImport = {
 
 			onProgress?.(`Merging ${source.items.length} items and ${source.collections.length} collections…`);
 			var result = await this._applyMergeSource(source, staging, onProgress);
+			try {
+				await this._appendIdentity(result.aliases, id);
+			}
+			catch (e) {
+				Zotero.logError(e);
+				result.warnings++;
+			}
 
 			await this._writeResult({
 				ok: true,
@@ -750,7 +766,7 @@ Zotero.LibraryImport = {
 			JOIN items i ON i.itemID = n.itemID
 			WHERE n.itemID NOT IN (SELECT itemID FROM deletedItems)
 		`);
-		var groups = await q(`SELECT libraryID, name FROM groups`);
+		var groups = await q(`SELECT groupID, libraryID, name FROM groups`);
 		var relations = await q(`
 			SELECT r.itemID, p.predicate, r.object
 			FROM itemRelations r
@@ -785,6 +801,7 @@ Zotero.LibraryImport = {
 
 		var itemIDByKey = new Map(items.map(row => [row.key, row.itemID]));
 		var groupNames = new Map(groups.map(row => [row.libraryID, row.name]));
+		var groupIDs = new Map(groups.map(row => [row.libraryID, row.groupID]));
 
 		return {
 			items,
@@ -800,6 +817,7 @@ Zotero.LibraryImport = {
 			})),
 			notes,
 			groupNames,
+			groupIDs,
 			relations,
 			itemIDByKey,
 		};
@@ -813,6 +831,7 @@ Zotero.LibraryImport = {
 		var notesCollectionID = 0;
 		var warnings = 0;
 		var collectionCount = 0;
+		var aliases = [];
 
 		var state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
@@ -885,6 +904,20 @@ Zotero.LibraryImport = {
 				}
 				let item = new Zotero.Item(row.typeName);
 				item.libraryID = 1;
+				// Keep the source key when it is free so Writer documents that
+				// cite this item keep resolving without an alias. The key must be
+				// set before any field, which marks primary data as loaded.
+				if (row.key) {
+					let taken = await Zotero.DB.valueQueryAsync(
+						"SELECT itemID FROM items WHERE libraryID=1 AND key=?", row.key
+					);
+					if (!taken) {
+						// Assign the identifier directly: setField('key') marks
+						// the object identified before any field is loaded and
+						// makes the following setField() calls throw.
+						item._key = row.key;
+					}
+				}
 				for (let field of source.fieldsByItem.get(row.itemID) || []) {
 					try {
 						item.setField(field.name, field.value);
@@ -917,6 +950,12 @@ Zotero.LibraryImport = {
 				}
 				await item.save();
 				itemMap.set(row.itemID, item);
+				aliases.push({
+					sourceLibraryID: row.libraryID,
+					sourceGroupID: source.groupIDs.get(row.libraryID) || null,
+					sourceKey: row.key,
+					destKey: item.key,
+				});
 				itemsDone++;
 				if (itemsDone % 25 === 0 || itemsDone === source.items.length) {
 					onProgress?.(`Items: ${itemsDone}/${source.items.length}`);
@@ -1007,6 +1046,7 @@ Zotero.LibraryImport = {
 			collections: collectionCount,
 			notes: notesCount,
 			warnings,
+			aliases,
 		};
 	},
 
@@ -1301,6 +1341,108 @@ Zotero.LibraryImport = {
 
 	cancelRestore: async function () {
 		await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
+	},
+
+	/**
+	 * Append source-to-destination item identities to the sidecar log (D40).
+	 *
+	 * The log is append-only: a later merge or dedup may add a new link, but
+	 * an existing link is never rewritten, so chains remain auditable and a
+	 * rollback can still resolve the old keys.
+	 */
+	_appendIdentity: async function (entries, session) {
+		if (!entries?.length) return;
+		await Zotero.File.createDirectoryIfMissingAsync(this.identityDir);
+		var existing = "";
+		if (await IOUtils.exists(this.identityPath)) {
+			existing = await Zotero.File.getContentsAsync(this.identityPath);
+		}
+		var createdAt = new Date().toISOString();
+		var lines = entries.map(entry => JSON.stringify({
+			v: 1,
+			session,
+			createdAt,
+			sourceLibraryID: entry.sourceLibraryID,
+			sourceGroupID: entry.sourceGroupID || null,
+			sourceKey: entry.sourceKey,
+			destKey: entry.destKey,
+		}));
+		if (existing && !existing.endsWith("\n")) existing += "\n";
+		await Zotero.File.putContentsAsync(
+			this.identityPath,
+			existing + lines.join("\n") + "\n"
+		);
+		this._identityKeys = null;
+		this._identityGroups = null;
+	},
+
+	_loadIdentity: async function () {
+		if (this._identityKeys) return;
+		this._identityKeys = new Map();
+		this._identityGroups = new Map();
+		if (!(await IOUtils.exists(this.identityPath))) return;
+		var text = await Zotero.File.getContentsAsync(this.identityPath);
+		for (let line of text.split("\n")) {
+			if (!line.trim()) continue;
+			let entry;
+			try {
+				entry = JSON.parse(line);
+			}
+			catch (e) {
+				Zotero.logError(e);
+				continue;
+			}
+			if (!entry?.sourceKey || !entry?.destKey) continue;
+			if (entry.sourceGroupID) {
+				this._identityGroups.set(
+					`${entry.sourceGroupID}/${entry.sourceKey}`,
+					entry.destKey
+				);
+			}
+			else {
+				this._identityKeys.set(entry.sourceKey, entry.destKey);
+			}
+		}
+	},
+
+	_resolveIdentityKey: function (key, groupID) {
+		var seen = new Set();
+		for (let i = 0; i < 32; i++) {
+			let id = groupID ? `${groupID}/${key}` : key;
+			if (seen.has(id)) return null;
+			seen.add(id);
+			let next = groupID
+				? this._identityGroups.get(id)
+				: this._identityKeys.get(id);
+			if (!next || next === key) break;
+			key = next;
+			groupID = null;
+		}
+		return key;
+	},
+
+	/**
+	 * Resolve citation URIs through the alias chain. The integration calls
+	 * this only after an exact URI lookup has failed.
+	 *
+	 * @param {String[]} uris
+	 * @return {Promise<Zotero.Item|false>}
+	 */
+	getItemForURIs: async function (uris) {
+		await this._loadIdentity();
+		for (let uri of uris || []) {
+			let match = /\/items\/([A-Za-z0-9]+)/.exec(uri);
+			if (!match) continue;
+			let groupMatch = /\/groups\/(\d+)\/items\//.exec(uri);
+			let key = this._resolveIdentityKey(
+				match[1],
+				groupMatch ? groupMatch[1] : null
+			);
+			if (!key) continue;
+			let item = await Zotero.Items.getByLibraryAndKeyAsync(1, key);
+			if (item && !item.deleted) return item;
+		}
+		return false;
 	},
 
 	getLocations: function () {

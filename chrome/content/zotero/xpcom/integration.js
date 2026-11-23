@@ -2890,6 +2890,15 @@ Zotero.Integration.URIMap.prototype.getZoteroItemForURIs = async function (uris)
 			break;
 		}
 		
+		// Try the merge identity chain (source key -> destination key)
+		if (Zotero.LibraryImport?.getItemForURIs) {
+			let aliasItem = await Zotero.LibraryImport.getItemForURIs([uri]);
+			if (aliasItem && !aliasItem.deleted) {
+				zoteroItem = aliasItem;
+				break;
+			}
+		}
+		
 		// Check if it's a mendeley URI and if we have imported the item
 		let m = MENDELEY_URI_RE.exec(uri);
 		if (m) {

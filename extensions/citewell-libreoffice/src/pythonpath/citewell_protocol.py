@@ -13,8 +13,10 @@ import random
 import string
 import struct
 
-PREFIX = "CITEWELL_"
-READ_PREFIXES = ("CITEWELL_", "ZOTERO_", " CSL_")
+# Write Zotero's marker convention so documents stay readable by Zotero (D39).
+PREFIX = "ZOTERO_"
+# Earlier CiteWell builds wrote CITEWELL_ marks; keep reading them for migration.
+READ_PREFIXES = ("ZOTERO_", "CITEWELL_", " CSL_", " ADDIN ZOTERO_")
 PLACEHOLDER = "CITEWELL_ITEM"
 MAX_PROPERTY_LENGTH = 255
 MAX_FRAME = 8 * 1024 * 1024

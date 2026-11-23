@@ -127,7 +127,7 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 
 | Object | Handling |
 |---|---|
-| Regular items | Fields, creators, tags and relations copied; a new key is generated and the old key mapped |
+| Regular items | Fields, creators, tags and relations copied; the source key is kept when free, otherwise a new key is generated and recorded in the alias chain |
 | Collections | Tree recreated by name under an import root, then items assigned |
 | Notes | Written as an HTML file attachment under `storage/`; parent mapped. Never rendered, edited, indexed or opened in-app — the OS default HTML handler opens it |
 | Attachments | Not imported yet (Phase 3); source rows are skipped |
@@ -149,6 +149,13 @@ unchanged, and the database backup remains as the restore point. Notes are writt
 HTML attachments; a failed note is reported as a warning without aborting the rest. Resumable
 batching and duplicate reporting are Phase 4. The source is opened **read-only**; a checksum before
 and after proves it was not modified.
+
+Every merged item also gets an entry in the append-only identity log at
+`<data>/identity/aliases.jsonl`: source library/group and key, destination key, session and time.
+Keeping the source key means a Writer document created against the Zotero library usually resolves
+without the log; when the key had to change (or the item came from a group library), the citation
+reader follows the alias chain to the current item. The log is additive and is not part of
+`zotero.sqlite`; restore-point integration is tracked separately.
 
 ## Settings pane
 
