@@ -61,8 +61,8 @@ plan.
 - Tests: `importTest.js` 14/14, including DOI duplicate detection, report contents, exact-identifier
   skip, collection placement and alias resolution.
 - Test AppImage: `~/AppImages/citewell-dedup-test.appimage`, version
-  `10.0.9.SOURCE.cd469ae42`, sha256
-  `58f456f1ed8ccfa739a59081e8e2ecd2d01df51553afb1df62892b6ad69c7af1`, 125,917,688 bytes.
+  `10.0.9.SOURCE.136368a54`, sha256
+  `df20f97a54ec74126b5253dbf57cadf027e885ffee85fc8c34c550d93c463307`, 125,917,688 bytes.
 - Next: decide the post-report cleanup flow (interactive review or a dedup pass over existing
   duplicates); automatic metadata merging remains out of scope.
 
