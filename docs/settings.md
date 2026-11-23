@@ -85,11 +85,11 @@ Script: `preferences_library.js`. This pane is mostly workflow, not preference r
 
 | Section | Contents | Script concern | Proposed destination |
 |---|---|---|---|
-| Current library | Open/move/replace active library | `preferences_library.js` | Library & Files |
+| Current library | Path, counts, open/move | `preferences_library.js` | Library & Files |
 | Locations | Per-component paths | same | Library & Files |
 | Notes | Markdown migration and verification | same | Notes & Annotations |
 | PDF annotations | One-time legacy annotation export | same | Notes & Annotations → Migration |
-| Import from Zotero | Adopt-copy, replace, staged import | same | Import & Export |
+| Import from Zotero | Adopt-copy, merge, replace, staged import | same | Import & Export |
 | Restore points | Backups and restore | same | Import & Export |
 | Last import | Last result | same | Import & Export |
 

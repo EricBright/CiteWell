@@ -69,9 +69,10 @@
 	</groupbox>
 		<groupbox aria-label="Import from Zotero">
 			<label><html:h2>Import from Zotero</html:h2></label>
+			<description id="library-import-target" class="library-muted"/>
 			<description>
-				Copies a Zotero library into CiteWell. Zotero is never modified, and its settings,
-				plugins and sync credentials are never copied.
+				Choose the Zotero library to copy from. CiteWell has its own library and never modifies
+				Zotero; its settings, plugins and sync credentials are never copied.
 			</description>
 
 			<radiogroup id="library-candidates" class="library-candidates"/>
@@ -88,13 +89,17 @@
 			<description id="library-import-status" class="library-status"/>
 
 			<hbox class="library-button-row">
-				<button id="library-import" label="Import…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
+				<button id="library-import" label="Import into empty library…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
+				<button id="library-merge" label="Merge into current library…" oncommand="Zotero_Preferences.Library.mergeSelected()" hidden="true" disabled="true"/>
+				<button id="library-replace" label="Replace current library…" oncommand="Zotero_Preferences.Library.replaceSelected()" hidden="true" disabled="true"/>
 				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
 				<button id="library-cancel-restore" label="Cancel staged restore" oncommand="Zotero_Preferences.Library.cancelRestore()" hidden="true"/>
 			</hbox>
 			<description class="library-muted">
-				Merging into an existing library is the next phase. Today a non-empty library can be
-				replaced, with a restore point kept.
+				Import builds the CiteWell library from the selected library when CiteWell is empty.
+				Merge adds the selected library's items, collections and notes to the current one.
+				Replace swaps the current library for the selected one and keeps the previous library
+				as a restore point. Every action asks for confirmation.
 			</description>
 		</groupbox>
 

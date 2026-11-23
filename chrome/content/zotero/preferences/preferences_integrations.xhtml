@@ -1,34 +1,36 @@
 <vbox id="zotero-prefpane-integrations"
 	onload="event.waitUntil(Zotero_Preferences.Integrations.init())">
-	<vbox class="main-section" id="citewellLibreOffice">
-		<html:h1>LibreOffice</html:h1>
-		<description>
-			Add citations to LibreOffice with the CiteWell extension. Close LibreOffice
-			before installing, then restart it afterward.
-		</description>
-		<hbox class="library-button-row">
-			<button id="citewell-lo-install" label="Install / repair LibreOffice extension…"
-				oncommand="Zotero_Preferences.Cite.installLibreOffice()"/>
-			<button id="citewell-lo-repair-folder" label="Open repair backups…"
-				oncommand="Zotero_Preferences.Cite.openLibreOfficeRepairFolder()"/>
-		</hbox>
-		<description id="citewell-lo-status" class="library-muted"/>
-	</vbox>
+	<vbox class="main-section">
+		<groupbox aria-label="LibreOffice">
+			<label><html:h2>LibreOffice</html:h2></label>
+			<description>
+				Add citations to LibreOffice with the CiteWell extension. Close LibreOffice
+				before installing, then restart it afterward.
+			</description>
+			<hbox class="library-button-row">
+				<button id="citewell-lo-install" label="Install / repair LibreOffice extension…"
+					oncommand="Zotero_Preferences.Cite.installLibreOffice()"/>
+				<button id="citewell-lo-repair-folder" label="Open repair backups…"
+					oncommand="Zotero_Preferences.Cite.openLibreOfficeRepairFolder()"/>
+			</hbox>
+			<description id="citewell-lo-status" class="library-muted"/>
+		</groupbox>
 
-	<vbox class="main-section" id="citewell-system-integration">
-		<html:h1>System integration</html:h1>
-		<description>
-			CiteWell can request attention from the desktop through a user-scoped systemd
-			unit and D-Bus activation file. Nothing is installed system-wide. These files
-			are separate from your library and LibreOffice profile.
-		</description>
-		<hbox class="library-button-row">
-			<button id="citewell-integration-repair" label="Repair system integration…"
-				oncommand="Zotero_Preferences.Cite.repairSystemIntegration()"/>
-			<button id="citewell-integration-remove" label="Remove system integration…"
-				oncommand="Zotero_Preferences.Cite.removeSystemIntegration()"/>
-		</hbox>
-		<description id="citewell-integration-status" class="library-muted"/>
-		<description id="citewell-integration-paths" class="library-muted"/>
+		<groupbox aria-label="System integration">
+			<label><html:h2>System integration</html:h2></label>
+			<description>
+				CiteWell can request attention from the desktop through a user-scoped systemd
+				unit and D-Bus activation file. Nothing is installed system-wide. These files
+				are separate from your library and LibreOffice profile.
+			</description>
+			<hbox class="library-button-row">
+				<button id="citewell-integration-repair" label="Repair system integration…"
+					oncommand="Zotero_Preferences.Cite.repairSystemIntegration()"/>
+				<button id="citewell-integration-remove" label="Remove system integration…"
+					oncommand="Zotero_Preferences.Cite.removeSystemIntegration()"/>
+			</hbox>
+			<description id="citewell-integration-status" class="library-muted"/>
+			<description id="citewell-integration-paths" class="library-muted"/>
+		</groupbox>
 	</vbox>
 </vbox>
