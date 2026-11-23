@@ -45,6 +45,23 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
+## Handoff 2026-11-23 (Writer compatibility)
+
+- New branch `writer-compat`, not merged. It carries D39 (Zotero owns the Writer document format)
+  and D40 (append-only identity aliases), plus phases 1–2 of the compatibility plan.
+- Phase 1: the LibreOffice extension writes `ZOTERO_` citation/bibliography markers, reads legacy
+  `CITEWELL_` markers, reads `ZOTERO_PREF` / `CSL_PREF` / `CITEWELL_PREFS` and writes the Zotero
+  property (mirroring the legacy one), and scans bookmarks as well as reference marks.
+- Phase 2: merge keeps a free source key; every item also gets an entry in
+  `<data>/identity/aliases.jsonl`. Citation resolution falls back to that chain after an exact URI
+  and a replaced-item lookup. Group aliases use the source group ID.
+- Tests: `importTest.js` 13/13 (key preservation, alias lookup, chain/cycle) and
+  `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
+- Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
+  alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
+- Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge
+  `writer-compat` before starting dedup.
+
 ## Handoff 2026-11-23 (R24 Phase 2)
 
 - R24 Phase 2 is merged into `citewell`: regular items (fields, creators, tags, `dc:relation`),
