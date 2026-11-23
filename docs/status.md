@@ -47,7 +47,7 @@ plan.
 
 ## Handoff 2026-11-23 (R24 Phase 2)
 
-- `citewell` is at `cf9324429`; `r24-merge` is at `8098d25dc` and is **not merged**. The tree is
+- `citewell` is at `cf9324429`; `r24-merge` is the branch head and is **not merged**. The tree is
   clean except the pre-existing `.gitignore` quill-icon edit.
 - R24 Phase 2 is implemented: merge regular items (fields, creators, tags, `dc:relation`),
   collection hierarchy under an import root, group roots, and Zotero notes as inert `.html`
