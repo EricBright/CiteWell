@@ -47,8 +47,8 @@ plan.
 
 ## Handoff 2026-11-23 (Writer compatibility)
 
-- New branch `writer-compat`, not merged. It carries D39 (Zotero owns the Writer document format)
-  and D40 (append-only identity aliases), plus phases 1–2 of the compatibility plan.
+- The `writer-compat` work is merged into `citewell` (D39: Zotero owns the Writer document format;
+  D40: append-only identity aliases; phases 1–2 of the compatibility plan).
 - Phase 1: the LibreOffice extension writes `ZOTERO_` citation/bibliography markers, reads legacy
   `CITEWELL_` markers, reads `ZOTERO_PREF` / `CSL_PREF` / `CITEWELL_PREFS` and writes the Zotero
   property (mirroring the legacy one), and scans bookmarks as well as reference marks.
@@ -77,8 +77,7 @@ plan.
   Import, merge, restore and result messages now use singular/plural wording.
 - Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
   alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
-- Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge
-  `writer-compat` before starting dedup.
+- Next: dedup Phase 3 (report first, then an opt-in exact-identifier skip) on top of the identity log.
 
 ## Handoff 2026-11-23 (R24 Phase 2)
 
