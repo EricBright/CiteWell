@@ -58,8 +58,8 @@ plan.
 - Tests: `importTest.js` 13/13 (key preservation, a forced key collision, alias lookup and
   chain/cycle) and `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
 - Test AppImage: `~/AppImages/citewell-writer-test.appimage`, version
-  `10.0.9.SOURCE.e7881c691`, sha256
-  `9af02bf169e452cb88c27aaa02e8684a05afeaf42e471d09489ef69488e6ee19`, 125,917,688 bytes.
+  `10.0.9.SOURCE.9754fb1ab`, sha256
+  `5fc70eb1e9f9d5728d4172f5e15babc596296ca4b4a68d5836407ca9719fae5c`, 125,917,688 bytes.
   The stable `~/AppImages/citewell.appimage` is unchanged (`d6e648d81`). Install or repair the
   LibreOffice extension from this test build before testing a document; the old OXT still writes
   `CITEWELL_` marks.
@@ -74,6 +74,7 @@ plan.
   (keeping the old key when free), records the alias, and refreshes once. Ambiguous matches are left
   alone and reported. The real sample's four detached citations are the test case.
 - Tests: `importTest.js` 14/14, including DOI matching, embedded-item import and alias resolution.
+  Import, merge, restore and result messages now use singular/plural wording.
 - Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
   alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
 - Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge
