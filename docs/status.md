@@ -61,8 +61,8 @@ plan.
 - Tests: `importTest.js` 15/15, including DOI duplicate detection, report contents, exact-identifier
   skip, collection placement, alias resolution and the library duplicate-review report.
 - Test AppImage: `~/AppImages/citewell-dedup-test.appimage`, version
-  `10.0.9.SOURCE.136368a54`, sha256
-  `df20f97a54ec74126b5253dbf57cadf027e885ffee85fc8c34c550d93c463307`, 125,917,688 bytes.
+  `10.0.9.SOURCE.2ba397c92`, sha256
+  `cdc1d34c0322f51c2758760e11dee7d8def50133a4be3451c702b689c5976d8c`, 125,917,688 bytes.
 - Phase 3c adds **Duplicate review**: a scan of the current library using Zotero's duplicate
   detector, a JSON group report under `identity/`, and a button that opens the built-in Duplicate
   Items view. It never merges anything; the mature Zotero merge UI remains the only merge path.
