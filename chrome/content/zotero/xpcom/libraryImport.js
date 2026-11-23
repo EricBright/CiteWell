@@ -69,6 +69,10 @@ Zotero.LibraryImport = {
 		return PathUtils.join(this.identityDir, this.IDENTITY_FILENAME);
 	},
 
+	get mergeSessionsDir() {
+		return PathUtils.join(this.identityDir, "merge-sessions");
+	},
+
 	/**
 	 * Find likely Zotero libraries without asking the person to know a path.
 	 *
@@ -626,12 +630,16 @@ Zotero.LibraryImport = {
 			);
 		}
 
-		var id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-		var staging = PathUtils.join(this.dataDir, ".import", `merge-${id}`);
+		var hashBefore = await this.hashFile(sourceDb);
+		var resume = await this._findIncompleteMerge(sourcePath, hashBefore);
+		var id = resume?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+		var staging = PathUtils.join(
+			this.dataDir, ".import", resume ? `merge-${id}-resume` : `merge-${id}`
+		);
 		await Zotero.File.createDirectoryIfMissingAsync(staging);
 		var copyDbPath = PathUtils.join(staging, "zotero.sqlite");
-		var hashBefore = await this.hashFile(sourceDb);
-		var backupPath = PathUtils.join(this.dataDir, `zotero.sqlite.merge-${id}.bak`);
+		var backupPath = resume?.backup
+			|| PathUtils.join(this.dataDir, `zotero.sqlite.merge-${id}.bak`);
 
 		try {
 			await IOUtils.copy(sourceDb, copyDbPath);
@@ -661,14 +669,21 @@ Zotero.LibraryImport = {
 				);
 			}
 
-			onProgress?.("Creating a restore point of the current library…");
-			var backedUp = await Zotero.DB.backUpDatabase({
-				suffix: `merge-${id}`,
-				force: true,
-				online: true,
-			});
-			if (!backedUp) {
-				throw new Error("Could not create a database backup; merge cancelled.");
+			onProgress?.(resume
+				? "Resuming the unfinished merge…"
+				: "Creating a restore point of the current library…");
+			if (!resume || !(await IOUtils.exists(backupPath))) {
+				var backedUp = await Zotero.DB.backUpDatabase({
+					suffix: `merge-${id}`,
+					force: true,
+					online: true,
+				});
+				if (!backedUp) {
+					throw new Error("Could not create a database backup; merge cancelled.");
+				}
+				backupPath = PathUtils.join(
+					this.dataDir, `zotero.sqlite.merge-${id}.bak`
+				);
 			}
 
 			var sourceDbConnection = new Zotero.DBConnection(copyDbPath);
@@ -683,8 +698,23 @@ Zotero.LibraryImport = {
 			onProgress?.(`Merging ${source.items.length} items and ${source.collections.length} collections…`);
 			var idRows = await Zotero.DB.columnQueryAsync("SELECT itemID FROM items WHERE libraryID=1");
 			var existingItemIDs = new Set((idRows || []).map(Number));
+			if (resume?.aliases?.length) {
+				await this._appendIdentity(resume.aliases, id);
+			}
 			var result = await this._applyMergeSource(
-				source, staging, onProgress, existingItemIDs, skipExactDuplicates, sourcePath
+				source, staging, onProgress, existingItemIDs, skipExactDuplicates, sourcePath,
+				resume,
+				async checkpoint => {
+					await this._writeMergeCheckpoint(id, {
+						source: sourcePath,
+						sourceHash: hashBefore,
+						backup: backupPath,
+						createdAt: resume?.createdAt || new Date().toISOString(),
+						status: "items",
+						skipExactDuplicates,
+						...checkpoint,
+					});
+				}
 			);
 			var duplicateReport = null;
 			if (result.duplicates.length) {
@@ -706,6 +736,7 @@ Zotero.LibraryImport = {
 				result.warnings++;
 			}
 
+			await this._removeMergeCheckpoint(id);
 			await this._writeResult({
 				ok: true,
 				mode: "merge",
@@ -880,7 +911,7 @@ Zotero.LibraryImport = {
 	},
 
 	_applyMergeSource: async function (source, staging, onProgress, existingItemIDs = null,
-			skipExactDuplicates = false, sourcePath = null) {
+			skipExactDuplicates = false, sourcePath = null, resumeState = null, onCheckpoint = null) {
 		var root;
 		var itemMap = new Map();
 		var collectionMap = new Map();
@@ -901,7 +932,9 @@ Zotero.LibraryImport = {
 		var skippedAnnotations = 0;
 		var importedSearches = 0;
 
-		var state = await Zotero.DB.executeTransaction(async () => {
+		var state;
+		if (!resumeState) {
+			state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
 			root.libraryID = 1;
 			root.name = `Imported from Zotero — ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
@@ -1131,10 +1164,48 @@ Zotero.LibraryImport = {
 			}
 
 			return { itemMap, notesCollectionID };
-		});
-
-		itemMap = state.itemMap;
-		notesCollectionID = state.notesCollectionID;
+			});
+			itemMap = state.itemMap;
+			notesCollectionID = state.notesCollectionID;
+			if (onCheckpoint) {
+				await onCheckpoint({
+					items: Object.fromEntries(
+						source.items
+							.map(row => [row.key, itemMap.get(row.itemID)?.key])
+							.filter(([, key]) => key)
+					),
+					skippedKeys: source.items
+						.filter(row => skippedSourceIDs.has(row.itemID))
+						.map(row => row.key),
+					notesCollectionID,
+					collections: collectionCount,
+					itemsImported: importedItems,
+					skippedItems,
+					aliases,
+					duplicates,
+				});
+			}
+		}
+		else {
+			itemMap = new Map();
+			for (let row of source.items) {
+				let destKey = resumeState.items?.[row.key];
+				if (!destKey) continue;
+				let item = await Zotero.Items.getByLibraryAndKeyAsync(1, destKey);
+				if (item) itemMap.set(row.itemID, item);
+			}
+			notesCollectionID = resumeState.notesCollectionID || 0;
+			collectionCount = resumeState.collections || 0;
+			importedItems = resumeState.itemsImported || itemMap.size;
+			skippedItems = resumeState.skippedItems || 0;
+			skippedSourceIDs = new Set(
+				source.items
+					.filter(row => (resumeState.skippedKeys || []).includes(row.key))
+					.map(row => row.itemID)
+			);
+			duplicates = resumeState.duplicates || [];
+			aliases = [];
+		}
 
 		var notesCount = 0;
 		for (let note of source.notes) {
@@ -1144,6 +1215,9 @@ Zotero.LibraryImport = {
 			}
 			let parent = note.parentItemID ? itemMap.get(note.parentItemID) : null;
 			let title = note.title || (parent?.getField("title") || "Note");
+			if (parent && this._hasChildAttachment(parent, title, "text/html")) {
+				continue;
+			}
 			let html = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>`
 				+ title.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
 				+ `</title></head><body>\n${note.note || ""}\n</body></html>`;
@@ -1194,6 +1268,13 @@ Zotero.LibraryImport = {
 				if (!parent || !filePath || !(await IOUtils.exists(filePath))) {
 					missingAttachments++;
 				}
+				else if (this._hasChildAttachment(
+					parent,
+					attachment.title || PathUtils.filename(filePath),
+					attachment.contentType
+				)) {
+					skippedAttachments++;
+				}
 				else {
 					try {
 						let options = {
@@ -1227,6 +1308,11 @@ Zotero.LibraryImport = {
 				skippedAnnotations++;
 				continue;
 			}
+			if (await this._hasAnnotation(
+				parentID, type, annotation.text, annotation.position
+			)) {
+				continue;
+			}
 			try {
 				let item = new Zotero.Item("annotation");
 				item.libraryID = 1;
@@ -1254,7 +1340,11 @@ Zotero.LibraryImport = {
 			}
 			conditionsBySearch.get(condition.savedSearchID).push(condition);
 		}
+		let existingSearches = await Zotero.Searches.getAll(1);
 		for (let saved of source.savedSearches) {
+			if (existingSearches.some(search => search.name === saved.name)) {
+				continue;
+			}
 			try {
 				let search = new Zotero.Search();
 				search.libraryID = 1;
@@ -1927,6 +2017,78 @@ Zotero.LibraryImport = {
 			destKey: item.key,
 		}], `document-relink-${Date.now()}`);
 		return true;
+	},
+
+	_checkpointPath: function (id) {
+		return PathUtils.join(this.mergeSessionsDir, `${id}.json`);
+	},
+
+	_findIncompleteMerge: async function (sourcePath, sourceHash) {
+		if (!(await IOUtils.exists(this.mergeSessionsDir))) return null;
+		var source = String(sourcePath).replace(/\/+$/, "");
+		var found = [];
+		for (let path of await IOUtils.getChildren(this.mergeSessionsDir)) {
+			let data;
+			try {
+				data = JSON.parse(await Zotero.File.getContentsAsync(path));
+			}
+			catch (e) {
+				continue;
+			}
+			if (data.status === "done" || data.sourceHash !== sourceHash) continue;
+			if (String(data.source || "").replace(/\/+$/, "") !== source) continue;
+			found.push(data);
+		}
+		found.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+		return found[0] || null;
+	},
+
+	_writeMergeCheckpoint: async function (id, data) {
+		await Zotero.File.createDirectoryIfMissingAsync(this.mergeSessionsDir);
+		await Zotero.File.putContentsAsync(
+			this._checkpointPath(id),
+			JSON.stringify({ version: 1, id, ...data }, null, 2)
+		);
+	},
+
+	_removeMergeCheckpoint: async function (id) {
+		await IOUtils.remove(this._checkpointPath(id), { ignoreAbsent: true });
+	},
+
+	_hasChildAttachment: function (parent, title, contentType) {
+		if (!parent || !title) return false;
+		for (let id of parent.getAttachments()) {
+			let item = Zotero.Items.get(id);
+			if (!item) continue;
+			let itemTitle;
+			try {
+				itemTitle = item.getField("title");
+			}
+			catch (e) {
+				continue;
+			}
+			if (itemTitle === title
+					&& (!contentType || item.attachmentContentType === contentType)) {
+				return true;
+			}
+		}
+		return false;
+	},
+
+	_hasAnnotation: async function (parentID, type, text, position) {
+		let rows = await Zotero.DB.queryAsync(
+			"SELECT itemID FROM itemAnnotations WHERE parentItemID=? AND type=?",
+			[parentID, Zotero.Annotations[`ANNOTATION_TYPE_${type.toUpperCase()}`]]
+		);
+		for (let row of rows || []) {
+			let item = Zotero.Items.get(row.itemID);
+			if (!item) continue;
+			if ((item.annotationText || "") === (text || "")
+					&& (item.annotationPosition || "") === (position || "")) {
+				return true;
+			}
+		}
+		return false;
 	},
 
 	_readIdentityText: async function () {

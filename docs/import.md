@@ -210,6 +210,6 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 | 1 | Detector, dry run, adopt-copy, replace, restore points and checksum verification |
 | 2 | Merge regular items, collections, and notes as HTML attachments |
 | 3 | Attachments, annotations and saved-search definitions imported |
-| 4 | Duplicate report and skip done; resumable merges remaining |
+| 4 | Duplicate report, skip, review and resumable merge checkpoint |
 
 *For the full documentation index, see [../README.md](../README.md).*

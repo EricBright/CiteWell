@@ -69,6 +69,28 @@ describe("Library import", function () {
 		assert.equal(Zotero.LibraryImport.formatBytes(1024 * 1024 * 1536), "1.5 GB");
 	});
 
+	it("should persist and find an incomplete merge checkpoint", async function () {
+		let id = "test-merge-checkpoint";
+		try {
+			await Zotero.LibraryImport._writeMergeCheckpoint(id, {
+				source: "/tmp/source-library",
+				sourceHash: "test-hash",
+				status: "items",
+				createdAt: new Date().toISOString(),
+			});
+			let found = await Zotero.LibraryImport._findIncompleteMerge(
+				"/tmp/source-library", "test-hash"
+			);
+			assert.equal(found?.id, id);
+			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(
+				"/tmp/source-library", "other-hash"
+			));
+		}
+		finally {
+			await Zotero.LibraryImport._removeMergeCheckpoint(id);
+		}
+	});
+
 	it("should follow identity aliases through a chain", function () {
 		let identity = Zotero.LibraryImport;
 		identity._identityKeys = new Map([
