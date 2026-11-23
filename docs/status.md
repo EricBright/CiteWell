@@ -44,6 +44,27 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
+## Handoff 2026-11-23 (R24 / CI)
+
+- `citewell` is at `e7613259e`; the tree is clean except the pre-existing
+  `.gitignore` quill-icon edit. `r24-merge` at `af82c8800` holds R24 Phase 2 and is **not merged**.
+- R24 Phase 2 is implemented: a Merge button for a non-empty library, database backup, regular
+  items (fields, creators, tags, `dc:relation`), collection hierarchy under an import root, group
+  roots, and Zotero notes as inert `.html` attachments. Source is copied and hashed before/after.
+  `importTest.js` passes 12/12.
+- Test AppImage: `~/AppImages/citewell-r24-test.appimage`, version `10.0.9.SOURCE.af82c8800`,
+  sha256 `8b48eab4e74f9f9eedbc4a28bcdb7eae892cc11b06141584464899f30cd538d7`. The installed stable
+  `~/AppImages/citewell.appimage` is still `bbe047d1a` (`6455ce08…`) and does not contain R24.
+- CI: CodeQL default setup is disabled; the custom workflow now runs. `guard.yml` and `docs.yml`
+  declare `contents: read`, resolving the Actions permission alerts. Remaining open alerts are
+  inherited: 58 JavaScript and 1 C/C++, not the R24 code. If the latest run is interrupted by the
+  restart, re-run `gh workflow run codeql.yml --ref citewell`.
+- Environment caveat: new **Wayland** launches currently segfault in the renderer, even the
+  installed AppImage; X11 works. Tests were run through `/tmp/citewell-x11-test`, which execs
+  `zotero-bin` with `GDK_BACKEND=x11` and `MOZ_ENABLE_WAYLAND=0`. Retry Wayland after the reboot.
+- Next: re-check the final CodeQL run; test the R24 merge UI with the test AppImage; if it passes,
+  merge `r24-merge` into `citewell`, rebuild/install the stable AppImage, update R24/status.
+
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
