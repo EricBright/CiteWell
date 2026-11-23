@@ -56,7 +56,10 @@ plan.
   point's identity snapshot back into the active library. Old points without a snapshot keep the
   current chain rather than deleting it.
 - Tests: `importTest.js` 15/15, including attachment file content, parent mapping, skipped-duplicate
-  attachment policy and report scanning. Release builds and the stable AppImage are unchanged.
+  attachment policy and report scanning. Test AppImage:
+  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.51196d137`, sha256
+  `7a65be1ff049828b220d7e86fdb62f4c1996a699c1e2a4fd8b443a4a83aa0e25`, 125,921,784 bytes.
+  Release builds and the stable AppImage are unchanged.
 - Next: decide whether annotations and saved searches are worth importing (annotations have no UI
   here), then resumable merge batching, then R15.
 
