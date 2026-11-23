@@ -144,7 +144,7 @@ and after proves it was not modified.
 
 ## Settings pane
 
-Import lives in **Import & Export**, next to the Quick Copy export settings:
+Import is the first section of **Import & Export**; Quick Copy follows below it:
 
 - **Import from Zotero** — the current CiteWell library's counts, the detected candidates (best
   preselected), a Rescan button and a folder picker as the fallback.

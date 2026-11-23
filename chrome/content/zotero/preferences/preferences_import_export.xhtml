@@ -1,6 +1,58 @@
 <vbox id="zotero-prefpane-import-export"
 	onload="event.waitUntil(Zotero_Preferences.ImportExport.init())">
 	<vbox class="main-section">
+		<groupbox aria-label="Import from Zotero">
+			<label><html:h2>Import from Zotero</html:h2></label>
+			<description id="library-import-target" class="library-muted"/>
+			<description>
+				Choose the Zotero library to copy from. CiteWell has its own library and never modifies
+				Zotero; its settings, plugins and sync credentials are never copied.
+			</description>
+
+			<radiogroup id="library-candidates" class="library-candidates"/>
+			<description id="library-candidate-warning" class="library-warning" hidden="true"/>
+			<description id="library-candidate-summary" class="library-muted"/>
+
+			<hbox class="library-button-row">
+				<button id="library-rescan" label="Rescan" oncommand="Zotero_Preferences.Library.rescan()"/>
+				<button id="library-choose" label="Choose another folder…" oncommand="Zotero_Preferences.Library.chooseFolder()"/>
+				<button id="library-check" label="Check" oncommand="Zotero_Preferences.Library.checkSelected()"/>
+			</hbox>
+
+			<progressmeter id="library-progress" mode="undetermined" hidden="true"/>
+			<description id="library-import-status" class="library-status"/>
+
+			<hbox class="library-button-row">
+				<button id="library-import" label="Import into empty library…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
+				<button id="library-merge" label="Merge into current library…" oncommand="Zotero_Preferences.Library.mergeSelected()" hidden="true" disabled="true"/>
+				<button id="library-replace" label="Replace current library…" oncommand="Zotero_Preferences.Library.replaceSelected()" hidden="true" disabled="true"/>
+				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
+				<button id="library-cancel-restore" label="Cancel staged restore" oncommand="Zotero_Preferences.Library.cancelRestore()" hidden="true"/>
+			</hbox>
+			<description class="library-muted">
+				Import builds the CiteWell library from the selected library when CiteWell is empty.
+				Merge adds the selected library's items, collections and notes to the current one.
+				Replace swaps the current library for the selected one and keeps the previous library
+				as a restore point. Every action asks for confirmation.
+			</description>
+		</groupbox>
+
+		<groupbox aria-label="Restore points">
+			<label><html:h2>Restore points</html:h2></label>
+			<description class="library-muted">
+				Backups made by import, replace or restore. Restoring swaps the active library and keeps
+				the current one as a new restore point.
+			</description>
+			<vbox id="library-restore-points"/>
+			<hbox class="library-button-row">
+				<button id="library-restore-open" label="Open backup folder" oncommand="Zotero_Preferences.Library.openBackups()"/>
+			</hbox>
+		</groupbox>
+
+		<groupbox aria-label="Last import">
+			<label><html:h2>Last import</html:h2></label>
+			<description id="library-last-result" class="library-muted"/>
+		</groupbox>
 	<groupbox id="zotero-prefpane-export-groupbox" aria-label="&zotero.preferences.quickCopy.caption;" aria-describedby="quickCopy-instructions quickCopy-citationInstructions">
 		<vbox>
 			<label><html:h2>&zotero.preferences.quickCopy.caption;</html:h2></label>
@@ -67,57 +119,5 @@
 			<label id="zotero-prefpane-quickcopy-draglimit-label2" value="&zotero.preferences.items;" flex="1"/>
 		</hbox>
 	</groupbox>
-		<groupbox aria-label="Import from Zotero">
-			<label><html:h2>Import from Zotero</html:h2></label>
-			<description id="library-import-target" class="library-muted"/>
-			<description>
-				Choose the Zotero library to copy from. CiteWell has its own library and never modifies
-				Zotero; its settings, plugins and sync credentials are never copied.
-			</description>
-
-			<radiogroup id="library-candidates" class="library-candidates"/>
-			<description id="library-candidate-warning" class="library-warning" hidden="true"/>
-			<description id="library-candidate-summary" class="library-muted"/>
-
-			<hbox class="library-button-row">
-				<button id="library-rescan" label="Rescan" oncommand="Zotero_Preferences.Library.rescan()"/>
-				<button id="library-choose" label="Choose another folder…" oncommand="Zotero_Preferences.Library.chooseFolder()"/>
-				<button id="library-check" label="Check" oncommand="Zotero_Preferences.Library.checkSelected()"/>
-			</hbox>
-
-			<progressmeter id="library-progress" mode="undetermined" hidden="true"/>
-			<description id="library-import-status" class="library-status"/>
-
-			<hbox class="library-button-row">
-				<button id="library-import" label="Import into empty library…" oncommand="Zotero_Preferences.Library.importSelected()" disabled="true"/>
-				<button id="library-merge" label="Merge into current library…" oncommand="Zotero_Preferences.Library.mergeSelected()" hidden="true" disabled="true"/>
-				<button id="library-replace" label="Replace current library…" oncommand="Zotero_Preferences.Library.replaceSelected()" hidden="true" disabled="true"/>
-				<button id="library-cancel" label="Cancel staged import" oncommand="Zotero_Preferences.Library.cancelImport()" hidden="true"/>
-				<button id="library-cancel-restore" label="Cancel staged restore" oncommand="Zotero_Preferences.Library.cancelRestore()" hidden="true"/>
-			</hbox>
-			<description class="library-muted">
-				Import builds the CiteWell library from the selected library when CiteWell is empty.
-				Merge adds the selected library's items, collections and notes to the current one.
-				Replace swaps the current library for the selected one and keeps the previous library
-				as a restore point. Every action asks for confirmation.
-			</description>
-		</groupbox>
-
-		<groupbox aria-label="Restore points">
-			<label><html:h2>Restore points</html:h2></label>
-			<description class="library-muted">
-				Backups made by import, replace or restore. Restoring swaps the active library and keeps
-				the current one as a new restore point.
-			</description>
-			<vbox id="library-restore-points"/>
-			<hbox class="library-button-row">
-				<button id="library-restore-open" label="Open backup folder" oncommand="Zotero_Preferences.Library.openBackups()"/>
-			</hbox>
-		</groupbox>
-
-		<groupbox aria-label="Last import">
-			<label><html:h2>Last import</html:h2></label>
-			<description id="library-last-result" class="library-muted"/>
-		</groupbox>
 	</vbox>
 </vbox>
