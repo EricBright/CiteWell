@@ -58,8 +58,8 @@ plan.
 - Tests: `importTest.js` 13/13 (key preservation, a forced key collision, alias lookup and
   chain/cycle) and `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
 - Test AppImage: `~/AppImages/citewell-writer-test.appimage`, version
-  `10.0.9.SOURCE.a859d6646`, sha256
-  `665bee0a6e06f8d774372be459b0c6c6a39bdd6b7a222882339ae482dc8f7167`, 125,917,688 bytes.
+  `10.0.9.SOURCE.e7881c691`, sha256
+  `9af02bf169e452cb88c27aaa02e8684a05afeaf42e471d09489ef69488e6ee19`, 125,917,688 bytes.
   The stable `~/AppImages/citewell.appimage` is unchanged (`d6e648d81`). Install or repair the
   LibreOffice extension from this test build before testing a document; the old OXT still writes
   `CITEWELL_` marks.
