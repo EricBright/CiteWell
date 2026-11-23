@@ -74,10 +74,17 @@ These are rules in the repository, not intentions (D26, D35).
 
 ### 6. A deliberately small supply chain
 
-npm is retired and the dependency tree is frozen; the LibreOffice extension has no third-party
-Python packages; the Rust helpers are std-only where possible; there is no Java runtime and no
-PDF.js. A smaller dependency and parser surface means fewer CVEs to track and a build one person can
-still reproduce (D32, [rust.md](rust.md)).
+The app build has no Node dependency. The root npm tree (about 398 MB), package metadata, Babel,
+Browserify, Node Sass, the Node build runner and the FTL/ESLint tooling are gone. `xtask build`
+copies and patches the application JavaScript, creates the source links, and compiles Sass with the
+Rust `grass` compiler. React, Monaco, Ace, the CSL validator and the citeproc WASM are vendored in
+`resource/`, so a build does not read `node_modules`.
+
+There is no Java runtime, no PDF.js, no third-party Python package in the LibreOffice extension and
+no install step. The only remaining npm tree is `connectors/node_modules` (about 96 MB), because the
+Firefox connector still uses its upstream gulp build; it is isolated from the app build and is the
+next porting candidate. A smaller dependency and parser surface means fewer CVEs to track and a
+build one person can still reproduce (D32, D41–D46, [rust.md](rust.md)).
 
 ### 7. Linux-native, one file
 
