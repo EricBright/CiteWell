@@ -231,6 +231,53 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should match embedded citation data and import missing items", async function () {
+		let aliasesPath = OS.Path.join(Zotero.DataDirectory.dir, "identity", "aliases.jsonl");
+		try {
+			await resetData();
+			let existing = new Zotero.Item("journalArticle");
+			existing.libraryID = 1;
+			existing.setField("title", "An existing citation target");
+			existing.setField("DOI", "10.1234/citewell-test");
+			await existing.saveTx();
+
+			let match = await Zotero.LibraryImport.findCitationMatches({
+				type: "article-journal",
+				title: "An existing citation target",
+				DOI: "https://doi.org/10.1234/citewell-test",
+			});
+			assert.equal(match.item?.id, existing.id);
+			assert.equal(match.by, "DOI");
+
+			let unknown = await Zotero.LibraryImport.findCitationMatches({
+				type: "article-journal",
+				title: "Not in this library",
+				DOI: "10.9999/absent",
+			});
+			assert.isNull(unknown.item);
+
+			let uri = "http://zotero.org/users/1/items/ABCD2345";
+			let imported = await Zotero.LibraryImport.importCitationItem({
+				type: "book",
+				title: "Imported from a detached citation",
+				DOI: "10.9999/imported",
+			}, [uri]);
+			assert.equal(imported.key, "ABCD2345");
+			assert.equal(imported.getField("title"), "Imported from a detached citation");
+			assert.equal(imported.getField("DOI"), "10.9999/imported");
+
+			await Zotero.LibraryImport.recordCitationAlias([uri], imported);
+			let resolved = await Zotero.LibraryImport.getItemForURIs([uri]);
+			assert.equal(resolved?.id, imported.id);
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(aliasesPath, { ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
+		}
+	});
+
 	it("should merge items, collections and notes without touching the source", async function () {
 		this.timeout(120000);
 		let source = OS.Path.join(Zotero.DataDirectory.dir, "import-test-merge-source");

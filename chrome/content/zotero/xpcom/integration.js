@@ -305,6 +305,9 @@ Zotero.Integration = new function () {
 			// Zotero.Notifier.trigger('delete', 'collection', 'document');
 			if (!documentImported) {
 				await (new Zotero.Integration.Interface(application, document, session))[command]();
+				if (command === "refresh") {
+					await session.auditDetachedCitations();
+				}
 			}
 			await document.setDocumentData(session.data.serialize());
 		}
@@ -613,6 +616,7 @@ Zotero.Integration = new function () {
 			session._bibliographyFields = [];
 			session._shouldMerge = false;
 			session._transactionUpToDate = false;
+			session.detachedCitations = new Map();
 
 			if (dataString == EXPORTED_DOCUMENT_MARKER) {
 				Zotero.Integration.currentSession = session;
@@ -1320,6 +1324,109 @@ Zotero.Integration.Session.prototype.updateDocument = async function (forceCitat
 			// yield this.setDocPrefs(true);
 		}
 	}
+};
+
+/**
+ * Offer to relink citations that the refresh had to render from embedded data.
+ *
+ * A citation whose item is gone from the library still formats from its
+ * embedded CSL itemData, which hides the fact that it is detached. This audit
+ * runs only after an explicit refresh, changes nothing without confirmation,
+ * and uses the same DOI/ISBN/PMID/title matching as the dedup work.
+ */
+Zotero.Integration.Session.prototype.auditDetachedCitations = async function () {
+	if (this._auditingDetached || !this.detachedCitations?.size) return;
+	let citations = [...this.detachedCitations.values()]
+		.filter(citationItem => citationItem.itemData);
+	if (!citations.length) return;
+
+	let relink = [];
+	let missing = [];
+	let ambiguous = [];
+	for (let citationItem of citations) {
+		let match = await Zotero.LibraryImport.findCitationMatches(citationItem.itemData);
+		if (match.ambiguous.length) {
+			ambiguous.push({ citationItem, matches: match.ambiguous });
+		}
+		else if (match.item) {
+			relink.push({ citationItem, item: match.item });
+		}
+		else {
+			missing.push(citationItem);
+		}
+	}
+
+	if (!relink.length && !missing.length) {
+		return;
+	}
+
+	let message = `${citations.length} citation${citations.length === 1 ? "" : "s"} in this `
+		+ "document are not linked to the CiteWell library; they are being rendered from "
+		+ "embedded citation data.\n\n"
+		+ `${relink.length} can be relinked to existing items.\n`
+		+ `${missing.length} do not exist in the library and can be imported from the citation data.\n`
+		+ (ambiguous.length ? `${ambiguous.length} are ambiguous and will be left alone.\n` : "")
+		+ "\nNothing is changed unless you choose Yes.";
+	let ps = Services.prompt;
+	let confirmed = ps.confirmEx(
+		Zotero.getMainWindow(),
+		"CiteWell citation links",
+		message,
+		ps.STD_YES_NO_BUTTONS,
+		null, null, null, null, {}
+	) === 0;
+	if (!confirmed) return;
+
+	this._auditingDetached = true;
+	let relinked = 0;
+	let imported = 0;
+	let failed = 0;
+	try {
+		for (let { citationItem, item } of relink) {
+			try {
+				await Zotero.LibraryImport.recordCitationAlias(citationItem.uris, item);
+				relinked++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				failed++;
+			}
+		}
+		let importedKeys = new Set();
+		for (let citationItem of missing) {
+			let key = Zotero.LibraryImport._citationURIKey(citationItem.uris);
+			if (key && importedKeys.has(key)) continue;
+			try {
+				let item = await Zotero.LibraryImport.importCitationItem(
+					citationItem.itemData,
+					citationItem.uris
+				);
+				await Zotero.LibraryImport.recordCitationAlias(citationItem.uris, item);
+				importedKeys.add(key || item.key);
+				imported++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				failed++;
+			}
+		}
+
+		if (relinked || imported) {
+			this.detachedCitations = new Map();
+			await this.updateDocument(FORCE_CITATIONS_FALSE, false, false);
+		}
+	}
+	finally {
+		this._auditingDetached = false;
+	}
+
+	ps.alert(
+		Zotero.getMainWindow(),
+		"CiteWell citation links",
+		`Relinked ${relinked} citation${relinked === 1 ? "" : "s"}; `
+			+ `imported ${imported} item${imported === 1 ? "" : "s"}; `
+			+ `${ambiguous.length} ambiguous; ${failed} failed.`
+	);
 };
 
 /**
@@ -2898,6 +3005,7 @@ Zotero.Integration.URIMap.prototype.getZoteroItemForURIs = async function (uris)
 			let aliasItem = await Zotero.LibraryImport.getItemForURIs([uri]);
 			if (aliasItem && !aliasItem.deleted) {
 				zoteroItem = aliasItem;
+				needUpdate = true;
 				break;
 			}
 		}
@@ -3404,6 +3512,14 @@ Zotero.Integration.Citation = class {
 				// Use embedded item
 				if (citationItem.itemData) {
 					Zotero.debug(`Item ${JSON.stringify(citationItem.uris)} not in library. Using embedded data`);
+					let session = Zotero.Integration.currentSession;
+					if (session) {
+						if (!session.detachedCitations) session.detachedCitations = new Map();
+						let detachedKey = (citationItem.uris || []).join("|") || citationItem.id;
+						if (!session.detachedCitations.has(detachedKey)) {
+							session.detachedCitations.set(detachedKey, citationItem);
+						}
+					}
 					citationItem.itemData = Zotero.Integration.Citation.refreshEmbeddedData(citationItem.itemData);
 					// add new embedded item
 					var itemData = Zotero.Utilities.deepCopy(citationItem.itemData);

@@ -68,11 +68,12 @@ plan.
   `users/17770/items/…` URIs and the bibliography. A fifth citation was added and is library-linked.
   The style change seen in the sample was a deliberate user toggle; `zotero-version` was being
   stamped with the CiteWell version and is now preserved from the source document.
-- Important limitation: the four original citation keys are absent from the current CiteWell
-  library, so CiteWell renders them from embedded `itemData`; they are not linked to library items.
-  A refresh can still format them, but library metadata edits will not reach them. Phase 4 needs a
-  visible “embedded/detached citation” report and a DOI/title relink path (or an alias created by
-  the merge that produced the destination items).
+- Detached citations are now audited after an explicit Refresh. A Zotero document whose item keys
+  are absent from the library renders from embedded `itemData`; CiteWell now counts those, offers to
+  relink exact DOI/ISBN/PMID matches (unique title+year as fallback), imports items that are missing
+  (keeping the old key when free), records the alias, and refreshes once. Ambiguous matches are left
+  alone and reported. The real sample's four detached citations are the test case.
+- Tests: `importTest.js` 14/14, including DOI matching, embedded-item import and alias resolution.
 - Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
   alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
 - Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge

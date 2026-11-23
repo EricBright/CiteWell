@@ -49,6 +49,13 @@ reference marks and bookmarks. Merge preserves a free source key and records the
 every item; citation resolution falls back to that chain after an exact URI and a replaced-item
 lookup. A real Zotero-created ODT round-trip and the Phase 4 dedup work are still to be run.
 
+Detached-citation audit: after an explicit **Refresh**, CiteWell counts citations that had to fall
+back to embedded `itemData` because their URI/key is absent from the library. It changes nothing
+until the person accepts; then it relinks exact DOI/ISBN/PMID matches (title+year only when unique),
+imports items that are missing from the library (keeping the old key when free), records the
+old-URI → new-key alias, and refreshes the document once. Ambiguous matches are left alone and
+reported. This is deliberately not silent: embedded data makes a detached citation look healthy.
+
 ## Identity and transport
 
 CiteWell owns this integration. The target contract is:

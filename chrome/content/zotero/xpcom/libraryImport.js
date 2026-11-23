@@ -1445,6 +1445,117 @@ Zotero.LibraryImport = {
 		return false;
 	},
 
+	/**
+	 * Find a library item for a citation's embedded CSL data.
+	 *
+	 * DOI/ISBN/PMID are exact matches; a normalized title (optionally with
+	 * the citation year) is the fallback. Anything with more than one match is
+	 * reported as ambiguous and is never changed automatically.
+	 *
+	 * @param {Object} itemData CSL item data embedded in a citation
+	 * @return {Promise<{item: Zotero.Item|null, ambiguous: Zotero.Item[], by: String|null}>}
+	 */
+	findCitationMatches: async function (itemData) {
+		if (!itemData) return { item: null, ambiguous: [], by: null };
+		var query = async (field, value) => {
+			if (!value) return [];
+			let ids = await Zotero.DB.columnQueryAsync(
+				`SELECT DISTINCT i.itemID FROM items i
+				 JOIN itemData d ON d.itemID = i.itemID
+				 JOIN fields f ON f.fieldID = d.fieldID
+				 JOIN itemDataValues v ON v.valueID = d.valueID
+				 WHERE i.libraryID = 1
+				 AND i.itemID NOT IN (SELECT itemID FROM deletedItems)
+				 AND f.fieldName = ? AND LOWER(v.value) = LOWER(?)`,
+				[field, String(value).trim()]
+			);
+			return (ids || []).map(id => Zotero.Items.get(id)).filter(Boolean);
+		};
+
+		var doi = itemData.DOI && String(itemData.DOI)
+			.replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").trim();
+		var isbn = itemData.ISBN && String(itemData.ISBN).replace(/[^0-9Xx]/g, "");
+		var pmid = itemData.PMID && String(itemData.PMID).trim();
+
+		for (let [field, value, by] of [
+			["DOI", doi, "DOI"],
+			["ISBN", isbn, "ISBN"],
+			["PMID", pmid, "PMID"],
+		]) {
+			if (!value) continue;
+			let matches = await query(field, value);
+			if (matches.length === 1) return { item: matches[0], ambiguous: [], by };
+			if (matches.length > 1) return { item: null, ambiguous: matches, by };
+		}
+
+		var title = itemData.title && String(itemData.title)
+			.replace(/\s+/g, " ").trim().toLowerCase();
+		if (title) {
+			let matches = await query("title", title);
+			let year = itemData.issued?.["date-parts"]?.[0]?.[0];
+			if (year) {
+				matches = matches.filter(item =>
+					String(item.getField("date") || "").includes(String(year))
+				);
+			}
+			if (matches.length === 1) return { item: matches[0], ambiguous: [], by: "title" };
+			if (matches.length > 1) return { item: null, ambiguous: matches, by: "title" };
+		}
+		return { item: null, ambiguous: [], by: null };
+	},
+
+	/**
+	 * Import one embedded citation as a library item, keeping the source key
+	 * when it is free so the document URI starts resolving exactly.
+	 */
+	importCitationItem: async function (itemData, uris) {
+		var key = this._citationURIKey(uris);
+		var item = new Zotero.Item();
+		item.libraryID = 1;
+		if (key) {
+			let taken = await Zotero.DB.valueQueryAsync(
+				"SELECT itemID FROM items WHERE libraryID=1 AND key=?", key
+			);
+			if (!taken) item._key = key;
+		}
+		Zotero.Utilities.Item.itemFromCSLJSON(item, itemData);
+		await item.saveTx();
+		return item;
+	},
+
+	_citationURIKey: function (uris) {
+		for (let uri of uris || []) {
+			let match = /\/items\/([A-Za-z0-9]+)/.exec(uri);
+			if (match) return match[1];
+		}
+		return null;
+	},
+
+	_citationURIKeyAndGroup: function (uris) {
+		for (let uri of uris || []) {
+			let match = /\/items\/([A-Za-z0-9]+)/.exec(uri);
+			if (!match) continue;
+			let group = /\/groups\/(\d+)\/items\//.exec(uri);
+			return { key: match[1], groupID: group ? group[1] : null };
+		}
+		return null;
+	},
+
+	/**
+	 * Record that an old document URI now belongs to a library item.
+	 */
+	recordCitationAlias: async function (uris, item) {
+		var parsed = this._citationURIKeyAndGroup(uris);
+		if (!parsed || !item) return false;
+		await this._appendIdentity([{
+			sourceLibraryID: parsed.groupID ? null : 1,
+			sourceGroupID: parsed.groupID,
+			sourceKey: parsed.key,
+			destKey: item.key,
+		}], `document-relink-${Date.now()}`);
+		return true;
+	},
+
 	getLocations: function () {
 		var dataDir = this.dataDir;
 		return [
