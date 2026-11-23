@@ -207,23 +207,35 @@ Zotero_Preferences.Library = {
 
 		var currentPath = this._el("library-current-path");
 		var currentStatus = this._el("library-current-status");
-		var replaceConfirm = this._el("library-replace-confirm");
+		var importButton = this._el("library-import");
 		var replace = this._el("library-replace");
+		var merge = this._el("library-merge");
 		if (currentPath) currentPath.textContent = this._current.path;
-		if (replaceConfirm) replaceConfirm.hidden = this._current.empty;
+		if (importButton) importButton.hidden = !this._current.empty;
 		if (replace) replace.hidden = this._current.empty;
-		if (this._current.empty && replaceConfirm) {
-			replaceConfirm.checked = false;
-		}
+		if (merge) merge.hidden = this._current.empty;
 		if (currentStatus) {
 			if (this._current.empty) {
 				currentStatus.textContent = "Empty — ready for a first import.";
 			}
 			else {
-				currentStatus.textContent = `${this._count(this._current.items)} items, `
+				currentStatus.textContent = `${this._count(this._current.regularItems ?? this._current.items)} items, `
 					+ `${this._count(this._current.collections)} collections, `
-					+ `${this._count(this._current.savedSearches)} saved searches. `
-					+ "This library can be replaced with a backup kept as a restore point.";
+					+ `${this._count(this._current.savedSearches)} saved searches.`;
+			}
+		}
+		var target = this._el("library-import-target");
+		if (target) {
+			if (this._current.empty) {
+				target.textContent = "The CiteWell library is empty. Import will build it from the "
+					+ "selected library.";
+			}
+			else {
+				target.textContent = `Adding to the current CiteWell library: `
+					+ `${this._count(this._current.regularItems ?? this._current.items)} items, `
+					+ `${this._count(this._current.collections)} collections. `
+					+ "Merge adds to it; Replace swaps it for the selected library and keeps the "
+					+ "previous one as a restore point.";
 			}
 		}
 		this.updateButtons();
@@ -393,7 +405,7 @@ Zotero_Preferences.Library = {
 			this._inspected = info;
 
 			var summary = [
-				`${this._count(info.items)} items`,
+				`${this._count(info.regularItems ?? info.items)} items`,
 				`${this._count(info.collections)} collections`,
 				`${this._count(info.notes)} notes`,
 				`${this._count(info.attachments)} attachments`,
@@ -417,8 +429,8 @@ Zotero_Preferences.Library = {
 			if (info.groups) {
 				this._el("library-candidate-warning").hidden = false;
 				this._el("library-candidate-warning").textContent
-					= `${info.groups} group librar${info.groups === 1 ? "y" : "ies"} will be copied as-is. `
-					+ "Without sync they may look stale.";
+					= `${info.groups} group librar${info.groups === 1 ? "y" : "ies"} will be imported. `
+					+ "Group sync is not supported, so group items are placed in group collections.";
 			}
 			else {
 				this._el("library-candidate-warning").hidden = true;
@@ -432,7 +444,7 @@ Zotero_Preferences.Library = {
 			}
 			else {
 				this._setStatus(
-					"Ready to replace the current library, or choose a merge when it is available."
+					"Ready to merge into the current library, or replace it with a kept backup."
 				);
 			}
 			this.updateButtons();
@@ -471,6 +483,10 @@ Zotero_Preferences.Library = {
 		await this._stageSelected(false);
 	},
 
+	mergeSelected: async function () {
+		await this._mergeSelected();
+	},
+
 	replaceSelected: async function () {
 		await this._stageSelected(true);
 	},
@@ -478,7 +494,7 @@ Zotero_Preferences.Library = {
 	_stageSelected: async function (replace) {
 		if (this._busy || !this._selected || !this._inspected) return;
 		if (replace) {
-			if (this._current?.empty || !this._el("library-replace-confirm").checked) return;
+			if (this._current?.empty) return;
 		}
 		else if (!this._current?.empty) {
 			return;
@@ -552,6 +568,90 @@ Zotero_Preferences.Library = {
 		);
 	},
 
+	_mergeSelected: async function () {
+		if (this._busy || !this._selected || !this._inspected || this._current?.empty) return;
+		var candidate = this._selected;
+		var info = this._inspected;
+		var text = `Merge the Zotero library at\n\n${candidate.path}\n\n`
+			+ `CiteWell: ${this._count(this._current?.regularItems ?? this._current?.items)} items, `
+			+ `${this._count(this._current?.collections)} collections.\n\n`
+			+ `Zotero: ${this._count(info.regularItems ?? info.items)} items, `
+			+ `${this._count(info.collections)} collections, `
+			+ `${this._count(info.notes)} notes.\n\n`
+			+ "Items, collections and notes will be added to the current library. "
+			+ `${this._count(info.attachments)} attachments and `
+			+ `${this._count(info.annotations)} annotations are not imported yet. `
+			+ "A database backup is kept; Zotero is not modified.";
+		var ps = Services.prompt;
+		if (ps.confirmEx(window, "Merge Zotero library", text,
+			ps.STD_YES_NO_BUTTONS, null, null, null, null, {}) !== 0) {
+			return;
+		}
+
+		this._busy = true;
+		this._disable(true);
+		this._el("library-progress").hidden = false;
+		this._setStatus("Merging the selected library…");
+
+		var progressWin = new Zotero.ProgressWindow({ closeOnClick: false });
+		progressWin.changeHeadline("Merging Zotero library");
+		var progressRow = new progressWin.ItemProgress("document", "Preparing the source copy…");
+		progressWin.show();
+
+		var report = (line) => {
+			if (/^progress files=/.test(line)) {
+				this._onProgress(line);
+				return;
+			}
+			progressRow.setText(line);
+			this._setStatus(line);
+		};
+
+		try {
+			var result = await Zotero.LibraryImport.merge(candidate.path, {
+				onProgress: report,
+			});
+			this._el("library-progress").hidden = true;
+			var summary = `Merged ${this._count(result.items)} items, `
+				+ `${this._count(result.collections)} collections and `
+				+ `${this._count(result.notes)} notes into the current library.`;
+			this._setStatus(summary, false, true);
+			progressRow.setProgress(100);
+			progressRow.setText(summary);
+			progressWin.startCloseTimer(6000);
+
+			await this._refreshCurrent();
+			await this._showLastResult();
+
+			var main = Zotero.getMainWindow();
+			if (main?.ZoteroPane) {
+				try {
+					var collectionsView = main.ZoteroPane.collectionsView;
+					if (collectionsView?.refresh) await collectionsView.refresh();
+					var itemsView = main.ZoteroPane.itemsView;
+					if (itemsView?.refresh) await itemsView.refresh();
+				}
+				catch (e) {
+					// The merge is already committed; a view refresh failure must not report it as failed.
+					Zotero.logError(e);
+				}
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._el("library-progress").hidden = true;
+			progressRow.setError();
+			progressRow.setText(`Merge failed: ${e.message || e}`);
+			progressWin.startCloseTimer(8000);
+			this._setStatus(`Merge failed: ${e.message || e}`, true);
+		}
+		finally {
+			this._busy = false;
+			this._disable(false);
+			await this._refreshCurrent();
+		}
+	},
+
 	_askRestart: function () {
 		var ps = Services.prompt;
 		var flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
@@ -591,13 +691,13 @@ Zotero_Preferences.Library = {
 		var healthy = !!this._inspected?.healthy && !!this._selected?.exists;
 		var pending = this._pendingImport || this._pendingRestore || this._busy;
 		var adopt = healthy && !!this._current?.empty && !pending;
-		var confirm = this._el("library-replace-confirm");
-		var replace = healthy && !this._current?.empty
-			&& confirm && confirm.checked && !pending;
+		var replace = healthy && !this._current?.empty && !pending;
 		var importButton = this._el("library-import");
 		var replaceButton = this._el("library-replace");
+		var mergeButton = this._el("library-merge");
 		if (importButton) importButton.disabled = !adopt;
 		if (replaceButton) replaceButton.disabled = !replace;
+		if (mergeButton) mergeButton.disabled = !(healthy && !this._current?.empty && !pending);
 	},
 
 	cancelImport: async function () {
@@ -663,6 +763,9 @@ Zotero_Preferences.Library = {
 				text += ` · ${this._count(counts.items)} items, `
 					+ `${this._count(counts.collections)} collections`;
 			}
+			else {
+				text += " · contents not recorded";
+			}
 			text += ` · ${this._formatBytes((backup.dbSize || 0) + (backup.storageSize || 0))}`;
 			label.value = text;
 
@@ -680,11 +783,46 @@ Zotero_Preferences.Library = {
 		if (this._busy || this._pendingImport || this._pendingRestore) return;
 		var ps = Services.prompt;
 		var when = backup.createdAt ? new Date(backup.createdAt).toLocaleString() : backup.id;
+
+		this._setStatus("Checking the restore point…");
+		var info;
+		try {
+			info = await Zotero.LibraryImport.inspect(backup.path);
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Could not read the restore point: ${e.message || e}`, true);
+			return;
+		}
+		if (!info.healthy) {
+			this._setStatus(
+				`That restore point failed its integrity check (${info.integrity}); restore cancelled.`,
+				true
+			);
+			return;
+		}
+		if (!info.items && !info.collections) {
+			this._setStatus(
+				"That restore point is empty; restoring it would not recover anything. Restore cancelled.",
+				true
+			);
+			return;
+		}
+
+		var current = this._current || { items: 0, collections: 0, empty: true };
 		var text = `Restore the library from ${when}?\n\n`
+			+ `Restore point: ${this._count(info.items)} items, `
+			+ `${this._count(info.collections)} collections, `
+			+ `${this._count(info.notes)} notes `
+			+ `(${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}).\n\n`
+			+ `Current library: ${current.empty
+				? "empty"
+				: `${this._count(current.items)} items, ${this._count(current.collections)} collections`}.\n\n`
 			+ "The current library will be kept as a new restore point. "
 			+ "CiteWell will restart, and Zotero is never affected.";
 		if (ps.confirmEx(window, "Restore library", text, ps.STD_YES_NO_BUTTONS,
 			null, null, null, null, {}) !== 0) {
+			this._setStatus("");
 			return;
 		}
 
@@ -750,7 +888,9 @@ Zotero_Preferences.Library = {
 		}
 
 		var counts = result.counts || {};
-		var verb = result.mode === "replace" ? "Replaced the current library with" : "Imported";
+		var verb = result.mode === "replace" ? "Replaced the current library with"
+			: result.mode === "merge" ? "Merged into the current library:"
+			: "Imported";
 		element.textContent = `${verb} ${this._count(counts.items)} items, `
 			+ `${this._count(counts.collections)} collections and `
 			+ `${this._count(counts.attachments)} attachments${when}. `
@@ -765,11 +905,12 @@ Zotero_Preferences.Library = {
 		return Zotero.LibraryImport.formatBytes(bytes);
 	},
 
-	_setStatus: function (text, isError = false) {
+	_setStatus: function (text, isError = false, isSuccess = false) {
 		var element = this._el("library-import-status");
 		if (!element) return;
 		element.textContent = text || "";
-		element.className = "library-status" + (isError ? " library-error" : "");
+		element.className = "library-status"
+			+ (isError ? " library-error" : isSuccess ? " library-success" : "");
 	},
 
 	_disable: function (disabled) {
@@ -779,8 +920,8 @@ Zotero_Preferences.Library = {
 			"library-rescan",
 			"library-choose",
 			"library-check",
-			"library-replace-confirm",
 			"library-replace",
+			"library-merge",
 		]) {
 			var element = this._el(id);
 			if (element) element.disabled = disabled;
@@ -788,8 +929,10 @@ Zotero_Preferences.Library = {
 		if (disabled) {
 			var importButton = this._el("library-import");
 			var replaceButton = this._el("library-replace");
+			var mergeButton = this._el("library-merge");
 			if (importButton) importButton.disabled = true;
 			if (replaceButton) replaceButton.disabled = true;
+			if (mergeButton) mergeButton.disabled = true;
 		}
 	},
 };

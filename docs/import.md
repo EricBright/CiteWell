@@ -94,11 +94,12 @@ only offered when the CiteWell library is empty, because it replaces rather than
 
 ### Replace an existing library
 
-For a non-empty CiteWell library, replace is the explicit destructive option while merge is not
-built:
+For a non-empty CiteWell library, Replace is the explicit destructive option that swaps the whole
+library:
 
-1. The Library pane shows the current counts and requires a checkbox that names the consequence.
-2. A second confirmation repeats both libraries' counts and the restore-point path.
+1. Import & Export shows the current library's counts next to the selected source's counts.
+2. A confirmation repeats both libraries' counts and explains that the current library becomes a
+   restore point.
 3. The mover moves the current database, `storage/` and full-text index into
    `<data>/.import-backup/<id>/`, then installs the staged library.
 4. The old library remains as a restore point, with a `backup.json` manifest.
@@ -110,9 +111,12 @@ Replace is never silently chosen. The source Zotero library is still read-only.
 Every replace, adopt and restore writes a restore point. The Library pane lists them with date,
 origin, item/collection counts and size. Restoring:
 
-1. Moves the current library into a new restore point.
-2. Swaps the selected restore point into place at the next start.
-3. Leaves both states recoverable: the previous current state is the new restore point.
+1. Inspects the selected point first; an empty or corrupt point is refused rather than swapped in.
+2. Names the restore point's item/collection counts and the current library's counts in the
+   confirmation.
+3. Moves the current library into a new restore point and swaps the selected one into place at the
+   next start.
+4. Leaves both states recoverable: the previous current state is the new restore point.
 
 Backups are kept until the person removes them. They live under `<data>/.import-backup/` and are
 shown in the Locations list.
@@ -126,35 +130,45 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 | Regular items | Fields, creators, tags and relations copied; a new key is generated and the old key mapped |
 | Collections | Tree recreated by name under an import root, then items assigned |
 | Notes | Written as an HTML file attachment under `storage/`; parent mapped. Never rendered, edited, indexed or opened in-app — the OS default HTML handler opens it |
-| Attachments | File copied from source `storage/` into CiteWell storage; imported-file mode; not full-text indexed |
-| Annotations | Copied with mapped parent attachment; positions preserved |
-| Saved searches | Copied as definitions, not results |
-| Duplicates | Matched by DOI/ISBN first, then title + date; reported, not deleted |
+| Attachments | Not imported yet (Phase 3); source rows are skipped |
+| Annotations | Not imported yet (Phase 3); source rows are skipped |
+| Saved searches | Not imported yet; definitions are left alone |
+| Duplicates | Not detected yet (Phase 4); every source item is added |
 
 Group libraries are shared libraries, not collections. CiteWell has no group sync, so their items are
 imported into the personal library and each group gets a collection under the import root, preserving
 provenance without pretending the group still exists.
 
-The import runs in batches inside one transaction per batch, reports progress, and is resumable by
-recording the source item key in an import table. The source is opened **read-only**; a checksum
-before and after proves it was not modified.
+The source summary lists regular items, collections, notes and attachments separately. Only the
+regular-item count is merged; attachments are skipped and do not appear in the merged item count.
+A progress popup reports item and note counts while the merge runs, and the pane keeps a green
+completion line and refreshes the destination counts and the main library when it finishes.
+
+The item and collection pass runs in a single transaction: a failure leaves the current library
+unchanged, and the database backup remains as the restore point. Notes are written afterwards as
+HTML attachments; a failed note is reported as a warning without aborting the rest. Resumable
+batching and duplicate reporting are Phase 4. The source is opened **read-only**; a checksum before
+and after proves it was not modified.
 
 ## Settings pane
 
-A **Library** section (in Preferences) contains:
+Import is the first section of **Import & Export**; Quick Copy follows below it:
 
-- **Current library** — the data directory, whether it is empty, and Open / Move actions.
-- **Locations** — the database, `storage/`, the profile, the search index, logs and the agent
-  token, each with an Open action, so no path has to be reconstructed from memory.
-- **Import from Zotero** — the detected candidates, best preselected, with counts and confidence
-  labels, a Rescan button and a folder picker as the fallback.
-- **Import** — adopt-copy when the library is empty.
-- **Replace** — explicit checkbox and a second confirmation when the library is not empty; a
-  restore point is always kept.
-- **Dry run** — item, collection, note, annotation and attachment counts, size, free space and
-  the source fingerprint, before anything is written.
+- **Import from Zotero** — the current CiteWell library's counts, the detected candidates (best
+  preselected), a Rescan button and a folder picker as the fallback.
+- **Import into empty library…** — adopt-copy; only shown when the CiteWell library is empty.
+- **Merge into current library…** — adds the selected library's items, collections and notes; only
+  shown when the library is not empty.
+- **Replace current library…** — swaps the whole library; only shown when the library is not empty,
+  and followed by a confirmation that names both libraries' counts and the restore point.
+- **Check** — item, collection, note, attachment counts, size, free space and the source
+  fingerprint, before anything is written.
 - **Restore points** — date, origin, counts, size and a Restore action; restoring is reversible.
 - **Last operation** — counts, source fingerprint, and the restore-point path.
+
+The **Library & Files** pane shows the current library path and counts, the locations of each
+piece of data, and Open / Move actions. Both panes use the same target description, so the
+selected source and the destination are never on separate screens.
 
 The pane states plainly that Zotero is not modified and that CiteWell's library is independent.
 

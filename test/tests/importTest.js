@@ -113,6 +113,9 @@ describe("Library import", function () {
 			await Zotero.Promise.delay(1500);
 			assert.ok(win.document.getElementById("zotero-prefpane-import-export"));
 			assert.ok(win.document.getElementById("library-import"));
+			assert.ok(win.document.getElementById("library-merge"));
+			assert.ok(win.document.getElementById("library-replace"));
+			assert.ok(win.document.getElementById("library-import-target"));
 			assert.ok(win.document.getElementById("zotero-quickCopy-menu"));
 			assert.ok(win.document.getElementById("library-restore-points"));
 		}
@@ -207,6 +210,98 @@ describe("Library import", function () {
 		}
 		finally {
 			await Zotero.LibraryImport.cancel();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+		}
+	});
+
+	it("should merge items, collections and notes without touching the source", async function () {
+		this.timeout(120000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "import-test-merge-source");
+		await Zotero.File.createDirectoryIfMissingAsync(source);
+
+		try {
+			let parent = new Zotero.Collection();
+			parent.libraryID = 1;
+			parent.name = "Merge parent";
+			await parent.saveTx();
+
+			let child = new Zotero.Collection();
+			child.libraryID = 1;
+			child.name = "Merge child";
+			child.parentID = parent.id;
+			await child.saveTx();
+
+			let item = new Zotero.Item("book");
+			item.libraryID = 1;
+			item.setField("title", "Merge fixture");
+			item.setField("date", "2024");
+			item.setCreators([{ firstName: "Ada", lastName: "Lovelace", creatorType: "author" }]);
+			item.setTags([{ tag: "fixture", type: 1 }]);
+			item.setCollections([child.id]);
+			await item.saveTx();
+
+			let note = new Zotero.Item("note");
+			note.libraryID = 1;
+			note.parentID = item.id;
+			note.setNote("<p>Imported note body</p>");
+			await note.saveTx();
+
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			let hashBefore = await Zotero.LibraryImport.hashFile(
+				OS.Path.join(source, "zotero.sqlite")
+			);
+
+			await resetData();
+			let existing = new Zotero.Item("book");
+			existing.libraryID = 1;
+			existing.setField("title", "Existing item");
+			await existing.saveTx();
+			let current = await Zotero.LibraryImport.getCurrentLibraryInfo();
+			assert.isFalse(current.empty);
+
+			let progress = [];
+			let result = await Zotero.LibraryImport.merge(source, {
+				onProgress: line => progress.push(line),
+			});
+			assert.isAtLeast(result.items, 1);
+			assert.isAtLeast(result.notes, 1);
+			assert.ok(progress.some(line => /^Items: 1\//.test(line)));
+
+			let items = await Zotero.Items.getAll(1);
+			let merged = items.find(
+				candidate => candidate.itemType === "book"
+					&& candidate.getField("title") === "Merge fixture"
+			);
+			assert.ok(merged);
+			assert.equal(merged.getCreators()[0].lastName, "Lovelace");
+			assert.include(merged.getTags().map(tag => tag.tag), "fixture");
+
+			let childCollection = Zotero.Collections.get(merged.getCollections()[0]);
+			assert.ok(childCollection);
+			assert.equal(childCollection.name, "Merge child");
+			assert.equal(Zotero.Collections.get(childCollection.parentID).name, "Merge parent");
+
+			let attachments = merged.getAttachments();
+			assert.lengthOf(attachments, 1);
+			let attachment = Zotero.Items.get(attachments[0]);
+			assert.equal(attachment.attachmentContentType, "text/html");
+			let attachmentPath = await attachment.getFilePathAsync();
+			assert.isTrue(await IOUtils.exists(attachmentPath));
+			let html = await Zotero.File.getContentsAsync(attachmentPath);
+			assert.include(html, "Imported note body");
+			assert.equal(items.filter(candidate => candidate.itemType === "note").length, 0);
+
+			let hashAfter = await Zotero.LibraryImport.hashFile(
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			assert.equal(hashAfter, hashBefore);
+		}
+		finally {
+			await resetData();
 			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
 		}
 	});

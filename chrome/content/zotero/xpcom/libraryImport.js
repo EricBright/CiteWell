@@ -342,6 +342,12 @@ Zotero.LibraryImport = {
 					integrity,
 					schemaVersion: await num("SELECT version FROM version WHERE schema='userdata'"),
 					items: await num("SELECT COUNT(*) FROM items"),
+					regularItems: await num(`
+						SELECT COUNT(*) FROM items i
+						JOIN itemTypes it ON it.itemTypeID = i.itemTypeID
+						WHERE it.typeName NOT IN ('attachment', 'annotation', 'note')
+						AND i.itemID NOT IN (SELECT itemID FROM deletedItems)
+					`),
 					itemsTrashed: await num(
 						"SELECT COUNT(*) FROM items WHERE itemID IN (SELECT itemID FROM deletedItems)"
 					),
@@ -377,6 +383,12 @@ Zotero.LibraryImport = {
 			}
 		};
 		var items = await value("SELECT COUNT(*) FROM items");
+		var regularItems = await value(`
+			SELECT COUNT(*) FROM items i
+			JOIN itemTypes it ON it.itemTypeID = i.itemTypeID
+			WHERE it.typeName NOT IN ('attachment', 'annotation', 'note')
+			AND i.itemID NOT IN (SELECT itemID FROM deletedItems)
+		`);
 		var collections = await value("SELECT COUNT(*) FROM collections");
 		var savedSearches = await value("SELECT COUNT(*) FROM savedSearches");
 		var schemaVersion = await value("SELECT version FROM version WHERE schema='userdata'");
@@ -385,6 +397,7 @@ Zotero.LibraryImport = {
 			path: this.dataDir,
 			dbPath,
 			items,
+			regularItems,
 			collections,
 			savedSearches,
 			schemaVersion,
@@ -575,6 +588,426 @@ Zotero.LibraryImport = {
 			throw new Error(`Unexpected helper output: ${output.trim() || "(empty)"}`);
 		}
 		return { files: Number(match[1]), bytes: Number(match[2]) };
+	},
+
+	/**
+	 * Merge a Zotero library into the current, non-empty CiteWell library.
+	 *
+	 * Only regular items, collections and HTML notes are copied. Attachments,
+	 * annotations and saved searches wait for Phase 3. The source is copied and
+	 * only that copy is read; the source database is hashed before and after.
+	 */
+	merge: async function (sourcePath, { onProgress = null } = {}) {
+		var current = await this.getCurrentLibraryInfo();
+		if (current.empty) {
+			throw new Error("CiteWell's library is empty; use the first-import path instead.");
+		}
+		if (PathUtils.normalize(sourcePath) === PathUtils.normalize(this.dataDir)) {
+			throw new Error("That is CiteWell's own library; choose a Zotero library instead.");
+		}
+		var sourceDb = PathUtils.join(sourcePath, "zotero.sqlite");
+		if (!(await IOUtils.exists(sourceDb))) {
+			throw new Error(`No zotero.sqlite in ${sourcePath}`);
+		}
+		var walPath = sourceDb + "-wal";
+		if ((await IOUtils.exists(walPath)) && (await IOUtils.stat(walPath)).size > 0) {
+			throw new Error(
+				"Zotero's database has an active write-ahead log. Quit Zotero completely, "
+				+ "then rescan and try again."
+			);
+		}
+
+		var id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+		var staging = PathUtils.join(this.dataDir, ".import", `merge-${id}`);
+		await Zotero.File.createDirectoryIfMissingAsync(staging);
+		var copyDbPath = PathUtils.join(staging, "zotero.sqlite");
+		var hashBefore = await this.hashFile(sourceDb);
+		var backupPath = PathUtils.join(this.dataDir, `zotero.sqlite.merge-${id}.bak`);
+
+		try {
+			await IOUtils.copy(sourceDb, copyDbPath);
+			for (let suffix of ["-wal", "-shm"]) {
+				if (await IOUtils.exists(sourceDb + suffix)) {
+					await IOUtils.copy(sourceDb + suffix, copyDbPath + suffix);
+				}
+			}
+			var copyDb = new Zotero.DBConnection(copyDbPath);
+			try {
+				let integrity = await copyDb.valueQueryAsync("PRAGMA integrity_check(1)");
+				if (integrity != "ok") {
+					throw new Error(`The copied database failed its integrity check: ${integrity}`);
+				}
+			}
+			finally {
+				await copyDb.closeDatabase(true);
+			}
+			for (let suffix of ["-wal", "-shm"]) {
+				await IOUtils.remove(copyDbPath + suffix, { ignoreAbsent: true });
+			}
+
+			var hashAfter = await this.hashFile(sourceDb);
+			if (hashBefore !== hashAfter) {
+				throw new Error(
+					"The Zotero database changed while it was being copied. Quit Zotero and try again."
+				);
+			}
+
+			onProgress?.("Creating a restore point of the current library…");
+			var backedUp = await Zotero.DB.backUpDatabase({
+				suffix: `merge-${id}`,
+				force: true,
+				online: true,
+			});
+			if (!backedUp) {
+				throw new Error("Could not create a database backup; merge cancelled.");
+			}
+
+			var sourceDbConnection = new Zotero.DBConnection(copyDbPath);
+			var source;
+			try {
+				source = await this._readMergeSource(sourceDbConnection);
+			}
+			finally {
+				await sourceDbConnection.closeDatabase(true);
+			}
+
+			onProgress?.(`Merging ${source.items.length} items and ${source.collections.length} collections…`);
+			var result = await this._applyMergeSource(source, staging, onProgress);
+
+			await this._writeResult({
+				ok: true,
+				mode: "merge",
+				source: sourcePath,
+				sourceHash: hashBefore,
+				backup: backupPath,
+				finishedAt: new Date().toISOString(),
+				counts: {
+					items: result.items,
+					collections: result.collections,
+					attachments: result.notes,
+					notes: result.notes,
+				},
+				warnings: result.warnings,
+			});
+			return { ...result, backup: backupPath };
+		}
+		catch (e) {
+			await this._writeResult({
+				ok: false,
+				mode: "merge",
+				source: sourcePath,
+				error: e.message || String(e),
+				finishedAt: new Date().toISOString(),
+			});
+			throw e;
+		}
+		finally {
+			await IOUtils.remove(staging, { recursive: true, ignoreAbsent: true });
+		}
+	},
+
+	_readMergeSource: async function (db) {
+		var q = sql => db.queryAsync(sql.trim());
+		var items = await q(`
+			SELECT i.itemID, i.key, i.libraryID, i.dateAdded, i.dateModified, it.typeName
+			FROM items i
+			JOIN itemTypes it ON it.itemTypeID = i.itemTypeID
+			WHERE i.itemID NOT IN (SELECT itemID FROM deletedItems)
+			  AND i.itemID NOT IN (SELECT itemID FROM feedItems)
+			  AND it.typeName NOT IN ('attachment', 'annotation', 'note')
+			ORDER BY i.itemID
+		`);
+		var fields = await q(`
+			SELECT id.itemID, f.fieldName, v.value
+			FROM itemData id
+			JOIN fields f ON f.fieldID = id.fieldID
+			JOIN itemDataValues v ON v.valueID = id.valueID
+		`);
+		var creators = await q(`
+			SELECT ic.itemID, ic.orderIndex, ct.creatorType, c.firstName, c.lastName, c.fieldMode
+			FROM itemCreators ic
+			JOIN creators c ON c.creatorID = ic.creatorID
+			JOIN creatorTypes ct ON ct.creatorTypeID = ic.creatorTypeID
+			ORDER BY ic.itemID, ic.orderIndex
+		`);
+		var tags = await q(`
+			SELECT it.itemID, t.name, it.type
+			FROM itemTags it
+			JOIN tags t ON t.tagID = it.tagID
+			ORDER BY it.itemID
+		`);
+		var collections = await q(`
+			SELECT collectionID, collectionName, parentCollectionID, libraryID
+			FROM collections
+			ORDER BY collectionID
+		`);
+		var collectionItems = await q(`
+			SELECT collectionID, itemID FROM collectionItems
+		`);
+		var notes = await q(`
+			SELECT n.itemID, n.parentItemID, n.note, n.title
+			FROM itemNotes n
+			JOIN items i ON i.itemID = n.itemID
+			WHERE n.itemID NOT IN (SELECT itemID FROM deletedItems)
+		`);
+		var groups = await q(`SELECT libraryID, name FROM groups`);
+		var relations = await q(`
+			SELECT r.itemID, p.predicate, r.object
+			FROM itemRelations r
+			JOIN relationPredicates p ON p.predicateID = r.predicateID
+		`);
+
+		var fieldsByItem = new Map();
+		for (let row of fields) {
+			if (!fieldsByItem.has(row.itemID)) fieldsByItem.set(row.itemID, []);
+			fieldsByItem.get(row.itemID).push({ name: row.fieldName, value: row.value });
+		}
+		var creatorsByItem = new Map();
+		for (let row of creators) {
+			if (!creatorsByItem.has(row.itemID)) creatorsByItem.set(row.itemID, []);
+			creatorsByItem.get(row.itemID).push({
+				creatorType: row.creatorType,
+				firstName: row.firstName ?? "",
+				lastName: row.lastName ?? "",
+				fieldMode: Number(row.fieldMode) || 0,
+			});
+		}
+		var tagsByItem = new Map();
+		for (let row of tags) {
+			if (!tagsByItem.has(row.itemID)) tagsByItem.set(row.itemID, []);
+			tagsByItem.get(row.itemID).push({ tag: row.name, type: Number(row.type) || 0 });
+		}
+		var collectionItemsByItem = new Map();
+		for (let row of collectionItems) {
+			if (!collectionItemsByItem.has(row.itemID)) collectionItemsByItem.set(row.itemID, []);
+			collectionItemsByItem.get(row.itemID).push(row.collectionID);
+		}
+
+		var itemIDByKey = new Map(items.map(row => [row.key, row.itemID]));
+		var groupNames = new Map(groups.map(row => [row.libraryID, row.name]));
+
+		return {
+			items,
+			fieldsByItem,
+			creatorsByItem,
+			tagsByItem,
+			collectionItemsByItem,
+			collections: collections.map(row => ({
+				collectionID: row.collectionID,
+				name: row.collectionName,
+				parentID: row.parentCollectionID,
+				libraryID: row.libraryID,
+			})),
+			notes,
+			groupNames,
+			relations,
+			itemIDByKey,
+		};
+	},
+
+	_applyMergeSource: async function (source, staging, onProgress) {
+		var root;
+		var itemMap = new Map();
+		var collectionMap = new Map();
+		var groupRoots = new Map();
+		var notesCollectionID = 0;
+		var warnings = 0;
+		var collectionCount = 0;
+
+		var state = await Zotero.DB.executeTransaction(async () => {
+			root = new Zotero.Collection();
+			root.libraryID = 1;
+			root.name = `Imported from Zotero — ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+			await root.save();
+			collectionCount++;
+
+			var collectionsByLibrary = new Map();
+			for (let collection of source.collections) {
+				if (!collectionsByLibrary.has(collection.libraryID)) {
+					collectionsByLibrary.set(collection.libraryID, []);
+				}
+				collectionsByLibrary.get(collection.libraryID).push(collection);
+			}
+			var childrenByParent = new Map();
+			for (let collection of source.collections) {
+				if (!collection.parentID) continue;
+				if (!childrenByParent.has(collection.parentID)) childrenByParent.set(collection.parentID, []);
+				childrenByParent.get(collection.parentID).push(collection);
+			}
+
+			var ensureGroupRoot = async (libraryID) => {
+				if (groupRoots.has(libraryID)) return groupRoots.get(libraryID);
+				let collection = new Zotero.Collection();
+				collection.libraryID = 1;
+				collection.name = `Group: ${source.groupNames.get(libraryID) || libraryID}`;
+				collection.parentID = root.id;
+				await collection.save();
+				groupRoots.set(libraryID, collection);
+				collectionCount++;
+				return collection;
+			};
+
+			var createCollection = async (sourceCollection, parentID) => {
+				if (collectionMap.has(sourceCollection.collectionID)) return;
+				let collection = new Zotero.Collection();
+				collection.libraryID = 1;
+				collection.name = sourceCollection.name;
+				collection.parentID = parentID;
+				await collection.save();
+				collectionMap.set(sourceCollection.collectionID, collection.id);
+				collectionCount++;
+				for (let child of childrenByParent.get(sourceCollection.collectionID) || []) {
+					await createCollection(child, collection.id);
+				}
+			};
+
+			for (let [libraryID, list] of collectionsByLibrary) {
+				let parentID;
+				if (libraryID === 1) {
+					parentID = root.id;
+				}
+				else {
+					let groupRoot = await ensureGroupRoot(libraryID);
+					parentID = groupRoot.id;
+				}
+				for (let collection of list) {
+					if (collection.parentID) continue;
+					await createCollection(collection, parentID);
+				}
+			}
+
+			onProgress?.(`Collections: ${collectionCount} created; importing items…`);
+			var itemsDone = 0;
+			for (let row of source.items) {
+				if (!Zotero.ItemTypes.getID(row.typeName)) {
+					warnings++;
+					continue;
+				}
+				let item = new Zotero.Item(row.typeName);
+				item.libraryID = 1;
+				for (let field of source.fieldsByItem.get(row.itemID) || []) {
+					try {
+						item.setField(field.name, field.value);
+					}
+					catch (e) {
+						warnings++;
+					}
+				}
+				let creators = source.creatorsByItem.get(row.itemID);
+				if (creators?.length) {
+					try {
+						item.setCreators(creators);
+					}
+					catch (e) {
+						warnings++;
+					}
+				}
+				let tags = source.tagsByItem.get(row.itemID);
+				if (tags?.length) {
+					try {
+						item.setTags(tags);
+					}
+					catch (e) {
+						warnings++;
+					}
+				}
+				for (let [property, value] of [["dateAdded", row.dateAdded], ["dateModified", row.dateModified]]) {
+					let date = new Date(String(value).replace(" ", "T") + "Z");
+					if (!isNaN(date.getTime())) item[property] = date.toISOString();
+				}
+				await item.save();
+				itemMap.set(row.itemID, item);
+				itemsDone++;
+				if (itemsDone % 25 === 0 || itemsDone === source.items.length) {
+					onProgress?.(`Items: ${itemsDone}/${source.items.length}`);
+				}
+			}
+
+			for (let [itemID, collectionIDs] of source.collectionItemsByItem) {
+				let item = itemMap.get(itemID);
+				if (!item) continue;
+				let mapped = [...new Set(collectionIDs.map(id => collectionMap.get(id)).filter(Boolean))];
+				if (!mapped.length) continue;
+				item.setCollections(mapped);
+				await item.save();
+			}
+
+			for (let row of source.items) {
+				if (row.libraryID === 1) continue;
+				if (source.collectionItemsByItem.has(row.itemID)) continue;
+				let item = itemMap.get(row.itemID);
+				if (!item) continue;
+				let groupRoot = await ensureGroupRoot(row.libraryID);
+				item.setCollections([groupRoot.id]);
+				await item.save();
+			}
+
+			for (let relation of source.relations) {
+				if (relation.predicate !== "dc:relation") continue;
+				let item = itemMap.get(relation.itemID);
+				let targetKey = String(relation.object).split("/items/").pop();
+				let targetID = source.itemIDByKey.get(targetKey);
+				let target = targetID ? itemMap.get(targetID) : null;
+				if (!item || !target) continue;
+				item.addRelatedItem(target);
+				await item.save();
+			}
+
+			let standaloneNotes = source.notes.filter(
+				note => !note.parentItemID || !itemMap.has(note.parentItemID)
+			);
+			if (standaloneNotes.length) {
+				let collection = new Zotero.Collection();
+				collection.libraryID = 1;
+				collection.name = "Imported notes";
+				collection.parentID = root.id;
+				await collection.save();
+				notesCollectionID = collection.id;
+				collectionCount++;
+			}
+
+			return { itemMap, notesCollectionID };
+		});
+
+		itemMap = state.itemMap;
+		notesCollectionID = state.notesCollectionID;
+
+		var notesCount = 0;
+		for (let note of source.notes) {
+			let parent = note.parentItemID ? itemMap.get(note.parentItemID) : null;
+			let title = note.title || (parent?.getField("title") || "Note");
+			let html = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>`
+				+ title.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
+				+ `</title></head><body>\n${note.note || ""}\n</body></html>`;
+			let file = PathUtils.join(staging, `note-${note.itemID}.html`);
+			await IOUtils.writeUTF8(file, html);
+			try {
+				await Zotero.Attachments.importFromFile({
+					file,
+					parentItemID: parent ? parent.id : undefined,
+					collections: parent ? undefined : [notesCollectionID],
+					title,
+					contentType: "text/html",
+					charset: "UTF-8",
+				});
+				notesCount++;
+			}
+			catch (e) {
+				Zotero.logError(e);
+				warnings++;
+			}
+			finally {
+				await IOUtils.remove(file, { ignoreAbsent: true });
+			}
+			onProgress?.(`Notes: ${notesCount}/${source.notes.length}`);
+		}
+
+		return {
+			items: itemMap.size,
+			collections: collectionCount,
+			notes: notesCount,
+			warnings,
+		};
 	},
 
 	_queue: async function (request) {

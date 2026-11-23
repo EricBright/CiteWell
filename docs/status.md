@@ -27,7 +27,7 @@ push target. The product branch may diverge without limit.
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
+| Import | R24 Phase 2 on `r24-merge`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points and merge of regular items, collections and notes |
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
@@ -36,7 +36,8 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (127,474,168 bytes; sha256 `6455ce08bf9f87b3db6543222c1768b0a3060fedad06d65d1c54d17774c76405`)
+- `dist/CiteWell-x86_64.AppImage` (125,917,688 bytes; sha256
+  `dca1ce0eed4fe507622d5e5077f6a7afc7d012d12521e15505497f543e610812`; R24 test build)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -44,26 +45,34 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
-## Handoff 2026-11-23 (R24 / CI)
+## Handoff 2026-11-23 (R24 Phase 2)
 
-- `citewell` is at `e7613259e`; the tree is clean except the pre-existing
-  `.gitignore` quill-icon edit. `r24-merge` at `af82c8800` holds R24 Phase 2 and is **not merged**.
-- R24 Phase 2 is implemented: a Merge button for a non-empty library, database backup, regular
-  items (fields, creators, tags, `dc:relation`), collection hierarchy under an import root, group
-  roots, and Zotero notes as inert `.html` attachments. Source is copied and hashed before/after.
-  `importTest.js` passes 12/12.
-- Test AppImage: `~/AppImages/citewell-r24-test.appimage`, version `10.0.9.SOURCE.af82c8800`,
-  sha256 `8b48eab4e74f9f9eedbc4a28bcdb7eae892cc11b06141584464899f30cd538d7`. The installed stable
-  `~/AppImages/citewell.appimage` is still `bbe047d1a` (`6455ce08…`) and does not contain R24.
-- CI: CodeQL default setup is disabled; the custom workflow now runs. `guard.yml` and `docs.yml`
+- R24 Phase 2 is merged into `citewell`: regular items (fields, creators, tags, `dc:relation`),
+  collection hierarchy under an import root, group roots, and Zotero notes as inert `.html`
+  attachments. Attachments, annotations and saved searches are skipped; there is no duplicate
+  detection yet (Phase 4). The source is copied and hashed before/after.
+- Merge feedback is fixed: a progress popup reports item/note counts, the pane shows a green
+  completion line, and destination counts plus the main library refresh without restarting.
+- Restore safety is fixed: a point is inspected before use, empty or corrupt points are refused,
+  and the confirmation names both the restore point and current-library counts. Points without a
+  manifest are labelled “contents not recorded”.
+- Test AppImage: `~/AppImages/citewell-r24-test.appimage`, version `10.0.9.SOURCE.8098d25dc`,
+  sha256 `dca1ce0eed4fe507622d5e5077f6a7afc7d012d12521e15505497f543e610812`. The installed stable
+  `~/AppImages/citewell.appimage` is still `bbe047d1a` (`6455ce08…`).
+- Live test data: `~/CiteWell` holds the merged library (2,882 items, 104 collections, root
+  `Imported from Zotero — 2026-11-23 17:55`). It was recovered from the restore point
+  `restore-1795457315203` after an empty Nov 21 snapshot was restored by mistake; the empty state
+  is kept at `~/CiteWell/.import-backup/restore-1795458288312-u0wg1g`. The canonical sources
+  (`/run/media/eric/RedDragon/Zotero_Library`, `~/Zotero`) were only read and copied.
+- `importTest.js` passes 12/12 after the feedback and restore changes.
+- CI: CodeQL default setup is disabled; the custom workflow runs. `guard.yml` and `docs.yml`
   declare `contents: read`, resolving the Actions permission alerts. Remaining open alerts are
-  inherited: 58 JavaScript and 1 C/C++, not the R24 code. If the latest run is interrupted by the
-  restart, re-run `gh workflow run codeql.yml --ref citewell`.
-- Environment caveat: new **Wayland** launches currently segfault in the renderer, even the
-  installed AppImage; X11 works. Tests were run through `/tmp/citewell-x11-test`, which execs
-  `zotero-bin` with `GDK_BACKEND=x11` and `MOZ_ENABLE_WAYLAND=0`. Retry Wayland after the reboot.
-- Next: re-check the final CodeQL run; test the R24 merge UI with the test AppImage; if it passes,
-  merge `r24-merge` into `citewell`, rebuild/install the stable AppImage, update R24/status.
+  inherited: 58 JavaScript and 1 C/C++, not the R24 code.
+- Environment caveat: new **Wayland** launches currently segfault the renderer, even the installed
+  AppImage; X11 works. Tests run through `/tmp/citewell-x11-test`, which execs `zotero-bin` with
+  `GDK_BACKEND=x11` and `MOZ_ENABLE_WAYLAND=0`.
+- Next: rebuild and install the stable AppImage from this merge, push `citewell`, confirm CI; then
+  R15. The KDE/GNOME/XWayland matrix remains deferred.
 
 ## Handoff 2026-11-22
 

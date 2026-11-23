@@ -376,6 +376,21 @@ var Zotero_Preferences = {
 	},
 
 	_renderSimpleSections(paneId, container) {
+		let applyLabel = (element, key, attribute = 'label') => {
+			let text = null;
+			try {
+				text = Zotero.getString(key);
+			}
+			catch (e) {
+				// Attribute-only Fluent messages have no value to fetch this way.
+			}
+			if (text && text !== key) {
+				element.setAttribute(attribute, text);
+				return;
+			}
+			element.setAttribute('data-l10n-id', key);
+			element.setAttribute('data-l10n-attrs', attribute);
+		};
 		let sections = Zotero.PreferencePanes.simpleSections
 			.filter(section => section.paneId === paneId)
 			.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -408,13 +423,13 @@ var Zotero_Preferences = {
 					checkbox.id = setting.id;
 					checkbox.setAttribute('preference', setting.preference);
 					checkbox.setAttribute('native', 'true');
-					checkbox.setAttribute('label', Zotero.getString(setting.labelKey));
+					applyLabel(checkbox, setting.labelKey);
 					groupbox.append(checkbox);
 				}
 				else if (setting.type === 'button') {
 					let button = document.createXULElement('button');
 					button.id = setting.id;
-					button.setAttribute('label', Zotero.getString(setting.labelKey));
+					applyLabel(button, setting.labelKey);
 					let actions = {
 						'update-translators': () => Zotero_Preferences.Advanced.updateTranslators()
 					};
@@ -428,14 +443,14 @@ var Zotero_Preferences = {
 					let hbox = document.createXULElement('hbox');
 					hbox.setAttribute('align', 'center');
 					let before = document.createXULElement('label');
-					before.setAttribute('value', Zotero.getString(setting.beforeKey));
+					applyLabel(before, setting.beforeKey, 'value');
 					let input = document.createElementNS('http://www.w3.org/1999/xhtml', 'input');
 					input.id = setting.id;
 					input.setAttribute('type', 'text');
 					input.setAttribute('size', String(setting.size || 4));
 					input.setAttribute('preference', setting.preference);
 					let after = document.createXULElement('label');
-					after.setAttribute('value', Zotero.getString(setting.afterKey));
+					applyLabel(after, setting.afterKey, 'value');
 					hbox.append(before, input, after);
 					groupbox.append(hbox);
 				}
@@ -443,7 +458,7 @@ var Zotero_Preferences = {
 					let hbox = document.createXULElement('hbox');
 					hbox.setAttribute('align', 'center');
 					let label = document.createXULElement('label');
-					label.setAttribute('value', Zotero.getString(setting.labelKey));
+					applyLabel(label, setting.labelKey, 'value');
 					label.setAttribute('control', setting.id);
 					let radioGroup = document.createXULElement('radiogroup');
 					radioGroup.id = setting.id;
@@ -452,7 +467,7 @@ var Zotero_Preferences = {
 					for (let option of setting.options || []) {
 						let radio = document.createXULElement('radio');
 						radio.setAttribute('value', option.value);
-						radio.setAttribute('label', Zotero.getString(option.labelKey));
+						applyLabel(radio, option.labelKey);
 						radioGroup.append(radio);
 					}
 					hbox.append(label, radioGroup);

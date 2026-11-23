@@ -1,40 +1,67 @@
-#zotero-prefpane-library {
-	.library-path {
-		font-family: monospace;
-		font-size: 0.9em;
-		opacity: 0.8;
-		word-break: break-all;
-	}
+// Shared by the Library, Import & Export, Notes and Integrations panes.
 
-	.library-muted {
-		opacity: 0.75;
-	}
+.library-path {
+	font-family: monospace;
+	font-size: 0.9em;
+	opacity: 0.8;
+	word-break: break-all;
+}
 
-	.library-warning {
-		color: var(--accent-orange);
-	}
+.library-muted {
+	opacity: 0.75;
+	line-height: 1.4;
+}
 
-	.library-error {
-		color: var(--accent-red);
-	}
+.library-warning {
+	color: var(--accent-orange);
+}
 
-	.library-location-row {
-		align-items: center;
-		gap: 6px;
-		margin-bottom: 2px;
-	}
+.library-error {
+	color: var(--accent-red);
+}
 
-	.library-location-label {
-		min-width: 12em;
-	}
+.library-success {
+	color: var(--accent-green);
+	font-weight: 600;
+}
 
-	.library-candidates radio {
+.library-status {
+	min-height: 1.3em;
+}
+
+.library-location-row {
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 2px;
+}
+
+.library-location-label {
+	min-width: 12em;
+}
+
+.library-candidates {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-block: 6px;
+
+	radio {
 		white-space: normal;
-		margin-bottom: 2px;
-	}
+		padding: 6px 8px;
+		border: var(--material-panedivider);
+		border-radius: 6px;
+		background-color: transparent;
 
-	.library-button-row {
-		gap: 6px;
-		margin-top: 4px;
+		&:is([selected], [checked]) {
+			border-color: var(--color-accent);
+			background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		}
 	}
+}
+
+.library-button-row {
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-top: 6px;
 }
