@@ -1531,6 +1531,15 @@ Zotero.LibraryImport = {
 			if (!key) continue;
 			let item = await Zotero.Items.getByLibraryAndKeyAsync(1, key);
 			if (item && !item.deleted) return item;
+			// The alias target may itself have been merged into a master item.
+			// Follow Zotero's dc:replaces relation from the trashed target.
+			if (item?.deleted) {
+				let targetURI = Zotero.URI.getItemURI(item);
+				let replacer = await Zotero.Relations.getByPredicateAndObject(
+					'item', Zotero.Relations.replacedItemPredicate, targetURI
+				);
+				if (replacer.length && !replacer[0].deleted) return replacer[0];
+			}
 		}
 		return false;
 	},
