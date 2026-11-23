@@ -1360,13 +1360,12 @@ Zotero.Integration.Session.prototype.auditDetachedCitations = async function () 
 		return;
 	}
 
-	let message = `${citations.length} citation${citations.length === 1 ? "" : "s"} in this `
-		+ "document are not linked to the CiteWell library; they are being rendered from "
-		+ "embedded citation data.\n\n"
-		+ `${relink.length} can be relinked to existing items.\n`
-		+ `${missing.length} do not exist in the library and can be imported from the citation data.\n`
-		+ (ambiguous.length ? `${ambiguous.length} are ambiguous and will be left alone.\n` : "")
-		+ "\nNothing is changed unless you choose Yes.";
+	let message = `Detached citations: ${citations.length}.\n\n`
+		+ `Relinkable to existing items: ${relink.length}.\n`
+		+ `Missing from the library and importable: ${missing.length}.\n`
+		+ (ambiguous.length ? `Ambiguous and left unchanged: ${ambiguous.length}.\n` : "")
+		+ "\nThese citations are currently rendered from embedded data. "
+		+ "Nothing is changed unless you choose Yes.";
 	let ps = Services.prompt;
 	let confirmed = ps.confirmEx(
 		Zotero.getMainWindow(),
@@ -1420,12 +1419,14 @@ Zotero.Integration.Session.prototype.auditDetachedCitations = async function () 
 		this._auditingDetached = false;
 	}
 
+	let count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 	ps.alert(
 		Zotero.getMainWindow(),
 		"CiteWell citation links",
-		`Relinked ${relinked} citation${relinked === 1 ? "" : "s"}; `
-			+ `imported ${imported} item${imported === 1 ? "" : "s"}; `
-			+ `${ambiguous.length} ambiguous; ${failed} failed.`
+		`Relinked ${count(relinked, "citation", "citations")}; `
+			+ `imported ${count(imported, "item", "items")}; `
+			+ `${count(ambiguous.length, "ambiguous citation", "ambiguous citations")}; `
+			+ `${count(failed, "failure", "failures")}.`
 	);
 };
 

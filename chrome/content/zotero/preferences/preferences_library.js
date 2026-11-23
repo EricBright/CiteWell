@@ -219,9 +219,9 @@ Zotero_Preferences.Library = {
 				currentStatus.textContent = "Empty — ready for a first import.";
 			}
 			else {
-				currentStatus.textContent = `${this._count(this._current.regularItems ?? this._current.items)} items, `
-					+ `${this._count(this._current.collections)} collections, `
-					+ `${this._count(this._current.savedSearches)} saved searches.`;
+				currentStatus.textContent = `${this._plural(this._current.regularItems ?? this._current.items, "item", "items")}, `
+					+ `${this._plural(this._current.collections, "collection", "collections")}, `
+					+ `${this._plural(this._current.savedSearches, "saved search", "saved searches")}.`;
 			}
 		}
 		var target = this._el("library-import-target");
@@ -232,8 +232,8 @@ Zotero_Preferences.Library = {
 			}
 			else {
 				target.textContent = `Adding to the current CiteWell library: `
-					+ `${this._count(this._current.regularItems ?? this._current.items)} items, `
-					+ `${this._count(this._current.collections)} collections. `
+					+ `${this._plural(this._current.regularItems ?? this._current.items, "item", "items")}, `
+					+ `${this._plural(this._current.collections, "collection", "collections")}. `
 					+ "Merge adds to it; Replace swaps it for the selected library and keeps the "
 					+ "previous one as a restore point.";
 			}
@@ -405,11 +405,11 @@ Zotero_Preferences.Library = {
 			this._inspected = info;
 
 			var summary = [
-				`${this._count(info.regularItems ?? info.items)} items`,
-				`${this._count(info.collections)} collections`,
-				`${this._count(info.notes)} notes`,
-				`${this._count(info.attachments)} attachments`,
-				`${this._count(info.annotations)} annotations`,
+				this._plural(info.regularItems ?? info.items, "item", "items"),
+				this._plural(info.collections, "collection", "collections"),
+				this._plural(info.notes, "note", "notes"),
+				this._plural(info.attachments, "attachment", "attachments"),
+				this._plural(info.annotations, "annotation", "annotations"),
 			].join(" · ");
 			summary += ` · ${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}`;
 			summary += ` · schema ${info.schemaVersion ?? "unknown"}`;
@@ -505,18 +505,20 @@ Zotero_Preferences.Library = {
 		var text;
 		if (replace) {
 			text = `Replace the current CiteWell library with\n\n${candidate.path}\n\n`
-				+ `Current: ${this._count(this._current?.items)} items, `
-				+ `${this._count(this._current?.collections)} collections, `
-				+ `${this._count(this._current?.savedSearches)} saved searches.\n\n`
-				+ `Zotero: ${this._count(info.items)} items, ${this._count(info.collections)} collections, `
-				+ `${this._count(info.attachments)} attachments `
+				+ `Current: ${this._plural(this._current?.items, "item", "items")}, `
+				+ `${this._plural(this._current?.collections, "collection", "collections")}, `
+				+ `${this._plural(this._current?.savedSearches, "saved search", "saved searches")}.\n\n`
+				+ `Zotero: ${this._plural(info.items, "item", "items")}, `
+				+ `${this._plural(info.collections, "collection", "collections")}, `
+				+ `${this._plural(info.attachments, "attachment", "attachments")} `
 				+ `(${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}).\n\n`
 				+ "The current library will be kept as a restore point. Zotero is not modified.";
 		}
 		else {
 			text = `Import the Zotero library at\n\n${candidate.path}\n\n`
-				+ `${this._count(info.items)} items, ${this._count(info.collections)} collections, `
-				+ `${this._count(info.attachments)} attachments `
+				+ `${this._plural(info.items, "item", "items")}, `
+				+ `${this._plural(info.collections, "collection", "collections")}, `
+				+ `${this._plural(info.attachments, "attachment", "attachments")} `
 				+ `(${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}).\n\n`
 				+ "CiteWell will copy the library, restart once, and leave Zotero untouched.";
 		}
@@ -573,14 +575,14 @@ Zotero_Preferences.Library = {
 		var candidate = this._selected;
 		var info = this._inspected;
 		var text = `Merge the Zotero library at\n\n${candidate.path}\n\n`
-			+ `CiteWell: ${this._count(this._current?.regularItems ?? this._current?.items)} items, `
-			+ `${this._count(this._current?.collections)} collections.\n\n`
-			+ `Zotero: ${this._count(info.regularItems ?? info.items)} items, `
-			+ `${this._count(info.collections)} collections, `
-			+ `${this._count(info.notes)} notes.\n\n`
+			+ `CiteWell: ${this._plural(this._current?.regularItems ?? this._current?.items, "item", "items")}, `
+			+ `${this._plural(this._current?.collections, "collection", "collections")}.\n\n`
+			+ `Zotero: ${this._plural(info.regularItems ?? info.items, "item", "items")}, `
+			+ `${this._plural(info.collections, "collection", "collections")}, `
+			+ `${this._plural(info.notes, "note", "notes")}.\n\n`
 			+ "Items, collections and notes will be added to the current library. "
-			+ `${this._count(info.attachments)} attachments and `
-			+ `${this._count(info.annotations)} annotations are not imported yet. `
+			+ `${this._plural(info.attachments, "attachment", "attachments")} and `
+			+ `${this._plural(info.annotations, "annotation", "annotations")} are not imported yet. `
 			+ "A database backup is kept; Zotero is not modified.";
 		var ps = Services.prompt;
 		if (ps.confirmEx(window, "Merge Zotero library", text,
@@ -612,9 +614,9 @@ Zotero_Preferences.Library = {
 				onProgress: report,
 			});
 			this._el("library-progress").hidden = true;
-			var summary = `Merged ${this._count(result.items)} items, `
-				+ `${this._count(result.collections)} collections and `
-				+ `${this._count(result.notes)} notes into the current library.`;
+			var summary = `Merged ${this._plural(result.items, "item", "items")}, `
+				+ `${this._plural(result.collections, "collection", "collections")} and `
+				+ `${this._plural(result.notes, "note", "notes")} into the current library.`;
 			this._setStatus(summary, false, true);
 			progressRow.setProgress(100);
 			progressRow.setText(summary);
@@ -760,8 +762,8 @@ Zotero_Preferences.Library = {
 
 			let counts = backup.manifest?.replacedCounts;
 			if (counts) {
-				text += ` · ${this._count(counts.items)} items, `
-					+ `${this._count(counts.collections)} collections`;
+				text += ` · ${this._plural(counts.items, "item", "items")}, `
+					+ `${this._plural(counts.collections, "collection", "collections")}`;
 			}
 			else {
 				text += " · contents not recorded";
@@ -811,13 +813,14 @@ Zotero_Preferences.Library = {
 
 		var current = this._current || { items: 0, collections: 0, empty: true };
 		var text = `Restore the library from ${when}?\n\n`
-			+ `Restore point: ${this._count(info.items)} items, `
-			+ `${this._count(info.collections)} collections, `
-			+ `${this._count(info.notes)} notes `
+			+ `Restore point: ${this._plural(info.items, "item", "items")}, `
+			+ `${this._plural(info.collections, "collection", "collections")}, `
+			+ `${this._plural(info.notes, "note", "notes")} `
 			+ `(${this._formatBytes((info.dbSize || 0) + (info.storageSize || 0))}).\n\n`
 			+ `Current library: ${current.empty
 				? "empty"
-				: `${this._count(current.items)} items, ${this._count(current.collections)} collections`}.\n\n`
+				: `${this._plural(current.items, "item", "items")}, `
+					+ `${this._plural(current.collections, "collection", "collections")}`}.\n\n`
 			+ "The current library will be kept as a new restore point. "
 			+ "CiteWell will restart, and Zotero is never affected.";
 		if (ps.confirmEx(window, "Restore library", text, ps.STD_YES_NO_BUTTONS,
@@ -891,14 +894,18 @@ Zotero_Preferences.Library = {
 		var verb = result.mode === "replace" ? "Replaced the current library with"
 			: result.mode === "merge" ? "Merged into the current library:"
 			: "Imported";
-		element.textContent = `${verb} ${this._count(counts.items)} items, `
-			+ `${this._count(counts.collections)} collections and `
-			+ `${this._count(counts.attachments)} attachments${when}. `
+		element.textContent = `${verb} ${this._plural(counts.items, "item", "items")}, `
+			+ `${this._plural(counts.collections, "collection", "collections")} and `
+			+ `${this._plural(counts.attachments, "attachment", "attachments")}${when}. `
 			+ `Source fingerprint unchanged. Restore point: ${result.backup}`;
 	},
 
 	_count: function (value) {
 		return value === null || value === undefined ? "?" : Number(value).toLocaleString();
+	},
+
+	_plural: function (value, one, many) {
+		return `${this._count(value)} ${Number(value) === 1 ? one : many}`;
 	},
 
 	_formatBytes: function (bytes) {
