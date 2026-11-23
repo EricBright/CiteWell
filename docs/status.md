@@ -58,11 +58,21 @@ plan.
 - Tests: `importTest.js` 13/13 (key preservation, a forced key collision, alias lookup and
   chain/cycle) and `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
 - Test AppImage: `~/AppImages/citewell-writer-test.appimage`, version
-  `10.0.9.SOURCE.0fb0df6ec`, sha256
-  `e1d5d586d09634192ea0d3389b4f9db6bf3aed70126289ded310a6e4e7c99317`, 125,917,688 bytes.
+  `10.0.9.SOURCE.a859d6646`, sha256
+  `665bee0a6e06f8d774372be459b0c6c6a39bdd6b7a222882339ae482dc8f7167`, 125,917,688 bytes.
   The stable `~/AppImages/citewell.appimage` is unchanged (`d6e648d81`). Install or repair the
   LibreOffice extension from this test build before testing a document; the old OXT still writes
   `CITEWELL_` marks.
+- Real-document check: a Zotero-created ODT touched by CiteWell keeps the `ZOTERO_` citation and
+  bibliography markers, the four original citation payloads (except session-local `id`), their
+  `users/17770/items/…` URIs and the bibliography. A fifth citation was added and is library-linked.
+  The style change seen in the sample was a deliberate user toggle; `zotero-version` was being
+  stamped with the CiteWell version and is now preserved from the source document.
+- Important limitation: the four original citation keys are absent from the current CiteWell
+  library, so CiteWell renders them from embedded `itemData`; they are not linked to library items.
+  A refresh can still format them, but library metadata edits will not reach them. Phase 4 needs a
+  visible “embedded/detached citation” report and a DOI/title relink path (or an alias created by
+  the merge that produced the destination items).
 - Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
   alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
 - Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge
