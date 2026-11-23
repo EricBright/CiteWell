@@ -59,8 +59,8 @@ plan.
 - Tests: `importTest.js` 16/16, including attachment file content, parent mapping, skipped-duplicate
   attachment policy, annotation fields, saved-search definitions, report scanning and checkpoint
   persistence. Test AppImage:
-  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.2508139d2`, sha256
-  `eb99e59d5f8a85deb0eb3bdb84025441b65a1e5e5dde2fb4657cd6d6a047474c`, 125,925,880 bytes.
+  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.74c10b0fb`, sha256
+  `4856a432bf9fc4726948ba3bcc038b3612e121223a08bd52ecad5a2133838e37`, 125,929,976 bytes.
   Release builds and the stable AppImage are unchanged.
 - Resumable merge batching is implemented: the item pass writes a checkpoint, and a rerun with the
   same source hash resumes the child passes without repeating items. Child creation is idempotent
