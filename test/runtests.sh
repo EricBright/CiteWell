@@ -176,13 +176,11 @@ fi
 # Clean up on exit
 trap "{ rm -rf \"$TEMPDIR\"; }" EXIT
 
-# Check if build watch process is running
-# If not, run now
-if [[ -z "$CI" ]] && ! ps | grep js-build/build.js | grep -v grep > /dev/null; then
+if [[ -z "$CI" ]]; then
 	echo
-	echo "Running JS build process"
+	echo "Running build process"
 	cd "$ROOT_DIR"
-	NODE_OPTIONS=--openssl-legacy-provider node js-build/build.js || exit $?
+	cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- build || exit $?
 	echo
 fi
 

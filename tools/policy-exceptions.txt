@@ -11,3 +11,14 @@ D42 chrome/content/zotero/components/editable/content.js
 D42 chrome/content/zotero/components/progressQueueTable.js
 D42 chrome/content/zotero/itemTreeColumns.js
 D42 chrome/content/zotero/progressQueueDialog.js
+D41 resource/ace/ace.js
+D41 resource/ace/ext-searchbox.js
+D41 resource/ace/keybinding-emacs.js
+D41 resource/ace/keybinding-vim.js
+D41 resource/ace/mode-javascript.js
+D41 resource/ace/theme-chrome.js
+D41 resource/ace/theme-monokai.js
+D41 resource/ace/worker-javascript.js
+D41 resource/csl-validator-wasm/csl-validator.mjs
+D41 resource/csl-validator-wasm/rnv.mjs
+D41 resource/csl-validator-wasm/worker.mjs

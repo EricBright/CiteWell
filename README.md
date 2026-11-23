@@ -21,8 +21,8 @@ Work in progress and scope: [roadmap.md](roadmap.md).
 
 ## Quick start
 
-Requirements: Node 18+, [Git LFS](https://git-lfs.com/), and the tools in
-[app/README.md](app/README.md). npm is retired (D32); a fresh clone cannot install the frozen tree.
+Requirements: Rust, [Git LFS](https://git-lfs.com/), and the tools in
+[app/README.md](app/README.md). Node is not needed to build; npm is retired (D32).
 
 ```bash
 git clone --recursive https://github.com/EricBright/CiteWell
@@ -30,8 +30,9 @@ cd CiteWell
 app/scripts/build_and_run      # build and launch with debug output
 ```
 
-Run `node js-build/watch.js` to rebuild JS and Sass on save, then `app/scripts/build_and_run -n`
-to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `app/staging/`.
+No JS watcher; rerun `cargo run --manifest-path tools/Cargo.toml -p xtask -- build`
+after source changes. Tests run in a built app: `test/runtests.sh`. Output lands in
+`app/staging/`.
 
 ## Repository map
 
@@ -40,7 +41,7 @@ to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `
 | `chrome/` | Application UI and XPCOM |
 | `resource/` | Bundled runtime resources |
 | `scss/` | Styles, compiled to CSS during the build |
-| `js-build/` | Legacy JS build pipeline |
+| `js-build/` | Legacy localization helpers; build is in `tools/xtask` |
 | `app/` | Packaging and platform runtimes |
 | `test/` | Tests and support code |
 | `docs/` | On-demand documentation (`research/` is archival) |

@@ -47,15 +47,12 @@ next to `zotero-bin`; a source build finds the debug or release copy under `tool
 
 ## A clean rebuild
 
-Trashing `build/` alone is not enough: build signatures live in `.signatures.json` at the
-repository root, so the JS/Sass tasks conclude that missing outputs are current. The symptom is
-a bundle that starts but whose layout is broken (no platform CSS) and whose notes do not open (no
-note editor). `xtask` now refuses to package a staged build missing either asset; the fix is
-(the removals go to Trash, never `rm` — D26):
+The build is `xtask build`; there are no Node signatures to become stale. Trash `build/` for a
+clean rebuild (the removals go to Trash, never `rm` — D26):
 
 ```bash
-gio trash -f build .signatures.json
-node js-build/build.js
+gio trash -f build
+cargo run --manifest-path tools/Cargo.toml -p xtask -- build
 app/scripts/dir_build -p l
 ```
 

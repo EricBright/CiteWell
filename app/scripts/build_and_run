@@ -55,16 +55,11 @@ if [ $NO_REBUILD -eq 0 ]; then
 		PARAMS="$PARAMS -f"
 	fi
 
-	# Check if build watch is running
-	# If not, run now
-	if ! ps u | grep js-build/build.js | grep -v grep > /dev/null; then
-		echo "Running JS build process"
-		echo
-		cd $ROOT_DIR
-		# TEMP: --openssl-legacy-provider avoids a build error in pdf.js
-		NODE_OPTIONS=--openssl-legacy-provider node js-build/build.js
-		echo
-	fi
+	echo "Running build process"
+	echo
+	cd "$ROOT_DIR"
+	cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- build
+	echo
 
 	"$SCRIPT_DIR/dir_build" $PARAMS
 fi

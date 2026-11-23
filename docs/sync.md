@@ -77,8 +77,8 @@ moves to the next ESR, or when a new ESR patch needs the same treatment:
 git log --oneline main --grep=fx153          # the port series to adapt for the new branch
 # bump GECKO_VERSION_LINUX and application.ini Min/Max
 app/scripts/fetch_xulrunner -p l -a x86_64   # downloads and patches the runtime in place
-rm -rf build .signatures.json
-node js-build/build.js
+gio trash -f build
+cargo run --manifest-path tools/Cargo.toml -p xtask -- build
 app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```

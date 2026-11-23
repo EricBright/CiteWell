@@ -9,9 +9,8 @@ Zotero is a Firefox-based desktop research management application. It runs as a 
 ## Build & Development Commands
 
 ```bash
-npm install              # Install dependencies
-npm run build            # Full build (Babel transpile JS/JSX, compile SCSS, browserify, symlink)
-npm run clean-build      # Clean build output and rebuild
+cargo run --manifest-path tools/Cargo.toml -p xtask -- build
+# Or: gio trash -f build, then the same command for a clean rebuild.
 ```
 
 ### Running Tests
@@ -33,7 +32,7 @@ test/runtests.sh -d 5              # Enable debug logging (level 1-5; default is
 
 Tests use Mocha + Chai (assert style) + Sinon. Test files live in `test/tests/` and follow the naming convention `<module>Test.js`. Test helpers are in `test/content/support.js`.
 
-The test runner automatically triggers `npm run build` if the watch process isn't running, so it's not necessary to manually run a build before running tests.
+The test runner automatically runs `xtask build` before staging, so it is not necessary to build manually first.
 
 Tips:
 
@@ -85,14 +84,14 @@ Several features are developed in separate repos and included as Git submodules:
 - `chrome/content/zotero/xpcom/translate/` -- Translation framework
 - `resource/SingleFile/` -- Web page archiving
 
-### Build System (`js-build/`)
+### Build System (`xtask`)
 
-Custom Node.js build system (not Webpack). `js-build/config.js` defines what gets built:
-- **JS/JSX files** in `chrome/`, `components/`, `defaults/`, `test/` are transpiled via Babel (React JSX, CommonJS modules)
-- **SCSS files** in `scss/` and `chrome/skin/` are compiled with Dart Sass
-- **Browserify** bundles select npm packages (react-select, sinon, url) for use in the XUL environment
-- **Symlinks** connect source files and submodules into the `build/` directory
+The build is Rust: `cargo run --manifest-path tools/Cargo.toml -p xtask -- build`.
+- **JS files** in `chrome/`, `components/`, `defaults/`, `test/` are copied with the vendored-resource patches applied
+- **SCSS files** in `scss/` are compiled by grass, a build-only Rust dependency
+- **Symlinks** connect source files and submodules into `build/`
 - The built app reads from `build/`, not directly from source
+- Node is only for optional ESLint and FTL/localization helpers
 
 ## Code Style
 

@@ -853,6 +853,29 @@ code. They remain in the Security tab and should be triaged separately. A fresh 
 from “Run workflow” before a release. Restoring the `push`/`pull_request` triggers reverses this
 decision.
 
+## D45 — The build runner is xtask, not Node
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes
+
+`xtask build` now performs the whole pre-staging build: copy application JavaScript and apply the
+five vendored-resource patches, copy test data, create the source symlinks, and compile Sass. The
+Node `js-build` build files, `.signatures.json` cache and file watcher are gone. `build_and_run` and
+`test/runtests.sh` call `cargo run -p xtask -- build`; they no longer invoke Node.
+
+The `resource/` symlinks into `node_modules` were replaced by vendored files (React, ReactDOM,
+PropTypes, pako, classnames, jspath, react-virtualized, react-autosuggest, react-intl, Monaco,
+Ace's eight used files, the CSL validator and the citeproc WASM). The build no longer reads
+`node_modules`. A clean `xtask build` produced the same 442 JS files, 91 test-data files, 2561
+symlinks and 21 Sass entries as the Node build; a recursive diff against the Node output was empty
+after the patch indentation was matched.
+
+`js-build/` retains only the Node FTL-to-JSON and localize helpers, and `node_modules` remains for
+those and for optional ESLint. Neither is needed to build. Rejected: keeping the Node builder — it
+would keep a runtime dependency for no capability. Rejected: porting the watcher now — rerunning the
+fast build is sufficient until a Rust watcher is worth adding. Rejected: deleting `node_modules`
+before the FTL and lint workflows have replacements — that would remove development checks, not
+build capability.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

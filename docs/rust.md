@@ -55,17 +55,18 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 4 Sass replacement complete 2026-11-23; only the Node runner remains.** D41–D43
-govern the order: delete the need before choosing a replacement.
+Status: **phase 5 build runner ported 2026-11-23; the build is Node-free.** D41–D45 govern the
+order: delete the need before choosing a replacement. FTL/localization and optional lint still
+use Node; neither is needed to build.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
 | Surface | Actual use | Candidate |
 |---|---|---|
-| Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `js.js` | Done; do not reintroduce a JSX/ESM compiler |
+| Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `tools/xtask/src/build.rs` | Done; do not reintroduce a JSX/ESM compiler |
 | Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
 | Sass | **Replaced by grass 0.13.4** via `xtask sass`: 165 files, 21 entries, 304 `@import`s, 41 mixins, 9 functions and 57 control-flow blocks; compressed CSS, no source maps | Done; grass is build-only |
-| Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
+| Node runner | **Replaced by `xtask build`**: JS copy/patch, test-data copy, symlinks and Sass. No signatures or watcher. FTL/localization helpers remain Node. | Done for the build; FTL/lint are development-only |
 
 This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
 sites and should use the URL API. The Sinon bundle is test-only. Babel is gone; Sass is now the only
@@ -79,8 +80,8 @@ Phases:
 3. **JS decision.** Done: convert JSX/ESM and delete Babel (D42).
 4. **Sass decision.** Done: keep Sass and compile it with grass (D43). Native CSS was rejected on
    source size and feature use; source maps were dropped because the app does not consume them.
-5. **Orchestration.** Port glob/copy/symlink/signatures/watch/FTL to xtask; delete `js-build/` and
-   `node_modules` only when every output and test matches.
+5. **Orchestration.** The build runner is ported to `xtask build`; the watcher is removed and the
+   FTL/localization helpers remain development-only Node. The build no longer reads `node_modules`.
 
 Exit: no Node runtime or npm tree is needed to build; bundles produced by Rust tools pass the same
 tests. React/React DOM replacement is explicitly outside R15.
@@ -119,18 +120,18 @@ host plus Timer module). These are source rewrites, not compiler features.
   `node_modules/sinon/pkg/sinon-no-sourcemaps.js` (1,511,175 bytes; SHA-256
   `9dec805edbe8b238565a05a73a3bc54f8001cdb44734e754042e49290bf6d209`). It is test-only.
 - `package.json` and `package-lock.json` still name the frozen npm packages, and `node_modules`
-  still exists. They are no longer used by the build; removing them belongs to phase 5, after Babel,
-  Sass and the runner are replaced. Do not run npm.
+  still exists for the FTL/localization helpers and optional ESLint. The build no longer reads it.
+  Do not run npm to build.
 
 Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new URL cases),
 `importTest.js` 17/17, `tagSelectorTest.js` 29/29, and `attachmentReadObserverTest.js` 8/8. A clean
-`node js-build/build.js` completed in 5.2 s with no browserify task, and the staging build succeeded.
+build completed with no browserify task, and the staging build succeeded.
 
 ### Phase 3 JS rewrite (2026-11-23)
 
-- **Babel is gone.** `.babelrc` and `js-build/babel-worker.js` are deleted. `js-build/js.js` now
-  copies sources and applies the five vendored-resource patches; it does not parse or transform
-  application JavaScript. ESLint's parser no longer needs a Babel config.
+- **Babel is gone.** `.babelrc` and `js-build/babel-worker.js` are deleted. `xtask build` copies
+  sources and applies the five vendored-resource patches; it does not parse or transform application
+  JavaScript. ESLint's parser no longer needs a Babel config.
 - **45 files were touched.** The 26 `.jsx` files were renamed to `.js`; 30 files contained JSX
   (126 elements, 393 attributes) and 28 files contained ESM (about 70 imports and 11 exports). The
   overlap is why the file count is lower than 30 + 28.
@@ -148,14 +149,14 @@ Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new U
   `virtualized-tableTest`, `libraryTreeTest`. A broader window suite passed 190/201; the remaining
   failures are in PDF/annotation paths already removed by D30, existing context-menu/focus
   expectations, and account-preference setup, not JSX/ESM syntax or module resolution.
-- A clean `node js-build/build.js` processed 442 files in 3.7 s with no Babel task; the staging
-  build succeeded. The frozen Babel npm packages remain until phase 5.
+- A clean `xtask build` processes 442 JS files, 91 test-data files, 2561 symlinks and 21 Sass
+  entries. The frozen Babel npm packages remain for development tooling only.
 
 ### Phase 4 Sass replacement (2026-11-23)
 
 - **Node Sass is gone.** `xtask sass` compiles `scss/` with grass 0.13.4 and writes the same
-  compressed CSS paths, including the platform variants. `js-build/sass.js` is only a wrapper
-  around that command. Grass is a build-only Rust dependency; it is not shipped.
+  compressed CSS paths, including the platform variants. Grass is a build-only Rust dependency; it
+  is not shipped.
 - **All 21 entry sheets compile without errors.** The spike compared every entry against the Node
   Sass output: selectors and declarations match; remaining differences are formatting and
   equivalent color notation (`rgb()`/hex, `transparent`/`rgba(0,0,0,0)`).
@@ -164,9 +165,27 @@ Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new U
   project, not a build-tool deletion.
 - **Source maps are dropped.** The app does not consume them; they were development-only, and
   grass has no source-map API. `xtask sass` removes stale `.css.map` files for CSS it writes.
-- **Tests:** `cargo check -p xtask`; `node js-build/build.js` compiles 442 JS files and 21 Sass
-  entries; staging and app/UI tests remain the oracle. No screenshot/pixel-diff suite exists, so
-  the CSS parity check is structural (selectors/declarations), not visual.
+- **Tests:** `cargo check -p xtask`; `xtask build` compiles 442 JS files and 21 Sass entries;
+  staging and app/UI tests remain the oracle. No screenshot/pixel-diff suite exists, so the CSS
+  parity check is structural (selectors/declarations), not visual.
+
+
+### Phase 5 build runner (2026-11-23)
+
+- **`xtask build` is the whole pre-staging build.** It copies 442 JS files and applies the five
+  source patches, copies 91 test-data files, creates 2561 symlinks (including the `styles`,
+  `translators` and `translate/src` directory links), and calls `xtask sass`. A recursive diff
+  against the previous Node output was empty.
+- **`resource/` no longer points into `node_modules`.** React, ReactDOM, PropTypes, pako,
+  classnames, jspath, react-virtualized, react-autosuggest, react-intl, Monaco, the eight used Ace
+  files, the CSL validator and the citeproc WASM are vendored under D41. A clean build does not read
+  `node_modules`.
+- **Node invocations are gone from the build.** `build_and_run` and `test/runtests.sh` call
+  `cargo run -p xtask -- build`; `.signatures.json` and the watcher are gone. `js-build/` retains only
+  the FTL-to-JSON/localize helpers, and `node_modules` remains for those and optional ESLint.
+- **Tests:** the build output matched the Node build exactly; the 85/85 utilities suite and the
+  broader app/UI checks remain the behavioral oracle. The watcher was not ported: rerunning the
+  fast build is the replacement.
 
 
 

@@ -28,7 +28,7 @@ push target. The product branch may diverge without limit.
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
-| Docs | README index, Rust docs gate, D1–D44 |
+| Docs | README index, Rust docs gate, D1–D45 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
 Build note: the settings-descriptor work is now included in the current AppImage built for the
@@ -58,9 +58,10 @@ plan.
   files were rewritten to CommonJS and `h()` under D42. Phase 4 is done: grass 0.13.4 compiles all
   21 Sass entries through `xtask sass`; Node Sass and CSS source maps are gone (D43)
   ([rust.md](rust.md#phase-4-sass-replacement-2026-11-23)).
-- Order: only the Node runner/xtask orchestration remains: FTL conversion, glob/copy/symlink,
-  signatures, watch and the final `js-build/`/`node_modules` removal. React replacement is outside
-  R15.
+- The build runner is ported: `xtask build` now does JS copy/patch, test-data copy, symlinks and
+  Sass; `build_and_run` and the test runner no longer invoke Node, and `resource/` no longer points
+  into `node_modules` (D45). FTL/localization helpers and optional ESLint still use Node; neither is
+  needed to build. React replacement is outside R15.
 - Branches: `citewell` contains the attachments/resume work and phases 2–4; the stable AppImage
   reports `10.0.9.SOURCE.5f4a18b58`. The previous stable is `3fa6e775d`; the older test build is
   `74c10b0fb` (sha256 `4856a432…`).
@@ -230,12 +231,12 @@ Fetch the Gecko runtime once per version (gitignored):
 app/scripts/fetch_xulrunner -p l -a x86_64
 ```
 
-Build. Use the existing Node tree; **do not run npm** (D32). Clean rebuild after assets or runtime
-changes, trashing `build/` and `.signatures.json` with `gio trash`, never `rm` (D26):
+Build. Node is no longer needed; **do not run npm** (D32). Clean rebuild after assets or runtime
+changes, trashing `build/` with `gio trash`, never `rm` (D26):
 
 ```bash
-gio trash -f build .signatures.json
-node js-build/build.js
+gio trash -f build
+cargo run --manifest-path tools/Cargo.toml -p xtask -- build
 app/scripts/dir_build -p l
 cargo run --manifest-path tools/Cargo.toml -p xtask -- appimage
 ```
@@ -275,13 +276,13 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 | Pitfall | Handling |
 |---|---|
-| Trashing `build/` without `.signatures.json` | Sass skips everything and the bundle loses platform CSS. `xtask` refuses to package that now; trash both |
+| Stale build outputs | `xtask build` overwrites expected files; trash `build/` when a source file is removed |
 | Putting working files under `build/` | Zotero zips `build/` into `omni.ja`; one bundle reached 532 MB. Scratch lives in `tmp/` |
 | Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
 | `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
 | `-datadir "~/…"` | Quoted `~` is not expanded; use `"$HOME/…"` |
 | `-datadir` with no value | Gecko ignored it and opened `~/Zotero`; the Rust `AppRun` now exits 2 |
-| XHTML changes not copied by a test build | `node js-build/build.js` then `app/scripts/dir_build -p l` before trusting the staged app |
+| XHTML changes not copied by a test build | `cargo run ... -p xtask -- build` then `app/scripts/dir_build -p l` before trusting the staged app |
 | `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |
 | Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
 | Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |

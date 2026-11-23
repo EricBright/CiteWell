@@ -10,6 +10,8 @@
 //! packaging steps explicit, checkable and reproducible — and to keep the
 //! CiteWell-specific logic out of upstream's shell scripts.
 
+mod build;
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -21,6 +23,7 @@ usage: cargo run -p xtask -- <command>
 commands:
   appimage    assemble and package the staged Linux build as an AppImage
   connectors  build the Firefox connector and package it as an XPI
+  build       copy JS/test data, apply patches, symlink, and compile Sass
   sass        compile scss/ into build/ (replaces Node Sass)
   validate-settings  validate resource/settings/panes.json
   help        show this message
@@ -30,6 +33,7 @@ fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("appimage") => appimage(),
+        Some("build") => build::build(),
         Some("connectors") => connectors(),
         Some("sass") => sass(),
         Some("validate-settings") => validate_settings(),
@@ -57,7 +61,7 @@ fn sass() -> ExitCode {
     }
 }
 
-fn sass_inner() -> Result<usize, String> {
+pub(crate) fn sass_inner() -> Result<usize, String> {
     let root = repo_root();
     let source_root = root.join("scss");
     let build_root = root.join("build");
@@ -751,7 +755,7 @@ fn run(command: &mut Command, what: &str) -> Result<bool, String> {
     Ok(status.success())
 }
 
-fn repo_root() -> PathBuf {
+pub(crate) fn repo_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
         .nth(2)
@@ -800,7 +804,7 @@ fn appimage_inner() -> Result<PathBuf, String> {
             return Err(format!(
                 "staged build is incomplete (missing {required}).\n\
                  Rebuild from scratch:\n  gio trash -f build .signatures.json\n  \
-                 node js-build/build.js\n  app/scripts/dir_build -p l"
+                 cargo run --manifest-path tools/Cargo.toml -p xtask -- build\n  app/scripts/dir_build -p l"
             ));
         }
     }

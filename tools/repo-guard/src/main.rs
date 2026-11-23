@@ -58,6 +58,18 @@ fn main() -> ExitCode {
     };
 
     for path in &changed {
+        if path == "package.json" {
+            match package_scripts_only(&mode) {
+                Ok(true) => continue,
+                Ok(false) => {
+                    problems.push(format!(
+                        "{path}: only the scripts block may change; dependencies are frozen (D32)"
+                    ));
+                    continue;
+                }
+                Err(error) => return fail(&error),
+            }
+        }
         if let Some(reason) = forbidden_path(path) {
             problems.push(format!("{path}: {reason}"));
         }
@@ -79,7 +91,8 @@ fn main() -> ExitCode {
     };
     for path in added {
         if let Some(language) = code_language(&path) {
-            let decision = exceptions.iter()
+            let decision = exceptions
+                .iter()
                 .find(|(_, allowed)| allowed == &path)
                 .map(|(decision, _)| decision.clone());
             match decision {
@@ -105,7 +118,9 @@ fn main() -> ExitCode {
         Ok(_) => problems.push(format!(
             "{NPM_CONFIG}: must set offline=true and an unreachable loopback registry (D32)"
         )),
-        Err(_) => problems.push(format!("{NPM_CONFIG}: missing or unreadable; npm must fail closed (D32)")),
+        Err(_) => problems.push(format!(
+            "{NPM_CONFIG}: missing or unreadable; npm must fail closed (D32)"
+        )),
     }
 
     if problems.is_empty() {
@@ -233,6 +248,67 @@ fn git_lines(args: &[&str]) -> Result<Vec<String>, String> {
         .collect())
 }
 
+fn package_scripts_only(mode: &Mode) -> Result<bool, String> {
+    let (old_spec, new_spec) = match mode {
+        Mode::Staged => ("HEAD:package.json".to_string(), ":package.json".to_string()),
+        Mode::Range(range) => {
+            let (base, head) = if let Some((base, head)) = range.split_once("...") {
+                (base, head)
+            } else if let Some((base, head)) = range.split_once("..") {
+                (base, head)
+            } else {
+                return Err(format!("invalid range: {range}"));
+            };
+            (
+                format!("{base}:package.json"),
+                format!("{head}:package.json"),
+            )
+        }
+    };
+    let old = git_show(&old_spec)?;
+    let new = git_show(&new_spec)?;
+    Ok(outside_scripts(&old) == outside_scripts(&new))
+}
+
+fn git_show(spec: &str) -> Result<String, String> {
+    let output = Command::new("git")
+        .args(["show", spec])
+        .output()
+        .map_err(|error| format!("could not run git show: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "git show {spec} failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+fn outside_scripts(text: &str) -> String {
+    let mut result = String::new();
+    let mut in_scripts = false;
+    let mut depth = 0i32;
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if !in_scripts && trimmed.starts_with("\"scripts\"") {
+            in_scripts = true;
+            depth = line.matches('{').count() as i32 - line.matches('}').count() as i32;
+            continue;
+        }
+        if in_scripts {
+            depth += line.matches('{').count() as i32;
+            depth -= line.matches('}').count() as i32;
+            if depth <= 0 {
+                in_scripts = false;
+            }
+            continue;
+        }
+        result.push_str(trimmed);
+        result.push('\n');
+    }
+    result
+}
+
 fn forbidden_path(path: &str) -> Option<&'static str> {
     if path == "package.json" {
         return Some("package changes are frozen; consult the owner (D32)");
@@ -240,8 +316,13 @@ fn forbidden_path(path: &str) -> Option<&'static str> {
     if LOCKFILES.contains(&path) {
         return Some("lockfile changes are frozen; npm is retired (D32)");
     }
-    if path == "node_modules" || path.starts_with("node_modules/") || path.contains("/node_modules/") {
-        return Some("tracked node_modules are forbidden; the dependency tree stays untracked (D32)");
+    if path == "node_modules"
+        || path.starts_with("node_modules/")
+        || path.contains("/node_modules/")
+    {
+        return Some(
+            "tracked node_modules are forbidden; the dependency tree stays untracked (D32)",
+        );
     }
     None
 }
@@ -262,7 +343,8 @@ fn npm_config_is_fail_closed(text: &str) -> bool {
         match key.trim() {
             "offline" => offline = value.eq_ignore_ascii_case("true"),
             "registry" => {
-                loopback = value.starts_with("http://127.0.0.1:") || value.starts_with("http://[::1]:");
+                loopback =
+                    value.starts_with("http://127.0.0.1:") || value.starts_with("http://[::1]:");
             }
             "ignore-scripts" => scripts = value.eq_ignore_ascii_case("true"),
             _ => {}
