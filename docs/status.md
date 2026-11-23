@@ -45,6 +45,20 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
+## Handoff 2026-11-23 (Dedup report)
+
+- New branch `dedup-report` from `citewell`, not merged. It implements Phase 3a only: duplicate
+  candidates are reported, never skipped or deleted.
+- After a merge, every source item is matched against items that existed before that merge, by
+  DOI/ISBN/PMID and then a unique title+year. Ambiguous matches are recorded as ambiguous.
+- The report is `identity/duplicates-<session>.json`; `library-import-result.json` carries
+  `duplicateReport` and `counts.duplicates`, and the merge completion line / Last import show the
+  count and path.
+- Tests: `importTest.js` 14/14, including DOI duplicate detection and report-file contents. The
+  merge still adds every source item, so the report is additive evidence, not cleanup.
+- Next: Phase 3b, an opt-in exact-identifier skip (with source collections still mapped and an
+  alias to the kept item), then reconsider interactive metadata merging.
+
 ## Handoff 2026-11-23 (Writer compatibility)
 
 - The `writer-compat` work is merged into `citewell` (D39: Zotero owns the Writer document format;
