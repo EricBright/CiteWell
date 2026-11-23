@@ -58,8 +58,8 @@ plan.
   current chain rather than deleting it.
 - Tests: `importTest.js` 15/15, including attachment file content, parent mapping, skipped-duplicate
   attachment policy, annotation fields, saved-search definitions and report scanning. Test AppImage:
-  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.51196d137`, sha256
-  `7a65be1ff049828b220d7e86fdb62f4c1996a699c1e2a4fd8b443a4a83aa0e25`, 125,921,784 bytes.
+  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.2508139d2`, sha256
+  `eb99e59d5f8a85deb0eb3bdb84025441b65a1e5e5dde2fb4657cd6d6a047474c`, 125,925,880 bytes.
   Release builds and the stable AppImage are unchanged.
 - Next: resumable merge batching (the remaining Phase 4 item), then R15. Imported annotations have
   no in-app viewer; the one-time export remains their only consumer.
