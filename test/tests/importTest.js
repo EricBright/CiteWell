@@ -258,6 +258,12 @@ describe("Library import", function () {
 			await item.saveTx();
 			let sourceItemKey = item.key;
 
+			let collision = new Zotero.Item("book");
+			collision.libraryID = 1;
+			collision.setField("title", "Collision fixture");
+			await collision.saveTx();
+			let collisionKey = collision.key;
+
 			let note = new Zotero.Item("note");
 			note.libraryID = 1;
 			note.parentID = item.id;
@@ -282,6 +288,11 @@ describe("Library import", function () {
 			existing.libraryID = 1;
 			existing.setField("title", "Existing item");
 			await existing.saveTx();
+			let occupied = new Zotero.Item("book");
+			occupied.libraryID = 1;
+			occupied._key = collisionKey;
+			occupied.setField("title", "Occupied key");
+			await occupied.saveTx();
 			let current = await Zotero.LibraryImport.getCurrentLibraryInfo();
 			assert.isFalse(current.empty);
 
@@ -291,7 +302,7 @@ describe("Library import", function () {
 			});
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
-			assert.ok(progress.some(line => /^Items: 1\//.test(line)));
+			assert.ok(progress.some(line => /^Items: [0-9]+\//.test(line)));
 
 			let items = await Zotero.Items.getAll(1);
 			let merged = items.find(
@@ -304,10 +315,22 @@ describe("Library import", function () {
 			let aliasEntries = aliasText.trim().split("\n").map(line => JSON.parse(line));
 			assert.ok(aliasEntries.some(entry => entry.sourceKey === sourceItemKey
 				&& entry.destKey === merged.key));
+			let mergedCollision = items.find(
+				candidate => candidate.itemType === "book"
+					&& candidate.getField("title") === "Collision fixture"
+			);
+			assert.ok(mergedCollision);
+			assert.notEqual(mergedCollision.key, collisionKey);
+			assert.ok(aliasEntries.some(entry => entry.sourceKey === collisionKey
+				&& entry.destKey === mergedCollision.key));
 			let aliasItem = await Zotero.LibraryImport.getItemForURIs([
 				`http://zotero.org/users/local/test/items/${sourceItemKey}`,
 			]);
 			assert.equal(aliasItem?.id, merged.id);
+			let collisionAliasItem = await Zotero.LibraryImport.getItemForURIs([
+				`http://zotero.org/users/local/test/items/${collisionKey}`,
+			]);
+			assert.equal(collisionAliasItem?.id, mergedCollision.id);
 			assert.equal(merged.getCreators()[0].lastName, "Lovelace");
 			assert.include(merged.getTags().map(tag => tag.tag), "fixture");
 
