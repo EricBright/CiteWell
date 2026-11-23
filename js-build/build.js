@@ -5,7 +5,7 @@ const getJS = require('./js');
 const getSass = require('./sass');
 const getSymlinks = require('./symlinks');
 const { formatDirsForMatcher, getSignatures, writeSignatures, cleanUp, onSuccess, onError} = require('./utils');
-const { dirs, symlinkDirs, copyDirs, symlinkFiles, jsFiles, scssFiles, ignoreMask } = require('./config');
+const { dirs, symlinkDirs, copyDirs, symlinkFiles, jsFiles, ignoreMask } = require('./config');
 
 if (require.main === module) {
 	(async () => {
@@ -27,7 +27,7 @@ if (require.main === module) {
 			const results = await Promise.all([
 				getCopy(copyDirs.map(d => `${d}/**`), { ignore: ignoreMask }, signatures),
 				getJS(jsFiles, { ignore: ignoreMask }, signatures),
-				...scssFiles.map(scf => getSass(scf, { ignore: ignoreMask }, signatures)),
+				getSass(),
 				getSymlinks(symlinks, { nodir: true, ignore: ignoreMask }, signatures),
 				getSymlinks(symlinkDirs, { ignore: ignoreMask }, signatures)
 			]);

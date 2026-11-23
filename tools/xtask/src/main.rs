@@ -21,6 +21,7 @@ usage: cargo run -p xtask -- <command>
 commands:
   appimage    assemble and package the staged Linux build as an AppImage
   connectors  build the Firefox connector and package it as an XPI
+  sass        compile scss/ into build/ (replaces Node Sass)
   validate-settings  validate resource/settings/panes.json
   help        show this message
 ";
@@ -30,6 +31,7 @@ fn main() -> ExitCode {
     match args.first().map(String::as_str) {
         Some("appimage") => appimage(),
         Some("connectors") => connectors(),
+        Some("sass") => sass(),
         Some("validate-settings") => validate_settings(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
@@ -40,6 +42,88 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn sass() -> ExitCode {
+    match sass_inner() {
+        Ok(count) => {
+            println!("sass: {count} files");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("xtask: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn sass_inner() -> Result<usize, String> {
+    let root = repo_root();
+    let source_root = root.join("scss");
+    let build_root = root.join("build");
+    let mut entries = Vec::new();
+    collect_scss_entries(&source_root, &mut entries)?;
+    entries.sort();
+
+    let count = entries.len();
+    let options = grass::Options::default().style(grass::OutputStyle::Compressed);
+    for source in entries {
+        let relative = source
+            .strip_prefix(&source_root)
+            .map_err(|e| format!("mapping {}: {e}", source.display()))?;
+        let stem = relative
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .ok_or_else(|| format!("non-UTF-8 Sass filename: {}", source.display()))?;
+
+        let (platform, stem) = match stem.rsplit_once('-') {
+            Some((name, platform @ ("win" | "mac" | "unix"))) => (Some(platform), name),
+            _ => (None, stem),
+        };
+        let dest = if let Some(platform) = platform {
+            build_root
+                .join("chrome/content/zotero-platform")
+                .join(platform)
+                .join(relative.parent().unwrap_or(Path::new("")))
+                .join(format!("{stem}.css"))
+        } else {
+            build_root
+                .join("chrome/skin/default/zotero")
+                .join(relative.parent().unwrap_or(Path::new("")))
+                .join(format!("{stem}.css"))
+        };
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("creating {}: {e}", parent.display()))?;
+        }
+        let css = grass::from_path(&source, &options)
+            .map_err(|e| format!("compiling {}: {e}", source.display()))?;
+        fs::write(&dest, css).map_err(|e| format!("writing {}: {e}", dest.display()))?;
+        // Source maps were development-only and are not consumed by the app.
+        let map = PathBuf::from(format!("{}.map", dest.display()));
+        let _ = fs::remove_file(map);
+    }
+    Ok(count)
+}
+
+fn collect_scss_entries(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
+    let entries = fs::read_dir(dir).map_err(|e| format!("reading {}: {e}", dir.display()))?;
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("reading {}: {e}", dir.display()))?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_scss_entries(&path, out)?;
+        } else if path.extension().and_then(|e| e.to_str()) == Some("scss")
+            && !path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("")
+                .starts_with('_')
+        {
+            out.push(path);
+        }
+    }
+    Ok(())
 }
 
 fn validate_settings() -> ExitCode {
@@ -58,10 +142,9 @@ fn validate_settings() -> ExitCode {
 fn validate_settings_inner() -> Result<usize, String> {
     let root = repo_root();
     let path = root.join("resource/settings/panes.json");
-    let text = fs::read_to_string(&path)
-        .map_err(|e| format!("reading {}: {e}", path.display()))?;
-    let value: serde_json::Value = serde_json::from_str(&text)
-        .map_err(|e| format!("parsing {}: {e}", path.display()))?;
+    let text = fs::read_to_string(&path).map_err(|e| format!("reading {}: {e}", path.display()))?;
+    let value: serde_json::Value =
+        serde_json::from_str(&text).map_err(|e| format!("parsing {}: {e}", path.display()))?;
     if value.get("version").and_then(|v| v.as_u64()) != Some(1) {
         return Err("settings manifest version must be 1".to_string());
     }
@@ -119,7 +202,9 @@ fn validate_settings_inner() -> Result<usize, String> {
     for pane in panes {
         let id = pane.get("id").and_then(|v| v.as_str()).unwrap();
         if !docs.contains(id) {
-            return Err(format!("settings pane {id} is not documented in docs/settings.md"));
+            return Err(format!(
+                "settings pane {id} is not documented in docs/settings.md"
+            ));
         }
     }
     let mut setting_ids = std::collections::BTreeSet::new();
@@ -138,7 +223,9 @@ fn validate_settings_inner() -> Result<usize, String> {
                 .and_then(|v| v.as_str())
                 .ok_or_else(|| format!("simple settings section {id} is missing paneId"))?;
             if !ids.contains(pane_id) {
-                return Err(format!("simple settings section {id} has unknown paneId {pane_id}"));
+                return Err(format!(
+                    "simple settings section {id} has unknown paneId {pane_id}"
+                ));
             }
             if section.get("titleKey").and_then(|v| v.as_str()).is_none() {
                 return Err(format!("simple settings section {id} is missing titleKey"));
@@ -148,28 +235,42 @@ fn validate_settings_inner() -> Result<usize, String> {
                 .and_then(|v| v.as_array())
                 .ok_or_else(|| format!("simple settings section {id} is missing settings[]"))?;
             if let Some(aliases) = section.get("searchAliases") {
-                if aliases.as_array().is_none_or(|items| items.iter().any(|item| item.as_str().is_none())) {
-                    return Err(format!("simple settings section {id} has invalid searchAliases"));
+                if aliases
+                    .as_array()
+                    .is_none_or(|items| items.iter().any(|item| item.as_str().is_none()))
+                {
+                    return Err(format!(
+                        "simple settings section {id} has invalid searchAliases"
+                    ));
                 }
             }
             for setting in settings {
-                let setting_id = setting
-                    .get("id")
-                    .and_then(|v| v.as_str())
-                    .ok_or_else(|| format!("simple settings section {id} has a setting without id"))?;
+                let setting_id = setting.get("id").and_then(|v| v.as_str()).ok_or_else(|| {
+                    format!("simple settings section {id} has a setting without id")
+                })?;
                 if !setting_ids.insert(setting_id.to_string()) {
                     return Err(format!("duplicate simple setting id: {setting_id}"));
                 }
                 if let Some(alias_list) = setting.get("searchAliases") {
-                    if alias_list.as_array().is_none_or(|items| items.iter().any(|item| item.as_str().is_none())) {
-                        return Err(format!("simple setting {setting_id} has invalid searchAliases"));
+                    if alias_list
+                        .as_array()
+                        .is_none_or(|items| items.iter().any(|item| item.as_str().is_none()))
+                    {
+                        return Err(format!(
+                            "simple setting {setting_id} has invalid searchAliases"
+                        ));
                     }
                 }
                 let setting_type = setting.get("type").and_then(|v| v.as_str());
-                if !matches!(setting_type, Some("checkbox") | Some("radio") | Some("number") | Some("button")) {
+                if !matches!(
+                    setting_type,
+                    Some("checkbox") | Some("radio") | Some("number") | Some("button")
+                ) {
                     return Err(format!("simple setting {setting_id} has unsupported type"));
                 }
-                if setting_type == Some("button") && setting.get("action").and_then(|v| v.as_str()).is_none() {
+                if setting_type == Some("button")
+                    && setting.get("action").and_then(|v| v.as_str()).is_none()
+                {
                     return Err(format!("simple setting {setting_id} is missing action"));
                 }
                 if setting_type == Some("number") {
@@ -183,9 +284,13 @@ fn validate_settings_inner() -> Result<usize, String> {
                     let options = setting
                         .get("options")
                         .and_then(|v| v.as_array())
-                        .ok_or_else(|| format!("simple setting {setting_id} is missing options[]"))?;
+                        .ok_or_else(|| {
+                            format!("simple setting {setting_id} is missing options[]")
+                        })?;
                     if options.len() < 2 {
-                        return Err(format!("simple setting {setting_id} has too few radio options"));
+                        return Err(format!(
+                            "simple setting {setting_id} has too few radio options"
+                        ));
                     }
                 }
                 if setting_type != Some("button")
@@ -217,7 +322,9 @@ fn validate_settings_inner() -> Result<usize, String> {
                 .ok_or_else(|| "retired settings entry is missing id".to_string())?;
             if let Some(pane_id) = item.get("paneId").and_then(|v| v.as_str()) {
                 if !ids.contains(pane_id) {
-                    return Err(format!("retired settings entry {id} has unknown paneId {pane_id}"));
+                    return Err(format!(
+                        "retired settings entry {id} has unknown paneId {pane_id}"
+                    ));
                 }
             }
         }
@@ -369,7 +476,11 @@ fn apply_connector_icons(root: &Path, firefox: &Path) -> Result<(), String> {
         serde_json::from_str(&text).map_err(|e| format!("parsing manifest: {e}"))?;
 
     let toolbar = |size: u32, dark: bool| {
-        let suffix = if size == 32 { String::new() } else { format!("@{size}") };
+        let suffix = if size == 32 {
+            String::new()
+        } else {
+            format!("@{size}")
+        };
         let theme = if dark { "-dark" } else { "" };
         format!("images/toolbar/book-section{theme}{suffix}.png")
     };
@@ -409,7 +520,13 @@ fn apply_connector_icons(root: &Path, firefox: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn render(shim: &Path, source: &Path, width: u32, height: u32, target: &Path) -> Result<(), String> {
+fn render(
+    shim: &Path,
+    source: &Path,
+    width: u32,
+    height: u32,
+    target: &Path,
+) -> Result<(), String> {
     let status = Command::new(shim)
         .arg(source)
         .args(["-w", &width.to_string(), "-h", &height.to_string()])
@@ -433,18 +550,30 @@ fn render_connector_state_icons(root: &Path, firefox: &Path) -> Result<(), Strin
     let shim = root.join("tools/target/debug/rsvg-convert");
     fs::create_dir_all(&toolbar).map_err(|e| format!("creating {}: {e}", toolbar.display()))?;
 
-    let light_svg = fs::read_to_string(&light)
-        .map_err(|e| format!("reading {}: {e}", light.display()))?;
+    let light_svg =
+        fs::read_to_string(&light).map_err(|e| format!("reading {}: {e}", light.display()))?;
     // The light base icon used to be rendered from icons/badged/book-section.svg,
     // which is deleted; render it from the app skin like everything else.
     let light_16 = root.join("chrome/skin/default/zotero/item-type/16/light/book-section.svg");
     let light_32 = root.join("chrome/skin/default/zotero/item-type/16/light/book-section@2x.svg");
-    render(&shim, &light_16, 16, 16, &toolbar.join("book-section@16.png"))?;
+    render(
+        &shim,
+        &light_16,
+        16,
+        16,
+        &toolbar.join("book-section@16.png"),
+    )?;
     render(&shim, &light_32, 32, 32, &toolbar.join("book-section.png"))?;
-    render(&shim, &light_32, 48, 48, &toolbar.join("book-section@48.png"))?;
+    render(
+        &shim,
+        &light_32,
+        48,
+        48,
+        &toolbar.join("book-section@48.png"),
+    )?;
 
-    let dark_svg = fs::read_to_string(&dark)
-        .map_err(|e| format!("reading {}: {e}", dark.display()))?;
+    let dark_svg =
+        fs::read_to_string(&dark).map_err(|e| format!("reading {}: {e}", dark.display()))?;
 
     let states = [
         ("saving", "#F0A020"),
@@ -454,10 +583,7 @@ fn render_connector_state_icons(root: &Path, firefox: &Path) -> Result<(), Strin
     ];
 
     for (state, colour) in states {
-        for (theme, base, ring) in [
-            ("", &light_svg, "#FFFFFF"),
-            ("-dark", &dark_svg, "#1C1C1C"),
-        ] {
+        for (theme, base, ring) in [("", &light_svg, "#FFFFFF"), ("-dark", &dark_svg, "#1C1C1C")] {
             let composite = with_corner_dot(base, colour, ring);
             let temp = toolbar.join("_state.svg");
             fs::write(&temp, composite).map_err(|e| format!("writing {}: {e}", temp.display()))?;
@@ -520,15 +646,14 @@ fn apply_brand(root: &Path, firefox: &Path) -> Result<(), String> {
     let mut files = Vec::new();
     collect_text_files(firefox, &mut files)?;
     for path in files {
-        let body = fs::read_to_string(&path)
-            .map_err(|e| format!("reading {}: {e}", path.display()))?;
+        let body =
+            fs::read_to_string(&path).map_err(|e| format!("reading {}: {e}", path.display()))?;
         let mut updated = body.clone();
         for (token, replacement) in &tokens {
             updated = updated.replace(token, replacement);
         }
         if updated != body {
-            fs::write(&path, &updated)
-                .map_err(|e| format!("writing {}: {e}", path.display()))?;
+            fs::write(&path, &updated).map_err(|e| format!("writing {}: {e}", path.display()))?;
         }
         for (token, _) in &tokens {
             if updated.contains(token) {
@@ -542,8 +667,11 @@ fn apply_brand(root: &Path, firefox: &Path) -> Result<(), String> {
         for path in text_files(firefox)? {
             let relative = path.strip_prefix(firefox).unwrap_or(&path);
             let name = relative.to_string_lossy();
-            if name.contains("translate/") || name.contains("utilities/") || name == "COPYING"
-                || name.starts_with("test/") || name.contains("/test/")
+            if name.contains("translate/")
+                || name.contains("utilities/")
+                || name == "COPYING"
+                || name.starts_with("test/")
+                || name.contains("/test/")
             {
                 continue;
             }
@@ -608,7 +736,10 @@ fn collect_text_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String
             continue;
         }
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        if matches!(extension, "js" | "jsx" | "html" | "json" | "css" | "svg" | "ftl") {
+        if matches!(
+            extension,
+            "js" | "jsx" | "html" | "json" | "css" | "svg" | "ftl"
+        ) {
             files.push(path);
         }
     }
@@ -616,9 +747,7 @@ fn collect_text_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String
 }
 
 fn run(command: &mut Command, what: &str) -> Result<bool, String> {
-    let status = command
-        .status()
-        .map_err(|e| format!("{what}: {e}"))?;
+    let status = command.status().map_err(|e| format!("{what}: {e}"))?;
     Ok(status.success())
 }
 
@@ -666,9 +795,7 @@ fn appimage_inner() -> Result<PathBuf, String> {
         .output()
         .map_err(|e| format!("running unzip: {e}"))?;
     let listing = String::from_utf8_lossy(&listing.stdout);
-    for required in [
-        "chrome/content/zotero-platform/unix/zotero.css",
-    ] {
+    for required in ["chrome/content/zotero-platform/unix/zotero.css"] {
         if !listing.contains(required) {
             return Err(format!(
                 "staged build is incomplete (missing {required}).\n\
@@ -751,7 +878,9 @@ fn build_importer(root: &Path) -> Result<PathBuf, String> {
         .status()
         .map_err(|e| format!("building the import helper: {e}"))?;
     if !status.success() {
-        return Err(format!("cargo build for the import helper failed ({status})"));
+        return Err(format!(
+            "cargo build for the import helper failed ({status})"
+        ));
     }
 
     let binary = root.join("tools/target/release/citewell-import");
@@ -775,9 +904,8 @@ fn build_lo_extension(root: &Path) -> Result<PathBuf, String> {
         return Err(format!("LibreOffice OXT build failed ({status})"));
     }
 
-    let oxt = root.join(
-        "extensions/citewell-libreoffice/build/CiteWell_LibreOffice_Integration.oxt",
-    );
+    let oxt =
+        root.join("extensions/citewell-libreoffice/build/CiteWell_LibreOffice_Integration.oxt");
     if !oxt.is_file() {
         return Err(format!("LibreOffice OXT missing at {}", oxt.display()));
     }

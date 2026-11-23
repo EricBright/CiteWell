@@ -55,7 +55,7 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 3 JS rewrite complete 2026-11-23; Sass and the Node runner remain.** D41 and D42
+Status: **phase 4 Sass replacement complete 2026-11-23; only the Node runner remains.** D41–D43
 govern the order: delete the need before choosing a replacement.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
@@ -64,7 +64,7 @@ Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 |---|---|---|
 | Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `js.js` | Done; do not reintroduce a JSX/ESM compiler |
 | Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
-| Sass | 165 files, 304 `@import`s, 41 mixins, 10 functions, 24 `@if`, 27 `@each`, five `@use` built-in modules, compressed output and source maps | Native CSS migration, or grass/rsass |
+| Sass | **Replaced by grass 0.13.4** via `xtask sass`: 165 files, 21 entries, 304 `@import`s, 41 mixins, 9 functions and 57 control-flow blocks; compressed CSS, no source maps | Done; grass is build-only |
 | Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
 
 This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
@@ -77,8 +77,8 @@ Phases:
    decide whether JSX removal and CSS migration are acceptable authoring costs.
 2. **Deletion pass.** Remove Browserify, `url`, and the Sinon bundle; use upstream/vendored files.
 3. **JS decision.** Done: convert JSX/ESM and delete Babel (D42).
-4. **Sass decision.** Spike a real section against native CSS; if maintainable, migrate and remove
-   Sass; otherwise adopt grass/rsass after checking `@use`, source maps and platform variants.
+4. **Sass decision.** Done: keep Sass and compile it with grass (D43). Native CSS was rejected on
+   source size and feature use; source maps were dropped because the app does not consume them.
 5. **Orchestration.** Port glob/copy/symlink/signatures/watch/FTL to xtask; delete `js-build/` and
    `node_modules` only when every output and test matches.
 
@@ -150,6 +150,24 @@ Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new U
   expectations, and account-preference setup, not JSX/ESM syntax or module resolution.
 - A clean `node js-build/build.js` processed 442 files in 3.7 s with no Babel task; the staging
   build succeeded. The frozen Babel npm packages remain until phase 5.
+
+### Phase 4 Sass replacement (2026-11-23)
+
+- **Node Sass is gone.** `xtask sass` compiles `scss/` with grass 0.13.4 and writes the same
+  compressed CSS paths, including the platform variants. `js-build/sass.js` is only a wrapper
+  around that command. Grass is a build-only Rust dependency; it is not shipped.
+- **All 21 entry sheets compile without errors.** The spike compared every entry against the Node
+  Sass output: selectors and declarations match; remaining differences are formatting and
+  equivalent color notation (`rgb()`/hex, `transparent`/`rgba(0,0,0,0)`).
+- **Native CSS was rejected.** The source is 13,722 lines across 165 files with 41 mixins, 9
+  functions and 57 `@if`/`@each`/`@for`/`@while` blocks. Rewriting that to CSS is a separate
+  project, not a build-tool deletion.
+- **Source maps are dropped.** The app does not consume them; they were development-only, and
+  grass has no source-map API. `xtask sass` removes stale `.css.map` files for CSS it writes.
+- **Tests:** `cargo check -p xtask`; `node js-build/build.js` compiles 442 JS files and 21 Sass
+  entries; staging and app/UI tests remain the oracle. No screenshot/pixel-diff suite exists, so
+  the CSS parity check is structural (selectors/declarations), not visual.
+
 
 
 ## Porting existing JavaScript

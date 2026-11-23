@@ -817,6 +817,27 @@ Rejected: adopting SWC/OXC — adds a compiler and parity burden for 126 element
 top-level functions by name. The frozen Babel npm packages remain until phase 5, when the Node tree is
 removed.
 
+## D43 — Sass is compiled by grass
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes, via Git
+
+The Node Sass build step is replaced by `grass` 0.13.4, compiled by the `xtask sass` command. Grass
+is a build-only Rust dependency; it is not shipped in the app. It writes compressed CSS to the same
+paths as before, including the `-win`/`-mac`/`-unix` variants under `chrome/content/zotero-platform/`.
+The Node `js-build/sass.js` is now a thin wrapper around `cargo run -p xtask -- sass`.
+
+The spike compiled all 21 entry sheets without errors. Output is equivalent for the selectors and
+declarations used here; differences were formatting and equivalent color notation (`rgb(194,194,194)`
+vs `#c2c2c2`, `transparent` vs `rgba(0,0,0,0)`). The Sass source is 13,722 lines across 165 files,
+with 41 mixins, 9 functions and 57 control-flow blocks; a native-CSS rewrite is a large unrelated
+project, not a build cleanup.
+
+CSS source maps are dropped. The app does not consume them; they were development-only artifacts,
+and grass has no source-map API. `xtask sass` removes stale `.css.map` files for the CSS it writes.
+Rejected: native CSS migration — 13,722 lines and 41 mixins for no user-facing benefit. Rejected:
+rsass — less complete and no advantage for these stylesheets. Rejected: keeping Node Sass — it would
+keep the Node build tree required for no reason.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

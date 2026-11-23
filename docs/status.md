@@ -28,7 +28,7 @@ push target. The product branch may diverge without limit.
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
-| Docs | README index, Rust docs gate, D1–D41 |
+| Docs | README index, Rust docs gate, D1–D43 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
 Build note: the settings-descriptor work is now included in the current AppImage built for the
@@ -53,14 +53,16 @@ plan.
 - Key finding: Browserify produces only three files and is a deletion candidate, not a Rust-bundler
   project. `url` has two call sites; Sinon is test-only. Babel’s real job is JSX and ESM→CJS; Sass
   is the largest compiler surface.
-- R15 phase 2 is done: Browserify is out, `url` uses the WHATWG API, and `react-select` and Sinon
-  are tracked vendored bundles. Phase 3 is also done: Babel is gone; 45 files were rewritten to
-  CommonJS and `h()` under D42 ([rust.md](rust.md#phase-3-js-rewrite-2026-11-23)).
-- Order: next is the R15 Sass decision/spike (native CSS vs grass/rsass), then the Node
-  runner/xtask orchestration. React replacement is outside R15.
-- Branches: `citewell` contains the attachments/resume work and phases 2–3; the stable AppImage
-  reports `10.0.9.SOURCE.3fa6e775d`. The previous stable is `16d386ce2`; the older test build is
-  `74c10b0fb` (sha256 `4856a432…`).
+- R15 phases 2–3 are done: Browserify/`url`/Sinon are removed or vendored, Babel is gone, and 45
+  files were rewritten to CommonJS and `h()` under D42. Phase 4 is done: grass 0.13.4 compiles all
+  21 Sass entries through `xtask sass`; Node Sass and CSS source maps are gone (D43)
+  ([rust.md](rust.md#phase-4-sass-replacement-2026-11-23)).
+- Order: only the Node runner/xtask orchestration remains: FTL conversion, glob/copy/symlink,
+  signatures, watch and the final `js-build/`/`node_modules` removal. React replacement is outside
+  R15.
+- Branches: `citewell` contains the attachments/resume work and phases 2–4; a new stable AppImage
+  is built after this handoff. The previous stable is `10.0.9.SOURCE.3fa6e775d`; the older test
+  build is `74c10b0fb` (sha256 `4856a432…`).
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
 
 ## Handoff 2026-11-23 (Attachments)
