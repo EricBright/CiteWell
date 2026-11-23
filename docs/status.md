@@ -47,8 +47,9 @@ plan.
 
 ## Handoff 2026-11-23 (Dedup report)
 
-- New branch `dedup-report` from `citewell`, not merged. It implements Phase 3a (report) and 3b
-  (opt-in exact-identifier skip; off by default).
+- The dedup work is merged into `citewell`: Phase 3a (report), 3b (opt-in exact-identifier skip,
+  off by default), 3c (library duplicate-review scan) and the merged-alias replaced-relation
+  fallback.
 - After a merge, every source item is matched against items that existed before that merge, by
   DOI/ISBN/PMID and then a unique title+year. Ambiguous matches are recorded as ambiguous.
 - The report is `identity/duplicates-<session>.json`; `library-import-result.json` carries
