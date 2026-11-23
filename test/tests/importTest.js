@@ -263,9 +263,13 @@ describe("Library import", function () {
 			let current = await Zotero.LibraryImport.getCurrentLibraryInfo();
 			assert.isFalse(current.empty);
 
-			let result = await Zotero.LibraryImport.merge(source);
+			let progress = [];
+			let result = await Zotero.LibraryImport.merge(source, {
+				onProgress: line => progress.push(line),
+			});
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
+			assert.ok(progress.some(line => /^Items: 1\//.test(line)));
 
 			let items = await Zotero.Items.getAll(1);
 			let merged = items.find(

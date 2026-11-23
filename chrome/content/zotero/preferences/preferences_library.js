@@ -219,7 +219,7 @@ Zotero_Preferences.Library = {
 				currentStatus.textContent = "Empty — ready for a first import.";
 			}
 			else {
-				currentStatus.textContent = `${this._count(this._current.items)} items, `
+				currentStatus.textContent = `${this._count(this._current.regularItems ?? this._current.items)} items, `
 					+ `${this._count(this._current.collections)} collections, `
 					+ `${this._count(this._current.savedSearches)} saved searches.`;
 			}
@@ -232,7 +232,7 @@ Zotero_Preferences.Library = {
 			}
 			else {
 				target.textContent = `Adding to the current CiteWell library: `
-					+ `${this._count(this._current.items)} items, `
+					+ `${this._count(this._current.regularItems ?? this._current.items)} items, `
 					+ `${this._count(this._current.collections)} collections. `
 					+ "Merge adds to it; Replace swaps it for the selected library and keeps the "
 					+ "previous one as a restore point.";
@@ -405,7 +405,7 @@ Zotero_Preferences.Library = {
 			this._inspected = info;
 
 			var summary = [
-				`${this._count(info.items)} items`,
+				`${this._count(info.regularItems ?? info.items)} items`,
 				`${this._count(info.collections)} collections`,
 				`${this._count(info.notes)} notes`,
 				`${this._count(info.attachments)} attachments`,
@@ -573,13 +573,15 @@ Zotero_Preferences.Library = {
 		var candidate = this._selected;
 		var info = this._inspected;
 		var text = `Merge the Zotero library at\n\n${candidate.path}\n\n`
-			+ `CiteWell: ${this._count(this._current?.items)} items, `
+			+ `CiteWell: ${this._count(this._current?.regularItems ?? this._current?.items)} items, `
 			+ `${this._count(this._current?.collections)} collections.\n\n`
-			+ `Zotero: ${this._count(info.items)} items, ${this._count(info.collections)} collections, `
+			+ `Zotero: ${this._count(info.regularItems ?? info.items)} items, `
+			+ `${this._count(info.collections)} collections, `
 			+ `${this._count(info.notes)} notes.\n\n`
 			+ "Items, collections and notes will be added to the current library. "
-			+ "Attachments and annotations are not imported yet. A database backup is kept; "
-			+ "Zotero is not modified.";
+			+ `${this._count(info.attachments)} attachments and `
+			+ `${this._count(info.annotations)} annotations are not imported yet. `
+			+ "A database backup is kept; Zotero is not modified.";
 		var ps = Services.prompt;
 		if (ps.confirmEx(window, "Merge Zotero library", text,
 			ps.STD_YES_NO_BUTTONS, null, null, null, null, {}) !== 0) {
@@ -591,22 +593,56 @@ Zotero_Preferences.Library = {
 		this._el("library-progress").hidden = false;
 		this._setStatus("Merging the selected library…");
 
+		var progressWin = new Zotero.ProgressWindow({ closeOnClick: false });
+		progressWin.changeHeadline("Merging Zotero library");
+		var progressRow = new progressWin.ItemProgress("document", "Preparing the source copy…");
+		progressWin.show();
+
+		var report = (line) => {
+			if (/^progress files=/.test(line)) {
+				this._onProgress(line);
+				return;
+			}
+			progressRow.setText(line);
+			this._setStatus(line);
+		};
+
 		try {
 			var result = await Zotero.LibraryImport.merge(candidate.path, {
-				onProgress: line => this._onProgress(line),
+				onProgress: report,
 			});
 			this._el("library-progress").hidden = true;
-			this._setStatus(
-				`Merged ${this._count(result.items)} items, `
+			var summary = `Merged ${this._count(result.items)} items, `
 				+ `${this._count(result.collections)} collections and `
-				+ `${this._count(result.notes)} notes into the current library.`
-			);
+				+ `${this._count(result.notes)} notes into the current library.`;
+			this._setStatus(summary, false, true);
+			progressRow.setProgress(100);
+			progressRow.setText(summary);
+			progressWin.startCloseTimer(6000);
+
 			await this._refreshCurrent();
 			await this._showLastResult();
+
+			var main = Zotero.getMainWindow();
+			if (main?.ZoteroPane) {
+				try {
+					var collectionsView = main.ZoteroPane.collectionsView;
+					if (collectionsView?.refresh) await collectionsView.refresh();
+					var itemsView = main.ZoteroPane.itemsView;
+					if (itemsView?.refresh) await itemsView.refresh();
+				}
+				catch (e) {
+					// The merge is already committed; a view refresh failure must not report it as failed.
+					Zotero.logError(e);
+				}
+			}
 		}
 		catch (e) {
 			Zotero.logError(e);
 			this._el("library-progress").hidden = true;
+			progressRow.setError();
+			progressRow.setText(`Merge failed: ${e.message || e}`);
+			progressWin.startCloseTimer(8000);
 			this._setStatus(`Merge failed: ${e.message || e}`, true);
 		}
 		finally {
@@ -831,11 +867,12 @@ Zotero_Preferences.Library = {
 		return Zotero.LibraryImport.formatBytes(bytes);
 	},
 
-	_setStatus: function (text, isError = false) {
+	_setStatus: function (text, isError = false, isSuccess = false) {
 		var element = this._el("library-import-status");
 		if (!element) return;
 		element.textContent = text || "";
-		element.className = "library-status" + (isError ? " library-error" : "");
+		element.className = "library-status"
+			+ (isError ? " library-error" : isSuccess ? " library-success" : "");
 	},
 
 	_disable: function (disabled) {

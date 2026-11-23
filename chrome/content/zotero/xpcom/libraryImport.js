@@ -342,6 +342,12 @@ Zotero.LibraryImport = {
 					integrity,
 					schemaVersion: await num("SELECT version FROM version WHERE schema='userdata'"),
 					items: await num("SELECT COUNT(*) FROM items"),
+					regularItems: await num(`
+						SELECT COUNT(*) FROM items i
+						JOIN itemTypes it ON it.itemTypeID = i.itemTypeID
+						WHERE it.typeName NOT IN ('attachment', 'annotation', 'note')
+						AND i.itemID NOT IN (SELECT itemID FROM deletedItems)
+					`),
 					itemsTrashed: await num(
 						"SELECT COUNT(*) FROM items WHERE itemID IN (SELECT itemID FROM deletedItems)"
 					),
@@ -377,6 +383,12 @@ Zotero.LibraryImport = {
 			}
 		};
 		var items = await value("SELECT COUNT(*) FROM items");
+		var regularItems = await value(`
+			SELECT COUNT(*) FROM items i
+			JOIN itemTypes it ON it.itemTypeID = i.itemTypeID
+			WHERE it.typeName NOT IN ('attachment', 'annotation', 'note')
+			AND i.itemID NOT IN (SELECT itemID FROM deletedItems)
+		`);
 		var collections = await value("SELECT COUNT(*) FROM collections");
 		var savedSearches = await value("SELECT COUNT(*) FROM savedSearches");
 		var schemaVersion = await value("SELECT version FROM version WHERE schema='userdata'");
@@ -385,6 +397,7 @@ Zotero.LibraryImport = {
 			path: this.dataDir,
 			dbPath,
 			items,
+			regularItems,
 			collections,
 			savedSearches,
 			schemaVersion,
@@ -863,6 +876,8 @@ Zotero.LibraryImport = {
 				}
 			}
 
+			onProgress?.(`Collections: ${collectionCount} created; importing items…`);
+			var itemsDone = 0;
 			for (let row of source.items) {
 				if (!Zotero.ItemTypes.getID(row.typeName)) {
 					warnings++;
@@ -902,6 +917,10 @@ Zotero.LibraryImport = {
 				}
 				await item.save();
 				itemMap.set(row.itemID, item);
+				itemsDone++;
+				if (itemsDone % 25 === 0 || itemsDone === source.items.length) {
+					onProgress?.(`Items: ${itemsDone}/${source.items.length}`);
+				}
 			}
 
 			for (let [itemID, collectionIDs] of source.collectionItemsByItem) {
