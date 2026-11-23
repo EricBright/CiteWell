@@ -55,14 +55,14 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **inventory and elimination audit, not started.** D41 governs the order: delete the need
-before choosing a replacement.
+Status: **phase 1 baseline recorded 2026-11-23; no build code changed.** D41 governs the order:
+delete the need before choosing a replacement.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
 | Surface | Actual use | Candidate |
 |---|---|---|
-| Babel | JSX in 33 files, ESM→CommonJS in 28; no `preset-env`; special string patches for four vendored resources | Write JSX/ESM differently, or SWC/OXC |
+| Babel | JSX in 33 files, ESM→CommonJS in 28; no `preset-env`; special string patches for five vendored resources | Write JSX/ESM differently, or SWC/OXC |
 | Browserify | Exactly three standalone bundles: `react-select`, `url`, test-only `sinon`; no app bundling, no transforms | Delete: upstream Sinon bundle, vendored `react-select`, remove `url` |
 | Sass | 165 files, 304 `@import`s, 41 mixins, 10 functions, 24 `@if`, 27 `@each`, five `@use` built-in modules, compressed output and source maps | Native CSS migration, or grass/rsass |
 | Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
@@ -85,6 +85,25 @@ Phases:
 
 Exit: no Node runtime or npm tree is needed to build; bundles produced by Rust tools pass the same
 tests. React/React DOM replacement is explicitly outside R15.
+
+### Phase 1 baseline (2026-11-23)
+
+The oracle is the stable AppImage `10.0.9.SOURCE.00cdbf437` plus the test results: import 17/17,
+LibreOffice protocol 9/9, docs and dependency-guard gates green. No build output has been removed.
+
+Three Browserify outputs exist, and their current hashes are:
+
+| Output | Bytes | SHA-256 |
+|---|---|---|
+| `resource/react-select.js` | 235,774 | `77b52fd1c20e1341cebb4da42370b15a0dd130e44a324dd0540202b43f871fe0` |
+| `resource/url.js` | 44,811 | `e78520a0a4d6ebec85820fd9d7dd26a834c6a1f341fd4df372ef2a22652a2e3d` |
+| `test/resource/sinon.js` | 935,636 | `7f720cb58553295166eebf595fb98c7dfec864adc22a269db64f9e49488d2313` |
+
+`babel-worker.js` carries five string patches outside Babel's own transform, and any replacement
+must keep them: react-virtualized (HTML-namespace element, documentElement mounting, `flushSync`
+around the scroll `setState`), SingleFile (`globalThis.Set`/`Map`), Monaco `tsWorker.js` (translator
+type inference), monacopilot (local core import plus Timer module), and monacopilot-core (Mistral
+API host plus Timer module). These are source rewrites, not compiler features.
 
 ## Porting existing JavaScript
 

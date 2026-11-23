@@ -53,9 +53,11 @@ plan.
 - Key finding: Browserify produces only three files and is a deletion candidate, not a Rust-bundler
   project. `url` has two call sites; Sinon is test-only. Babel’s real job is JSX and ESM→CJS; Sass
   is the largest compiler surface.
-- R15 is documentation-only so far. No build pipeline code has changed.
+- R15 phase 1 is recorded in [rust.md](rust.md#phase-1-baseline-2026-11-23): the stable build and
+  test results are the oracle, the three Browserify outputs are hashed, and the five string patches
+  in `babel-worker.js` are listed. No build pipeline code has changed.
 - Order: the `import-attachments` work is merged and the stable AppImage is built and installed;
-  next is R15 phase 1 (golden baseline and deletion audit), JS decision (JSX removal vs SWC/OXC),
+  next is R15 phase 2 (Browserify/`url`/Sinon deletion), the JS decision (JSX removal vs SWC/OXC),
   and a bounded Sass migration spike (native CSS vs grass/rsass). React replacement is outside R15.
 - Branches: `citewell` contains the attachments/resume work from `f662058a1`; the stable AppImage
   reports `10.0.9.SOURCE.00cdbf437`. The prior stable is `d15ef6ed3`; the older test build is
