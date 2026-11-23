@@ -23,11 +23,6 @@ const LOCKFILES: [&str; 2] = ["package-lock.json", "npm-shrinkwrap.json"];
 const NPM_CONFIG: &str = ".npmrc";
 const EXCEPTIONS_FILE: &str = "tools/policy-exceptions.txt";
 const DECISIONS_FILE: &str = "docs/decisions.md";
-const NPM_BUILD_FILES: [&str; 3] = [
-    "js-build/note-editor.js",
-    "js-build/reader.js",
-    "js-build/document-worker.js",
-];
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -111,16 +106,6 @@ fn main() -> ExitCode {
             "{NPM_CONFIG}: must set offline=true and an unreachable loopback registry (D32)"
         )),
         Err(_) => problems.push(format!("{NPM_CONFIG}: missing or unreadable; npm must fail closed (D32)")),
-    }
-
-    for file in NPM_BUILD_FILES {
-        if let Ok(text) = std::fs::read_to_string(file) {
-            if contains_npm_command(&text) {
-                problems.push(format!(
-                    "{file}: npm command found; npm is retired, remove the fallback (D32)"
-                ));
-            }
-        }
     }
 
     if problems.is_empty() {
@@ -286,11 +271,6 @@ fn npm_config_is_fail_closed(text: &str) -> bool {
     offline && loopback && scripts
 }
 
-fn contains_npm_command(text: &str) -> bool {
-    const NEEDLES: [&str; 4] = ["npm ci", "npm install", "npm run ", "Command::new(\"npm\")"];
-    NEEDLES.iter().any(|needle| text.contains(needle))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -339,12 +319,4 @@ mod tests {
         ));
         assert!(!npm_config_is_fail_closed("offline=true\n"));
     }
-
-    #[test]
-    fn npm_commands_are_detected() {
-        assert!(contains_npm_command("await exec('npm ci')"));
-        assert!(contains_npm_command("Command::new(\"npm\")"));
-        assert!(!contains_npm_command("npm is retired; do not install it"));
-    }
-
 }

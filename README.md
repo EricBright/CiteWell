@@ -43,7 +43,7 @@ to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `
 | `js-build/` | Legacy JS build pipeline |
 | `app/` | Packaging and platform runtimes |
 | `test/` | Tests and support code |
-| `docs/` | On-demand documentation |
+| `docs/` | On-demand documentation (`research/` is archival) |
 | `tools/` | Rust tooling |
 
 ## Documentation index

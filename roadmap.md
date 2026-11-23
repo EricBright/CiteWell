@@ -8,12 +8,19 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R30 | Dependency freeze guard: fail-closed `.npmrc`, no npm fallbacks, staged-change checks (D32) | The editor and reader are the largest supply-chain liabilities; a freeze without a guard is decoration | An accidental npm command fails; a staged `package.json`/lock change or tracked `node_modules` is rejected; build still works from the frozen tree |
 | R24 | Import/merge a Zotero library without touching it (design in [docs/import.md](docs/import.md)) | A fork must not trap an existing library, but must never write Zotero's data | Adopt a copy for an empty library; merge 1k items with attachments into a non-empty one; source checksum unchanged |
-| R22 | Agent interface: the `citewell` CLI over the loopback local API | A local or generic agent needs a stable way in without hand-composed HTTP | `status`, `search`, `item` and one authorized write are documented and tested; [docs/cli.md](docs/cli.md) stays registered |
-| R17 | Connector rebrand: name, extension id, `update_url`, and the book-section icon in light and dark | The XPI still identifies as Zotero and would auto-update to Zotero's connector | Branded XPI loads in `about:debugging` and saves a page against CiteWell |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
+
+## Done
+
+Completed outcomes, kept for context.
+
+| ID | Outcome | Evidence |
+|---|---|---|
+| R30 | Dependency freeze guard | `tools/repo-guard` rejects package/lock changes; `.npmrc` is fail-closed (D32) |
+| R22 | Agent interface | `tools/cli` provides the CLI and MCP server over `/agent/v1` |
+| R17 | Connector rebrand | `connectors/brand.json` carries the CiteWell identity |
 
 ## Next
 

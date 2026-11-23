@@ -70,7 +70,9 @@ fn registry_entries(readme: &str) -> BTreeMap<String, usize> {
 }
 
 /// Documentation files that must appear in the index: the agent contract, the
-/// roadmap, and every top-level markdown file under `docs/`.
+/// roadmap, and every top-level markdown file under `docs/`. `docs/research/`
+/// is archival and intentionally excluded; new on-demand documents belong at
+/// the top level so this gate sees them.
 fn documentation_files(root: &Path) -> Vec<String> {
     let mut files: Vec<String> = vec![AGENTS.to_string()];
     files.extend(ON_DEMAND.iter().map(|name| name.to_string()));
