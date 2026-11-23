@@ -1,6 +1,6 @@
 # Attention and window presentation
 
-**Status:** accepted 2026-11-22; state machine, presenter, app adapter, app-dialog/progress integration, LibreOffice notification/message-box fallback, the test hook and the user-scoped systemd/D-Bus installer are implemented. Manual KDE/GNOME/XWayland verification remains.
+**Status:** accepted 2026-11-22; state machine, presenter, app adapter, app-dialog/progress integration, LibreOffice notification/message-box fallback, the test hook and the user-scoped systemd/D-Bus installer are implemented. The owner confirmed the Writer flow and the systemd/D-Bus repair/remove paths on 2026-11-23; the KDE/GNOME/XWayland matrix is deferred.
 
 CiteWell must never leave a person waiting on a prompt that is behind another window. This page
 defines the attention contract, the escalation ladder, the platform-specific fallbacks, and the

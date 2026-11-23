@@ -26,7 +26,7 @@ push target. The product branch may diverge without limit.
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
-| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** a reported Writer freeze after accepting document preferences is still under diagnosis; see Handoff. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
+| LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 1: detector, Library pane, Rust `citewell-import`; adopt-copy, replace and restore points built, merge not |
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
@@ -50,11 +50,10 @@ The AppImage is at `~/AppImages/citewell.appimage` (sha256
 `6455ce08bf9f87b3db6543222c1768b0a3060fedad06d65d1c54d17774c76405`, 127,474,168 bytes). The
 current branch is `citewell`; push only to `origin`.
 
-**Previous post-preferences freeze:** the last diagnosis showed a 120 s shim timeout with no app
-commands after accepting document preferences. The unparented integration dialogs, minimized-window
-handling, citation character-format reset and Addons-schema fixes are all in the current AppImage.
-Confirm the flow once in the manual matrix before treating it as fully closed. If it recurs, the
-persistent shim log is at
+**Post-preferences freeze — owner-confirmed 2026-11-23.** The citation flow in Writer, including
+accepting document preferences, behaved as expected; no freeze was observed. The
+KDE/GNOME/XWayland matrix is deferred by the owner. If the freeze recurs, keep Writer open and
+read the persistent shim log at
 `~/.var/app/org.libreoffice.LibreOffice/cache/citewell-lo/shim.log`. Do not reset the LibreOffice
 profile; the installer repairs stale deployment cache by moving only CiteWell temp directories to a
 backup.
@@ -69,26 +68,22 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 **Next actions:**
 
-1. Confirm the post-preferences citation flow with the current AppImage/OXT in Writer. If it
-   recurs, keep Writer open and read the persistent shim log before changing architecture.
-2. Manual KDE Wayland matrix; then GNOME Wayland and XWayland. Use
-   `CITEWELL_TEST_ATTENTION=deny` for the attention fallback.
-3. Verify the user-scoped systemd/D-Bus integration from Cite preferences → Integrations, including
-   the repair/remove paths.
-4. Review the reorganized settings once end-to-end; Phases 0–3 are complete and further custom-
-   section conversion is optional.
-5. R24 Phase 2 import merge; then R15 Rust build toolchain. R31 is parked; R33 is later.
+1. **R24 Phase 2 — import merge** ([import.md](import.md)). Phase 1 (detector, adopt-copy, replace,
+   restore points) is done; Phase 2 adds regular-item, collection and note merging.
+2. **R15 — Rust build toolchain** after R24.
+3. **R32 optional follow-ups** — citation explorer and undo/save listener.
+4. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+   model changes.
+5. Deferred: KDE/GNOME/XWayland matrix; end-to-end settings review (Phases 0–3 are complete).
 
 ## Pick up here
 
-1. **LibreOffice attention/freeze regression** — see Handoff. The OXT installer repair and toolbar
-   schema fixes are shipped; the remaining work is diagnosis of the post-preferences freeze and the
-   KDE/GNOME/XWayland matrix.
-2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
-3. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents.
-4. **R32 optional follow-ups** — citation explorer and undo/save listener.
-5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+1. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
+2. **R15 — Rust build toolchain.** Replace babel/browserify/sass with Rust equivalents.
+3. **R32 optional follow-ups** — citation explorer and undo/save listener.
+4. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.
+5. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
 
 ## Commands
 
