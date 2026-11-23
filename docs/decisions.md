@@ -869,12 +869,29 @@ Ace's eight used files, the CSL validator and the citeproc WASM). The build no l
 symlinks and 21 Sass entries as the Node build; a recursive diff against the Node output was empty
 after the patch indentation was matched.
 
-`js-build/` retains only the Node FTL-to-JSON and localize helpers, and `node_modules` remains for
-those and for optional ESLint. Neither is needed to build. Rejected: keeping the Node builder — it
-would keep a runtime dependency for no capability. Rejected: porting the watcher now — rerunning the
-fast build is sufficient until a Rust watcher is worth adding. Rejected: deleting `node_modules`
-before the FTL and lint workflows have replacements — that would remove development checks, not
-build capability.
+At the time of D45, `js-build/` retained the FTL helpers and `node_modules` remained for those and
+optional ESLint. D46 removed that root tree. Rejected: keeping the Node builder — it would keep a
+runtime dependency for no capability. Rejected: porting the watcher now — rerunning the fast build
+is sufficient until a Rust watcher is worth adding.
+
+## D46 — The root npm tree is removed
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes, with owner approval
+
+The root `node_modules` (about 398 MB), `.npm-cache`, `package.json`, `package-lock.json`,
+`eslint.config.mjs`, `js-build/` and `scripts/locale/pull_ftl` are removed. The app build and the
+test runner use only `cargo`, `xtask` and the vendored resources. `repo-guard` permits removing the
+retired npm metadata while still rejecting a reintroduction or dependency change.
+
+This retires the FTL-to-JSON/localize workflow and root ESLint. Locale files and the vendored test
+libraries remain; there is no in-repo tool to update them until R7. Reintroducing any npm tree
+requires owner approval under D32. The `connectors/` submodule keeps its own `node_modules` because
+`xtask connectors` uses the upstream gulp build to preserve the Firefox connector; that tree is
+separate from the app build and is the remaining Node build dependency.
+
+Rejected: keeping a root tree “just in case” — it was 398 MB and the build no longer reads it.
+Rejected: deleting the connector tree in the same pass — it would remove the Firefox connector
+build without a Rust replacement.
 
 ## Dead ends
 

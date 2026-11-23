@@ -17,6 +17,7 @@
 //! cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --range BASE..HEAD
 //! ```
 
+use std::path::Path;
 use std::process::{Command, ExitCode};
 
 const LOCKFILES: [&str; 2] = ["package-lock.json", "npm-shrinkwrap.json"];
@@ -58,6 +59,12 @@ fn main() -> ExitCode {
     };
 
     for path in &changed {
+        if (path == "package.json" || LOCKFILES.contains(&path.as_str()))
+            && !Path::new(path).exists()
+        {
+            // Removing the retired npm metadata is allowed; reintroducing it is not.
+            continue;
+        }
         if path == "package.json" {
             match package_scripts_only(&mode) {
                 Ok(true) => continue,

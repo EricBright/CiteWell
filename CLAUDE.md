@@ -41,14 +41,6 @@ Tips:
 - To view debug logging for a specific test when running multiple tests, add `Zotero.Debug.init(1)` at the beginning of the test and run with `-d 5`.
 
 
-### Linting
-
-```bash
-npx eslint <file>        # Lint a specific file
-```
-
-ESLint v9 flat config is in `eslint.config.mjs`. Uses `@zotero/eslint-config`, Babel parser, and React plugin. Currently, the code base is not fully linted, so only worry about issues with new or modified code lines.
-
 ## Architecture
 
 ### Core Layers
@@ -91,7 +83,7 @@ The build is Rust: `cargo run --manifest-path tools/Cargo.toml -p xtask -- build
 - **SCSS files** in `scss/` are compiled by grass, a build-only Rust dependency
 - **Symlinks** connect source files and submodules into `build/`
 - The built app reads from `build/`, not directly from source
-- Node is only for optional ESLint and FTL/localization helpers
+- The root npm tree is gone; the connector submodule has its own build tree
 
 ## Code Style
 

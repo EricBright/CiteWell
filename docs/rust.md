@@ -55,9 +55,9 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 5 build runner ported 2026-11-23; the build is Node-free.** D41–D45 govern the
-order: delete the need before choosing a replacement. FTL/localization and optional lint still
-use Node; neither is needed to build.
+Status: **phase 5 build runner ported 2026-11-23; the root app build is Node-free.** D41–D46
+govern the order: delete the need before choosing a replacement. The connector submodule keeps a
+separate Node build tree for the Firefox connector.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
@@ -66,7 +66,7 @@ Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 | Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `tools/xtask/src/build.rs` | Done; do not reintroduce a JSX/ESM compiler |
 | Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
 | Sass | **Replaced by grass 0.13.4** via `xtask sass`: 165 files, 21 entries, 304 `@import`s, 41 mixins, 9 functions and 57 control-flow blocks; compressed CSS, no source maps | Done; grass is build-only |
-| Node runner | **Replaced by `xtask build`**: JS copy/patch, test-data copy, symlinks and Sass. No signatures or watcher. FTL/localization helpers remain Node. | Done for the build; FTL/lint are development-only |
+| Node runner | **Replaced by `xtask build`**: JS copy/patch, test-data copy, symlinks and Sass. No signatures or watcher. Root npm/FTL/ESLint tree removed (D46). | Done; connector submodule is separate |
 
 This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
 sites and should use the URL API. The Sinon bundle is test-only. Babel is gone; Sass is now the only
@@ -81,7 +81,8 @@ Phases:
 4. **Sass decision.** Done: keep Sass and compile it with grass (D43). Native CSS was rejected on
    source size and feature use; source maps were dropped because the app does not consume them.
 5. **Orchestration.** The build runner is ported to `xtask build`; the watcher is removed and the
-   FTL/localization helpers remain development-only Node. The build no longer reads `node_modules`.
+   root npm tree, FTL tooling and ESLint config are gone (D46). The connector submodule keeps its
+   own Node build tree.
 
 Exit: no Node runtime or npm tree is needed to build; bundles produced by Rust tools pass the same
 tests. React/React DOM replacement is explicitly outside R15.
@@ -100,8 +101,8 @@ The baseline recorded three Browserify outputs, with these hashes:
 | `resource/url.js` | 44,811 | `e78520a0a4d6ebec85820fd9d7dd26a834c6a1f341fd4df372ef2a22652a2e3d` |
 | `test/resource/sinon.js` | 935,636 | `7f720cb58553295166eebf595fb98c7dfec864adc22a269db64f9e49488d2313` |
 
-`js-build/js.js` carries the five string patches that the old Babel worker introduced, and they must
-remain: react-virtualized (HTML-namespace element, documentElement mounting, `flushSync` around the
+`tools/xtask/src/build.rs` carries the five string patches that the old Babel worker introduced, and
+they must remain: react-virtualized (HTML-namespace element, documentElement mounting, `flushSync` around the
 scroll `setState`), SingleFile (`globalThis.Set`/`Map`), Monaco `tsWorker.js` (translator type
 inference), monacopilot (local core import plus Timer module), and monacopilot-core (Mistral API
 host plus Timer module). These are source rewrites, not compiler features.
@@ -119,9 +120,9 @@ host plus Timer module). These are source rewrites, not compiler features.
 - **Sinon is a tracked upstream bundle** at `test/resource/sinon.js`, copied from
   `node_modules/sinon/pkg/sinon-no-sourcemaps.js` (1,511,175 bytes; SHA-256
   `9dec805edbe8b238565a05a73a3bc54f8001cdb44734e754042e49290bf6d209`). It is test-only.
-- `package.json` and `package-lock.json` still name the frozen npm packages, and `node_modules`
-  still exists for the FTL/localization helpers and optional ESLint. The build no longer reads it.
-  Do not run npm to build.
+- The root `node_modules`, `package.json`, `package-lock.json`, FTL helpers and ESLint config were
+  removed under D46. The build no longer reads or needs them. The connector submodule has its own
+  Node build tree.
 
 Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new URL cases),
 `importTest.js` 17/17, `tagSelectorTest.js` 29/29, and `attachmentReadObserverTest.js` 8/8. A clean
@@ -181,8 +182,9 @@ build completed with no browserify task, and the staging build succeeded.
   files, the CSL validator and the citeproc WASM are vendored under D41. A clean build does not read
   `node_modules`.
 - **Node invocations are gone from the build.** `build_and_run` and `test/runtests.sh` call
-  `cargo run -p xtask -- build`; `.signatures.json` and the watcher are gone. `js-build/` retains only
-  the FTL-to-JSON/localize helpers, and `node_modules` remains for those and optional ESLint.
+  `cargo run -p xtask -- build`; `.signatures.json` and the watcher are gone. The root `node_modules`,
+  npm metadata, `js-build/`, FTL tools and ESLint config are removed (D46). The connector submodule
+  keeps its own Node tree.
 - **Tests:** the build output matched the Node build exactly; the 85/85 utilities suite and the
   broader app/UI checks remain the behavioral oracle. The watcher was not ported: rerunning the
   fast build is the replacement.

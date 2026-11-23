@@ -25,10 +25,10 @@ push target. The product branch may diverge without limit.
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
-| Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
+| Dependencies | npm is retired (D32); the root npm tree and package metadata are removed (D46). The connector submodule keeps its own Node build tree |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
-| Docs | README index, Rust docs gate, D1–D45 |
+| Docs | README index, Rust docs gate, D1–D46 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
 Build note: the settings-descriptor work is now included in the current AppImage built for the
@@ -60,8 +60,8 @@ plan.
   ([rust.md](rust.md#phase-4-sass-replacement-2026-11-23)).
 - The build runner is ported: `xtask build` now does JS copy/patch, test-data copy, symlinks and
   Sass; `build_and_run` and the test runner no longer invoke Node, and `resource/` no longer points
-  into `node_modules` (D45). FTL/localization helpers and optional ESLint still use Node; neither is
-  needed to build. React replacement is outside R15.
+  into `node_modules`. The root npm tree, package metadata, FTL tooling and ESLint config are gone
+  (D45/D46). React replacement is outside R15.
 - Branches: `citewell` contains the attachments/resume work and phases 2–5; the stable AppImage
   reports `10.0.9.SOURCE.a9e354775`. The previous stable is `5f4a18b58`; the older test build is
   `74c10b0fb` (sha256 `4856a432…`).

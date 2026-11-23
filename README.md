@@ -41,7 +41,6 @@ after source changes. Tests run in a built app: `test/runtests.sh`. Output lands
 | `chrome/` | Application UI and XPCOM |
 | `resource/` | Bundled runtime resources |
 | `scss/` | Styles, compiled to CSS during the build |
-| `js-build/` | Legacy localization helpers; build is in `tools/xtask` |
 | `app/` | Packaging and platform runtimes |
 | `test/` | Tests and support code |
 | `docs/` | On-demand documentation (`research/` is archival) |
