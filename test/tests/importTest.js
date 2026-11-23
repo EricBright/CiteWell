@@ -231,6 +231,40 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should scan existing duplicates into a review report", async function () {
+		let reportPath = null;
+		try {
+			await resetData();
+			let first = new Zotero.Item("journalArticle");
+			first.libraryID = 1;
+			first.setField("title", "Duplicate review fixture");
+			first.setField("DOI", "10.1234/review");
+			await first.saveTx();
+			let second = new Zotero.Item("journalArticle");
+			second.libraryID = 1;
+			second.setField("title", "Duplicate review fixture");
+			second.setField("DOI", "10.1234/review");
+			await second.saveTx();
+
+			let result = await Zotero.LibraryImport.findLibraryDuplicates();
+			let group = result.groups.find(candidate =>
+				candidate.items.some(item => item.id === first.id)
+				&& candidate.items.some(item => item.id === second.id)
+			);
+			assert.ok(group);
+			reportPath = await Zotero.LibraryImport.writeLibraryDuplicateReport(result);
+			assert.isTrue(await IOUtils.exists(reportPath));
+			let report = JSON.parse(await Zotero.File.getContentsAsync(reportPath));
+			assert.isAtLeast(report.groups.length, 1);
+		}
+		finally {
+			await resetData();
+			if (reportPath) {
+				await IOUtils.remove(reportPath, { ignoreAbsent: true });
+			}
+		}
+	});
+
 	it("should match embedded citation data and import missing items", async function () {
 		let aliasesPath = OS.Path.join(Zotero.DataDirectory.dir, "identity", "aliases.jsonl");
 		try {

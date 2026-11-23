@@ -1536,6 +1536,71 @@ Zotero.LibraryImport = {
 	},
 
 	/**
+	 * Group existing library items that Zotero's duplicate detector puts in
+	 * the same set. This is a review aid only: it never changes an item.
+	 *
+	 * @return {Promise<{groups: Object[], itemCount: Number}>}
+	 */
+	findLibraryDuplicates: async function () {
+		var duplicates = new Zotero.Duplicates(1);
+		await duplicates._findDuplicates();
+		var ids = duplicates._sets.findAll(true) || [];
+		var seen = new Set();
+		var groups = [];
+		for (let id of ids) {
+			id = Number(id);
+			if (seen.has(id)) continue;
+			let setIDs = (duplicates.getSetItemsByItemID(id) || [])
+				.map(Number)
+				.filter(itemID => !seen.has(itemID));
+			if (setIDs.length < 2) continue;
+			let items = [];
+			for (let itemID of setIDs) {
+				seen.add(itemID);
+				let item = Zotero.Items.get(itemID);
+				if (!item || item.deleted) continue;
+				let field = (name) => {
+					try {
+						return item.getField(name) || null;
+					}
+					catch (e) {
+						return null;
+					}
+				};
+				items.push({
+					id: itemID,
+					key: item.key,
+					itemType: Zotero.ItemTypes.getName(item.itemTypeID),
+					title: field("title"),
+					date: field("date"),
+					DOI: field("DOI"),
+					ISBN: field("ISBN"),
+				});
+			}
+			if (items.length > 1) groups.push({ items });
+		}
+		return {
+			groups,
+			itemCount: groups.reduce((total, group) => total + group.items.length, 0),
+		};
+	},
+
+	writeLibraryDuplicateReport: async function (result) {
+		await Zotero.File.createDirectoryIfMissingAsync(this.identityDir);
+		var path = PathUtils.join(
+			this.identityDir,
+			`library-duplicates-${new Date().toISOString().replace(/[:.]/g, "-")}.json`
+		);
+		await Zotero.File.putContentsAsync(path, JSON.stringify({
+			version: 1,
+			createdAt: new Date().toISOString(),
+			itemCount: result.itemCount,
+			groups: result.groups,
+		}, null, 2));
+		return path;
+	},
+
+	/**
 	 * Find a library item for a citation's embedded CSL data.
 	 *
 	 * DOI/ISBN/PMID are exact matches; a normalized title (optionally with

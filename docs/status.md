@@ -58,13 +58,16 @@ plan.
   exact duplicate is not inserted; it is still placed in the recreated source collections, its
   source key aliases to the kept item, and its child notes are not duplicated. Title/year matches
   remain report-only, and existing metadata is never changed.
-- Tests: `importTest.js` 14/14, including DOI duplicate detection, report contents, exact-identifier
-  skip, collection placement and alias resolution.
+- Tests: `importTest.js` 15/15, including DOI duplicate detection, report contents, exact-identifier
+  skip, collection placement, alias resolution and the library duplicate-review report.
 - Test AppImage: `~/AppImages/citewell-dedup-test.appimage`, version
   `10.0.9.SOURCE.136368a54`, sha256
   `df20f97a54ec74126b5253dbf57cadf027e885ffee85fc8c34c550d93c463307`, 125,917,688 bytes.
-- Next: decide the post-report cleanup flow (interactive review or a dedup pass over existing
-  duplicates); automatic metadata merging remains out of scope.
+- Phase 3c adds **Duplicate review**: a scan of the current library using Zotero's duplicate
+  detector, a JSON group report under `identity/`, and a button that opens the built-in Duplicate
+  Items view. It never merges anything; the mature Zotero merge UI remains the only merge path.
+- Next: use the review view on the test library's four `Group-level cooperation` records, then
+  decide whether a guided per-group review is worth building.
 
 ## Handoff 2026-11-23 (Writer compatibility)
 

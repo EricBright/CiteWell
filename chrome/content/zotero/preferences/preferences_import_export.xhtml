@@ -52,6 +52,21 @@
 			</hbox>
 		</groupbox>
 
+		<groupbox aria-label="Duplicate review">
+			<label><html:h2>Duplicate review</html:h2></label>
+			<description>
+				Finds groups of items that Zotero's duplicate detector considers the same work.
+				This only writes a review report; merging is done by hand in Duplicate Items.
+			</description>
+			<hbox class="library-button-row">
+				<button id="library-duplicates-scan" label="Scan library for duplicates…"
+					oncommand="Zotero_Preferences.Library.scanDuplicates()"/>
+				<button id="library-duplicates-review" label="Open Duplicate Items"
+					oncommand="Zotero_Preferences.Library.openDuplicatesView()"/>
+			</hbox>
+			<description id="library-duplicates-status" class="library-muted"/>
+		</groupbox>
+
 		<groupbox aria-label="Last import">
 			<label><html:h2>Last import</html:h2></label>
 			<description id="library-last-result" class="library-muted"/>

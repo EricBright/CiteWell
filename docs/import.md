@@ -176,6 +176,9 @@ Import is the first section of **Import & Export**; Quick Copy follows below it:
   and followed by a confirmation that names both libraries' counts and the restore point.
 - **Check** — item, collection, note, attachment counts, size, free space and the source
   fingerprint, before anything is written.
+- **Duplicate review** — scans the current library with Zotero's duplicate detector, writes
+  `identity/library-duplicates-<timestamp>.json`, and opens the built-in Duplicate Items view.
+  Merging stays manual; this action never changes an item.
 - **Restore points** — date, origin, counts, size and a Restore action; restoring is reversible.
 - **Last operation** — counts, source fingerprint, and the restore-point path.
 

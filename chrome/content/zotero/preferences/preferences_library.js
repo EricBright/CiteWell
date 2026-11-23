@@ -866,6 +866,43 @@ Zotero_Preferences.Library = {
 		}
 	},
 
+	scanDuplicates: async function () {
+		if (this._busy) return;
+		this._busy = true;
+		let status = this._el("library-duplicates-status");
+		if (status) status.textContent = "Scanning the library for duplicates…";
+		try {
+			let result = await Zotero.LibraryImport.findLibraryDuplicates();
+			let report = await Zotero.LibraryImport.writeLibraryDuplicateReport(result);
+			this._duplicateReport = report;
+			if (status) {
+				status.textContent = result.groups.length
+					? `${this._plural(result.groups.length, "group", "groups")}, `
+						+ `${this._plural(result.itemCount, "item", "items")}. `
+						+ `Report: ${report}`
+					: "No duplicate groups found.";
+			}
+		}
+		catch (e) {
+			Zotero.logError(e);
+			if (status) status.textContent = `Could not scan for duplicates: ${e.message || e}`;
+		}
+		finally {
+			this._busy = false;
+		}
+	},
+
+	openDuplicatesView: async function () {
+		let win = Zotero.getMainWindow();
+		let selected = await win?.ZoteroPane?.collectionsView?.selectByID("D1");
+		if (!selected) {
+			let status = this._el("library-duplicates-status");
+			if (status) {
+				status.textContent = "Duplicate Items is not visible in the collection pane.";
+			}
+		}
+	},
+
 	cancelRestore: async function () {
 		if (!(await Zotero.LibraryImport.hasPendingRestore())) return;
 		var ps = Services.prompt;
