@@ -125,11 +125,15 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 |---|---|
 | Regular items | Fields, creators, tags and relations copied; a new key is generated and the old key mapped |
 | Collections | Tree recreated by name under an import root, then items assigned |
-| Notes | Copied with the mapped parent; HTML preserved |
-| Attachments | File copied from source `storage/` into CiteWell storage; imported-file mode; full-text reindexed |
+| Notes | Written as an HTML file attachment under `storage/`; parent mapped. Never rendered, edited, indexed or opened in-app — the OS default HTML handler opens it |
+| Attachments | File copied from source `storage/` into CiteWell storage; imported-file mode; not full-text indexed |
 | Annotations | Copied with mapped parent attachment; positions preserved |
 | Saved searches | Copied as definitions, not results |
 | Duplicates | Matched by DOI/ISBN first, then title + date; reported, not deleted |
+
+Group libraries are shared libraries, not collections. CiteWell has no group sync, so their items are
+imported into the personal library and each group gets a collection under the import root, preserving
+provenance without pretending the group still exists.
 
 The import runs in batches inside one transaction per batch, reports progress, and is resumable by
 recording the source item key in an import table. The source is opened **read-only**; a checksum
@@ -169,7 +173,7 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 | Phase | Outcome |
 |---|---|
 | 1 | Detector, dry run, adopt-copy, replace, restore points and checksum verification |
-| 2 | Merge regular items, collections and notes |
+| 2 | Merge regular items, collections, and notes as HTML attachments |
 | 3 | Attachments, annotations and saved searches |
 | 4 | Duplicate report and resumable merges |
 
