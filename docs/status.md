@@ -55,12 +55,14 @@ plan.
 - Phase 2: merge keeps a free source key; every item also gets an entry in
   `<data>/identity/aliases.jsonl`. Citation resolution falls back to that chain after an exact URI
   and a replaced-item lookup. Group aliases use the source group ID.
-- Tests: `importTest.js` 13/13 (key preservation, alias lookup, chain/cycle) and
-  `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
+- Tests: `importTest.js` 13/13 (key preservation, a forced key collision, alias lookup and
+  chain/cycle) and `test/lo/test_protocol.py` 9/9. The OXT rebuilds cleanly.
 - Test AppImage: `~/AppImages/citewell-writer-test.appimage`, version
   `10.0.9.SOURCE.0fb0df6ec`, sha256
   `e1d5d586d09634192ea0d3389b4f9db6bf3aed70126289ded310a6e4e7c99317`, 125,917,688 bytes.
-  The stable `~/AppImages/citewell.appimage` is unchanged (`d6e648d81`).
+  The stable `~/AppImages/citewell.appimage` is unchanged (`d6e648d81`). Install or repair the
+  LibreOffice extension from this test build before testing a document; the old OXT still writes
+  `CITEWELL_` marks.
 - Not yet done: a real Zotero-created ODT round-trip (open → refresh → save → reopen in Zotero);
   alias inclusion in restore points; Phase 3 dedup aliases; Phase 4 unresolved-citation repair.
 - Next: build a test AppImage from this branch, run the ODT round-trip, then decide whether to merge
