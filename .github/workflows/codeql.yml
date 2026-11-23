@@ -7,11 +7,11 @@ name: CodeQL
 # Zotero's own ci.yml is disabled by GitHub on forks ("disabled_fork"), so it
 # is not part of this workflow set. See docs/sync.md.
 
+# CodeQL is a scheduled/manual audit, not a per-push gate. Every push used to
+# start a JavaScript analysis that takes about three minutes; the branch is not
+# protected, so it never blocked a merge. Run it with "Run workflow" before a
+# release when a fresh scan is needed.
 on:
-  push:
-    branches: [main, citewell]
-  pull_request:
-    branches: [main, citewell]
   schedule:
     - cron: '43 5 * * 4'
   workflow_dispatch:

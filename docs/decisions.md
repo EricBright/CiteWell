@@ -838,6 +838,21 @@ Rejected: native CSS migration — 13,722 lines and 41 mixins for no user-facing
 rsass — less complete and no advantage for these stylesheets. Rejected: keeping Node Sass — it would
 keep the Node build tree required for no reason.
 
+## D44 — CodeQL is a scheduled audit, not a per-push gate
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes
+
+CodeQL runs weekly and by manual dispatch. It no longer runs on every push or pull request. The
+JavaScript analysis took about three minutes per push, the branch is not protected, and the
+workflow therefore never gated a merge; it only consumed runner time and pushed the developer to
+wait for a check that was not blocking.
+
+This is a scheduling decision, not a claim that the findings are unimportant. The repository has
+60 open alerts (17 errors, 43 warnings) inherited mostly from Zotero, its connectors and vendored
+code. They remain in the Security tab and should be triaged separately. A fresh scan is available
+from “Run workflow” before a release. Restoring the `push`/`pull_request` triggers reverses this
+decision.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
