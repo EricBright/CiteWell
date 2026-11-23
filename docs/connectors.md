@@ -1,8 +1,10 @@
 # The Firefox connector
 
-CiteWell's browser connector is the upstream `zotero/zotero-connectors` project, imported at
-`connectors/` and built for **Firefox only**. Chrome and Safari code stays in the tree but is
-never built: pruning it would be a fork re-applied on every upstream update.
+CiteWell's browser connector is built from the upstream `zotero/zotero-connectors` project,
+imported at `connectors/` and built for **Firefox only**. It is **not** the AMO-published Zotero
+Connector: it has a different extension ID, different branding and the patches listed below, so
+Firefox installs it as a separate add-on. Chrome and Safari code stays in the tree but is never
+built: pruning it would be a fork re-applied on every upstream update.
 
 ## What was imported, and how
 
@@ -119,13 +121,18 @@ The build now copies exactly what the UI asks for:
 
 ## Build
 
+The app build is Node-free, but the connector build still uses upstream's `build.sh` + gulp
+pipeline and the isolated `connectors/node_modules` tree. That tree is the last npm tree in the
+repository; removing it requires either vendoring the current Firefox output or porting the
+connector build (see [status.md](status.md#handoff-2026-11-23-connector-build)).
+
 ```bash
-# first time only: installs connector dependencies
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 ```
 
 Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a Rust
-`rsvg-convert` replacement, so no librsvg binary is needed.
+`rsvg-convert` replacement, so no librsvg binary is needed. It also applies CiteWell branding,
+the book-section icons and the state-dot composites after the upstream pipeline.
 
 ## Load it
 

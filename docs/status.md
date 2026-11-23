@@ -20,7 +20,7 @@ push target. The product branch may diverge without limit.
 | App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.a9e354775`, sha256 `7ba2d2d7…`, 125,819,384 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
-| Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
+| Connector | Imported upstream source built as **CiteWell Connector** (not the AMO Zotero Connector); branded, ID `citewell-connector@sophy.ca`, port 23120. Build still uses `connectors/node_modules` |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
@@ -66,6 +66,28 @@ plan.
   reports `10.0.9.SOURCE.a9e354775`. The previous stable is `5f4a18b58`; the older test build is
   `74c10b0fb` (sha256 `4856a432…`).
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
+
+## Handoff 2026-11-23 (Connector build)
+
+- **Identity:** CiteWell's connector is built from the upstream
+  `zotero/zotero-connectors` source imported in `connectors/`, not the AMO-published Zotero
+  Connector. It has the CiteWell name, extension ID `citewell-connector@sophy.ca`, port 23120,
+  `ONLINE_LIBRARY: false`, the book-section icon set and the Google Docs branding. Details and the
+  complete patch list are in [connectors.md](connectors.md).
+- **Build state:** `xtask connectors` still runs upstream's `connectors/build.sh` + gulp pipeline,
+  then adds CiteWell icons/branding and zips the XPI. It requires the isolated
+  `connectors/node_modules` tree (about 96 MB). The root app build and tests are already Node-free;
+  this connector tree is the last npm dependency in the repository.
+- **Decision deferred to next session.** Do not delete `connectors/node_modules` before choosing:
+  - **Vendor the current Firefox output** and keep only xtask packaging/branding. Fast (hours),
+    removes the tree, but connector source changes need an external Node rebuild.
+  - **Port the Firefox-only build to Rust.** Preserves rebuild capability. Scope: 186 source files,
+    108 plain JS, 7 JSX files (5,038 lines, 226 elements), five browser libs to vendor, and the gulp
+    string/manifest transformations. A Rust JSX transform (OXC/SWC) or a source rewrite is needed;
+    no Rust replacement exists for the Mocha/Puppeteer connector tests. Estimate 3–5 focused days.
+  - **Keep the tree.** No work, but the npm dependency remains.
+- `connectors/` is part of this repository, not a pushed submodule; its nested `src/translate`,
+  `src/utilities` and `src/zotero-schema` are submodules. The build can be changed here.
 
 ## Handoff 2026-11-23 (Attachments)
 
