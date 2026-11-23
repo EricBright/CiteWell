@@ -92,7 +92,6 @@ describe("Library import", function () {
 			await Zotero.Promise.delay(1500);
 			assert.ok(win.document.getElementById("zotero-prefpane-library"));
 			assert.ok(win.document.getElementById("library-current-path"));
-			assert.ok(win.document.getElementById("library-merge"));
 			assert.include(
 				win.document.getElementById("library-current-path").textContent,
 				"Zotero"
@@ -114,6 +113,9 @@ describe("Library import", function () {
 			await Zotero.Promise.delay(1500);
 			assert.ok(win.document.getElementById("zotero-prefpane-import-export"));
 			assert.ok(win.document.getElementById("library-import"));
+			assert.ok(win.document.getElementById("library-merge"));
+			assert.ok(win.document.getElementById("library-replace"));
+			assert.ok(win.document.getElementById("library-import-target"));
 			assert.ok(win.document.getElementById("zotero-quickCopy-menu"));
 			assert.ok(win.document.getElementById("library-restore-points"));
 		}
