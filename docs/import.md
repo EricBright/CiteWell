@@ -135,9 +135,11 @@ Group libraries are shared libraries, not collections. CiteWell has no group syn
 imported into the personal library and each group gets a collection under the import root, preserving
 provenance without pretending the group still exists.
 
-The import runs in batches inside one transaction per batch, reports progress, and is resumable by
-recording the source item key in an import table. The source is opened **read-only**; a checksum
-before and after proves it was not modified.
+The item and collection pass runs in a single transaction: a failure leaves the current library
+unchanged, and the database backup remains as the restore point. Notes are written afterwards as
+HTML attachments; a failed note is reported as a warning without aborting the rest. Resumable
+batching and duplicate reporting are Phase 4. The source is opened **read-only**; a checksum before
+and after proves it was not modified.
 
 ## Settings pane
 
