@@ -542,6 +542,24 @@ describe("Zotero.Utilities.Internal", function () {
 			f = Zotero.Utilities.Internal.parseURL;
 		});
 
+		it("should expose URL parts without the Node url module", function () {
+			let parts = f('https://example.com:8443/abc/def.html?foo=bar#top');
+			assert.equal(parts.protocol, 'https:');
+			assert.equal(parts.host, 'example.com:8443');
+			assert.equal(parts.hostname, 'example.com');
+			assert.equal(parts.port, '8443');
+			assert.equal(parts.pathname, '/abc/def.html');
+			assert.equal(parts.search, '?foo=bar');
+			assert.equal(parts.hash, '#top');
+		});
+
+		it("should parse path-only input without inventing a host", function () {
+			let parts = f('abc/def.html');
+			assert.equal(parts.fileName, 'def.html');
+			assert.isNull(parts.host);
+			assert.isNull(parts.hostname);
+		});
+
 		describe("#fileName", function () {
 			it("should contain filename", function () {
 				assert.propertyVal(f('http://example.com/abc/def.html?foo=bar'), 'fileName', 'def.html');

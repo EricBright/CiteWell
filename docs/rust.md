@@ -55,19 +55,19 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 1 baseline recorded 2026-11-23; no build code changed.** D41 governs the order:
-delete the need before choosing a replacement.
+Status: **phase 2 deletion pass complete 2026-11-23; Babel, Sass and the Node runner remain.**
+D41 governs the order: delete the need before choosing a replacement.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
 | Surface | Actual use | Candidate |
 |---|---|---|
 | Babel | JSX in 33 files, ESM→CommonJS in 28; no `preset-env`; special string patches for five vendored resources | Write JSX/ESM differently, or SWC/OXC |
-| Browserify | Exactly three standalone bundles: `react-select`, `url`, test-only `sinon`; no app bundling, no transforms | Delete: upstream Sinon bundle, vendored `react-select`, remove `url` |
+| Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
 | Sass | 165 files, 304 `@import`s, 41 mixins, 10 functions, 24 `@if`, 27 `@each`, five `@use` built-in modules, compressed output and source maps | Native CSS migration, or grass/rsass |
 | Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
 
-This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` has two call
+This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
 sites and should use the URL API. The Sinon bundle is test-only. Only Babel and Sass are real
 compiler replacements, and both have a source-redesign alternative.
 
@@ -89,9 +89,10 @@ tests. React/React DOM replacement is explicitly outside R15.
 ### Phase 1 baseline (2026-11-23)
 
 The oracle is the stable AppImage `10.0.9.SOURCE.00cdbf437` plus the test results: import 17/17,
-LibreOffice protocol 9/9, docs and dependency-guard gates green. No build output has been removed.
+LibreOffice protocol 9/9, docs and dependency-guard gates green. No build output had been removed at
+that point.
 
-Three Browserify outputs exist, and their current hashes are:
+The baseline recorded three Browserify outputs, with these hashes:
 
 | Output | Bytes | SHA-256 |
 |---|---|---|
@@ -104,6 +105,27 @@ must keep them: react-virtualized (HTML-namespace element, documentElement mount
 around the scroll `setState`), SingleFile (`globalThis.Set`/`Map`), Monaco `tsWorker.js` (translator
 type inference), monacopilot (local core import plus Timer module), and monacopilot-core (Mistral
 API host plus Timer module). These are source rewrites, not compiler features.
+
+### Phase 2 deletion pass (2026-11-23)
+
+- **Browserify is gone from the build.** `js-build/browserify.js` is deleted, its call is removed
+  from `build.js`, and the three-entry config is gone. A clean build no longer runs a bundle step.
+- **`url` is gone from the built path.** `Zotero.Utilities.Internal.parseURL()` uses the built-in
+  WHATWG `URL`; `resource/url.js` is no longer generated. The only other `require('url')` is in the
+  ignored translator example, which is not built or shipped.
+- **`react-select` is a tracked vendored bundle** at `resource/react-select.js` (236,007 bytes with
+  the provenance header). It is the previous Browserify output, with React and ReactDOM still
+  external; the build symlinks it like the other `resource/` files.
+- **Sinon is a tracked upstream bundle** at `test/resource/sinon.js`, copied from
+  `node_modules/sinon/pkg/sinon-no-sourcemaps.js` (1,511,175 bytes; SHA-256
+  `9dec805edbe8b238565a05a73a3bc54f8001cdb44734e754042e49290bf6d209`). It is test-only.
+- `package.json` and `package-lock.json` still name the frozen npm packages, and `node_modules`
+  still exists. They are no longer used by the build; removing them belongs to phase 5, after Babel,
+  Sass and the runner are replaced. Do not run npm.
+
+Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new URL cases),
+`importTest.js` 17/17, `tagSelectorTest.js` 29/29, and `attachmentReadObserverTest.js` 8/8. A clean
+`node js-build/build.js` completed in 5.2 s with no browserify task, and the staging build succeeded.
 
 ## Porting existing JavaScript
 

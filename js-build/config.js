@@ -59,31 +59,6 @@ const symlinkFiles = [
 ];
 
 
-// these files will be browserified during the build
-const browserifyConfigs = [
-	{
-		src: 'node_modules/react-select/dist/react-select.cjs.prod.js',
-		dest: 'resource/react-select.js',
-		config: {
-			standalone: 'react-select'
-		}
-	},
-	{
-		src: 'node_modules/url/url.js',
-		dest: 'resource/url.js',
-		config: {
-			standalone: 'url'
-		}
-	},
-	{
-		src: 'node_modules/sinon/lib/sinon.js',
-		dest: 'test/resource/sinon.js',
-		config: {
-			standalone: 'sinon'
-		}
-	},
-];
-
 // exclude mask used for js, copy, symlink and sass tasks
 const ignoreMask = [
 	'**/#*',
@@ -132,7 +107,6 @@ module.exports = {
 	symlinkDirs,
 	copyDirs,
 	symlinkFiles,
-	browserifyConfigs,
 	jsFiles,
 	scssFiles,
 	ignoreMask,

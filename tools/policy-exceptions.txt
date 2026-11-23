@@ -3,3 +3,5 @@
 # Add a path only after the decision record exists; repo-guard rejects anything else.
 D38 chrome/content/zotero/xpcom/attention.js
 D38 test/tests/attentionTest.js
+D41 resource/react-select.js
+D41 test/resource/sinon.js

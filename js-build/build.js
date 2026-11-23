@@ -1,6 +1,5 @@
 const colors = require('colors/safe');
 
-const getBrowserify = require('./browserify');
 const getCopy = require('./copy');
 const getJS = require('./js');
 const getSass = require('./sass');
@@ -27,7 +26,6 @@ if (require.main === module) {
 			onSuccess(await cleanUp(signatures));
 			
 			const results = await Promise.all([
-				getBrowserify(signatures),
 				getCopy(copyDirs.map(d => `${d}/**`), { ignore: ignoreMask }, signatures),
 				getJS(jsFiles, { ignore: ignoreMask }, signatures),
 				...scssFiles.map(scf => getSass(scf, { ignore: ignoreMask }, signatures)),

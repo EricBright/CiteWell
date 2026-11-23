@@ -2092,17 +2092,36 @@ Zotero.Utilities.Internal = {
 	},
 
 	parseURL: function (url) {
-		var parts = require('url').parse(url);
-		// fileName
-		parts.fileName = parts.pathname.split('/').pop();
-		// fileExtension
-		var pos = parts.fileName.lastIndexOf('.');
-		parts.fileExtension = pos == -1 ? '' : parts.fileName.substr(pos + 1);
-		// fileBaseName
-		parts.fileBaseName = parts.fileName
+		var absolute = /^[a-z][a-z0-9+.-]*:/i.test(url);
+		var parsed;
+		try {
+			parsed = new URL(url);
+		}
+		catch (e) {
+			// The removed Node parser accepted path-only input. Parse it against
+			// a dummy origin, but do not report that origin as the host.
+			parsed = new URL(url, "http://localhost/");
+		}
+		var pathname = parsed.pathname;
+		var fileName = pathname.split("/").pop();
+		var pos = fileName.lastIndexOf(".");
+		var fileExtension = pos == -1 ? "" : fileName.substr(pos + 1);
+		var fileBaseName = fileName
 			// filename up to the period before the file extension, if there is one
-			.substr(0, parts.fileName.length - (parts.fileExtension ? parts.fileExtension.length + 1 : 0));
-		return parts;
+			.substr(0, fileName.length - (fileExtension ? fileExtension.length + 1 : 0));
+		return {
+			href: parsed.href,
+			protocol: parsed.protocol,
+			host: absolute ? parsed.host : null,
+			hostname: absolute ? parsed.hostname : null,
+			port: absolute ? parsed.port : null,
+			pathname,
+			search: parsed.search,
+			hash: parsed.hash,
+			fileName,
+			fileExtension,
+			fileBaseName,
+		};
 	},
 	
 	/**
