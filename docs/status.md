@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.3fa6e775d`, sha256 `85df6c79…`, 125,884,920 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.5f4a18b58`, sha256 `ccdc3d80…`, 125,819,384 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -36,9 +36,10 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,884,920 bytes; sha256
-  `85df6c7987c7a16d1fb58658d00c61d2895f5b2788ad05352cfbad4be4f20738`; stable
-  attachments/resume + Browserify/Babel-deletion build, version `10.0.9.SOURCE.3fa6e775d`)
+- `dist/CiteWell-x86_64.AppImage` (125,819,384 bytes; sha256
+  `ccdc3d80916e6cd5e4bf5234062e1ab8643d7282fcdd1ba57044424a85d22ae9`; stable
+  attachments/resume + Browserify/Babel/Node-Sass-replacement build, version
+  `10.0.9.SOURCE.5f4a18b58`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -60,9 +61,9 @@ plan.
 - Order: only the Node runner/xtask orchestration remains: FTL conversion, glob/copy/symlink,
   signatures, watch and the final `js-build/`/`node_modules` removal. React replacement is outside
   R15.
-- Branches: `citewell` contains the attachments/resume work and phases 2–4; a new stable AppImage
-  is built after this handoff. The previous stable is `10.0.9.SOURCE.3fa6e775d`; the older test
-  build is `74c10b0fb` (sha256 `4856a432…`).
+- Branches: `citewell` contains the attachments/resume work and phases 2–4; the stable AppImage
+  reports `10.0.9.SOURCE.5f4a18b58`. The previous stable is `3fa6e775d`; the older test build is
+  `74c10b0fb` (sha256 `4856a432…`).
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
 
 ## Handoff 2026-11-23 (Attachments)
