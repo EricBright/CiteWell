@@ -1,40 +1,21 @@
-/*
-    ***** BEGIN LICENSE BLOCK *****
-    
-    Copyright © 2019 Corporation for Digital Scholarship
-                     Vienna, Virginia, USA
-                     https://digitalscholar.org
-    
-    This file is part of Zotero.
-    
-    Zotero is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    
-    Zotero is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-    
-    You should have received a copy of the GNU Affero General Public License
-    along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
-    ***** END LICENSE BLOCK *****
-*/
+"use strict";
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import cx from 'classnames';
-import { noop } from '../utils';
-//import Spinner from '../ui/spinner';
-import Select from 'react-select';
-
+function _interopDefault(mod) {
+	return mod && mod.__esModule ? mod.default : mod;
+}
+var React = _interopDefault(require("react"));
+var h = React.createElement;
+var PropTypes = _interopDefault(require("prop-types"));
+var cx = _interopDefault(require("classnames"));
+var {
+	noop,
+} = require("../utils");
+var Select = _interopDefault(require("react-select"));
 class SelectInput extends React.PureComponent {
 	constructor(props) {
 		super(props);
 		this.state = {
-			value: props.value
+			value: props.value,
 		};
 	}
 
@@ -47,32 +28,37 @@ class SelectInput extends React.PureComponent {
 	}
 
 	focus() {
-		if(this.input != null) {
+		if (this.input != null) {
 			this.input.focus();
 		}
 	}
 
-	UNSAFE_componentWillReceiveProps({ value }) {
+	UNSAFE_componentWillReceiveProps({
+		value,
+	}) {
 		if (value !== this.props.value) {
-			this.setState({ value });
+			this.setState({
+				value,
+			});
 		}
 	}
 
 	handleChange(value, ev) {
-		value = value !== null || (value === null && this.props.clearable) ?
-			value : this.props.value;
-		this.setState({ value });
-
-		if(this.props.onChange(value) || this.forceCommitOnNextChange) {
-			if(!ev) {
+		value = value !== null || value === null && this.props.clearable ? value : this.props.value;
+		this.setState({
+			value,
+		});
+		if (this.props.onChange(value) || this.forceCommitOnNextChange) {
+			if (!ev) {
 				//@NOTE: this is using undocumeneted feature of react-selct v1, but see #131
-				const source = typeof this.input.input.getInput === 'function' ?
-					this.input.input.getInput() : this.input.input;
+				const source = typeof this.input.input.getInput === "function"
+					? this.input.input.getInput()
+					: this.input.input;
 				ev = {
-					type: 'change',
+					type: "change",
 					currentTarget: source,
-					target: source
-				}
+					target: source,
+				};
 			}
 			this.commit(ev, value, value !== this.props.value);
 		}
@@ -82,7 +68,7 @@ class SelectInput extends React.PureComponent {
 	handleBlur(event) {
 		this.props.onBlur(event);
 		this.cancel(event);
-		if(this.props.autoBlur) {
+		if (this.props.autoBlur) {
 			this.forceCommitOnNextChange = true;
 		}
 	}
@@ -93,11 +79,10 @@ class SelectInput extends React.PureComponent {
 
 	handleKeyDown(event) {
 		switch (event.key) {
-			case 'Escape':
+			case "Escape":
 				this.cancel(event);
-			break;
-		default:
-			return;
+				break;
+			default:
 		}
 	}
 
@@ -122,7 +107,6 @@ class SelectInput extends React.PureComponent {
 			tabIndex,
 			value,
 		} = this.props;
-
 		const commonProps = {
 			disabled: this.props.isDisabled,
 			onBlur: this.handleBlur.bind(this),
@@ -131,28 +115,40 @@ class SelectInput extends React.PureComponent {
 			ref: input => this.input = input,
 			required: this.props.isRequired,
 		};
-
-		if(userType === 'touch' || viewport.xxs || viewport.xs || viewport.sm) {
+		if (userType === "touch" || viewport.xxs || viewport.xs || viewport.sm) {
 			const props = {
 				...commonProps,
 				onKeyDown: this.handleKeyDown.bind(this),
 				onChange: ev => this.handleChange(ev.target.value, ev),
-				autoFocus, id, placeholder, tabIndex, value
+				autoFocus,
+				id,
+				placeholder,
+				tabIndex,
+				value,
 			};
-			return (
-				<div className="native-select-wrap" >
-					<select { ...props }>
-						{ options.map(({ value, label }) => (
-							<option key={ value } value={ value }>{ label }</option>)
-						)}
-					</select>
-					<div className={ className }>
-						{ (options.find(o => o.value === value) || options[0] || {}).label }
-					</div>
-				</div>
-
+			return h(
+				"div",
+				{
+					className: "native-select-wrap",
+				},
+				h(
+					"select",
+					props,
+					options.map(({
+						value,
+						label,
+					}) => h("option", {
+						key: value,
+						value: value,
+					}, label)
+					),
+				),
+				h("div", {
+					className: className,
+				}, (options.find(o => o.value === value) || options[0] || {}).label),
 			);
-		} else {
+		}
+		else {
 			const props = {
 				...this.defaultSelectProps,
 				...this.props,
@@ -160,8 +156,7 @@ class SelectInput extends React.PureComponent {
 				onInputKeyDown: this.handleKeyDown.bind(this),
 				onChange: this.handleChange.bind(this),
 			};
-
-			return <Select { ...props } />;
+			return h(Select, props);
 		}
 	}
 
@@ -171,22 +166,27 @@ class SelectInput extends React.PureComponent {
 	}
 
 	render() {
-		const { userType, viewport } = this.props.device;
+		const {
+			userType,
+			viewport,
+		} = this.props.device;
 		const className = cx({
-			'input-group': true,
-			'select': true,
-			'busy': this.props.isBusy
+			"input-group": true,
+			select: true,
+			busy: this.props.isBusy,
 		}, this.props.inputGroupClassName);
-		return (
-			<div className={ className }>
-				{ this.renderInput(userType, viewport) }
-				{ this.renderSpinner() }
-			</div>
+		return h(
+			"div",
+			{
+				className: className,
+			},
+			this.renderInput(userType, viewport),
+			this.renderSpinner(),
 		);
 	}
 
 	static defaultProps = {
-		className: 'form-control',
+		className: "form-control",
 		onBlur: noop,
 		onCancel: noop,
 		onChange: noop,
@@ -194,7 +194,7 @@ class SelectInput extends React.PureComponent {
 		onFocus: noop,
 		options: [],
 		tabIndex: -1,
-		value: '',
+		value: "",
 	};
 
 	static propTypes = {
@@ -217,5 +217,4 @@ class SelectInput extends React.PureComponent {
 		value: PropTypes.string.isRequired,
 	};
 }
-
-export default SelectInput;
+module.exports = SelectInput;

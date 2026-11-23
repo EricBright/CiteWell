@@ -25,8 +25,8 @@ const copyDirs = [
 // list of files from root folder to symlink
 const symlinkFiles = [
 	'chrome.manifest',
-	// react-virtualized needs to be patched by babel-worker.js, so symlink all files in resource/ except for
-	// those. Babel transpilation is still disabled in .babelrc.
+	// react-virtualized and other vendored resources are patched by js-build/js.js,
+	// so exclude them from the plain symlink pass.
 	'resource/**/*',
 	'!resource/react-virtualized.js',
 	// Only include dist directory of singleFile
@@ -51,7 +51,7 @@ const symlinkFiles = [
 	'!chrome/skin/default/zotero/**/*.scss',
 	'!resource/citeproc_rs_wasm.js',
 	'resource/vs/**/*',
-	// Patched in babel-worker.js
+	// Patched in js-build/js.js
 	'!resource/vs/language/typescript/tsWorker.js',
 	'!resource/monacopilot.mjs',
 	'!resource/monacopilot-core.mjs',
@@ -73,9 +73,7 @@ const ignoreMask = [
 
 const jsFiles = [
 	`{${dirs.join(',')}}/**/*.js`,
-	`{${dirs.join(',')}}/**/*.jsx`,
 	`!{${symlinkDirs.concat(copyDirs).join(',')}}/**/*.js`,
-	`!{${symlinkDirs.concat(copyDirs).join(',')}}/**/*.jsx`,
 	// Special handling for react-virtualized and others -- see note above
 	'resource/react-virtualized.js',
 	'resource/SingleFile/lib/single-file.js',

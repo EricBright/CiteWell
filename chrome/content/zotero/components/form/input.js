@@ -1,36 +1,44 @@
+"use strict";
+
+function _interopDefault(mod) {
+	return mod && mod.__esModule ? mod.default : mod;
+}
+
 /*
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2019 Corporation for Digital Scholarship
                      Vienna, Virginia, USA
                      https://digitalscholar.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 */
-
-import React from 'react';
-import PropTypes from 'prop-types';
-import cx from 'classnames';
-import { noop } from '../utils';
-import { pickKeys } from 'zotero/modules/immutable';
-//import AutoResizer from './auto-resizer';
-import Autosuggest from 'react-autosuggest';
-
+var React = _interopDefault(require("react"));
+var h = React.createElement;
+var PropTypes = _interopDefault(require("prop-types"));
+var cx = _interopDefault(require("classnames"));
+var {
+	noop
+} = require("../utils");
+var {
+	pickKeys
+} = require("zotero/modules/immutable");
+var Autosuggest = _interopDefault(require("react-autosuggest"));
 class Input extends React.PureComponent {
 	constructor(props) {
 		super(props);
@@ -38,10 +46,10 @@ class Input extends React.PureComponent {
 			suggestions: [],
 			value: props.value
 		};
-		this.suggestions = React.createRef();
-		this.showSuggestions = React.createRef(false);
-		this.preSuggestionValue = React.createRef();
-		this.selectedSuggestion = React.createRef();
+		this.suggestions = /*#__PURE__*/React.createRef();
+		this.showSuggestions = /*#__PURE__*/React.createRef(false);
+		this.preSuggestionValue = /*#__PURE__*/React.createRef();
+		this.selectedSuggestion = /*#__PURE__*/React.createRef();
 	}
 
 	cancel(event = null) {
@@ -62,16 +70,24 @@ class Input extends React.PureComponent {
 		}
 	}
 
-	UNSAFE_componentWillReceiveProps({ value }) {
+	UNSAFE_componentWillReceiveProps({
+		value
+	}) {
 		if (value !== this.props.value) {
-			this.setState({ value });
+			this.setState({
+				value
+			});
 		}
 	}
 
-	handleChange({ target }, { newValue } = {}) {
+	handleChange({
+		target
+	}, {
+		newValue
+	} = {}) {
 		newValue = newValue || target.value;
 		this.setState({
-			value: newValue,
+			value: newValue
 		});
 		this.props.onChange(newValue);
 	}
@@ -81,7 +97,9 @@ class Input extends React.PureComponent {
 			this.selectedSuggestion.current = null;
 			return;
 		}
-		if (this.hasBeenCancelled || this.hasBeenCommitted) { return; }
+		if (this.hasBeenCancelled || this.hasBeenCommitted) {
+			return;
+		}
 		const shouldCancel = this.props.onBlur(event);
 		shouldCancel ? this.cancel(event) : this.commit(event);
 	}
@@ -98,20 +116,21 @@ class Input extends React.PureComponent {
 	handleKeyDown(event) {
 		this.showSuggestions.current = true;
 		switch (event.key) {
-			case 'Escape':
+			case "Escape":
 				this.cancel(event);
-			break;
-			
-			case 'Enter':
+				break;
+			case "Enter":
 				if (this.selectedSuggestion.current) {
 					let value = this.selectedSuggestion.current;
 					this.selectedSuggestion.current = null;
-					this.setState({ value });
+					this.setState({
+						value
+					});
 				}
 				else {
 					this.commit(event);
 				}
-			break;
+				break;
 		}
 		this.props.onKeyDown(event);
 	}
@@ -122,39 +141,45 @@ class Input extends React.PureComponent {
 
 	// Autosuggest will call this function every time you need to update suggestions.
 	// You already implemented this logic above, so just use it.
-	async handleSuggestionsFetchRequested({ value }) {
+	async handleSuggestionsFetchRequested({
+		value
+	}) {
 		this.setState({
 			suggestions: await this.props.getSuggestions(value)
 		});
 	}
-	
+
 	// Autosuggest will call this function every time you need to clear suggestions.
 	handleSuggestionsClearRequested() {
 		this.setState({
 			suggestions: []
 		});
 	}
-	
+
 	getSuggestionValue(suggestion) {
 		return suggestion;
 	}
-	
+
 	shouldRenderSuggestions(value) {
 		return value.length && this.showSuggestions.current;
 	}
-	
+
 	renderSuggestion(suggestion) {
-		return <span>
-			{suggestion}
-		</span>;
+		return h("span", null, suggestion);
 	}
-	
-	handleSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+
+	handleSuggestionSelected = (event, {
+		suggestion,
+		suggestionValue,
+		suggestionIndex,
+		sectionIndex,
+		method
+	}) => {
 		this.selectedSuggestion.current = suggestionValue;
 		// focusInputOnSuggestionClick in Autosuggest doesn't work with a custom renderInputComponent,
 		// so refocus the textbox manually
 		setTimeout(() => this.props.innerRef.current.focus());
-	}
+	};
 
 	get value() {
 		return this.state.value;
@@ -167,7 +192,6 @@ class Input extends React.PureComponent {
 	renderInput() {
 		this.hasBeenCancelled = false;
 		this.hasBeenCommitted = false;
-		
 		const inputProps = {
 			disabled: this.props.isDisabled,
 			onBlur: this.handleBlur.bind(this),
@@ -178,59 +202,53 @@ class Input extends React.PureComponent {
 			readOnly: this.props.isReadOnly,
 			required: this.props.isRequired,
 			value: this.state.value,
-			...pickKeys(this.props, ['autoFocus', 'className', 'form', 'id', 'inputMode', 'max',
-				'maxLength', 'min', 'minLength', 'name', 'placeholder', 'type', 'spellCheck',
-				'step', 'tabIndex']),
+			...pickKeys(this.props, ["autoFocus", "className", "form", "id", "inputMode", "max", "maxLength", "min", "minLength", "name", "placeholder", "type", "spellCheck", "step", "tabIndex"]),
 			...pickKeys(this.props, key => key.match(/^(aria-|data-).*/))
 		};
-		
-		var input = this.props.autoComplete ? (
-			<Autosuggest
-				suggestions={this.state.suggestions}
-				onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested.bind(this)}
-				onSuggestionsClearRequested={this.handleSuggestionsClearRequested.bind(this)}
-				onSuggestionSelected={this.handleSuggestionSelected}
-				getSuggestionValue={this.getSuggestionValue.bind(this)}
-				renderSuggestion={this.renderSuggestion.bind(this)}
-				// https://github.com/moroshko/react-autosuggest/issues/474
-				renderInputComponent={(inputProps) => <input {...inputProps} ref={this.props.innerRef} />}
-				focusInputOnSuggestionClick={false}
-				shouldRenderSuggestions={this.shouldRenderSuggestions.bind(this)}
-				inputProps={inputProps}
-			/>
-		) : (
-			<input { ...inputProps } />
-		);
+		var input = this.props.autoComplete
+			? h(Autosuggest, {
+				suggestions: this.state.suggestions,
+				onSuggestionsFetchRequested: this.handleSuggestionsFetchRequested.bind(this),
+				onSuggestionsClearRequested: this.handleSuggestionsClearRequested.bind(this),
+				onSuggestionSelected: this.handleSuggestionSelected,
+				getSuggestionValue: this.getSuggestionValue.bind(this),
+				renderSuggestion: this.renderSuggestion.bind(this),
+				renderInputComponent: inputProps => h("input", {
+					...inputProps,
+					ref: this.props.innerRef
+				}),
+				focusInputOnSuggestionClick: false,
+				shouldRenderSuggestions: this.shouldRenderSuggestions.bind(this),
+				inputProps: inputProps
+			})
+			: h("input", inputProps);
+		if (this.props.resize) {
 
-		if(this.props.resize) {
 			/*input = (
-				<AutoResizer
-					content={ this.state.value }
-					vertical={ this.props.resize === 'vertical' }
-				>
-					{ input }
-				</AutoResizer>
-			);*/
+         	<AutoResizer
+         		content={ this.state.value }
+         		vertical={ this.props.resize === 'vertical' }
+         	>
+         		{ input }
+         	</AutoResizer>
+         );*/
 		}
-
 		return input;
 	}
 
 	render() {
 		const className = cx({
-			'input-group': true,
-			'input': true,
-			'busy': this.props.isBusy
+			"input-group": true,
+			input: true,
+			busy: this.props.isBusy
 		}, this.props.inputGroupClassName);
-		return (
-			<div className={ className }>
-				{ this.renderInput() }
-			</div>
-		);
+		return h("div", {
+			className: className
+		}, this.renderInput());
 	}
 
 	static defaultProps = {
-		className: 'form-control',
+		className: "form-control",
 		onBlur: noop,
 		onCancel: noop,
 		onChange: noop,
@@ -239,8 +257,8 @@ class Input extends React.PureComponent {
 		onKeyDown: noop,
 		onPaste: noop,
 		tabIndex: -1,
-		type: 'text',
-		value: '',
+		type: "text",
+		value: ""
 	};
 
 	static propTypes = {
@@ -275,10 +293,10 @@ class Input extends React.PureComponent {
 		step: PropTypes.number,
 		tabIndex: PropTypes.number,
 		type: PropTypes.string.isRequired,
-		value: PropTypes.string.isRequired,
+		value: PropTypes.string.isRequired
 	};
 }
-
-export default React.forwardRef((props, ref) => <Input
-	innerRef={ref} {...props}
-/>);
+module.exports = /*#__PURE__*/React.forwardRef((props, ref) => h(Input, {
+	innerRef: ref,
+	...props
+}));

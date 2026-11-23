@@ -1,40 +1,16 @@
-/*
-	***** BEGIN LICENSE BLOCK *****
+"use strict";
 
-	Copyright © 2023 Corporation for Digital Scholarship
-					 Vienna, Virginia, USA
-					 https://digitalscholar.org
-
-	This file is part of Zotero.
-
-	Zotero is free software: you can redistribute it and/or modify
-	it under the terms of the GNU Affero General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	Zotero is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU Affero General Public License for more details.
-
-	You should have received a copy of the GNU Affero General Public License
-	along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-
-	***** END LICENSE BLOCK *****
-*/
-
-
-import { COLUMNS } from 'zotero/itemTreeColumns';
-
-
+var {
+	COLUMNS,
+} = require("zotero/itemTreeColumns");
 {
-	const PluginAPIBase = ChromeUtils.importESModule("chrome://zotero/content/xpcom/pluginAPI/pluginAPIBase.mjs").PluginAPIBase;
-
+	const PluginAPIBase
+		= ChromeUtils.importESModule("chrome://zotero/content/xpcom/pluginAPI/pluginAPIBase.mjs")
+			.PluginAPIBase;
 
 	/**
 	 * @namespace Zotero
 	 */
-
 
 	/**
 	 * @typedef {function} ItemTreeColumnDataProvider
@@ -52,7 +28,6 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 	 * @param {Document} doc - The document of the item tree
 	 * @returns {HTMLElement} - The HTML to display in the cell
 	 */
-
 
 	class ItemTreeColumnManagerInternal extends PluginAPIBase {
 		constructor() {
@@ -73,17 +48,23 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 						type: "array",
 						optional: true,
 						checkHook: (_value) => {
-							this._log("The 'defaultIn' property is deprecated. Use 'enabledTreeIDs' instead.", "warn");
+							this._log(
+								"The 'defaultIn' property is deprecated. Use 'enabledTreeIDs' instead.",
+								"warn",
+							);
 							return true;
-						}
+						},
 					},
 					disableIn: {
 						type: "array",
 						optional: true,
 						checkHook: (_value) => {
-							this._log("The 'disableIn' property is deprecated. Use 'enabledTreeIDs' instead.", "warn");
+							this._log(
+								"The 'disableIn' property is deprecated. Use 'enabledTreeIDs' instead.",
+								"warn",
+							);
 							return true;
-						}
+						},
 					},
 					sortReverse: {
 						type: "boolean",
@@ -157,18 +138,18 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 			if (option.enabledTreeIDs.includes("*")) {
 				option.enabledTreeIDs = ["*"];
 			}
-			option.showInColumnPicker = option.showInColumnPicker === undefined ? true : option.showInColumnPicker;
+			option.showInColumnPicker = option.showInColumnPicker === undefined
+				? true
+				: option.showInColumnPicker;
 			return super._add(option);
 		}
 
 		_validate(option) {
 			let mainKey = this._namespacedMainKey(option);
-
 			if (COLUMNS.find(col => col.dataKey === mainKey)) {
 				this._log(`'${mainKey}' already exists as a built-in column`, "warn");
 				return false;
 			}
-
 			return super._validate(option);
 		}
 
@@ -176,7 +157,6 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 			this._refresh();
 		}
 	}
-
 
 	/**
 	 * Manages item tree APIs.
@@ -313,11 +293,9 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 		refreshColumns() {
 			this._columnManager.refresh();
 		},
-
 		get customColumnUpdateID() {
 			return this._columnManager.updateID;
 		},
-
 		getCustomColumns(filterTreeIDs, options) {
 			const allColumns = this._columnManager.options;
 			if (!filterTreeIDs && !options) {
@@ -331,7 +309,6 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 				const filterTreeIDsSet = new Set(filterTreeIDs);
 				filteredColumns = filteredColumns.filter((column) => {
 					if (column.enabledTreeIDs[0] == "*") return true;
-
 					for (const treeID of column.enabledTreeIDs) {
 						if (filterTreeIDsSet.has(treeID)) return true;
 					}
@@ -351,11 +328,9 @@ import { COLUMNS } from 'zotero/itemTreeColumns';
 			}
 			return filteredColumns;
 		},
-
 		isCustomColumn(dataKey) {
 			return !!this._columnManager._optionsCache[dataKey];
 		},
-
 		getCustomCellData(item, dataKey) {
 			const option = this._columnManager._optionsCache[dataKey];
 			if (option && option.dataProvider) {

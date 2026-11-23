@@ -71,7 +71,6 @@ if (require.main === module) {
 			const source = symlinkFiles
 				.concat(dirs.map(d => `${d}/**`))
 				.concat([`!${formatDirsForMatcher(dirs)}/**/*.js`])
-				.concat([`!${formatDirsForMatcher(dirs)}/**/*.jsx`])
 				.concat([`!${formatDirsForMatcher(dirs)}/**/*.scss`])
 				.concat([`!${formatDirsForMatcher(copyDirs)}/**`]);
 

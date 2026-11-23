@@ -55,29 +55,28 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 2 deletion pass complete 2026-11-23; Babel, Sass and the Node runner remain.**
-D41 governs the order: delete the need before choosing a replacement.
+Status: **phase 3 JS rewrite complete 2026-11-23; Sass and the Node runner remain.** D41 and D42
+govern the order: delete the need before choosing a replacement.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
 | Surface | Actual use | Candidate |
 |---|---|---|
-| Babel | JSX in 33 files, ESM→CommonJS in 28; no `preset-env`; special string patches for five vendored resources | Write JSX/ESM differently, or SWC/OXC |
+| Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `js.js` | Done; do not reintroduce a JSX/ESM compiler |
 | Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
 | Sass | 165 files, 304 `@import`s, 41 mixins, 10 functions, 24 `@if`, 27 `@each`, five `@use` built-in modules, compressed output and source maps | Native CSS migration, or grass/rsass |
 | Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
 
 This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
-sites and should use the URL API. The Sinon bundle is test-only. Only Babel and Sass are real
-compiler replacements, and both have a source-redesign alternative.
+sites and should use the URL API. The Sinon bundle is test-only. Babel is gone; Sass is now the only
+real compiler replacement, and it has a source-redesign alternative.
 
 Phases:
 
 1. **Audit and baseline.** Record golden outputs and test results; list the exact special patches;
    decide whether JSX removal and CSS migration are acceptable authoring costs.
 2. **Deletion pass.** Remove Browserify, `url`, and the Sinon bundle; use upstream/vendored files.
-3. **JS decision.** Either convert JSX/ESM and delete Babel, or adopt SWC/OXC. Keep the Node build
-   as the oracle until parity.
+3. **JS decision.** Done: convert JSX/ESM and delete Babel (D42).
 4. **Sass decision.** Spike a real section against native CSS; if maintainable, migrate and remove
    Sass; otherwise adopt grass/rsass after checking `@use`, source maps and platform variants.
 5. **Orchestration.** Port glob/copy/symlink/signatures/watch/FTL to xtask; delete `js-build/` and
@@ -100,11 +99,11 @@ The baseline recorded three Browserify outputs, with these hashes:
 | `resource/url.js` | 44,811 | `e78520a0a4d6ebec85820fd9d7dd26a834c6a1f341fd4df372ef2a22652a2e3d` |
 | `test/resource/sinon.js` | 935,636 | `7f720cb58553295166eebf595fb98c7dfec864adc22a269db64f9e49488d2313` |
 
-`babel-worker.js` carries five string patches outside Babel's own transform, and any replacement
-must keep them: react-virtualized (HTML-namespace element, documentElement mounting, `flushSync`
-around the scroll `setState`), SingleFile (`globalThis.Set`/`Map`), Monaco `tsWorker.js` (translator
-type inference), monacopilot (local core import plus Timer module), and monacopilot-core (Mistral
-API host plus Timer module). These are source rewrites, not compiler features.
+`js-build/js.js` carries the five string patches that the old Babel worker introduced, and they must
+remain: react-virtualized (HTML-namespace element, documentElement mounting, `flushSync` around the
+scroll `setState`), SingleFile (`globalThis.Set`/`Map`), Monaco `tsWorker.js` (translator type
+inference), monacopilot (local core import plus Timer module), and monacopilot-core (Mistral API
+host plus Timer module). These are source rewrites, not compiler features.
 
 ### Phase 2 deletion pass (2026-11-23)
 
@@ -126,6 +125,32 @@ API host plus Timer module). These are source rewrites, not compiler features.
 Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new URL cases),
 `importTest.js` 17/17, `tagSelectorTest.js` 29/29, and `attachmentReadObserverTest.js` 8/8. A clean
 `node js-build/build.js` completed in 5.2 s with no browserify task, and the staging build succeeded.
+
+### Phase 3 JS rewrite (2026-11-23)
+
+- **Babel is gone.** `.babelrc` and `js-build/babel-worker.js` are deleted. `js-build/js.js` now
+  copies sources and applies the five vendored-resource patches; it does not parse or transform
+  application JavaScript. ESLint's parser no longer needs a Babel config.
+- **45 files were touched.** The 26 `.jsx` files were renamed to `.js`; 30 files contained JSX
+  (126 elements, 393 attributes) and 28 files contained ESM (about 70 imports and 11 exports). The
+  overlap is why the file count is lower than 30 + 28.
+- **React UI uses `h = React.createElement`.** JSX fragments did not occur; spread props became
+  object spread; Babel's `_extends` helper was removed. Components keep their existing names and
+  explicit global assignments.
+- **Imported bindings and `h` use `var`.** Many UI files are loaded with `loadSubScript` into one
+  window global. A top-level `const React` or `const { getCSSItemTypeIcon }` collides with a global
+  property or another script; `var` is deliberate here, not a style regression. D42 records this.
+- **Comments and JSDoc are the maintenance contract.** The convention is one `h` alias, named
+  subcomponents instead of one large nested call, comments for intent and non-obvious decisions,
+  and JSDoc for props and side effects. Do not turn this into a comment on every line.
+- **Tests:** targeted UI/import suite 170/170: `utilities_internalTest`, `tagSelectorTest`,
+  `importTest`, `attachmentReadObserverTest`, `relatedboxTest`, `rtfScanTest`,
+  `virtualized-tableTest`, `libraryTreeTest`. A broader window suite passed 190/201; the remaining
+  failures are in PDF/annotation paths already removed by D30, existing context-menu/focus
+  expectations, and account-preference setup, not JSX/ESM syntax or module resolution.
+- A clean `node js-build/build.js` processed 442 files in 3.7 s with no Babel task; the staging
+  build succeeded. The frozen Babel npm packages remain until phase 5.
+
 
 ## Porting existing JavaScript
 

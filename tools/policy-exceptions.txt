@@ -5,3 +5,9 @@ D38 chrome/content/zotero/xpcom/attention.js
 D38 test/tests/attentionTest.js
 D41 resource/react-select.js
 D41 test/resource/sinon.js
+D42 chrome/content/zotero/components/annotation.js
+D42 chrome/content/zotero/components/editable.js
+D42 chrome/content/zotero/components/editable/content.js
+D42 chrome/content/zotero/components/progressQueueTable.js
+D42 chrome/content/zotero/itemTreeColumns.js
+D42 chrome/content/zotero/progressQueueDialog.js

@@ -793,6 +793,30 @@ and failure risk. Rejected: treating “we use only a small part” as proof tha
 unnecessary — a language implementation is tested by the inputs it must accept, not by today’s
 call sites.
 
+## D42 — App UI source is CommonJS and h()
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes, via Git
+
+The app source no longer uses JSX or ESM syntax. React UI is written with a local
+`h = React.createElement` alias; imports are CommonJS. Babel is not part of the build. Native `.mjs`
+modules loaded with `ChromeUtils.importESModule` are unchanged.
+
+The measured surface was small: 30 files containing 126 JSX elements, and 28 Babel-compiled ESM
+files with about 70 imports and 11 exports. The rewrite removed a compiler rather than replacing it
+with SWC/OXC. The cost is a more verbose UI notation and divergence from Zotero's source style;
+comments, JSDoc and small named components are the mitigation, not deeper nesting.
+
+Conventions: keep `h` at the top; extract named components instead of one large nested call; comment
+contracts and non-obvious decisions, not syntax. Imported bindings and `h` use `var` in files loaded
+with `loadSubScript`, because those scripts share one window global and top-level `const` declarations
+collide across files. Do not “modernise” those declarations to `const` without first wrapping the
+script or giving each binding a unique scope.
+
+Rejected: adopting SWC/OXC — adds a compiler and parity burden for 126 elements. Rejected: TypeScript
+— adds another compiler. Rejected: wrapping every classic script in an IIFE — several windows call
+top-level functions by name. The frozen Babel npm packages remain until phase 5, when the Node tree is
+removed.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

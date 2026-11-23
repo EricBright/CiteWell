@@ -1,32 +1,40 @@
+"use strict";
+
+function _interopDefault(mod) {
+	return mod && mod.__esModule ? mod.default : mod;
+}
+
 /*
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2019 Corporation for Digital Scholarship
                      Vienna, Virginia, USA
                      https://digitalscholar.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 */
-
-import React from 'react';
-import PropTypes from 'prop-types';
-import cx from 'classnames';
-import { noop } from '../utils';
+var React = _interopDefault(require("react"));
+var h = React.createElement;
+var PropTypes = _interopDefault(require("prop-types"));
+var cx = _interopDefault(require("classnames"));
+var {
+	noop
+} = require("../utils");
 //import AutoResizer from './auto-resizer';
 //import Spinner from '../ui/spinner';
 
@@ -37,7 +45,7 @@ class TextAreaInput extends React.PureComponent {
 			value: props.value
 		};
 	}
-	
+
 	cancel(event = null) {
 		this.props.onCancel(this.hasChanged, event);
 	}
@@ -53,14 +61,22 @@ class TextAreaInput extends React.PureComponent {
 		}
 	}
 
-	UNSAFE_componentWillReceiveProps({ value }) {
+	UNSAFE_componentWillReceiveProps({
+		value
+	}) {
 		if (value !== this.props.value) {
-			this.setState({ value });
+			this.setState({
+				value
+			});
 		}
 	}
 
-	handleChange({ target }) {
-		this.setState({ value: target.value });
+	handleChange({
+		target
+	}) {
+		this.setState({
+			value: target.value
+		});
 		this.props.onChange(target.value);
 	}
 
@@ -75,21 +91,20 @@ class TextAreaInput extends React.PureComponent {
 	}
 
 	handleKeyDown(event) {
-		const { isSingleLine } = this.props;
+		const {
+			isSingleLine
+		} = this.props;
 		switch (event.key) {
-			case 'Escape':
+			case "Escape":
 				this.cancel(event);
-			break;
-			
-			case 'Enter':
-				if(event.shiftKey || isSingleLine) {
+				break;
+			case "Enter":
+				if (event.shiftKey || isSingleLine) {
 					event.preventDefault();
 					this.commit(event);
 				}
-			break;
-		
+				break;
 			default:
-				return;
 		}
 	}
 
@@ -99,46 +114,46 @@ class TextAreaInput extends React.PureComponent {
 
 	renderInput() {
 		const extraProps = Object.keys(this.props).reduce((aggr, key) => {
-			if(key.match(/^(aria-|data-).*/)) {
+			if (key.match(/^(aria-|data-).*/)) {
 				aggr[key] = this.props[key];
 			}
 			return aggr;
 		}, {});
-		const input = <textarea
+		const input = h("textarea", {
 			//autoComplete={ this.props.autoComplete }
-			autoFocus={ this.props.autoFocus }
-			className={ this.props.className }
-			cols={ this.props.cols }
-			disabled={ this.props.isDisabled }
-			form={ this.props.form }
-			id={ this.props.id }
-			maxLength={ this.props.maxLength }
-			minLength={ this.props.minLength }
-			name={ this.props.name }
-			onBlur={ this.handleBlur.bind(this) }
-			onChange={ this.handleChange.bind(this) }
-			onFocus={ this.handleFocus.bind(this) }
-			onKeyDown={ this.handleKeyDown.bind(this) }
-			placeholder={ this.props.placeholder }
-			readOnly={ this.props.isReadOnly }
-			ref={ this.props.innerRef }
-			required={ this.props.isRequired }
-			rows={ this.props.rows }
-			spellCheck={ this.props.spellCheck }
-			tabIndex={ this.props.tabIndex }
-			value={ this.state.value }
-			wrap={ this.props.wrap }
-			{ ...extraProps }
-		/>;
-
-		return this.props.resize ?
-			//<AutoResizer
-			//	content={ this.state.value }
-			//	vertical={ this.props.resize === 'vertical' }
-			//>
-				{ input }
-			/*</AutoResizer> */:
-			input;
+			autoFocus: this.props.autoFocus,
+			className: this.props.className,
+			cols: this.props.cols,
+			disabled: this.props.isDisabled,
+			form: this.props.form,
+			id: this.props.id,
+			maxLength: this.props.maxLength,
+			minLength: this.props.minLength,
+			name: this.props.name,
+			onBlur: this.handleBlur.bind(this),
+			onChange: this.handleChange.bind(this),
+			onFocus: this.handleFocus.bind(this),
+			onKeyDown: this.handleKeyDown.bind(this),
+			placeholder: this.props.placeholder,
+			readOnly: this.props.isReadOnly,
+			ref: this.props.innerRef,
+			required: this.props.isRequired,
+			rows: this.props.rows,
+			spellCheck: this.props.spellCheck,
+			tabIndex: this.props.tabIndex,
+			value: this.state.value,
+			wrap: this.props.wrap,
+			...extraProps
+		});
+		return this.props.resize
+		//<AutoResizer
+		//	content={ this.state.value }
+		//	vertical={ this.props.resize === 'vertical' }
+		//>
+			? {
+				input
+			}
+		/*</AutoResizer> */ : input;
 	}
 
 	renderSpinner() {
@@ -148,27 +163,24 @@ class TextAreaInput extends React.PureComponent {
 
 	render() {
 		const className = cx({
-			'input-group': true,
-			'textarea': true,
-			'busy': this.props.isBusy
+			"input-group": true,
+			textarea: true,
+			busy: this.props.isBusy
 		}, this.props.inputGroupClassName);
-		return (
-			<div className={ cx(className) }>
-				{ this.renderInput() }
-				{ this.renderSpinner() }
-			</div>
-		);
+		return h("div", {
+			className: cx(className)
+		}, this.renderInput(), this.renderSpinner());
 	}
 
 	static defaultProps = {
-		className: 'form-control',
+		className: "form-control",
 		onBlur: noop,
 		onCancel: noop,
 		onChange: noop,
 		onCommit: noop,
 		onFocus: noop,
 		tabIndex: -1,
-		value: '',
+		value: ""
 	};
 
 	static propTypes = {
@@ -199,10 +211,10 @@ class TextAreaInput extends React.PureComponent {
 		spellCheck: PropTypes.bool,
 		tabIndex: PropTypes.number,
 		value: PropTypes.string.isRequired,
-		wrap: PropTypes.bool,
+		wrap: PropTypes.bool
 	};
 }
-
-export default React.forwardRef((props, ref) => <TextAreaInput
-	innerRef={ref} {...props}
-/>);
+module.exports = /*#__PURE__*/React.forwardRef((props, ref) => h(TextAreaInput, {
+	innerRef: ref,
+	...props
+}));

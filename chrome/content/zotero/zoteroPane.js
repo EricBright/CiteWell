@@ -4625,6 +4625,7 @@ var ZoteroPane = new function () {
 		}
 
 		// No locate menu options if annotations are selected
+		let annotationsSelected = items.some(item => item.isAnnotation());
 		if (annotationsSelected) return;
 
 		// add locate menu options

@@ -69,6 +69,11 @@ export default [
 			sourceType: "module",
 			
 			parserOptions: {
+				requireConfigFile: false,
+				babelOptions: {
+					babelrc: false,
+					configFile: false,
+				},
 				ecmaFeatures: {
 					jsx: true,
 				},

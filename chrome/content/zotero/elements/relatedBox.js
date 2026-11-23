@@ -1,56 +1,60 @@
 /*
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2021 Corporation for Digital Scholarship
                      Vienna, Virginia, USA
                      https://www.zotero.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 */
 
 "use strict";
 
-import { getCSSItemTypeIcon } from 'components/icons';
-
+var {
+	getCSSItemTypeIcon,
+} = require("components/icons");
 {
-	const { ItemPaneSectionElementBase } = ChromeUtils.importESModule(
+	const {
+		ItemPaneSectionElementBase,
+	} = ChromeUtils.importESModule(
 		"chrome://zotero/content/elements/itemPaneSectionElementBase.mjs",
-		{ global: "current" }
+		{
+			global: "current",
+		},
 	);
-
 	class RelatedBox extends ItemPaneSectionElementBase {
 		content = MozXULElement.parseXULToFragment(`
 			<collapsible-section data-l10n-id="section-related" data-pane="related" extra-buttons="add">
 				<html:div class="body"/>
 			</collapsible-section>
 		`);
-		
+
 		init() {
-			this._notifierID = Zotero.Notifier.registerObserver(this, ['item'], 'relatedbox');
+			this._notifierID = Zotero.Notifier.registerObserver(this, ["item"], "relatedbox");
 			this.initCollapsibleSection();
-			this._section.addEventListener('add', this.add);
+			this._section.addEventListener("add", this.add);
 		}
-		
+
 		destroy() {
-			this._section?.removeEventListener('add', this.add);
+			this._section?.removeEventListener("add", this.add);
 			Zotero.Notifier.unregisterObserver(this._notifierID);
 		}
-		
+
 		get item() {
 			return this._item;
 		}
@@ -64,15 +68,17 @@ import { getCSSItemTypeIcon } from 'components/icons';
 			if (!this._item || !this._item.id) return;
 
 			// Refresh if this item has been modified
-			if (event == 'modify' && ids.includes(this._item.id)) {
+			if (event == "modify" && ids.includes(this._item.id)) {
 				this._forceRenderAll();
 				return;
 			}
 
 			// Or if any listed items have been modified or deleted
-			if (event == 'modify' || event == 'delete') {
+			if (event == "modify" || event == "delete") {
 				let libraryID = this._item.libraryID;
-				let relatedItemIDs = new Set(this._item.relatedItems.map(key => Zotero.Items.getIDFromLibraryAndKey(libraryID, key)));
+				let relatedItemIDs = new Set(
+					this._item.relatedItems.map(key => Zotero.Items.getIDFromLibraryAndKey(libraryID, key)),
+				);
 				for (let id of ids) {
 					if (relatedItemIDs.has(id)) {
 						this._forceRenderAll();
@@ -85,10 +91,8 @@ import { getCSSItemTypeIcon } from 'components/icons';
 		render() {
 			if (!this.item) return;
 			if (this._isAlreadyRendered()) return;
-
-			let body = this.querySelector('.body');
+			let body = this.querySelector(".body");
 			body.replaceChildren();
-
 			if (this._item) {
 				let relatedItems = this._getRelatedItems();
 				// Sort by display title
@@ -107,43 +111,37 @@ import { getCSSItemTypeIcon } from 'components/icons';
 					var titleB = getTitle(b);
 					return collation.compareString(1, titleA, titleB);
 				});
-				
 				for (let relatedItem of relatedItems) {
 					let id = relatedItem.id;
-
-					let row = document.createElement('div');
-					row.className = 'row';
-
-					let iconKey = relatedItem.isAnnotation() ? `annotation-${relatedItem.annotationType}-${relatedItem.annotationColor}` : undefined;
+					let row = document.createElement("div");
+					row.className = "row";
+					let iconKey = relatedItem.isAnnotation()
+						? `annotation-${relatedItem.annotationType}-${relatedItem.annotationColor}`
+						: undefined;
 					let icon = getCSSItemTypeIcon(relatedItem.getItemTypeIconName(), iconKey);
-
 					let label = document.createElement("span");
-					label.className = 'label';
+					label.className = "label";
 					label.append(relatedItem.getDisplayTitle());
-
-					let box = document.createElement('div');
-					box.addEventListener('click', () => this._handleShowItem(id));
+					let box = document.createElement("div");
+					box.addEventListener("click", () => this._handleShowItem(id));
 					box.setAttribute("tabindex", "0");
 					box.setAttribute("role", "button");
 					box.setAttribute("aria-label", label.textContent);
-					box.className = 'box keyboard-clickable';
+					box.className = "box keyboard-clickable";
 					box.appendChild(icon);
 					box.appendChild(label);
 					row.append(box);
-
 					if (this.editable) {
 						let remove = document.createXULElement("toolbarbutton");
-						remove.addEventListener('command', () => this._handleRemove(id));
-						remove.className = 'zotero-clicky zotero-clicky-minus';
-						remove.setAttribute("data-l10n-id", 'section-button-remove');
+						remove.addEventListener("command", () => this._handleRemove(id));
+						remove.className = "zotero-clicky zotero-clicky-minus";
+						remove.setAttribute("data-l10n-id", "section-button-remove");
 						remove.setAttribute("tabindex", "0");
 						row.append(remove);
 					}
-
-					row.addEventListener('dragstart', (event) => {
+					row.addEventListener("dragstart", (event) => {
 						Zotero.Utilities.Internal.onDragItems(event, [id]);
 					});
-
 					body.append(row);
 				}
 				this._updateCount();
@@ -153,22 +151,23 @@ import { getCSSItemTypeIcon } from 'components/icons';
 		add = async () => {
 			this._section.empty = false;
 			this._section.open = true;
-
 			let io = {
 				dataIn: null,
 				dataOut: null,
 				deferred: Zotero.Promise.defer(),
-				itemTreeID: 'related-box-select-item-dialog',
-				filterLibraryIDs: [this._item.libraryID]
+				itemTreeID: "related-box-select-item-dialog",
+				filterLibraryIDs: [this._item.libraryID],
 			};
-			window.openDialog('chrome://zotero/content/selectItemsDialog.xhtml', '',
-				'chrome,dialog=no,centerscreen,resizable=yes', io);
-
+			window.openDialog(
+				"chrome://zotero/content/selectItemsDialog.xhtml",
+				"",
+				"chrome,dialog=no,centerscreen,resizable=yes",
+				io,
+			);
 			await io.deferred.promise;
 			if (!io.dataOut || !io.dataOut.length) {
 				return;
 			}
-
 			let relItems = await Zotero.Items.getAsync(io.dataOut);
 			if (!relItems.length) {
 				return;
@@ -178,16 +177,16 @@ import { getCSSItemTypeIcon } from 'components/icons';
 				return;
 			}
 			await Zotero.DB.executeTransaction(async () => {
-				Zotero.UndoHistory.stageAction('undo-action-add-related');
+				Zotero.UndoHistory.stageAction("undo-action-add-related");
 				for (let relItem of relItems) {
 					if (this._item.addRelatedItem(relItem)) {
 						await this._item.save({
-							skipDateModifiedUpdate: true
+							skipDateModifiedUpdate: true,
 						});
 					}
 					if (relItem.addRelatedItem(this._item)) {
 						await relItem.save({
-							skipDateModifiedUpdate: true
+							skipDateModifiedUpdate: true,
 						});
 					}
 				}
@@ -198,15 +197,15 @@ import { getCSSItemTypeIcon } from 'components/icons';
 			let item = await Zotero.Items.getAsync(id);
 			if (item) {
 				await Zotero.DB.executeTransaction(async () => {
-					Zotero.UndoHistory.stageAction('undo-action-remove-related');
+					Zotero.UndoHistory.stageAction("undo-action-remove-related");
 					if (this._item.removeRelatedItem(item)) {
 						await this._item.save({
-							skipDateModifiedUpdate: true
+							skipDateModifiedUpdate: true,
 						});
 					}
 					if (item.removeRelatedItem(this._item)) {
 						await item.save({
-							skipDateModifiedUpdate: true
+							skipDateModifiedUpdate: true,
 						});
 					}
 				});
@@ -217,7 +216,7 @@ import { getCSSItemTypeIcon } from 'components/icons';
 			let win = Zotero.getMainWindow();
 			if (win) {
 				win.ZoteroPane.selectItem(id);
-				win.Zotero_Tabs.select('zotero-pane');
+				win.Zotero_Tabs.select("zotero-pane");
 				win.focus();
 			}
 		}
@@ -233,12 +232,14 @@ import { getCSSItemTypeIcon } from 'components/icons';
 
 		_getRelatedItems() {
 			let relatedKeys = this._item.relatedItems;
-			
 			let relatedItems = relatedKeys.map((key) => {
 				let item = Zotero.Items.getByLibraryAndKey(this._item.libraryID, key);
 				if (!item) {
-					Zotero.debug(`Related item ${this._item.libraryID}/${key} not found `
-						+ `for item ${this._item.libraryKey}`, 2);
+					Zotero.debug(
+						`Related item ${this._item.libraryID}/${key} not found `
+							+ `for item ${this._item.libraryKey}`,
+						2,
+					);
 				}
 				return item;
 			}).filter(Boolean);

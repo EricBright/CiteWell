@@ -1,66 +1,59 @@
 /*
     ***** BEGIN LICENSE BLOCK *****
-    
+
     Copyright © 2019 Corporation for Digital Scholarship
                      Vienna, Virginia, USA
                      https://digitalscholar.org
-    
+
     This file is part of Zotero.
-    
+
     Zotero is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     Zotero is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with Zotero.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     ***** END LICENSE BLOCK *****
 */
 
 /* global Zotero: false */
-'use strict';
+"use strict";
 
 (function () {
-
-const React = require('react');
-const ReactDOM = require('react-dom');
-const PropTypes = require('prop-types');
-const TagSelector = require('components/tagSelector.js');
+var React = require("react");
+var h = React.createElement;
+var ReactDOM = require("react-dom");
+var PropTypes = require("prop-types");
+var TagSelector = require("components/tagSelector.js");
 const defaults = {
 	tagColors: new Map(),
 	tags: [],
 	scope: null,
-	showAutomatic: Zotero.Prefs.get('tagSelector.showAutomatic'),
-	searchString: '',
+	showAutomatic: Zotero.Prefs.get("tagSelector.showAutomatic"),
+	searchString: "",
 	loaded: false
 };
 
 // first n tags will be measured using DOM method for more accurate measurment (at the cost of performance)
 const FORCE_DOM_TAGS_FOR_COUNT = 200;
-
 Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	constructor(props) {
 		super(props);
-		this._notifierID = Zotero.Notifier.registerObserver(
-			this,
-			['collection-item', 'item', 'item-tag', 'tag', 'setting'],
-			'tagSelector'
-		);
-		this._prefObserverID = Zotero.Prefs.registerObserver('fontSize', this.handleUIPropertiesChange.bind(this));
-		this._prefObserverID = Zotero.Prefs.registerObserver('uiDensity', this.handleUIPropertiesChange.bind(this));
+		this._notifierID = Zotero.Notifier.registerObserver(this, ["collection-item", "item", "item-tag", "tag", "setting"], "tagSelector");
+		this._prefObserverID = Zotero.Prefs.registerObserver("fontSize", this.handleUIPropertiesChange.bind(this));
+		this._prefObserverID = Zotero.Prefs.registerObserver("uiDensity", this.handleUIPropertiesChange.bind(this));
 		this._mediaQueryList = window.matchMedia("(min-resolution: 1.5dppx)");
 		this._mediaQueryList.addEventListener("change", this.handleUIPropertiesChange.bind(this));
-		
 		this.tagListRef = React.createRef();
 		this.searchBoxRef = React.createRef();
-		
-		this.displayAllTags = Zotero.Prefs.get('tagSelector.displayAllTags');
+		this.displayAllTags = Zotero.Prefs.get("tagSelector.displayAllTags");
 		// Library IDs of the selected collection tree rows, in collections-list order.
 		// Usually one, but a cross-library selection scopes the tag selector to several.
 		this.libraryIDs = [];
@@ -70,7 +63,6 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		this.selectedTags = new Set();
 		this.widths = new Map();
 		this.widthsBold = new Map();
-		
 		this.state = {
 			...defaults,
 			...this.getContainerDimensions(),
@@ -78,7 +70,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			isHighDensity: this._mediaQueryList.matches
 		};
 	}
-	
+
 	focusTextbox() {
 		this.searchBoxRef.current.focus();
 	}
@@ -100,10 +92,10 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		Zotero.debug(info);
 		Zotero.crash();
 	}
-	
+
 	componentDidUpdate(_prevProps, _prevState) {
 		Zotero.debug("Tag selector updated");
-		
+
 		// If we changed the set of collections, scroll to top
 		if (this.collectionTreeRows) {
 			let treeViewIDs = this.collectionTreeRows.map(row => row.id).sort();
@@ -119,23 +111,21 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		this.tagListRef.current.clearRecordedFocusedTag();
 		return null;
 	}
-	
+
 	/**
-	 * Safely fetch tags from the selected collection tree rows, returning [] on search error.
-	 * CollectionTreeRow.getTags() calls getSearchResults() under the hood, which throws
-	 * Zotero.CollectionTreeRow.SearchError if the underlying search query fails (e.g., a
-	 * saved search with invalid conditions). The tag selector should degrade gracefully in
-	 * that case — showing no tags — rather than throwing upwards and breaking the UI.
-	 * Real bugs (TypeError, etc.) are re-thrown so they surface in tests and logs.
-	 */
+    	 * Safely fetch tags from the selected collection tree rows, returning [] on search error.
+    	 * CollectionTreeRow.getTags() calls getSearchResults() under the hood, which throws
+    	 * Zotero.CollectionTreeRow.SearchError if the underlying search query fails (e.g., a
+    	 * saved search with invalid conditions). The tag selector should degrade gracefully in
+    	 * that case — showing no tags — rather than throwing upwards and breaking the UI.
+    	 * Real bugs (TypeError, etc.) are re-thrown so they surface in tests and logs.
+    	 */
 	async _safeGetTags(...args) {
 		try {
 			let rows = this.collectionTreeRows || [];
 			// A single row uses its own cached temp table directly; multiple rows are
 			// combined into one temp table and query to avoid a per-row query
-			let tags = rows.length == 1
-				? await rows[0].getTags(...args)
-				: await Zotero.CollectionTreeRow.getTagsAcrossRows(rows, ...args);
+			let tags = rows.length == 1 ? await rows[0].getTags(...args) : await Zotero.CollectionTreeRow.getTagsAcrossRows(rows, ...args);
 			// Multiple rows (collections, or collections across libraries) can return
 			// the same tag, so dedupe by name
 			return this._dedupeTags(tags);
@@ -150,8 +140,8 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	}
 
 	/**
-	 * Whether more than one library is currently in scope (cross-library selection)
-	 */
+    	 * Whether more than one library is currently in scope (cross-library selection)
+    	 */
 	get multiLibrary() {
 		return this.libraryIDs.length > 1;
 	}
@@ -169,14 +159,15 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	}
 
 	/**
-	 * Get all tags across the selected libraries (for "Display All Tags"), deduped by name
-	 *
-	 * @param {Number[]} [tagIDs] - Limit to the given tag IDs
-	 */
+    	 * Get all tags across the selected libraries (for "Display All Tags"), deduped by name
+    	 *
+    	 * @param {Number[]} [tagIDs] - Limit to the given tag IDs
+    	 */
 	async _getAllTagsInLibraries(tagIDs) {
-		let results = await Promise.all(
-			this.libraryIDs.map(libraryID => Zotero.Tags.getAllWithin({ libraryID, tagIDs }))
-		);
+		let results = await Promise.all(this.libraryIDs.map(libraryID => Zotero.Tags.getAllWithin({
+			libraryID,
+			tagIDs
+		})));
 		return this._dedupeTags(results.flat());
 	}
 
@@ -195,11 +186,11 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	}
 
 	/**
-	 * Colored tags are a per-library synced setting, so a unified cross-library list
-	 * can't coherently show them (the same color can mean different tags in different
-	 * libraries). Only show colored tags when a single library is in scope. The items
-	 * list still shows each item's own library's swatches via Item.getItemsListTags().
-	 */
+    	 * Colored tags are a per-library synced setting, so a unified cross-library list
+    	 * can't coherently show them (the same color can mean different tags in different
+    	 * libraries). Only show colored tags when a single library is in scope. The items
+    	 * list still shows each item's own library's swatches via Item.getItemsListTags().
+    	 */
 	_getScopeColors() {
 		if (this.libraryIDs.length !== 1) {
 			return new Map();
@@ -208,30 +199,34 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	}
 
 	// Update trigger #1 (triggered by ZoteroPane)
-	async onItemViewChanged({ collectionTreeRows, libraryID }) {
-		Zotero.debug('Updating tag selector from current view');
-
+	async onItemViewChanged({
+		collectionTreeRows,
+		libraryID
+	}) {
+		Zotero.debug("Updating tag selector from current view");
 		var prevLibraryIDs = this.libraryIDs;
 		this.collectionTreeRows = collectionTreeRows;
 		this.libraryIDs = this._getSelectedLibraryIDs(collectionTreeRows, libraryID);
 		this.libraryID = this.libraryIDs[0];
-
 		var newState = {
 			loaded: true
 		};
 		if (!Zotero.Utilities.arrayEquals(prevLibraryIDs, this.libraryIDs)) {
 			newState.tagColors = this._getScopeColors();
 		}
-		var { tags, scope } = await this.getTagsAndScope();
+		var {
+			tags,
+			scope
+		} = await this.getTagsAndScope();
 		newState.tags = tags;
 		newState.scope = scope;
 		this.setState(newState);
 	}
-	
+
 	// Update trigger #2
 	async notify(event, type, ids, extraData) {
-		if (type === 'setting') {
-			if (ids.some(val => val.split('/')[1] == 'tagColors')) {
+		if (type === "setting") {
+			if (ids.some(val => val.split("/")[1] == "tagColors")) {
 				Zotero.debug("Updating tag selector after tag color change");
 				this.setState({
 					tagColors: this._getScopeColors()
@@ -239,38 +234,35 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			}
 			return;
 		}
-		
+
 		// Ignore anything other than deletes in duplicates view
 		if (this.collectionTreeRows?.[0]?.isDuplicates()) {
 			switch (event) {
-				case 'delete':
-				case 'trash':
+				case "delete":
+				case "trash":
 					break;
-				
 				default:
 					return;
 			}
 		}
-		
+
 		// Ignore item events other than 'trash'
-		if (type == 'item' && event != 'trash') {
+		if (type == "item" && event != "trash") {
 			return;
 		}
-		
+
 		// Ignore tag deletions, which are handled by 'item-tag' 'remove'
-		if (type == 'tag') {
+		if (type == "tag") {
 			return;
 		}
-		
 		Zotero.debug("Updating tag selector after tag change");
-		
-		if (type == 'item-tag' && ['add', 'remove'].includes(event)) {
+		if (type == "item-tag" && ["add", "remove"].includes(event)) {
 			let changedTagsInScope = [];
 			let changedTagsInView = [];
 			// Group tags by tag type for lookup
 			let tagsByType = new Map();
 			for (let id of ids) {
-				let [_, tagID] = id.split('-');
+				let [_, tagID] = id.split("-");
 				let type = extraData[id].type;
 				let typeTags = tagsByType.get(type);
 				if (!typeTags) {
@@ -281,17 +273,16 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			}
 			// Check tags for each tag type to see if they're in view/scope
 			for (let [type, tagIDs] of tagsByType) {
-				changedTagsInScope.push(...await this._safeGetTags([type], tagIDs));
+				changedTagsInScope.push(...(await this._safeGetTags([type], tagIDs)));
 				if (this.displayAllTags) {
-					changedTagsInView.push(...await this._getAllTagsInLibraries(tagIDs));
+					changedTagsInView.push(...(await this._getAllTagsInLibraries(tagIDs)));
 				}
 			}
 			if (!this.displayAllTags) {
 				changedTagsInView = changedTagsInScope;
 			}
 			changedTagsInScope = new Set(changedTagsInScope.map(tag => tag.tag));
-			
-			if (event == 'add') {
+			if (event == "add") {
 				this.sortTags(changedTagsInView);
 				if (!changedTagsInView.length) {
 					return;
@@ -323,13 +314,11 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 						if (!added) {
 							newTags.push(tag);
 						}
-						
 						if (changedTagsInScope.has(name) && !newScope.has(name)) {
 							newScope.add(name);
 							scopeChanged = true;
 						}
 					}
-					
 					var newState = {
 						tags: newTags
 					};
@@ -340,9 +329,8 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 				});
 				return;
 			}
-			else if (event == 'remove') {
+			else if (event == "remove") {
 				changedTagsInView = new Set(changedTagsInView.map(tag => tag.tag));
-				
 				this.setState((state, props) => {
 					var previousTags = new Set(state.tags.map(tag => tag.tag));
 					var tagsToRemove = new Set();
@@ -351,13 +339,13 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 					for (let id of ids) {
 						let name = extraData[id].tag;
 						let removed = false;
-						
+
 						// If tag was shown previously and shouldn't be anymore, remove from view
 						if (previousTags.has(name) && !changedTagsInView.has(name)) {
 							tagsToRemove.add(name);
 							removed = true;
 						}
-						
+
 						// Remove from scope if there is one
 						if (state.scope && state.scope.has(name) && !changedTagsInScope.has(name)) {
 							if (!newScope) {
@@ -366,7 +354,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 							newScope.delete(name);
 							removed = true;
 						}
-						
+
 						// Removed from either view or scope
 						if (removed) {
 							// Deselect if selected
@@ -374,7 +362,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 								this.selectedTags.delete(name);
 								selectionChanged = true;
 							}
-							
+
 							// If removing a tag from view, clear its cached width. It might still
 							// be in this or another library, but if so we'll just recalculate its
 							// width the next time it's needed.
@@ -382,7 +370,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 							this.widthsBold.delete(name);
 						}
 					}
-					if (selectionChanged && typeof props.onSelection == 'function') {
+					if (selectionChanged && typeof props.onSelection == "function") {
 						props.onSelection(this.selectedTags);
 					}
 					var newState = {};
@@ -397,10 +385,9 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 				return;
 			}
 		}
-		
 		this.setState(await this.getTagsAndScope());
 	}
-	
+
 	async getTagsAndScope() {
 		var tags = await this._safeGetTags();
 		// The scope is all visible tags, not all tags in the library
@@ -408,7 +395,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		if (this.displayAllTags) {
 			tags = await this._getAllTagsInLibraries();
 		}
-		
+
 		// If tags haven't changed, return previous array without sorting again
 		if (this.state.tags.length == tags.length) {
 			let prevTags = new Set(this.state.tags.map(tag => tag.tag));
@@ -427,11 +414,13 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 				};
 			}
 		}
-		
 		this.sortTags(tags);
-		return { tags, scope };
+		return {
+			tags,
+			scope
+		};
 	}
-	
+
 	sortTags(tags) {
 		var d = new Date();
 		var collation = Zotero.Intl.collation;
@@ -440,7 +429,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		});
 		Zotero.debug(`Sorted tags in ${new Date() - d} ms`);
 	}
-	
+
 	getContainerDimensions() {
 		var container = document.getElementById(this.props.container);
 		return {
@@ -448,72 +437,77 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			height: container.clientHeight
 		};
 	}
-	
+
 	handleResize() {
 		//Zotero.debug("Resizing tag selector");
-		var { width, height } = this.getContainerDimensions();
-		this.setState({ width, height });
+		var {
+			width,
+			height
+		} = this.getContainerDimensions();
+		this.setState({
+			width,
+			height
+		});
 	}
-	
+
 	getFontInfo() {
 		var elem = document.createElement("div");
-		elem.className = 'tag-selector-item';
-		elem.style.position = 'absolute';
+		elem.className = "tag-selector-item";
+		elem.style.position = "absolute";
 		elem.style.opacity = 0;
 		var container = document.getElementById(this.props.container);
 		container.appendChild(elem);
 		var style = window.getComputedStyle(elem);
 		var props = {
-			lineHeight: style.getPropertyValue('line-height'),
-			fontSize: style.getPropertyValue('font-size'),
-			fontFamily: style.getPropertyValue('font-family')
+			lineHeight: style.getPropertyValue("line-height"),
+			fontSize: style.getPropertyValue("font-size"),
+			fontFamily: style.getPropertyValue("font-family")
 		};
 		container.removeChild(elem);
 		return props;
 	}
-	
+
 	/**
-	 * Recompute tag widths when either font, UI density or pixel density changes
-	 */
+    	 * Recompute tag widths when either font, UI density or pixel density changes
+    	 */
 	handleUIPropertiesChange(ev) {
 		this.widths.clear();
 		this.widthsBold.clear();
 		const isHighDensity = ev.target instanceof MediaQueryList ? ev.matches : this.state.isHighDensity;
 		this.setState({
 			...this.getFontInfo(),
-			uiDensity: Zotero.Prefs.get('uiDensity'),
+			uiDensity: Zotero.Prefs.get("uiDensity"),
 			isHighDensity
 		});
 	}
-	
+
 	/**
-	 * Uses canvas.measureText to compute and return the width of the given text of given font in pixels.
-	 * Except for emoji tags, where, on high-density screens, we use actual DOM element for more accurate
-	 * measurement (which is 4-5x slower) because canvas method can be off by enough to cause visible artifacts.
-	 * It's possible to force use of DOM method for other tags using forceUseDOM parameter.
-	 *
-	 * @param {String} text The text to be rendered.
-	 * @param {String} font The css font descriptor that text is to be rendered with (e.g. "bold 14px verdana").
-	 * @param {String} forceUseDOM Force use of DOM method for measuring text width
-	 *
-	 * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
-	 */
+    	 * Uses canvas.measureText to compute and return the width of the given text of given font in pixels.
+    	 * Except for emoji tags, where, on high-density screens, we use actual DOM element for more accurate
+    	 * measurement (which is 4-5x slower) because canvas method can be off by enough to cause visible artifacts.
+    	 * It's possible to force use of DOM method for other tags using forceUseDOM parameter.
+    	 *
+    	 * @param {String} text The text to be rendered.
+    	 * @param {String} font The css font descriptor that text is to be rendered with (e.g. "bold 14px verdana").
+    	 * @param {String} forceUseDOM Force use of DOM method for measuring text width
+    	 *
+    	 * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
+    	 */
 	getTextWidth(text, font, forceUseDOM = false) {
 		let width;
-		const useDOM = forceUseDOM || (this.state.isHighDensity && Zotero.Utilities.Internal.includesEmoji(text));
+		const useDOM = forceUseDOM || this.state.isHighDensity && Zotero.Utilities.Internal.includesEmoji(text);
 		if (useDOM) {
 			if (!this.divMeasure) {
-				this.divMeasure = document.createElement('div');
-				this.divMeasure.style.position = 'absolute';
-				this.divMeasure.style.top = '-9999px';
-				this.divMeasure.whiteSpace = 'nowrap';
-				document.querySelector('#zotero-tag-selector').appendChild(this.divMeasure);
+				this.divMeasure = document.createElement("div");
+				this.divMeasure.style.position = "absolute";
+				this.divMeasure.style.top = "-9999px";
+				this.divMeasure.whiteSpace = "nowrap";
+				document.querySelector("#zotero-tag-selector").appendChild(this.divMeasure);
 			}
-
 			this.divMeasure.style.font = font;
 			this.divMeasure.textContent = text;
 			width = this.divMeasure.clientWidth;
-			this.divMeasure.textContent = '';
+			this.divMeasure.textContent = "";
 		}
 		else {
 			// re-use canvas object for better performance
@@ -523,14 +517,13 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			var metrics = context.measureText(text);
 			width = metrics.width;
 		}
-		
 		return width;
 	}
-	
+
 	getWidth(name, forceUseDOM = false) {
-		var font = this.state.fontSize + ' ' + this.state.fontFamily;
+		var font = this.state.fontSize + " " + this.state.fontFamily;
 		// Colored tags are shown in bold, which results in a different width
-		var fontBold = 'bold ' + font;
+		var fontBold = "bold " + font;
 		let hasColor = this.state.tagColors.has(name);
 		let widths = hasColor ? this.widthsBold : this.widths;
 		let width = widths.get(name);
@@ -541,16 +534,14 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		}
 		return width;
 	}
-	
+
 	render() {
 		Zotero.debug("Rendering tag selector");
 		var tags = this.state.tags;
 		var tagColors = this.state.tagColors;
-		
 		if (!this.state.showAutomatic) {
 			tags = tags.filter(t => t.type != 1);
-		}
-		// Remove duplicates from auto and manual tags
+		} // Remove duplicates from auto and manual tags
 		else {
 			let seen = new Set();
 			let newTags = [];
@@ -562,7 +553,7 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			}
 			tags = newTags;
 		}
-		
+
 		// Extract colored tags
 		var coloredTags = [];
 		for (let i = 0; i < tags.length; i++) {
@@ -571,25 +562,25 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 				i--;
 			}
 		}
-		
+
 		// Add colored tags that aren't already real tags
 		var extractedColoredTags = new Set(coloredTags.map(tag => tag.tag));
-		[...tagColors.keys()]
-			.filter(tag => !extractedColoredTags.has(tag))
-			.forEach(tag => coloredTags.push(Zotero.Tags.cleanData({ tag })));
-		
+		[...tagColors.keys()].filter(tag => !extractedColoredTags.has(tag)).forEach(tag => coloredTags.push(Zotero.Tags.cleanData({
+			tag
+		})));
+
 		// Sort colored tags and place at beginning
 		coloredTags.sort((a, b) => {
 			return tagColors.get(a.tag).position - tagColors.get(b.tag).position;
 		});
 		tags = coloredTags.concat(tags);
-		
+
 		// Filter (case- and accent-insensitive, matching search conditions)
 		if (this.state.searchString) {
 			let normalizedStr = Zotero.Utilities.Internal.normalizeForSearch(this.state.searchString);
 			tags = tags.filter(tag => Zotero.Utilities.Internal.normalizeForSearch(tag.tag).includes(normalizedStr));
 		}
-		
+
 		// Prepare tag objects for list component
 		//var d = new Date();
 		var inTagColors = true;
@@ -621,31 +612,33 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		this.divMeasure?.parentNode?.removeChild?.(this.divMeasure);
 		this.divMeasure = null;
 		// Zotero.debug(`Prepared ${tags.length} tags in ${new Date() - d} ms`);
-		return <TagSelector
-			tags={tags}
-			searchBoxRef={this.searchBoxRef}
-			tagListRef={this.tagListRef}
-			searchString={this.state.searchString}
-			dragObserver={this.dragObserver}
-			onSelect={this.handleTagSelected}
-			onTagContext={this.handleTagContext}
-			onSearch={this.handleSearch}
-			onSettings={this.handleSettings.bind(this)}
-			loaded={this.state.loaded}
-			width={this.state.width}
-			height={this.state.height}
-			fontSize={parseInt(this.state.fontSize.replace('px', ''))}
-			lineHeight={parseInt(this.state.lineHeight.replace('px', ''))}
-			uiDensity={Zotero.Prefs.get('uiDensity')}
-		/>;
+		return h(TagSelector, {
+			tags: tags,
+			searchBoxRef: this.searchBoxRef,
+			tagListRef: this.tagListRef,
+			searchString: this.state.searchString,
+			dragObserver: this.dragObserver,
+			onSelect: this.handleTagSelected,
+			onTagContext: this.handleTagContext,
+			onSearch: this.handleSearch,
+			onSettings: this.handleSettings.bind(this),
+			loaded: this.state.loaded,
+			width: this.state.width,
+			height: this.state.height,
+			fontSize: parseInt(this.state.fontSize.replace("px", "")),
+			lineHeight: parseInt(this.state.lineHeight.replace("px", "")),
+			uiDensity: Zotero.Prefs.get("uiDensity")
+		});
 	}
 
 	setMode(mode) {
-		this.state.viewOnly != (mode == 'view') && this.setState({viewOnly: mode == 'view'});
+		this.state.viewOnly != (mode == "view") && this.setState({
+			viewOnly: mode == "view"
+		});
 	}
 
 	handleTagContext = (tag, ev) => {
-		let tagContextMenu = document.getElementById('tag-menu');
+		let tagContextMenu = document.getElementById("tag-menu");
 		// Disable menu options in read-only mode
 		for (let i = 0; i < tagContextMenu.childNodes.length; i++) {
 			tagContextMenu.childNodes[i].disabled = this.state.viewOnly;
@@ -654,97 +647,87 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 		// affect one of the selected libraries. Deleting still works -- it removes the
 		// tag from all selected libraries (see openDeletePrompt())
 		if (this.multiLibrary) {
-			for (let id of ['assign-color-tag', 'rename-tag', 'split-tag']) {
+			for (let id of ["assign-color-tag", "rename-tag", "split-tag"]) {
 				document.getElementById(id).disabled = true;
 			}
 		}
 		ev.preventDefault();
-		
-		tagContextMenu.openPopupAtScreen(
-			ev.screenX + 1,
-			ev.screenY + 1,
-			true
-		);
+		tagContextMenu.openPopupAtScreen(ev.screenX + 1, ev.screenY + 1, true);
 		this.contextTag = tag;
-	}
+	};
 
 	handleSettings = (ev) => {
-		let settingsContextMenu = document.getElementById('tag-selector-view-settings-menu');
+		let settingsContextMenu = document.getElementById("tag-selector-view-settings-menu");
 		ev.preventDefault();
-		settingsContextMenu.openPopup(ev.target, 'end_before', 0, 0, true);
-	}
+		settingsContextMenu.openPopup(ev.target, "end_before", 0, 0, true);
+	};
 
 	handleTagSelected = (tag) => {
 		let selectedTags = this.selectedTags;
-		if(selectedTags.has(tag)) {
+		if (selectedTags.has(tag)) {
 			selectedTags.delete(tag);
-		} else {
+		}
+		else {
 			selectedTags.add(tag);
 		}
-
-		if (typeof(this.props.onSelection) === 'function') {
+		if (typeof this.props.onSelection === "function") {
 			this.props.onSelection(selectedTags);
 		}
-	}
+	};
 
 	handleSearch = (searchString) => {
-		this.setState({searchString});
-	}
-	
+		this.setState({
+			searchString
+		});
+	};
+
 	dragObserver = {
-		onDragOver: function(event) {
-			if (!event.dataTransfer.getData('zotero/item')) {
+		onDragOver: function (event) {
+			if (!event.dataTransfer.getData("zotero/item")) {
 				return;
 			}
-			
-			let elem = event.target.closest('.tag-selector-item');
-			
+			let elem = event.target.closest(".tag-selector-item");
+
 			// Ignore drops not on tags
 			if (elem === null) {
 				return;
 			}
-			
+
 			// Cannot add tags via drag-drop from trash
 			if (Zotero.DragDrop.currentDragSource.isTrash()) return;
-
-			elem.classList.add('dragged-over');
+			elem.classList.add("dragged-over");
 			event.preventDefault();
 			// Don't show + cursor when removing tags
-			var remove = (Zotero.isMac && event.metaKey) || (!Zotero.isMac && event.shiftKey);
+			var remove = Zotero.isMac && event.metaKey || !Zotero.isMac && event.shiftKey;
 			event.dataTransfer.dropEffect = remove ? "move" : "copy";
 		},
 		onDragExit: function (event) {
-			event.target.closest('.tag-selector-item')?.classList?.remove?.('dragged-over');
+			event.target.closest(".tag-selector-item")?.classList?.remove?.("dragged-over");
 		},
-		onDrop: async function(event) {
-			let elem = event.target.closest('.tag-selector-item');
-			
+		onDrop: async function (event) {
+			let elem = event.target.closest(".tag-selector-item");
+
 			// Ignore drops not on tags
 			if (elem === null) {
 				return;
 			}
-
-			elem.classList.remove('dragged-over');
-			
+			elem.classList.remove("dragged-over");
 			var dt = event.dataTransfer;
-			var ids = dt.getData('zotero/item');
+			var ids = dt.getData("zotero/item");
 			if (!ids) {
 				return;
 			}
-			
+
 			// Remove tags on Cmd-drag/Shift-drag
-			var remove = (Zotero.isMac && event.metaKey) || (!Zotero.isMac && event.shiftKey);
-			
+			var remove = Zotero.isMac && event.metaKey || !Zotero.isMac && event.shiftKey;
 			return Zotero.DB.executeTransaction(async function () {
-				ids = ids.split(',');
+				ids = ids.split(",");
 				var items = Zotero.Items.get(ids);
 				var value = elem.textContent;
-
-				Zotero.UndoHistory.stageAction(
-					remove ? 'undo-action-remove-tag' : 'undo-action-add-tag',
-					{ count: items.length }
-				);
-				for (let i=0; i<items.length; i++) {
+				Zotero.UndoHistory.stageAction(remove ? "undo-action-remove-tag" : "undo-action-add-tag", {
+					count: items.length
+				});
+				for (let i = 0; i < items.length; i++) {
 					let item = items[i];
 					if (remove) {
 						item.removeTag(value);
@@ -754,9 +737,9 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 					}
 					await item.save();
 				}
-			}.bind(this));
+			});
 		}
-	}
+	};
 
 	getTagSelection() {
 		return this.selectedTags;
@@ -765,33 +748,25 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	clearTagSelection() {
 		this.selectedTags = new Set();
 	}
-	
+
 	async openColorPickerWindow() {
 		var io = {
 			libraryID: this.libraryID,
 			name: this.contextTag.name
 		};
-		
 		var tagColors = this.state.tagColors;
 		if (tagColors.size >= Zotero.Tags.MAX_COLORED_TAGS && !tagColors.has(io.name)) {
 			var ps = Services.prompt;
-			ps.alert(null, '', Zotero.getString('pane.tagSelector.maxColoredTags', Zotero.Tags.MAX_COLORED_TAGS));
+			ps.alert(null, "", Zotero.getString("pane.tagSelector.maxColoredTags", Zotero.Tags.MAX_COLORED_TAGS));
 			return;
 		}
-		
 		io.tagColors = tagColors;
-		
-		window.openDialog(
-			'chrome://zotero/content/tagColorChooser.xhtml',
-			'zotero-tagSelector-colorChooser',
-			'chrome,modal,centerscreen', io
-		);
-		
+		window.openDialog("chrome://zotero/content/tagColorChooser.xhtml", "zotero-tagSelector-colorChooser", "chrome,modal,centerscreen", io);
+
 		// Dialog cancel
-		if (typeof io.color == 'undefined') {
+		if (typeof io.color == "undefined") {
 			return;
 		}
-		
 		await Zotero.Tags.setColor(this.libraryID, io.name, io.color, io.position);
 	}
 
@@ -801,25 +776,18 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 			oldTag: this.contextTag.name,
 			isLongTag: false
 		};
-		const dataOut = { result: null };
-		
-		window.openDialog(
-			'chrome://zotero/content/longTagFixer.xhtml',
-			'',
-			'chrome,modal,centerscreen',
-			dataIn, dataOut
-		);
-
+		const dataOut = {
+			result: null
+		};
+		window.openDialog("chrome://zotero/content/longTagFixer.xhtml", "", "chrome,modal,centerscreen", dataIn, dataOut);
 		if (!dataOut.result) {
 			return;
 		}
-
 		const oldTagID = Zotero.Tags.getID(oldTagName);
-
-		if (dataOut.result.op === 'split') {
+		if (dataOut.result.op === "split") {
 			const itemIDs = await Zotero.Tags.getTagItems(this.libraryID, oldTagID);
 			await Zotero.DB.executeTransaction(async () => {
-				Zotero.UndoHistory.stageAction('undo-action-split-tag');
+				Zotero.UndoHistory.stageAction("undo-action-split-tag");
 				for (const itemID of itemIDs) {
 					const item = await Zotero.Items.getAsync(itemID);
 					const tagType = item.getTagType(oldTagName);
@@ -831,34 +799,29 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 				}
 				await Zotero.Tags.purge(oldTagID);
 			});
-		} else {
-			throw new Error('Unsupported op: ' + dataOut.result.op);
+		}
+		else {
+			throw new Error("Unsupported op: " + dataOut.result.op);
 		}
 	}
 
 	async openRenamePrompt() {
 		var promptService = Services.prompt;
-
-		var newName = { value: this.contextTag.name };
-		var result = promptService.prompt(window,
-			Zotero.getString('pane.tagSelector.rename.title'),
-			Zotero.getString('pane.tagSelector.rename.message'),
-			newName, '', {});
-
+		var newName = {
+			value: this.contextTag.name
+		};
+		var result = promptService.prompt(window, Zotero.getString("pane.tagSelector.rename.title"), Zotero.getString("pane.tagSelector.rename.message"), newName, "", {});
 		if (!result || !newName.value || this.contextTag.name == newName.value) {
 			return;
 		}
-		
 		let selectedTags = this.selectedTags;
 		if (selectedTags.has(this.contextTag.name)) {
 			selectedTags.delete(this.contextTag.name);
 			selectedTags.add(newName.value);
 		}
-		
 		if (Zotero.Tags.getID(this.contextTag.name)) {
 			await Zotero.Tags.rename(this.libraryID, this.contextTag.name, newName.value);
-		}
-		// Colored tags don't need to exist, so in that case
+		} // Colored tags don't need to exist, so in that case
 		// just rename the color setting
 		else {
 			let color = Zotero.Tags.getColor(this.libraryID, this.contextTag.name);
@@ -872,15 +835,10 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 
 	async openDeletePrompt() {
 		var promptService = Services.prompt;
-			
-		var confirmed = promptService.confirm(window,
-			Zotero.getString('pane.tagSelector.delete.title'),
-			Zotero.getString('pane.tagSelector.delete.message'));
-			
+		var confirmed = promptService.confirm(window, Zotero.getString("pane.tagSelector.delete.title"), Zotero.getString("pane.tagSelector.delete.message"));
 		if (!confirmed) {
 			return;
 		}
-			
 		var tagID = Zotero.Tags.getID(this.contextTag.name);
 
 		// Delete from every selected library. removeFromLibrary() only clears the color
@@ -897,54 +855,40 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 	}
 
 	async toggleDisplayAllTags(newValue) {
-		newValue = typeof(newValue) === 'undefined' ? !this.displayAllTags : newValue;
-		Zotero.Prefs.set('tagSelector.displayAllTags', newValue);
+		newValue = typeof newValue === "undefined" ? !this.displayAllTags : newValue;
+		Zotero.Prefs.set("tagSelector.displayAllTags", newValue);
 		this.displayAllTags = newValue;
 		this.setState(await this.getTagsAndScope());
 	}
 
 	toggleShowAutomatic(newValue) {
-		newValue = typeof(newValue) === 'undefined' ? !this.showAutomatic : newValue;
-		Zotero.Prefs.set('tagSelector.showAutomatic', newValue);
-		this.setState({showAutomatic: newValue});
+		newValue = typeof newValue === "undefined" ? !this.showAutomatic : newValue;
+		Zotero.Prefs.set("tagSelector.showAutomatic", newValue);
+		this.setState({
+			showAutomatic: newValue
+		});
 	}
 
 	deselectAll() {
 		this.selectedTags = new Set();
-		if('onSelection' in this.props && typeof(this.props.onSelection) === 'function') {
+		if ("onSelection" in this.props && typeof this.props.onSelection === "function") {
 			this.props.onSelection(this.selectedTags);
 		}
 	}
-	
+
 	async deleteAutomatic() {
 		var num = (await Zotero.Tags.getAutomaticInLibrary(this.libraryID)).length;
 		if (!num) {
 			return;
 		}
-		
 		var ps = Services.prompt;
-		var confirmed = ps.confirm(
-			window,
-			Zotero.getString('pane.tagSelector.deleteAutomatic.title'),
-			Zotero.getString(
-					'pane.tagSelector.deleteAutomatic.message',
-					new Intl.NumberFormat().format(num),
-					num
-				)
-				+ "\n\n"
-				+ Zotero.getString('general.actionCannotBeUndone')
-		);
+		var confirmed = ps.confirm(window, Zotero.getString("pane.tagSelector.deleteAutomatic.title"), Zotero.getString("pane.tagSelector.deleteAutomatic.message", new Intl.NumberFormat().format(num), num) + "\n\n" + Zotero.getString("general.actionCannotBeUndone"));
 		if (confirmed) {
 			Zotero.showZoteroPaneProgressMeter(null, true);
 			try {
-				await Zotero.Tags.removeAutomaticFromLibrary(
-					this.libraryID,
-					(progress, progressMax) => {
-						Zotero.updateZoteroPaneProgressMeter(
-							Math.round(progress / progressMax * 100)
-						);
-					}
-				);
+				await Zotero.Tags.removeAutomaticFromLibrary(this.libraryID, (progress, progressMax) => {
+					Zotero.updateZoteroPaneProgressMeter(Math.round(progress / progressMax * 100));
+				});
 			}
 			finally {
 				Zotero.hideZoteroPaneOverlays();
@@ -954,40 +898,41 @@ Zotero.TagSelector = class TagSelectorContainer extends React.PureComponent {
 
 	get label() {
 		let count = this.selectedTags.size;
-		let mod = count === 1 ? 'singular' : count === 0 ? 'none' : 'plural';
-
-		return Zotero.getString('pane.tagSelector.numSelected.' + mod, [count]);
+		let mod = count === 1 ? "singular" : count === 0 ? "none" : "plural";
+		return Zotero.getString("pane.tagSelector.numSelected." + mod, [count]);
 	}
 
 	get showAutomatic() {
 		return this.state.showAutomatic;
 	}
-	
+
 	static async init(domEl, opts) {
 		var ref;
 		await new Promise((resolve) => {
 			let root = ReactDOM.createRoot(domEl);
 			opts.root = root;
-			root.render(<TagSelectorContainer ref={(c) => {
-				ref = c;
-				resolve();
-			} } {...opts} />);
+			root.render(h(TagSelectorContainer, {
+				ref: (c) => {
+					ref = c;
+					resolve();
+				},
+				...opts
+			}));
 		});
 		return ref;
 	}
-	
+
 	uninit() {
 		this._uninitialized = true;
 		this.props.root.unmount();
 		Zotero.Notifier.unregisterObserver(this._notifierID);
 		Zotero.Prefs.unregisterObserver(this._prefObserverID);
 	}
-	
+
 	static propTypes = {
 		container: PropTypes.string.isRequired,
 		onSelection: PropTypes.func.isRequired,
-		root: PropTypes.object,
+		root: PropTypes.object
 	};
 };
-
 })();
