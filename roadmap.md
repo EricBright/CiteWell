@@ -27,7 +27,7 @@ Completed outcomes, kept for context.
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R32 | LibreOffice feature parity: six menu actions, field-based citations, bibliography ([plan](docs/libreoffice-parity.md)) | The scaffold only inserts APA text at the end of the document; users expect Zotero's citation workflow | M5 passed 2026-11-22: add/edit citation, refresh, unlink, bibliography, Add Note and table fields; AppImage rebuilt; add-only install available on request |
-| R15 | Rust build toolchain: replace babel/browserify/sass with Rust equivalents | Removes the frozen Node build dependency | Bundles built by Rust tools pass the same tests |
+| R15 | Rust build toolchain: delete unnecessary Node steps first, then replace Babel/Sass as needed (D41) | Removes the frozen Node build dependency | No Node/npm tree needed; bundles built by Rust tools pass the same tests |
 | R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` creates maintenance work, even without upstream parity | Written strategy; first string renamed without touching upstream locale files |
 | R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |
 | R12 | Test coverage for the changed behaviour | Meaningful only once the removals and notes model exist | New behaviour has failing-before, passing-after tests |

@@ -762,6 +762,37 @@ Rejected: rewriting citations in every open document — destructive and unneces
 resolve at read time. Rejected: automatic metadata merging on a title match — false positives destroy
 distinctions.
 
+## D41 — Delete the need before replacing the tool
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes, per dependency
+
+Every dependency question starts with elimination, in this order:
+
+1. **Drop the feature.** If the product does not need it, remove it.
+2. **Use the engine.** Firefox/Gecko already supplies URL parsing, CSS, DOM, storage and a modern
+   JavaScript runtime. Prefer those over a runtime library.
+3. **Write the source differently.** JSX can become `React.createElement`; SCSS can become CSS
+   custom properties, nesting and utility classes; CommonJS can replace ESM. This can remove a
+   build-time compiler without adding another.
+4. **Vendor a prebuilt artifact.** If upstream already ships the file, checksum it and remove the
+   build step.
+5. **Borrow a maintained implementation.** Use this for languages, parsers and open formats where
+   “only the features we use” is not a closed grammar.
+6. **Build it ourselves.** Only for closed, well-understood formats whose inputs we control.
+
+This is not a preference for reimplementation. Reimplementing a JavaScript or Sass parser is a
+worse dependency than borrowing one: it silently owns every future syntax error. The hierarchy is
+about deleting **needs**, not avoiding all code.
+
+Applied to R15: Browserify, the `url` package and the Sinon browser bundle are deletion candidates;
+Babel may disappear if JSX/ESM are written differently; Sass may disappear through a CSS migration;
+React replacement is a separate product decision, not part of the build-toolchain work.
+
+Rejected: replacing each dependency with a bespoke implementation — that concentrates maintenance
+and failure risk. Rejected: treating “we use only a small part” as proof that the rest is
+unnecessary — a language implementation is tested by the inputs it must accept, not by today’s
+call sites.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

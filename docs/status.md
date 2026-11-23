@@ -45,6 +45,22 @@ The obsolete R26 editor work was preserved before reverting at
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
 
+## Handoff 2026-11-23 (R15 plan)
+
+- D41 is accepted: delete the need before replacing the tool. The full inventory and phased R15 plan
+  are in [rust.md](rust.md#r15--the-build-toolchain); the roadmap entry is updated.
+- Key finding: Browserify produces only three files and is a deletion candidate, not a Rust-bundler
+  project. `url` has two call sites; Sinon is test-only. Babel’s real job is JSX and ESM→CJS; Sass
+  is the largest compiler surface.
+- R15 is documentation-only so far. No build pipeline code has changed.
+- Order: finish the `import-attachments` review/merge and stable build first; then R15 phase 1
+  (golden baseline and deletion audit), JS decision (JSX removal vs SWC/OXC), and a bounded Sass
+  migration spike (native CSS vs grass/rsass). React replacement is outside R15.
+- Current branches: `citewell` at `0071ac3a2` (stable `d15ef6ed3`); `import-attachments` at
+  `a1fa27517`, not merged; test build `~/AppImages/citewell-import-test.appimage`
+  (`74c10b0fb`, sha256 `4856a432…`).
+- Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
+
 ## Handoff 2026-11-23 (Attachments)
 
 - New branch `import-attachments` from `citewell`, not merged.

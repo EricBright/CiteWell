@@ -53,6 +53,39 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 - New user-visible functionality should ship as WASM or a sidecar, with JS reduced to a thin
   call site.
 
+## R15 — the build toolchain
+
+Status: **inventory and elimination audit, not started.** D41 governs the order: delete the need
+before choosing a replacement.
+
+Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
+
+| Surface | Actual use | Candidate |
+|---|---|---|
+| Babel | JSX in 33 files, ESM→CommonJS in 28; no `preset-env`; special string patches for four vendored resources | Write JSX/ESM differently, or SWC/OXC |
+| Browserify | Exactly three standalone bundles: `react-select`, `url`, test-only `sinon`; no app bundling, no transforms | Delete: upstream Sinon bundle, vendored `react-select`, remove `url` |
+| Sass | 165 files, 304 `@import`s, 41 mixins, 10 functions, 24 `@if`, 27 `@each`, five `@use` built-in modules, compressed output and source maps | Native CSS migration, or grass/rsass |
+| Node runner | glob, copy, symlink, signatures, watch, FTL conversion, compiler orchestration | xtask with small Rust crates |
+
+This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` has two call
+sites and should use the URL API. The Sinon bundle is test-only. Only Babel and Sass are real
+compiler replacements, and both have a source-redesign alternative.
+
+Phases:
+
+1. **Audit and baseline.** Record golden outputs and test results; list the exact special patches;
+   decide whether JSX removal and CSS migration are acceptable authoring costs.
+2. **Deletion pass.** Remove Browserify, `url`, and the Sinon bundle; use upstream/vendored files.
+3. **JS decision.** Either convert JSX/ESM and delete Babel, or adopt SWC/OXC. Keep the Node build
+   as the oracle until parity.
+4. **Sass decision.** Spike a real section against native CSS; if maintainable, migrate and remove
+   Sass; otherwise adopt grass/rsass after checking `@use`, source maps and platform variants.
+5. **Orchestration.** Port glob/copy/symlink/signatures/watch/FTL to xtask; delete `js-build/` and
+   `node_modules` only when every output and test matches.
+
+Exit: no Node runtime or npm tree is needed to build; bundles produced by Rust tools pass the same
+tests. React/React DOM replacement is explicitly outside R15.
+
 ## Porting existing JavaScript
 
 Turing completeness is not a migration plan. Rust can compute anything JavaScript computes, but a
