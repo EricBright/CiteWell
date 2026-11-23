@@ -94,9 +94,11 @@
 	}
 }
 
-// Section cards. Panes are built from groupboxes directly under .main-section;
+// Section cards. Panes are built from groupboxes: some are written directly in
+// the pane, some are appended by the simple-section renderer at pane level, and
 // nested groupboxes keep their plain layout.
-#zotero-prefs .main-section > groupbox {
+#zotero-prefs .main-section > groupbox,
+#zotero-prefs #prefs-content > * > groupbox {
 	background-color: var(--material-background);
 	border: var(--material-panedivider);
 	border-radius: 8px;
@@ -105,7 +107,8 @@
 }
 
 #zotero-prefs .main-section > groupbox > label > h2,
-#zotero-prefs .main-section > groupbox > * > label > h2 {
+#zotero-prefs .main-section > groupbox > * > label > h2,
+#zotero-prefs #prefs-content > * > groupbox > label > h2 {
 	margin-top: 0 !important;
 	margin-bottom: 0.5em;
 	font-weight: 600;
