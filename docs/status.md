@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.bbe047d1a`, sha256 `6455ce08…`, 127,474,168 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.d6e648d81`, sha256 `0b9b9aa9…`, 125,921,784 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -36,8 +36,8 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,917,688 bytes; sha256
-  `dca1ce0eed4fe507622d5e5077f6a7afc7d012d12521e15505497f543e610812`; R24 test build)
+- `dist/CiteWell-x86_64.AppImage` (125,921,784 bytes; sha256
+  `0b9b9aa98973758b2851b505ff5d5ba9ca9e8c640d541e459241f40a925c505c`; stable R24 build)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -57,8 +57,8 @@ plan.
   and the confirmation names both the restore point and current-library counts. Points without a
   manifest are labelled “contents not recorded”.
 - Test AppImage: `~/AppImages/citewell-r24-test.appimage`, version `10.0.9.SOURCE.8098d25dc`,
-  sha256 `dca1ce0eed4fe507622d5e5077f6a7afc7d012d12521e15505497f543e610812`. The installed stable
-  `~/AppImages/citewell.appimage` is still `bbe047d1a` (`6455ce08…`).
+  sha256 `dca1ce0eed4fe507622d5e5077f6a7afc7d012d12521e15505497f543e610812`. The stable
+  `~/AppImages/citewell.appimage` is now the merged build `d6e648d81` (`0b9b9aa9…`).
 - Live test data: `~/CiteWell` holds the merged library (2,882 items, 104 collections, root
   `Imported from Zotero — 2026-11-23 17:55`). It was recovered from the restore point
   `restore-1795457315203` after an empty Nov 21 snapshot was restored by mistake; the empty state
@@ -71,8 +71,7 @@ plan.
 - Environment caveat: new **Wayland** launches currently segfault the renderer, even the installed
   AppImage; X11 works. Tests run through `/tmp/citewell-x11-test`, which execs `zotero-bin` with
   `GDK_BACKEND=x11` and `MOZ_ENABLE_WAYLAND=0`.
-- Next: rebuild and install the stable AppImage from this merge, push `citewell`, confirm CI; then
-  R15. The KDE/GNOME/XWayland matrix remains deferred.
+- Next: push `citewell` and confirm CI; then R15. The KDE/GNOME/XWayland matrix remains deferred.
 
 ## Handoff 2026-11-22
 
