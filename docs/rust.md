@@ -36,8 +36,9 @@ Rust **code**, not zero dependencies:
 - Standard library only for small, fully-understood work: CLI, file walking, config, text.
 - Do not hand-roll PDF, SQLite, TLS, Unicode collation, ZIP or image codecs. That is where
   data loss and security bugs live, in a program whose database is someone's research library.
-- `cargo-deny` for licences (AGPL-compatible only) and `cargo-audit` for advisories; the
-  lockfile is committed; MSRV is stated per crate.
+- `cargo-deny` (licences, AGPL-compatible only) and `cargo-audit` (advisories) are the intended
+  policy, but neither is configured yet: there is no `deny.toml`, no CI invocation, and no
+  `rust-version` in the crates. Do not treat MSRV as fixed until the toolchain decision (R15) lands.
 
 ## UI exemption
 

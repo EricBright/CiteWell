@@ -55,7 +55,7 @@ agent ──CLI JSON────► citewell ─────HTTP──► /agent
   the server also checks `Host` is a loopback address.
 - The CLI finds the token with `--data-dir` or `$CITEWELL_DATA_DIR`; `citewell mcp` takes the same.
 - Reads and writes are both authenticated here, unlike the local API's open reads.
-- v1 has no destructive library verbs: `item.delete` moves to trash, and emptying the trash is not
+- v1 has no destructive library verbs: there is no delete verb, and emptying the trash is not
   exposed. Anything irreversible stays a human action.
 - Every call appends one line to `<data-dir>/agent-actions.log` (timestamp, method, object keys,
   outcome — not note text or field contents). The log is the audit trail when an agent goes wrong,

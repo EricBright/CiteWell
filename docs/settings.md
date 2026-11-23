@@ -93,10 +93,10 @@ Script: `preferences_library.js`. This pane is mostly workflow, not preference r
 | Restore points | Backups and restore | same | Import & Export |
 | Last import | Last result | same | Import & Export |
 
-### Export
+### Export (retired)
 
 Source: [preferences_import_export.xhtml](../chrome/content/zotero/preferences/preferences_import_export.xhtml).
-Script: `preferences_export.js` and `preferences_library.js`.
+Script: `preferences_export.js` (retired); Quick Copy now lives in `preferences_library.js`.
 
 | Section | Contents | Proposed destination |
 |---|---|---|

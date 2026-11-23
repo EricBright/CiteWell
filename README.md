@@ -14,7 +14,7 @@ Scholarship, and is not the place to report Zotero bugs.
 | Branch | `citewell` |
 | Base | Zotero 10.0, upstream `864b2d47e` |
 | Version string | `10.0.9.SOURCE.864b2d47e` |
-| Build verified | Linux dev build, 2026-11-20 |
+| Build verified | Linux dev build, 2026-11-23 |
 | Platform | Linux x86_64, AppImage only |
 
 Work in progress and scope: [roadmap.md](roadmap.md).
@@ -48,8 +48,8 @@ to relaunch. Tests run inside a built app: `test/runtests.sh`. Output lands in `
 
 ## Documentation index
 
-`README.md` is the only always-tier document: it is read every session and held to a word
-budget by `tools/docs-check`. Everything else is on-demand.
+`README.md` and `AGENTS.md` are always-tier documents, read every session and held to word
+budgets by `tools/docs-check`. Everything else is on-demand.
 
 | File | Tier | Read it when | Purpose |
 |---|---|---|---|

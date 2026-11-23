@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-22 · branch `citewell` · companion to
+Last updated 2026-11-23 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE`, sha256 `845cd134…`, 133,421,560 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.bbe047d1a`, sha256 `6455ce08…`, 127,474,168 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -36,7 +36,7 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (133,421,560 bytes; sha256 `845cd13484ac492946547e67bd9a13732c0152976f855bee79f3366ee49ae99c`)
+- `dist/CiteWell-x86_64.AppImage` (127,474,168 bytes; sha256 `6455ce08bf9f87b3db6543222c1768b0a3060fedad06d65d1c54d17774c76405`)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -47,7 +47,7 @@ plan.
 ## Handoff 2026-11-22
 
 The AppImage is at `~/AppImages/citewell.appimage` (sha256
-`845cd13484ac492946547e67bd9a13732c0152976f855bee79f3366ee49ae99c`, 133,421,560 bytes). The
+`6455ce08bf9f87b3db6543222c1768b0a3060fedad06d65d1c54d17774c76405`, 127,474,168 bytes). The
 current branch is `citewell`; push only to `origin`.
 
 **Previous post-preferences freeze:** the last diagnosis showed a 120 s shim timeout with no app
