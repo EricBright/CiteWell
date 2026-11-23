@@ -100,7 +100,7 @@ citation features do not touch the shim at all ([libreoffice-parity.md](libreoff
 
 ### 10. Waiting is never invisible
 
-While teaching at CDI College, I watched the citation workflow fail in the worst possible way: the
+While teaching at a college, I watched the citation workflow fail in the worst possible way: the
 prompt opened behind the browser or LibreOffice, while the visible window said “Please wait…”. A
 student who did not know the prompt was behind the active window had no reason to press Alt-Tab and
 no way to discover that the application was waiting for them. The lesson was not to add another
@@ -108,15 +108,14 @@ spinner. It was that an invisible prompt is a broken prompt.
 
 CiteWell treats attention as part of the integration contract. A dialog that needs a person is
 parented and brought forward; if the compositor refuses activation, the app escalates visibly
-through taskbar urgency, a native notification with a click-to-focus action, or a LibreOffice
-InfoBar, and changes its title and message to say what happened and what to do next. Background
+through taskbar urgency, or a native notification with a click-to-focus action, and changes its title and message to say what happened and what to do next. Background
 progress never leaves a hidden modal window, and no operation ends in an indefinite “Please wait…”.
 We cannot force every Wayland compositor to raise a window; we can guarantee that the user is never
 left guessing where it is. The implementation is recorded in [attention.md](attention.md).
 
 ### 11. Migration is a conversation, not a silent copy
 
-Importing, merging and cleaning up a library are the moments where a catalogue can quietly lose
+Importing, merging, and cleaning up a library are the moments where a catalogue can quietly lose
 trust. CiteWell treats them as explicit, reviewable operations:
 
 - The source library is copied and hashed, never opened for writing; a database backup is kept and
