@@ -27,7 +27,7 @@ push target. The product branch may diverge without limit.
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | R24 Phase 3a on `import-attachments`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes and attachments; dedup report/skip/review |
+| Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
 | Docs | README index, Rust docs gate, D1–D41 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
@@ -53,34 +53,38 @@ plan.
   project. `url` has two call sites; Sinon is test-only. Babel’s real job is JSX and ESM→CJS; Sass
   is the largest compiler surface.
 - R15 is documentation-only so far. No build pipeline code has changed.
-- Order: finish the `import-attachments` review/merge and stable build first; then R15 phase 1
-  (golden baseline and deletion audit), JS decision (JSX removal vs SWC/OXC), and a bounded Sass
-  migration spike (native CSS vs grass/rsass). React replacement is outside R15.
-- Current branches: `citewell` at `0071ac3a2` (stable `d15ef6ed3`); `import-attachments` at
-  `a1fa27517`, not merged; test build `~/AppImages/citewell-import-test.appimage`
-  (`74c10b0fb`, sha256 `4856a432…`).
+- Order: the `import-attachments` work is merged into `citewell`; build and install the stable
+  AppImage, then R15 phase 1 (golden baseline and deletion audit), JS decision (JSX removal vs
+  SWC/OXC), and a bounded Sass migration spike (native CSS vs grass/rsass). React replacement is
+  outside R15.
+- Branches: `citewell` now contains the attachments/resume work at `f662058a1`; the prior stable
+  is `d15ef6ed3`. Test build `~/AppImages/citewell-import-test.appimage` is `74c10b0fb`
+  (sha256 `4856a432…`), before the resume remap fix.
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
 
 ## Handoff 2026-11-23 (Attachments)
 
-- New branch `import-attachments` from `citewell`, not merged.
+- Merged into `citewell` at `f662058a1`.
 - Merge now copies source attachment files into CiteWell storage as imported-file attachments,
   maps them to their parents, copies annotations onto the mapped attachments, and copies saved-
   search definitions. Attachments belonging to a skipped exact duplicate are not copied; missing
-  files and failed copies increment warnings. Annotations have no in-app viewer; they are retained
-  for the one-time export.
+  files and failed copies increment warnings; the completion line and Last import now also state
+  how many source attachments could not be copied. Annotations have no in-app viewer; they are
+  retained for the one-time export.
 - The identity log is now part of import/replace/restore backups, and a restore writes the selected
   point's identity snapshot back into the active library. Old points without a snapshot keep the
   current chain rather than deleting it.
-- Tests: `importTest.js` 16/16, including attachment file content, parent mapping, skipped-duplicate
-  attachment policy, annotation fields, saved-search definitions, report scanning and checkpoint
-  persistence. Test AppImage:
-  `~/AppImages/citewell-import-test.appimage`, version `10.0.9.SOURCE.74c10b0fb`, sha256
-  `4856a432bf9fc4726948ba3bcc038b3612e121223a08bd52ecad5a2133838e37`, 125,929,976 bytes.
-  Release builds and the stable AppImage are unchanged.
+- Tests: `importTest.js` 17/17, including attachment file content, parent mapping, skipped-duplicate
+  attachment policy, annotation fields, saved-search definitions, report scanning, checkpoint
+  persistence and a resumed merge that remaps an already-copied attachment. The earlier test
+  AppImage remains `~/AppImages/citewell-import-test.appimage`, version
+  `10.0.9.SOURCE.74c10b0fb`, sha256
+  `4856a432bf9fc4726948ba3bcc038b3612e121223a08bd52ecad5a2133838e37`, 125,929,976 bytes; it
+  predates the resume remap fix.
 - Resumable merge batching is implemented: the item pass writes a checkpoint, and a rerun with the
   same source hash resumes the child passes without repeating items. Child creation is idempotent
-  by title/annotation/search detection. The checkpoint is removed on success.
+  by title/annotation/search detection, and an attachment already present is remapped so its
+  annotations still follow. The checkpoint is removed on success.
 - Next: R15. Imported annotations have no in-app viewer; the one-time export remains their only
   consumer.
 
