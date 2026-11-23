@@ -2727,7 +2727,10 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 			style,
 			prefs: this.prefs,
 			sessionID: this.sessionID,
-			zoteroVersion: Zotero.version,
+			// Preserve the version of the application that created the
+			// document. A Zotero document reopened in CiteWell must not look
+			// like it came from a newer Zotero (D39).
+			zoteroVersion: this.zoteroVersion || Zotero.version,
 			dataVersion: 4
 		});
 	}
@@ -2740,7 +2743,7 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 	}
 	
 	return '<data data-version="'+Zotero.Utilities.htmlSpecialChars(`${DATA_VERSION}`)+'" '+
-		'zotero-version="'+Zotero.Utilities.htmlSpecialChars(Zotero.version)+'">'+
+		'zotero-version="'+Zotero.Utilities.htmlSpecialChars(this.zoteroVersion || Zotero.version)+'">'+
 			'<session id="'+Zotero.Utilities.htmlSpecialChars(this.sessionID)+'"/>'+
 		'<style id="'+Zotero.Utilities.htmlSpecialChars(this.style.styleID)+'" '+
 			(this.style.locale ? 'locale="' + Zotero.Utilities.htmlSpecialChars(this.style.locale) + '" ': '') +
