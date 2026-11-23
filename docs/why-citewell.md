@@ -114,6 +114,32 @@ progress never leaves a hidden modal window, and no operation ends in an indefin
 We cannot force every Wayland compositor to raise a window; we can guarantee that the user is never
 left guessing where it is. The implementation is recorded in [attention.md](attention.md).
 
+### 11. Migration is a conversation, not a silent copy
+
+Importing, merging and cleaning up a library are the moments where a catalogue can quietly lose
+trust. CiteWell treats them as explicit, reviewable operations:
+
+- The source library is copied and hashed, never opened for writing; a database backup is kept and
+  the counts of what will be added, skipped or replaced are shown before the action.
+- A merge reports candidate duplicates instead of silently choosing one. Skipping exact
+  DOI/ISBN/PMID matches is opt-in and off by default; title/year candidates are never skipped
+  automatically. The review itself happens in the normal Duplicate Items view, where a person
+  chooses the master item and fields.
+- Writer documents can contain citations whose items are missing from the library. CiteWell can
+  still render them from the embedded citation data, but after a Refresh it says how many are in
+  that state and offers to relink them by identifier or import them. Ambiguous matches are left
+  alone and reported. Nothing is changed without consent.
+- When a missing citation is imported, the old key is kept when free and an append-only alias is
+  recorded, so the document keeps resolving and the library gains the item instead of a dead link.
+
+This is a deliberate trade: a renderer can keep drawing a citation from embedded data without
+surfacing that the item is absent. CiteWell treats that state as something the person should see
+and decide about. It is also why the migration and deduplication paths are report-first and
+destructive actions are opt-in.
+
+The mechanics are documented in [import.md](import.md) and
+[libreoffice.md](libreoffice.md).
+
 ## What you give up
 
 - Sync, collaboration and mobile: not supported; the code is present but disabled.
