@@ -681,7 +681,21 @@ Zotero.LibraryImport = {
 			}
 
 			onProgress?.(`Merging ${source.items.length} items and ${source.collections.length} collections…`);
-			var result = await this._applyMergeSource(source, staging, onProgress);
+			var idRows = await Zotero.DB.columnQueryAsync("SELECT itemID FROM items WHERE libraryID=1");
+			var existingItemIDs = new Set((idRows || []).map(Number));
+			var result = await this._applyMergeSource(source, staging, onProgress, existingItemIDs);
+			var duplicateReport = null;
+			if (result.duplicates.length) {
+				await Zotero.File.createDirectoryIfMissingAsync(this.identityDir);
+				duplicateReport = PathUtils.join(this.identityDir, `duplicates-${id}.json`);
+				await Zotero.File.putContentsAsync(duplicateReport, JSON.stringify({
+					version: 1,
+					session: id,
+					source: sourcePath,
+					createdAt: new Date().toISOString(),
+					duplicates: result.duplicates,
+				}, null, 2));
+			}
 			try {
 				await this._appendIdentity(result.aliases, id);
 			}
@@ -702,10 +716,12 @@ Zotero.LibraryImport = {
 					collections: result.collections,
 					attachments: result.notes,
 					notes: result.notes,
+					duplicates: result.duplicates.length,
 				},
+				duplicateReport,
 				warnings: result.warnings,
 			});
-			return { ...result, backup: backupPath };
+			return { ...result, backup: backupPath, duplicateReport };
 		}
 		catch (e) {
 			await this._writeResult({
@@ -823,7 +839,7 @@ Zotero.LibraryImport = {
 		};
 	},
 
-	_applyMergeSource: async function (source, staging, onProgress) {
+	_applyMergeSource: async function (source, staging, onProgress, existingItemIDs = null) {
 		var root;
 		var itemMap = new Map();
 		var collectionMap = new Map();
@@ -832,6 +848,7 @@ Zotero.LibraryImport = {
 		var warnings = 0;
 		var collectionCount = 0;
 		var aliases = [];
+		var duplicates = [];
 
 		var state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
@@ -948,6 +965,29 @@ Zotero.LibraryImport = {
 					let date = new Date(String(value).replace(" ", "T") + "Z");
 					if (!isNaN(date.getTime())) item[property] = date.toISOString();
 				}
+				if (existingItemIDs?.size) {
+					try {
+						let data = this._citationDataForSourceItem(source, row);
+						let match = await this.findCitationMatches(
+							data,
+							{ allowedItemIDs: existingItemIDs }
+						);
+						let candidates = match.item ? [match.item] : match.ambiguous;
+						for (let candidate of candidates) {
+							duplicates.push({
+								sourceKey: row.key,
+								destKey: candidate.key,
+								title: data.title || "",
+								by: match.by,
+								ambiguous: !match.item,
+							});
+						}
+					}
+					catch (e) {
+						Zotero.logError(e);
+						warnings++;
+					}
+				}
 				await item.save();
 				itemMap.set(row.itemID, item);
 				aliases.push({
@@ -1047,6 +1087,7 @@ Zotero.LibraryImport = {
 			notes: notesCount,
 			warnings,
 			aliases,
+			duplicates,
 		};
 	},
 
@@ -1455,7 +1496,7 @@ Zotero.LibraryImport = {
 	 * @param {Object} itemData CSL item data embedded in a citation
 	 * @return {Promise<{item: Zotero.Item|null, ambiguous: Zotero.Item[], by: String|null}>}
 	 */
-	findCitationMatches: async function (itemData) {
+	findCitationMatches: async function (itemData, { allowedItemIDs = null } = {}) {
 		if (!itemData) return { item: null, ambiguous: [], by: null };
 		var query = async (field, value) => {
 			if (!value) return [];
@@ -1469,6 +1510,9 @@ Zotero.LibraryImport = {
 				 AND f.fieldName = ? AND LOWER(v.value) = LOWER(?)`,
 				[field, String(value).trim()]
 			);
+			if (allowedItemIDs) {
+				ids = ids.filter(id => allowedItemIDs.has(Number(id)));
+			}
 			return (ids || []).map(id => Zotero.Items.get(id)).filter(Boolean);
 		};
 
@@ -1521,6 +1565,41 @@ Zotero.LibraryImport = {
 		Zotero.Utilities.Item.itemFromCSLJSON(item, itemData);
 		await item.saveTx();
 		return item;
+	},
+
+	_citationDataForSourceItem: function (source, row) {
+		let fields = new Map(
+			(source.fieldsByItem.get(row.itemID) || []).map(field => [field.name, field.value])
+		);
+		let date = fields.get("date");
+		let year = date && String(date).match(/\d{4}/)?.[0];
+		return {
+			DOI: fields.get("DOI"),
+			ISBN: fields.get("ISBN"),
+			PMID: fields.get("PMID"),
+			title: fields.get("title"),
+			issued: year ? { "date-parts": [[year]] } : null,
+		};
+	},
+
+	_citationDataForItem: function (item) {
+		let field = (name) => {
+			try {
+				return item.getField(name) || null;
+			}
+			catch (e) {
+				return null;
+			}
+		};
+		let date = field("date");
+		let year = date && String(date).match(/\d{4}/)?.[0];
+		return {
+			DOI: field("DOI"),
+			ISBN: field("ISBN"),
+			PMID: field("PMID"),
+			title: field("title"),
+			issued: year ? { "date-parts": [[year]] } : null,
+		};
 	},
 
 	_citationURIKey: function (uris) {

@@ -617,6 +617,9 @@ Zotero_Preferences.Library = {
 			var summary = `Merged ${this._plural(result.items, "item", "items")}, `
 				+ `${this._plural(result.collections, "collection", "collections")} and `
 				+ `${this._plural(result.notes, "note", "notes")} into the current library.`;
+			if (result.duplicates?.length) {
+				summary += ` ${this._plural(result.duplicates.length, "possible duplicate", "possible duplicates")} reported.`;
+			}
 			this._setStatus(summary, false, true);
 			progressRow.setProgress(100);
 			progressRow.setText(summary);
@@ -898,6 +901,10 @@ Zotero_Preferences.Library = {
 			+ `${this._plural(counts.collections, "collection", "collections")} and `
 			+ `${this._plural(counts.attachments, "attachment", "attachments")}${when}. `
 			+ `Source fingerprint unchanged. Restore point: ${result.backup}`;
+		if (result.duplicateReport) {
+			element.textContent += ` ${this._plural(counts.duplicates, "possible duplicate", "possible duplicates")} `
+				+ `recorded in ${result.duplicateReport}.`;
+		}
 	},
 
 	_count: function (value) {

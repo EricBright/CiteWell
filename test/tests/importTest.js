@@ -311,6 +311,13 @@ describe("Library import", function () {
 			await collision.saveTx();
 			let collisionKey = collision.key;
 
+			let duplicate = new Zotero.Item("journalArticle");
+			duplicate.libraryID = 1;
+			duplicate.setField("title", "Duplicate fixture");
+			duplicate.setField("DOI", "10.1234/dup");
+			await duplicate.saveTx();
+			let duplicateKey = duplicate.key;
+
 			let note = new Zotero.Item("note");
 			note.libraryID = 1;
 			note.parentID = item.id;
@@ -340,6 +347,22 @@ describe("Library import", function () {
 			occupied._key = collisionKey;
 			occupied.setField("title", "Occupied key");
 			await occupied.saveTx();
+			let existingDuplicate = new Zotero.Item("journalArticle");
+			existingDuplicate.libraryID = 1;
+			existingDuplicate.setField("title", "Duplicate fixture");
+			existingDuplicate.setField("DOI", "10.1234/dup");
+			await existingDuplicate.saveTx();
+			let directMatch = await Zotero.LibraryImport.findCitationMatches({
+				DOI: "10.1234/dup",
+			});
+			assert.equal(directMatch.item?.id, existingDuplicate.id,
+				`direct=${JSON.stringify(directMatch)} existing=${existingDuplicate.id}`);
+			let allowedMatch = await Zotero.LibraryImport.findCitationMatches(
+				{ DOI: "10.1234/dup" },
+				{ allowedItemIDs: new Set([existingDuplicate.id]) }
+			);
+			assert.equal(allowedMatch.item?.id, existingDuplicate.id,
+				`allowed=${JSON.stringify(allowedMatch)}`);
 			let current = await Zotero.LibraryImport.getCurrentLibraryInfo();
 			assert.isFalse(current.empty);
 
@@ -350,6 +373,14 @@ describe("Library import", function () {
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
 			assert.ok(progress.some(line => /^Items: [0-9]+\//.test(line)));
+			assert.ok(result.duplicates.some(entry => entry.sourceKey === duplicateKey
+				&& entry.destKey === existingDuplicate.key),
+				`duplicates=${JSON.stringify(result.duplicates)} source=${duplicateKey} dest=${existingDuplicate.key}`);
+			assert.isTrue(await IOUtils.exists(result.duplicateReport));
+			let duplicateReport = JSON.parse(
+				await Zotero.File.getContentsAsync(result.duplicateReport)
+			);
+			assert.equal(duplicateReport.duplicates.length, result.duplicates.length);
 
 			let items = await Zotero.Items.getAll(1);
 			let merged = items.find(

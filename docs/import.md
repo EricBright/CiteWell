@@ -133,7 +133,7 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 | Attachments | Not imported yet (Phase 3); source rows are skipped |
 | Annotations | Not imported yet (Phase 3); source rows are skipped |
 | Saved searches | Not imported yet; definitions are left alone |
-| Duplicates | Not detected yet (Phase 4); every source item is added |
+| Duplicates | Reported only (Phase 3a); every source item is added, and candidate pairs are written to `identity/duplicates-<session>.json` |
 
 Group libraries are shared libraries, not collections. CiteWell has no group sync, so their items are
 imported into the personal library and each group gets a collection under the import root, preserving
@@ -143,6 +143,9 @@ The source summary lists regular items, collections, notes and attachments separ
 regular-item count is merged; attachments are skipped and do not appear in the merged item count.
 A progress popup reports item and note counts while the merge runs, and the pane keeps a green
 completion line and refreshes the destination counts and the main library when it finishes.
+Duplicate detection compares each source item only against items that existed before this merge,
+by DOI/ISBN/PMID and then a unique title+year; the report names both keys and whether the match was
+ambiguous. Nothing is skipped or deleted in this phase.
 
 The item and collection pass runs in a single transaction: a failure leaves the current library
 unchanged, and the database backup remains as the restore point. Notes are written afterwards as
