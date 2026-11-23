@@ -56,6 +56,9 @@ plan.
   count and path.
 - Tests: `importTest.js` 14/14, including DOI duplicate detection and report-file contents. The
   merge still adds every source item, so the report is additive evidence, not cleanup.
+- Test AppImage: `~/AppImages/citewell-dedup-test.appimage`, version
+  `10.0.9.SOURCE.cd469ae42`, sha256
+  `58f456f1ed8ccfa739a59081e8e2ecd2d01df51553afb1df62892b6ad69c7af1`, 125,917,688 bytes.
 - Next: Phase 3b, an opt-in exact-identifier skip (with source collections still mapped and an
   alias to the kept item), then reconsider interactive metadata merging.
 
