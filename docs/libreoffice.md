@@ -6,6 +6,42 @@ a selected item's APA citation in an isolated Writer profile — a placeholder, 
 target is feature parity with Zotero's LibreOffice menu through CiteWell's own adapter:
 [libreoffice-parity.md](libreoffice-parity.md). Companion to [decisions.md](decisions.md) D34–D36.
 
+## Zotero document compatibility
+
+CiteWell treats the Zotero Writer document format as a compatibility boundary (D39). A document
+made by Zotero must keep working when opened in CiteWell, and a document saved by CiteWell must keep
+working when opened in Zotero.
+
+| Layer | Zotero convention | CiteWell behaviour |
+|---|---|---|
+| Citation mark | `ZOTERO_ITEM CSL_CITATION {…}` reference mark or bookmark | read; write the same |
+| Bibliography | `ZOTERO_BIBL …` text section or reference mark | read; write the same |
+| Document preferences | `ZOTERO_PREF` (fallback `CSL_PREF`) document property | read; write `ZOTERO_PREF`; keep `CITEWELL_PREFS` only as a legacy mirror |
+| Item identity | citation `uris` point at item URIs | exact URI, then alias chain, then replaced-item relation |
+| CiteWell-only data | none | separate namespaced property that Zotero ignores |
+
+The extension accepts the legacy `CITEWELL_` markers and `CITEWELL_PREFS` property so documents
+written before this change still load. New writes use the Zotero names. `ZOTERO_`, ` CSL_` and
+(where present) ` ADDIN ZOTERO_` prefixes are read.
+
+Identity is the hard part after a merge. Adopt-copy preserves item keys; merge preserves a source
+key when it is free and records an alias when it is not (D40). The alias chain is append-only and
+lives in `identity/aliases.jsonl`, so a document citing an item merged two libraries ago still
+resolves. Resolution appends the destination URI to the citation when it succeeds; the document
+then survives even if the alias store is later lost.
+
+Phases:
+
+1. **Contract and fixtures** — this section, D39/D40, and Zotero-created ODT fixtures with
+   author-date, note-style, bibliography, group and missing-item citations.
+2. **Read/write compatibility** — Zotero markers and preferences in both directions.
+3. **Identity preservation** — key preservation, alias log, citation-resolution fallback.
+4. **Dedup aliases** — skip/merge decisions record aliases; no automatic metadata merging.
+5. **Unresolved-citation reporting and relink** — visible errors, never silent flattening.
+
+Acceptance for a phase is a document that opens, refreshes, edits, saves and reopens in the other
+application without losing citations or bibliography entries.
+
 ## Identity and transport
 
 CiteWell owns this integration. The target contract is:

@@ -713,6 +713,55 @@ Rejected: a Rust/WASM timer core for the 1/3/10 s scheduler — the state is tri
 observable effect is a Gecko window API; the extra build target and interop would add complexity
 without removing JavaScript from the UI.
 
+## D39 — Zotero owns the Writer document-format boundary
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** only with a document migration
+
+CiteWell reads and writes Zotero’s document convention unchanged. Standard citation, bibliography
+and preferences markers use Zotero’s names: `ZOTERO_ITEM CSL_CITATION …`, `ZOTERO_BIBL …`, and the
+`ZOTERO_PREF` / `CSL_PREF` document properties. CiteWell keeps reading the `CITEWELL_` markers and
+`CITEWELL_PREFS` property produced by earlier builds, but it stops producing new `CITEWELL_`
+citation fields.
+
+The boundary is deliberate: the backend may diverge, but a document must remain readable by Zotero.
+Any future CiteWell-only document information gets a namespaced container that Zotero ignores, not
+a new field prefix that Zotero would treat as text. A new marker type requires a decision record and
+a round-trip test.
+
+Rejected: keeping `CITEWELL_` as the write prefix — it turns every Zotero document CiteWell edits
+into a one-way document. Rejected: writing two citation fields per cluster — duplicate text and two
+sources of truth. Rejected: a CiteWell-specific document format — it defeats the compatibility goal
+before there is a feature that requires it.
+
+Consequences: the LibreOffice extension writes `ZOTERO_` markers and reads `CITEWELL_` markers for
+migration; the Zotero document properties are the source of style, locale and field type; unresolved
+citations are reported, never silently flattened.
+
+## D40 — Merge preserves identity with an append-only alias chain
+
+**Date:** 2026-11-23 · **Status:** accepted · **Reversible:** yes, aliases are additive
+
+Merging a source item preserves its Zotero key when that key is free in the destination library. If
+the key is taken, the item gets a new key and the merge records an alias from the source identity to
+the destination identity. Aliases are append-only and may chain: source A → destination B in one
+merge, B → C in a later merge; resolution follows the chain to the current item.
+
+Aliases live in a sidecar log under the data directory (`identity/aliases.jsonl`), not in
+`zotero.sqlite`; the log is copied into restore points and followed by restore. Each entry records
+the source library/group and key, the destination library and key, the merge session and a timestamp.
+Resolution for a Writer citation tries the exact URI, then the alias chain, then Zotero’s
+replaced-item relation; a resolved alias appends the destination URI to the citation item so the
+document also self-heals.
+
+Ambiguity is surfaced, not guessed: two local libraries can use the same URI path shape, so a
+collision that cannot be resolved by group/key is reported. Deduplication may add aliases but never
+rewrites or deletes an existing one.
+
+Rejected: a new Zotero schema table — it would make CiteWell data unreadable to Zotero tools.
+Rejected: rewriting citations in every open document — destructive and unnecessary while aliases can
+resolve at read time. Rejected: automatic metadata merging on a title match — false positives destroy
+distinctions.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
