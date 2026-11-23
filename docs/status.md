@@ -17,7 +17,7 @@ push target. The product branch may diverge without limit.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.4bc43da7f`, sha256 `2ad3e65a…`, 125,917,688 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.d15ef6ed3`, sha256 `4a6d31a0…`, 125,925,880 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | `connectors/`, Firefox XPI, branded, identity swapped, port 23120 |
@@ -36,8 +36,8 @@ end-of-night test. Use the hash below; no source-only lag remains.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,917,688 bytes; sha256
-  `2ad3e65a1ee468d28ed50be3153babbed978905e02ddd546138aaa18ac6dbe77`; stable Writer-compatible build)
+- `dist/CiteWell-x86_64.AppImage` (125,925,880 bytes; sha256
+  `4a6d31a09a4f0637df04c60a6f0047205e2020dff282315a6cb70980a4b71556`; stable Writer + dedup build)
 - `build/dist/CiteWell-Connector.xpi` (≈1.6 MB)
 
 The obsolete R26 editor work was preserved before reverting at
@@ -85,8 +85,8 @@ plan.
 - Test AppImage: `~/AppImages/citewell-writer-test.appimage`, version
   `10.0.9.SOURCE.9754fb1ab`, sha256
   `5fc70eb1e9f9d5728d4172f5e15babc596296ca4b4a68d5836407ca9719fae5c`, 125,917,688 bytes.
-  The stable `~/AppImages/citewell.appimage` now contains the merged Writer work:
-  `4bc43da7f`, sha256 `2ad3e65a…`. Install or repair the LibreOffice extension from the stable build
+  The stable `~/AppImages/citewell.appimage` now contains the merged Writer + dedup work:
+  `d15ef6ed3`, sha256 `4a6d31a0…`. Install or repair the LibreOffice extension from the stable build
   before testing a document.
 - Real-document check: a Zotero-created ODT touched by CiteWell keeps the `ZOTERO_` citation and
   bibliography markers, the four original citation payloads (except session-local `id`), their
