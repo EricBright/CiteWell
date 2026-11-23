@@ -27,7 +27,7 @@ push target. The product branch may diverge without limit.
 | Plugins | **Parked:** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden. Code is retained (D31) |
 | Dependencies | npm is retired (D32); no installs, updates, audits or lockfile changes; existing `node_modules` is frozen for the legacy build only |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | R24 Phase 2 on `r24-merge`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points and merge of regular items, collections and notes |
+| Import | R24 Phase 3a on `import-attachments`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes and attachments; dedup report/skip/review |
 | Docs | README index, Rust docs gate, D1–D38 |
 | CI | `docs`, `CodeQL` and `Dependency guard`; the inherited upstream `ci.yml` with its npm jobs is removed |
 
@@ -44,6 +44,21 @@ The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
 (sha256 `08516f3908ef5062e55d7a4f0184e9bf0e4491ab656a550591fc703eadcfac66`). It is history, not a
 plan.
+
+## Handoff 2026-11-23 (Attachments)
+
+- New branch `import-attachments` from `citewell`, not merged.
+- Merge now copies source attachment files into CiteWell storage as imported-file attachments and
+  maps them to their parents. Attachments belonging to a skipped exact duplicate are not copied;
+  missing files and failed copies increment warnings. The merge result and pane count attachments,
+  skipped attachments, and missing files.
+- The identity log is now part of import/replace/restore backups, and a restore writes the selected
+  point's identity snapshot back into the active library. Old points without a snapshot keep the
+  current chain rather than deleting it.
+- Tests: `importTest.js` 15/15, including attachment file content, parent mapping, skipped-duplicate
+  attachment policy and report scanning. Release builds and the stable AppImage are unchanged.
+- Next: decide whether annotations and saved searches are worth importing (annotations have no UI
+  here), then resumable merge batching, then R15.
 
 ## Handoff 2026-11-23 (Dedup report)
 

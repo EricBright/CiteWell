@@ -130,8 +130,8 @@ For an existing CiteWell library, the importer copies objects through Zotero's d
 | Regular items | Fields, creators, tags and relations copied; the source key is kept when free, otherwise a new key is generated and recorded in the alias chain |
 | Collections | Tree recreated by name under an import root, then items assigned |
 | Notes | Written as an HTML file attachment under `storage/`; parent mapped. Never rendered, edited, indexed or opened in-app — the OS default HTML handler opens it |
-| Attachments | Not imported yet (Phase 3); source rows are skipped |
-| Annotations | Not imported yet (Phase 3); source rows are skipped |
+| Attachments | File copied from the source `storage/` into CiteWell storage as an imported-file attachment; parent mapped. Attachments of a skipped exact duplicate are not duplicated |
+| Annotations | Not imported yet; source rows are skipped |
 | Saved searches | Not imported yet; definitions are left alone |
 | Duplicates | Reported to `identity/duplicates-<session>.json`. With the opt-in exact-identifier skip, DOI/ISBN/PMID matches are not inserted but are added to the imported collections and aliased; title/year matches are never skipped |
 
@@ -152,12 +152,16 @@ title/year candidates remain report-only. No existing metadata is changed.
 
 The item and collection pass runs in a single transaction: a failure leaves the current library
 unchanged, and the database backup remains as the restore point. Notes are written afterwards as
-HTML attachments; a failed note is reported as a warning without aborting the rest. Resumable
-batching and duplicate reporting are Phase 4. The source is opened **read-only**; a checksum before
-and after proves it was not modified.
+HTML attachments, then source attachment files are copied into CiteWell storage and attached to
+their mapped parents; a failed note or attachment is reported as a warning without aborting the
+rest. Attachments of skipped exact duplicates are not copied, so the kept item is not silently
+modified. Resumable batching is the remaining Phase 4 work. The source is opened **read-only**; a
+checksum before and after proves it was not modified.
 
 Every merged item also gets an entry in the append-only identity log at
 `<data>/identity/aliases.jsonl`: source library/group and key, destination key, session and time.
+The log is copied into import/replace/restore backups, and a restore carries the selected point's
+snapshot back into the active library (old points without one keep the current chain).
 Keeping the source key means a Writer document created against the Zotero library usually resolves
 without the log; when the key had to change (or the item came from a group library), the citation
 reader follows the alias chain to the current item. The log is additive and is not part of
@@ -204,7 +208,7 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 |---|---|
 | 1 | Detector, dry run, adopt-copy, replace, restore points and checksum verification |
 | 2 | Merge regular items, collections, and notes as HTML attachments |
-| 3 | Attachments, annotations and saved searches |
-| 4 | Duplicate report and resumable merges |
+| 3 | Attachments imported; annotations and saved searches still skipped |
+| 4 | Duplicate report and skip done; resumable merges remaining |
 
 *For the full documentation index, see [../README.md](../README.md).*

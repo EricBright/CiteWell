@@ -351,6 +351,27 @@ describe("Library import", function () {
 			duplicate.setField("DOI", "10.1234/dup");
 			await duplicate.saveTx();
 			let duplicateKey = duplicate.key;
+			let duplicateAttachmentFile = OS.Path.join(
+				Zotero.DataDirectory.dir, "duplicate-attachment.txt"
+			);
+			await Zotero.File.putContentsAsync(
+				duplicateAttachmentFile, "duplicate attachment body"
+			);
+			await Zotero.Attachments.importFromFile({
+				file: duplicateAttachmentFile,
+				parentItemID: duplicate.id,
+				title: "Duplicate attachment",
+			});
+			await IOUtils.remove(duplicateAttachmentFile, { ignoreAbsent: true });
+
+			let attachmentFile = OS.Path.join(Zotero.DataDirectory.dir, "source-attachment.txt");
+			await Zotero.File.putContentsAsync(attachmentFile, "attachment body");
+			await Zotero.Attachments.importFromFile({
+				file: attachmentFile,
+				parentItemID: item.id,
+				title: "Source attachment",
+			});
+			await IOUtils.remove(attachmentFile, { ignoreAbsent: true });
 
 			let note = new Zotero.Item("note");
 			note.libraryID = 1;
@@ -362,6 +383,10 @@ describe("Library import", function () {
 			await IOUtils.copy(
 				Zotero.DataDirectory.getDatabase(),
 				OS.Path.join(source, "zotero.sqlite")
+			);
+			await Zotero.File.copyDirectory(
+				OS.Path.join(Zotero.DataDirectory.dir, "storage"),
+				OS.Path.join(source, "storage")
 			);
 			let hashBefore = await Zotero.LibraryImport.hashFile(
 				OS.Path.join(source, "zotero.sqlite")
@@ -407,8 +432,10 @@ describe("Library import", function () {
 			});
 			assert.isAtLeast(result.items, 1);
 			assert.isAtLeast(result.notes, 1);
+			assert.isAtLeast(result.attachments, 1);
 			assert.ok(progress.some(line => /^Items: [0-9]+\//.test(line)));
 			assert.equal(result.skippedItems, 1);
+			assert.equal(result.skippedAttachments, 1);
 			assert.ok(result.duplicates.some(entry => entry.sourceKey === duplicateKey
 				&& entry.destKey === existingDuplicate.key && entry.skipped),
 				`duplicates=${JSON.stringify(result.duplicates)} source=${duplicateKey} dest=${existingDuplicate.key}`);
@@ -458,6 +485,7 @@ describe("Library import", function () {
 				}
 			});
 			assert.lengthOf(duplicateDOIItems, 1);
+			assert.lengthOf(existingDuplicate.getAttachments(), 0);
 			assert.equal(merged.getCreators()[0].lastName, "Lovelace");
 			assert.include(merged.getTags().map(tag => tag.tag), "fixture");
 
@@ -466,14 +494,25 @@ describe("Library import", function () {
 			assert.equal(childCollection.name, "Merge child");
 			assert.equal(Zotero.Collections.get(childCollection.parentID).name, "Merge parent");
 
-			let attachments = merged.getAttachments();
-			assert.lengthOf(attachments, 1);
-			let attachment = Zotero.Items.get(attachments[0]);
-			assert.equal(attachment.attachmentContentType, "text/html");
-			let attachmentPath = await attachment.getFilePathAsync();
-			assert.isTrue(await IOUtils.exists(attachmentPath));
-			let html = await Zotero.File.getContentsAsync(attachmentPath);
+			let attachments = merged.getAttachments()
+				.map(attachmentID => Zotero.Items.get(attachmentID));
+			assert.lengthOf(attachments, 2);
+			let noteAttachment = attachments.find(candidate =>
+				candidate.attachmentContentType === "text/html"
+			);
+			let fileAttachment = attachments.find(candidate =>
+				candidate.attachmentContentType !== "text/html"
+			);
+			assert.ok(noteAttachment);
+			assert.ok(fileAttachment);
+			assert.equal(fileAttachment.getField("title"), "Source attachment");
+			let noteAttachmentPath = await noteAttachment.getFilePathAsync();
+			assert.isTrue(await IOUtils.exists(noteAttachmentPath));
+			let html = await Zotero.File.getContentsAsync(noteAttachmentPath);
 			assert.include(html, "Imported note body");
+			let fileAttachmentPath = await fileAttachment.getFilePathAsync();
+			assert.isTrue(await IOUtils.exists(fileAttachmentPath));
+			assert.equal(await Zotero.File.getContentsAsync(fileAttachmentPath), "attachment body");
 			assert.equal(items.filter(candidate => candidate.itemType === "note").length, 0);
 
 			let hashAfter = await Zotero.LibraryImport.hashFile(

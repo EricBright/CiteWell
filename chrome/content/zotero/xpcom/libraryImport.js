@@ -684,7 +684,7 @@ Zotero.LibraryImport = {
 			var idRows = await Zotero.DB.columnQueryAsync("SELECT itemID FROM items WHERE libraryID=1");
 			var existingItemIDs = new Set((idRows || []).map(Number));
 			var result = await this._applyMergeSource(
-				source, staging, onProgress, existingItemIDs, skipExactDuplicates
+				source, staging, onProgress, existingItemIDs, skipExactDuplicates, sourcePath
 			);
 			var duplicateReport = null;
 			if (result.duplicates.length) {
@@ -716,11 +716,13 @@ Zotero.LibraryImport = {
 				counts: {
 					items: result.items,
 					collections: result.collections,
-					attachments: result.notes,
+					attachments: result.attachments,
 					notes: result.notes,
 					duplicates: result.duplicates.length,
 					skippedItems: result.skippedItems,
 					skippedNotes: result.skippedNotes,
+					skippedAttachments: result.skippedAttachments,
+					missingAttachments: result.missingAttachments,
 				},
 				duplicateReport,
 				warnings: result.warnings,
@@ -786,6 +788,18 @@ Zotero.LibraryImport = {
 			JOIN items i ON i.itemID = n.itemID
 			WHERE n.itemID NOT IN (SELECT itemID FROM deletedItems)
 		`);
+		var attachments = await q(`
+			SELECT ia.itemID, ia.parentItemID, ia.path, ia.contentType, ia.linkMode,
+				i.key, i.dateAdded, i.dateModified,
+				(SELECT v.value FROM itemData d
+					JOIN fields f ON f.fieldID = d.fieldID
+					JOIN itemDataValues v ON v.valueID = d.valueID
+					WHERE d.itemID = i.itemID AND f.fieldName = 'title' LIMIT 1) AS title
+			FROM itemAttachments ia
+			JOIN items i ON i.itemID = ia.itemID
+			WHERE ia.itemID NOT IN (SELECT itemID FROM deletedItems)
+			  AND ia.parentItemID IS NOT NULL
+		`);
 		var groups = await q(`SELECT groupID, libraryID, name FROM groups`);
 		var relations = await q(`
 			SELECT r.itemID, p.predicate, r.object
@@ -836,6 +850,7 @@ Zotero.LibraryImport = {
 				libraryID: row.libraryID,
 			})),
 			notes,
+			attachments,
 			groupNames,
 			groupIDs,
 			relations,
@@ -844,7 +859,7 @@ Zotero.LibraryImport = {
 	},
 
 	_applyMergeSource: async function (source, staging, onProgress, existingItemIDs = null,
-			skipExactDuplicates = false) {
+			skipExactDuplicates = false, sourcePath = null) {
 		var root;
 		var itemMap = new Map();
 		var collectionMap = new Map();
@@ -858,6 +873,9 @@ Zotero.LibraryImport = {
 		var importedItems = 0;
 		var skippedItems = 0;
 		var skippedNotes = 0;
+		var importedAttachments = 0;
+		var skippedAttachments = 0;
+		var missingAttachments = 0;
 
 		var state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
@@ -1128,12 +1146,61 @@ Zotero.LibraryImport = {
 			onProgress?.(`Notes: ${notesCount}/${source.notes.length}`);
 		}
 
+		var processedAttachments = 0;
+		for (let attachment of source.attachments) {
+			processedAttachments++;
+			if (skippedSourceIDs.has(attachment.parentItemID)) {
+				skippedAttachments++;
+			}
+			else {
+				let parent = itemMap.get(attachment.parentItemID);
+				let path = attachment.path;
+				let filePath = null;
+				if (parent && path && sourcePath) {
+					if (path.startsWith("storage:")) {
+						filePath = PathUtils.join(
+							sourcePath, "storage", attachment.key, path.slice("storage:".length)
+						);
+					}
+					else if (path.startsWith("/")) {
+						filePath = path;
+					}
+				}
+				if (!parent || !filePath || !(await IOUtils.exists(filePath))) {
+					missingAttachments++;
+				}
+				else {
+					try {
+						let options = {
+							file: filePath,
+							parentItemID: parent.id,
+						};
+						if (attachment.title) options.title = attachment.title;
+						if (attachment.contentType) options.contentType = attachment.contentType;
+						await Zotero.Attachments.importFromFile(options);
+						importedAttachments++;
+					}
+					catch (e) {
+						Zotero.logError(e);
+						warnings++;
+					}
+				}
+			}
+			if (processedAttachments % 10 === 0
+					|| processedAttachments === source.attachments.length) {
+				onProgress?.(`Attachments: ${processedAttachments}/${source.attachments.length}`);
+			}
+		}
+
 		return {
 			items: importedItems,
 			collections: collectionCount,
 			notes: notesCount,
 			skippedItems,
 			skippedNotes,
+			attachments: importedAttachments,
+			skippedAttachments,
+			missingAttachments,
 			warnings,
 			aliases,
 			duplicates,
@@ -1202,6 +1269,7 @@ Zotero.LibraryImport = {
 			}
 
 			var backup = PathUtils.join(this.dataDir, ".import-backup", request.id);
+			var identityText = await this._readIdentityText();
 			await this._runSidecar([
 				"apply",
 				"--staging",
@@ -1211,6 +1279,7 @@ Zotero.LibraryImport = {
 				"--backup",
 				backup,
 			]);
+			await this._copyIdentityInto(backup, identityText);
 			await this._writeBackupManifest(backup, {
 				version: 1,
 				kind: mode,
@@ -1220,6 +1289,11 @@ Zotero.LibraryImport = {
 				sourceCounts: request.counts,
 				replacedCounts: state,
 			});
+			// The newly installed library came from Zotero, so it has no
+			// CiteWell identity chain; the old one stays with the backup.
+			await IOUtils.remove(this.identityPath, { ignoreAbsent: true });
+			this._identityKeys = null;
+			this._identityGroups = null;
 
 			await IOUtils.remove(this.requestPath, { ignoreAbsent: true });
 			await IOUtils.remove(request.staging, { recursive: true, ignoreAbsent: true });
@@ -1287,6 +1361,14 @@ Zotero.LibraryImport = {
 			);
 
 			var current = await this._stateAtPath(PathUtils.join(this.dataDir, "zotero.sqlite"));
+			var currentIdentity = await this._readIdentityText();
+			let restoredIdentity = null;
+			try {
+				restoredIdentity = await Zotero.File.getContentsAsync(
+					PathUtils.join(request.backup, "identity", this.IDENTITY_FILENAME)
+				);
+			}
+			catch (e) {}
 			var newId = `restore-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 			var newBackup = PathUtils.join(backupRoot, newId);
 			await this._runSidecar([
@@ -1298,6 +1380,7 @@ Zotero.LibraryImport = {
 				"--backup",
 				newBackup,
 			]);
+			await this._copyIdentityInto(newBackup, currentIdentity);
 			await this._writeBackupManifest(newBackup, {
 				version: 1,
 				kind: "restore-safety",
@@ -1306,6 +1389,12 @@ Zotero.LibraryImport = {
 				restoredFrom: request.backup,
 				replacedCounts: current,
 			});
+			// Old restore points may not carry an identity snapshot; keep the
+			// current chain rather than deleting mappings that may still be
+			// needed by documents.
+			if (restoredIdentity !== null) {
+				await this._writeIdentityText(restoredIdentity);
+			}
 
 			// The selected restore point was consumed; its database and storage
 			// are now the active library. Remove the leftovers so it is not
@@ -1756,6 +1845,33 @@ Zotero.LibraryImport = {
 			destKey: item.key,
 		}], `document-relink-${Date.now()}`);
 		return true;
+	},
+
+	_readIdentityText: async function () {
+		try {
+			return await Zotero.File.getContentsAsync(this.identityPath);
+		}
+		catch (e) {
+			return null;
+		}
+	},
+
+	_writeIdentityText: async function (text) {
+		if (text === null || text === undefined) return;
+		await Zotero.File.createDirectoryIfMissingAsync(this.identityDir);
+		await Zotero.File.putContentsAsync(this.identityPath, text);
+		this._identityKeys = null;
+		this._identityGroups = null;
+	},
+
+	_copyIdentityInto: async function (directory, text) {
+		if (text === null || text === undefined) return;
+		let dir = PathUtils.join(directory, "identity");
+		await Zotero.File.createDirectoryIfMissingAsync(dir);
+		await Zotero.File.putContentsAsync(
+			PathUtils.join(dir, this.IDENTITY_FILENAME),
+			text
+		);
 	},
 
 	getLocations: function () {

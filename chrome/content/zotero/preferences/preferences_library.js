@@ -581,8 +581,7 @@ Zotero_Preferences.Library = {
 			+ `Zotero: ${this._plural(info.regularItems ?? info.items, "item", "items")}, `
 			+ `${this._plural(info.collections, "collection", "collections")}, `
 			+ `${this._plural(info.notes, "note", "notes")}.\n\n`
-			+ "Items, collections and notes will be added to the current library. "
-			+ `${this._plural(info.attachments, "attachment", "attachments")} and `
+			+ "Items, collections, notes and attachments will be added to the current library. "
 			+ `${this._plural(info.annotations, "annotation", "annotations")} are not imported yet. `
 			+ "A database backup is kept; Zotero is not modified."
 			+ (skipExact
@@ -621,10 +620,14 @@ Zotero_Preferences.Library = {
 			});
 			this._el("library-progress").hidden = true;
 			var summary = `Merged ${this._plural(result.items, "item", "items")}, `
-				+ `${this._plural(result.collections, "collection", "collections")} and `
-				+ `${this._plural(result.notes, "note", "notes")} into the current library.`;
+				+ `${this._plural(result.collections, "collection", "collections")}, `
+				+ `${this._plural(result.notes, "note", "notes")} and `
+				+ `${this._plural(result.attachments, "attachment", "attachments")} into the current library.`;
 			if (result.skippedItems) {
 				summary += ` Skipped ${this._plural(result.skippedItems, "exact duplicate", "exact duplicates")}.`;
+			}
+			if (result.skippedAttachments) {
+				summary += ` Skipped ${this._plural(result.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
 			}
 			if (result.duplicates?.length) {
 				summary += ` ${this._plural(result.duplicates.length, "possible duplicate", "possible duplicates")} reported.`;
@@ -949,6 +952,9 @@ Zotero_Preferences.Library = {
 			+ `Source fingerprint unchanged. Restore point: ${result.backup}`;
 		if (counts.skippedItems) {
 			element.textContent += ` Skipped ${this._plural(counts.skippedItems, "exact duplicate", "exact duplicates")}.`;
+		}
+		if (counts.skippedAttachments) {
+			element.textContent += ` Skipped ${this._plural(counts.skippedAttachments, "attachment", "attachments")} of skipped duplicates.`;
 		}
 		if (result.duplicateReport) {
 			element.textContent += ` ${this._plural(counts.duplicates, "possible duplicate", "possible duplicates")} `
