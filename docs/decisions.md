@@ -1140,6 +1140,32 @@ inert. Recommendation: ship no in-app blocker; keep the sandbox, soft HTTPS and 
 permissions, and leave "use Firefox with uBlock Origin" as documentation rather than a control.
 This changes the shape D51 expected; owner approval is pending.
 
+## D52 — An interrupted merge refuses when its source changed
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+A merge is resumable by source path and database hash. When Zotero's library changed between the
+interruption and the retry, the checkpoint no longer matched, and the first implementation started
+a fresh merge on top of the partial result: every already-imported item, note and attachment would
+appear twice.
+
+The retry now **refuses**, and the message names the restore point the interrupted merge made. The
+pane offers a database restore: the merge backup holds the database as it was before the merge
+began, so swapping it in removes the partial result without touching the copied attachment files or
+the search index. The replaced database is kept as a database-only restore point, and the merge
+session is forgotten, so the changed library can be merged again.
+
+Rejected: resuming across a changed source. The checkpoint records source item IDs and destination
+keys, but a changed source can have new, removed or re-keyed children whose relationship to the
+partial result cannot be inferred safely, and guessing is what loses data. Rejected: discarding the
+checkpoint and continuing, which is the duplication this decision exists to prevent. Rejected:
+deleting the files the partial merge copied as part of the rollback; they are unreferenced
+leftovers, and deleting attachment files to tidy up risks data that is still in use.
+
+A database-only restore is not the full restore: it swaps `zotero.sqlite` and leaves `storage/` and
+the search index in place. The full restore path refuses database-only points rather than emptying
+the attachment tree, and the Restore points list labels them and offers **Restore database…**.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

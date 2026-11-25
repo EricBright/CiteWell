@@ -8,7 +8,7 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
+| R8 | Update channel decision: no Mozilla channel; the AppImage updates itself ([packaging.md](docs/packaging.md#updates)) | A fork must not point its updater at Zotero's servers | Decided 2026-11-25: yes, the AppImage can initiate its own update without Gear Lever (AppGlider precedent); R8 still neutralizes `[AppUpdate]` and the zotero.org endpoints, and Check for Updates must tell the truth until the self-updater ships with R11/R21 |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
 
 ## Done
@@ -17,7 +17,7 @@ Completed outcomes, kept for context.
 
 | ID | Outcome | Evidence |
 |---|---|---|
-| R24 | Import/merge a Zotero library without touching it (D24, [docs/import.md](docs/import.md)) | Acceptance 2026-11-25: the canonical 1,771-item library merged into a non-empty one as 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, 0 skipped, 153 fileless rows reported, source checksum unchanged, 38.1 s; two data-loss defects found and fixed (same-title children, checkpoint cadence); `importTest.js` 18/18 |
+| R24 | Import/merge a Zotero library without touching it (D24, [docs/import.md](docs/import.md)) | Acceptance 2026-11-25: the canonical 1,771-item library merged into a non-empty one as 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, 0 skipped, 153 fileless rows reported, source checksum unchanged, 38.1 s; two data-loss defects found and fixed (same-title children, checkpoint cadence); `importTest.js` 18/18; the interrupted-merge hazard was closed the same day (refuse a changed source, database restore, D52), `importTest.js` 19/19 |
 | R34 | In-app Browse tab; the Firefox connector and the AMO dance retired (D47) | Browse saves via translator detection (2a), multi-item picker (2b), PDF capture; Docs runs through Zotero's official connector, tested against the app's `23119` listener (`server_connectorIntegrationTest.js`); the Docs gate explains both states; `connectors/` and `tools/rsvg-shim` in Trash, `xtask connectors` gone, no AMO listing |
 | R38 | Content blocking decision: no in-app blocker (D51) | Evidence: [docs/ublock-spike.md](docs/ublock-spike.md); signed uBO and minimal MV2 both fail ERROR_CORRUPT_FILE; classifier has no list data; owner approved; loader stays closed |
 | R36 | Browse exposure bounded: state disposed, permissions default-deny, ESR tripwire (D49) | Evidence: reserved context 20260 cleared at startup/shutdown (cookie + clearData tests); soft HTTPS with fallback; permission prefs at block; weekly CI issue-only ESR check; 39/39 browse tests |

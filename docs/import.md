@@ -108,8 +108,11 @@ Replace is never silently chosen. The source Zotero library is still read-only.
 
 ### Restore points
 
-Every replace, adopt and restore writes a restore point. The Library pane lists them with date,
-origin, item/collection counts and size. Restoring:
+Every replace, adopt and restore writes a restore point. A merge writes one before it starts, and
+a database-only restore writes one for the state it replaces. The Library pane lists them with
+date, origin, item/collection counts and size. A point marked **database only** (a merge backup, or
+the state a database restore replaced) holds a database snapshot and nothing else: restoring it
+swaps the database and leaves attachments and the search index in place. Restoring a full point:
 
 1. Inspects the selected point first; an empty or corrupt point is refused rather than swapped in.
 2. Names the restore point's item/collection counts and the current library's counts in the
@@ -162,6 +165,13 @@ child passes; an attachment already copied before the interruption is remapped s
 still follow. The source is opened **read-only**; a checksum before and after proves it was not
 modified.
 
+If the source library changed after an interruption, the checkpoint no longer describes the rows
+it would skip, so the retry is **refused** instead of merging the whole library again on top of
+the partial result. The refusal names the restore point that merge made, and the pane offers to
+restore it. A merge restore point is database-only: restoring it swaps the database, keeps the
+current database as a new database-only restore point, forgets the merge session, and leaves the
+copied attachment files where they are. The changed library can be merged again afterwards.
+
 Every merged item also gets an entry in the append-only identity log at
 `<data>/identity/aliases.jsonl`: source library/group and key, destination key, session and time.
 The log is copied into import/replace/restore backups, and a restore carries the selected point's
@@ -187,7 +197,8 @@ Import is the first section of **Import & Export**; Quick Copy follows below it:
 - **Duplicate review** — scans the current library with Zotero's duplicate detector, writes
   `identity/library-duplicates-<timestamp>.json`, and opens the built-in Duplicate Items view.
   Merging stays manual; this action never changes an item.
-- **Restore points** — date, origin, counts, size and a Restore action; restoring is reversible.
+- **Restore points** — date, origin, counts, size and a Restore action; restoring is reversible. A
+  database-only point says so and offers **Restore database…**, which swaps the database alone.
 - **Last operation** — counts, source fingerprint, and the restore-point path.
 
 The **Library & Files** pane shows the current library path and counts, the locations of each
@@ -235,10 +246,13 @@ That run found two data-loss defects, both fixed before R24 closed:
    interruption could re-import up to 24 notes or attachments on resume. A checkpoint is now
    written, and awaited, after every child, which cost nothing measurable (38.1 s).
 
-**Known hazard.** An interrupted merge is found again by source path and database hash. If the
-Zotero library changes between the interruption and the retry, the checkpoint is ignored and the
-retry merges the whole library again on top of the partial result. The safe behaviour is to refuse
-and point at that merge's restore point; it is pending a decision.
+**Interrupted merges.** An interrupted merge is found again by source path and database hash. If
+the Zotero library changes between the interruption and the retry, the retry is refused and the
+pane points at that merge's restore point (see
+[Merge into the current library](#merge-into-the-current-library)). Verified end to end on
+2026-11-25: a staged database restore swapped the snapshot in before the database opened, kept the
+replaced database as a `database only` restore point, left `storage/` and the search index
+untouched, and removed the merge session.
 
 The source library itself carries 148 attachment rows with no path and two missing storage
 directories; those are inherited, reported, and never invented.

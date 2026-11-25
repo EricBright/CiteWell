@@ -13,13 +13,14 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-25 (R34 and R24 closed; R8 recon done)
+## Handoff 2026-11-25 (R34, R24 and its hazard closed; R8 answer known)
 
-Compaction anchor. Last code commit `89ebff783` (docs commits follow: `f54a5237c` and the session
-closeout). Installed AppImage `10.0.9.SOURCE.89ebff783`, sha256
-`0b26bd24fe1c4d4fd0bcfa9525170191a018ba0eccba3c0ea06d6d51f4c42d45`, 125,852,152 bytes, installed
+Compaction anchor. Last code commit `8d8692c88` (docs commits follow). Installed AppImage
+`10.0.9.SOURCE.8d8692c88`, sha256
+`2f2428cf850228347c71ca1aa74cfa35e80b0c4329edc62e4965146b06b2d63c`, 125,860,344 bytes, installed
 at `~/AppImages/citewell.appimage` and launched against a scratch profile: `/connector/ping`
-returned 200 on **both** `23119` and `23120`.
+returned 200 on **both** `23119` and `23120`. The integration manifest was repointed at the
+installed path with `--install-integration -datadir "$HOME/CiteWell"`.
 
 **Shipped today, in order.**
 
@@ -44,37 +45,47 @@ returned 200 on **both** `23119` and `23120`.
    because reasoning eats the budget), and findings must be verified against the code, not just
    located. Pass outcomes: `reviews/strata/passes.md`.
 
+4. **R24 hazard closed.** A merge retry whose source changed after an interruption is now
+   **refused**, with the interrupted merge's restore point named in the dialog. The pane offers a
+   database restore: the importer's new `--database-only` swaps `zotero.sqlite` and leaves
+   `storage/` and the search index in place, keeps the replaced database as a database-only
+   restore point, forgets the merge session, and lets the changed library be merged again. The
+   full restore path refuses database-only points rather than emptying the attachment tree.
+   Verified end to end against a scratch library on 2026-11-25. Decision: [D52](decisions.md#d52--an-interrupted-merge-refuses-when-its-source-changed).
+
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
-18/18 (including the same-title regression); docs 800/800; repo-guard green; docs gate green.
+19/19 (including the same-title regression and the refusal), importer 10/10; docs 800/800;
+repo-guard green; docs gate green.
 
 **Open decisions, in order.**
 
-1. **R24 hazard: a retry after an interrupted merge duplicates if the source library changed in
-   between**, because the checkpoint matches on the source database hash. Current behaviour starts
-   a fresh merge on top of the partial result. Recommendation: refuse and point at that merge's
-   restore point, with a restore affordance. Recorded in import.md; needs the owner's call.
-2. **R8, update channel.** Recon done, nothing changed yet:
-   - The update URL lives in `app/assets/application.ini` `[AppUpdate] URL=`, pointing at
-     `https://www.zotero.org/download/client/update/...`. Prefs: `app.update.auto=true`,
-     `app.update.interval=86400`, `app.update.url.manual`/`.details` at zotero.org;
-     `build.sh` sets `app.update.channel=source`.
-   - "Check for Updates" opens Zotero's own wizard (`chrome/content/zotero/update/updates.xhtml`)
-     on top of `nsIApplicationUpdateService`; it cannot patch an AppImage (MAR files, Mozilla
-     signing).
-   - `app.update.enabled` does **not** exist in this ESR (a Strata claim, verified false);
-     telemetry/datareporting are already off in `app/assets/prefs.js`.
-   - Our AppImage carries **empty** update information (`--appimage-updateinformation` prints
-     nothing), no `.zsync`, no `.sha256`, no signing key. `appimagetool -u` and `zsyncmake` are
-     installed, so the AppImage self-update path (embed `zsync|URL`, publish `.zsync`, let Gear
-     Lever/AppImageUpdate delta-update and relaunch) is available once releases exist (R11, R21).
-     Plan for R8: neutralize `[AppUpdate] URL`, set the prefs, repoint Check for Updates to the
-     repository, document; verify with `app.update.log=true`. Open question: behaviour when
-     `[AppUpdate]` is absent (silent no-op versus a logged failure).
-3. **R6, UI behaviour spec**, still untouched.
+1. **R8, update channel: answer is yes, the AppImage can update itself.** The specification names
+   "an updater tool built into the AppImage" and "libappimageupdate inside the payload"
+   ([docs](https://docs.appimage.org/packaging-guide/optional/updates.html)), and our AppGlider
+   already does it without Gear Lever: hidden temp download beside the running image, size and
+   SHA-256 verification plus an AppImage header check, rename to a versioned name, record ready
+   and replaced paths, restart with a clean environment, and the **new** instance deletes the old
+   file once no process uses it. The running file is never written.
+   Consequences:
+   - **We do not need Gear Lever, zsync or `.upd_info` for our own updater.** Those are the
+     optional second channel for third-party tools (R21). A full 126 MB download is the cost;
+     a delta needs zsync later.
+   - Mozilla's updater stays impossible (signed MARs cannot patch squashfs), so R8 still
+     neutralizes `[AppUpdate] URL` and the zotero.org pref endpoints, and Check for Updates must
+     not claim an update exists.
+   - CiteWell's open shape question is the file name: keep the stable
+     `~/AppImages/citewell.appimage` and rename over it (the old inode stays alive through the
+     mount, and the desktop entry plus the integration manifest keep one path), or adopt
+     versioned names and repoint the manifest like AppGlider. Written up in
+     [packaging.md](packaging.md#updates).
+   - The owner authorized **test releases on `EricBright/CiteWell`** to exercise the channel;
+     mark them as test builds and never reuse a real version number.
+2. **R6, UI behaviour spec**, still untouched.
 
 **What a fresh session should do:** read this section and [#pick-up-here](#pick-up-here), then
-start R8 (small, bounded) or the R24 hazard decision. Do not redo R34 or R24; do not re-import a
-connector tree; do not delete the canonical Zotero sources.
+start R8 (neutralize the inherited channel and teach Check for Updates the truth) or R6. R24 and
+its hazard are closed; do not redo R34 or R24; do not re-import a connector tree; do not delete
+the canonical Zotero sources.
 
 **Housekeeping.** Scratch from today's runs is under `~/.local/share/dsh-trash/2026-11-25/`
 (the acceptance copy of the canonical library, twice); the one-off acceptance harness is
@@ -82,7 +93,10 @@ connector tree; do not delete the canonical Zotero sources.
 was only read: `zotero.sqlite` still hashes to its pre-run baseline and its mtime is
 `2026-11-23 14:05`.
 
-**Pitfalls added today:** `IOUtils.writeAtomic` does not exist in this runtime; use
+**Pitfalls added today:** the test suite is packaged inside `omni.ja`, so a test-file edit needs
+`xtask build` **and** `dir_build` before `test/runtests.sh` sees it; editing only the source file
+runs the previous suite and the stack lines point at the old file. `IOUtils.writeAtomic` does not
+exist in this runtime; use
 `Zotero.File.putContentsAsync`, which already writes atomically via `OS.File.writeAtomic`. A
 `-profile` path must exist before launch or Gecko shows "Profile Missing". `/tmp` cannot be
 `gio trash`ed ("system internal mounts"), so move scratch to `~/.local/share/dsh-trash/<date>/`
@@ -94,7 +108,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.89ebff783`, sha256 `0b26bd2…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.8d8692c88`, sha256 `2f2428c…`, 125,860,344 bytes), installed at `~/AppImages/citewell.appimage`; it carries empty AppImage update information (no channel yet) |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -105,20 +119,21 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Plugins | **Parked, with a curated path (D31/D51):** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden; code is retained (D31). D51 opens a first-party-vetted security-extension path (uBlock Origin candidate — spike pending on content-script injection into browse tabs, background pages, and `webRequest`); arbitrary plugins stay closed |
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | **R24 done 2026-11-25.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Two defects found that day are fixed: same-title children were dropped by resume de-duplication keyed on title, and the 25-item checkpoint could duplicate children on resume; `importTest.js` 18/18 |
-| Docs | README index, Rust docs gate, D1–D51 |
+| Import | **R24 done 2026-11-25, hazard closed the same day.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Fixed: same-title children dropped by title-keyed resume, the 25-item checkpoint duplicating children, and a changed source after an interruption now refusing with a database restore (D52); `importTest.js` 19/19, importer 10/10 |
+| Docs | README index, Rust docs gate, D1–D52 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
-**Next: R24 Phase 2, the import merge** ([import.md](import.md)). R34 closed 2026-11-25: the Browse
-tab, save bridge, picker, proxies, PDF capture, Docs gate and R36 hardening shipped, R38 closed with
-no in-app blocker ([ublock-spike.md](ublock-spike.md)), and the connector tree itself is gone
-([connectors.md](connectors.md)). Google Docs stays out of the app: the Browse tab gates
+**Next: R8, then R6** ([roadmap.md](../roadmap.md)). R34 closed 2026-11-25: the Browse tab, save
+bridge, picker, proxies, PDF capture, Docs gate and R36 hardening shipped, R38 closed with no
+in-app blocker ([ublock-spike.md](ublock-spike.md)), and the connector tree itself is gone
+([connectors.md](connectors.md)). R24 closed the same day, including the interrupted-merge hazard
+([import.md](import.md)). Google Docs stays out of the app: the Browse tab gates
 `docs.google.com/document/*` with an explainer and hands the URL to Firefox, where Zotero's official
 connector talks to CiteWell on port 23119. CiteWell holds no Google session. Browse and settings
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `89ebff783` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `8d8692c88` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -127,9 +142,11 @@ the save bridge.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256 `c929c9ca164433b3bd8a8116072063c7cb907339a85de595cc0323324ea05d46`; Browse tab with the
+- `dist/CiteWell-x86_64.AppImage` (125,860,344 bytes; sha256
+  `2f2428cf850228347c71ca1aa74cfa35e80b0c4329edc62e4965146b06b2d63c`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
-  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.89ebff783`)
+  settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
+  version `10.0.9.SOURCE.8d8692c88`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -333,13 +350,14 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R8 — update-channel decision** ([roadmap.md](../roadmap.md)): keep the `source` channel or remove
-   update checks; the updater must never point at Zotero's servers.
+1. **R8 — implement the update channel** ([roadmap.md](../roadmap.md)): neutralize the inherited
+   Mozilla channel (`[AppUpdate] URL`, zotero.org pref endpoints) and make Check for Updates tell
+   the truth until the self-updater exists. The self-update shape and the AppGlider reference are
+   in [packaging.md](packaging.md#updates); the updater itself belongs to R11/R21, where a release
+   host exists. Test releases on the remote are authorized.
 2. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour change.
-3. **R24 follow-up (one decision, one test).** A retry after an interrupted merge duplicates if the
-   source library changed in between, because the checkpoint matches on the source hash; decide
-   whether to refuse and point at the restore point ([import.md](import.md#measured-acceptance-2026-11-25)).
-   The resume path also deserves a kill-mid-merge test.
+3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
+   across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.
 5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.

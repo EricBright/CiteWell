@@ -108,13 +108,48 @@ replace or remove the AppImage but do not run uninstall hooks, so deleting the A
 unit and D-Bus file until `--remove-integration` is run. This is documented here and in the
 launcher notice; the next launch rewrites a stale executable path when possible.
 
+## Updates
+
+**The AppImage can update itself; Gear Lever is one client among several, not a requirement.** The
+AppImage specification names three routes: an external tool, an updater built into the AppImage, or
+libappimageupdate linked into the payload
+([docs.appimage.org](https://docs.appimage.org/packaging-guide/optional/updates.html)). Our own
+AppGlider is the working reference for the second route. It ships update information and a `.zsync`
+so third-party tools *can* delta-update it, while its **Update AppGlider** button uses neither: it
+downloads the new AppImage into a hidden temporary file in the running image's folder, verifies the
+published SHA-256 and size plus the ELF header, AppImage type 2 and CPU, makes it executable,
+renames it to `AppGlider-<version>-x86_64.AppImage`, records the ready and replaced paths, and
+offers **Restart now**. The restart starts the new file in a new session with the AppImage
+environment variables removed and no inherited file descriptors, then quits through the normal
+path; the new instance deletes the old file once no process uses it. The running file is never
+written. That deletion is the only thing that has to be careful: same folder, regular file, an
+image name, a valid AppImage header and no process using it.
+
+CiteWell's shape, once R11 provides a release host:
+
+1. **Self-update in the app** (primary channel): check the repository's `releases/latest` redirect,
+   download the new AppImage beside the installed one, verify a published SHA-256, swap it in while
+   the old process still runs, then restart. No zsync and no external tool. The installed path is
+   the stable `~/AppImages/citewell.appimage`, so either rename over that one name (the old inode
+   stays alive through the mount, and the desktop entry and the integration manifest keep pointing
+   at one path) or adopt versioned names and repoint the manifest as AppGlider does.
+2. **Update information for other tools** (R21): `appimagetool -u` with
+   `zsync|<url>` or `gh-releases-zsync|EricBright|CiteWell|latest|CiteWell-*-x86_64.AppImage.zsync`,
+   plus the `.zsync` and a SHA-256 file in the release. Gear Lever and AppImageUpdate can then verify
+   and delta-update the same artifact. Useful, optional, and never the only channel.
+3. **Mozilla's updater is not a route.** `nsIApplicationUpdateService` patches with signed MAR files
+   and cannot patch a squashfs image, so R8 neutralizes the inherited `[AppUpdate]` URL and the
+   zotero.org pref endpoints instead of pretending they work.
+
+Test builds may be published to the remote (`EricBright/CiteWell`) to exercise this channel; the
+release body must say it is a test build, and a test build must never reuse a real version number.
+
 ## Not done yet
 
 - **Flatpak**: a later option. The same `AppDir` content can feed `flatpak-builder`; nothing is
   implemented.
-- **Updates**: no AppImage update channel. Replacing the file is the update mechanism. R21 adds
-  SHA-256 checksums and `.zsync` files so Gear Lever and AppImageUpdate can verify and fetch
-  incrementally; that needs a release host and stable filenames first.
-- **Signing**: no signing key is configured.
+- **Signing**: no signing key is configured. A self-updater verifies a published SHA-256, which
+  protects against a truncated or swapped download but not against a compromised release; a
+  detached signature is the stronger form.
 
 *For the full documentation index, see [../README.md](../README.md).*
