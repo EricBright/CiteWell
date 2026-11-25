@@ -13,93 +13,75 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-25 (Phase 2/3 closeout)
+## Handoff 2026-11-25 (R34 closed: the connector tree is gone)
 
-This is the compaction anchor. The last code commit is `68daadc51` (docs-only commits follow); the installed AppImage is
-`10.0.9.SOURCE.68daadc51`, sha256 `0a71b1522a9268297955ae7cb48531e270e87b8886fa61d9fc1b19522f582b70`,
-125,852,152 bytes (docs-only commits since that build do not change code).
+The last code commit is `146712a64`; the installed AppImage is
+`10.0.9.SOURCE.146712a64`, sha256 `adf054157b54fb9baff71272969fb8c58adec1db63b10e2c9c5eecdf6c54bd75`, 125,852,152 bytes.
 
-Shipped today, in order: the Browse save bridge (2a), the toolbar rework (Go beside the bar, Save
-behind a divider, measured contrast), Ctrl/Cmd+L, the multi-item picker (2b), proxy passthrough to
-`ItemSaver`, PDF capture by content type, the Google Docs gate, and R36 hardening. R38 closed with
-no in-app blocker. Test suites: Browse 40/40, RemoteTranslate 12/12; docs and repo-guard green.
+R34 is done. The Browse tab and its save bridge (2a), picker (2b), PDF capture, proxies, Docs
+gate, R36 hardening and R38 decision shipped earlier on 2026-11-25; this pass removed the tree
+itself: `connectors/` (117 MB, including `node_modules`, the gulp/XPI pipeline and three
+submodule working trees) and `tools/rsvg-shim` went to Trash (D26), `xtask connectors` and its
+brand/icon pipeline left the build, the three `connectors/src/*` entries left `.gitmodules`, and
+every document that described the build now records the retirement
+([connectors.md](connectors.md)).
 
-Key decisions: Docs runs in Firefox with Zotero's official connector and the app gates
-`docs.google.com/document/*` (no Google session in CiteWell; the D49 cookie exception was
-withdrawn). R36's HTTPS is soft: try https, fall back with a "Not secure" marker. ESR tripwire is
-a maintainer-only CI issue. The Strata wait ritual lives in the gitignored
-`reviews/strata-during-waits.md`, not in tracked docs.
+One promise was untrue and is now fixed. Zotero's official connector asks `127.0.0.1:23119` and
+nothing else, while CiteWell serves on `23120` (D19), so the Docs explainer's "Zotero's Connector
+talks to this app" could not happen. `Zotero.Server.init` now starts a second `HttpServer` on
+`23119` when that port is free and exposes it as `Zotero.Server.connectorPort`; the Docs gate
+reads it and step 3 states the truth in both cases. `server_connectorIntegrationTest.js` drives
+the Docs handshake through `23119`. Trade-off: whichever app starts first holds the port, so a
+Zotero launched after CiteWell cannot bind `23119` and its connector will not connect.
 
-**Next and last Phase-3 step: retire the connector tree.** References to check, from the survey on
-2026-11-25:
-
-1. `.gitmodules` has three `connectors/src/*` submodule entries to remove.
-2. `tools/xtask/src/main.rs` has the `connectors` subcommand and brand substitution around
-   `connectors/brand.json`; remove those and the help line.
-3. Docs to rewrite: this file, `decisions.md` D47/D34 notes, `connectors.md` (turn into a short
-   retirement record), the README index row, roadmap R34 to Done.
-4. Remove the tree with `gio trash connectors` (about 96 MB, includes `node_modules` and the three
-   submodule working trees), plus any `build/dist/CiteWell-Connector.xpi`; then commit the
-   deletions and `.gitmodules` change.
-5. Verify: `cargo run --manifest-path tools/Cargo.toml -p xtask -- build`,
-   `test/runtests.sh browseTabTest.js RemoteTranslateTest.js`, docs-check and repo-guard. The
-   connector protocol endpoints in the app stay (the official connector uses them).
-
-Do not delete `connectors/` before the references above are gone; do not touch the canonical
-Zotero sources.
+Tests at this commit: Browse 40/40, RemoteTranslate 12/12, connector integration 3/3; docs and
+repo-guard green. The installed AppImage was launched against a scratch profile and
+`/connector/ping` returned 200 on both `23119` and `23120`, so Zotero's connector target answers
+in the real artifact, not only in the harness. Next: **R24 Phase 2, the import merge** ([import.md](import.md)); R15's "no npm
+tree" exit criterion is now met as well. The `/connector/*` endpoints stay in the app, because
+Zotero's official connector is the client for Google Docs. Do not re-import a connector tree
+([connectors.md](connectors.md)).
 
 ## Where the project stands
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.68daadc51`, sha256 `0a71b152…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.146712a64`, sha256 `adf0541…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
-| Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
-| Connector | **Retiring under D47 (R34):** the standalone Firefox add-on folds into an in-app Browse tab; there is never an AMO submission. **Save bridge shipped 2026-11-25:** the Browse tab detects a web translator and saves the page to the connector's own target (focused collection, else the library) via the app's `Translation` actor and `RemoteTranslate` — no connector inject script was ported. Multi-item pages open a picker (2b, shipped 2026-11-25). Remaining: Google Docs glue, PDF capture. Until the retirement phase, the imported upstream source still builds as **CiteWell Connector**, ID `citewell-connector@sophy.ca`, port 23120, via `connectors/node_modules` |
+| Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
+| Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index; the Browse tab
 captures a PDF response as an imported-URL attachment instead of rendering it (D47 Phase 3). Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked, with a curated path (D31/D51):** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden; code is retained (D31). D51 opens a first-party-vetted security-extension path (uBlock Origin candidate — spike pending on content-script injection into browse tabs, background pages, and `webRequest`); arbitrary plugins stay closed |
-| Dependencies | npm is retired (D32); the root npm tree and package metadata are removed (D46). The connector tree keeps its own Node build tree until D47's retirement phase removes it |
+| Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
 | Docs | README index, Rust docs gate, D1–D51 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
-**Next:** R34 — the remaining connector work (D47). The save bridge shipped 2026-11-25: the
-connector's page-side scripts did **not** need porting, because the app's own `Translation` actor
-runs a web translator in the visible tab and `RemoteTranslate` saves the result. `RemoteTranslate`
-was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initTranslation` is
-awaited); multi-item pages open a picker (2b). Proxies (the detected translator's proxy now reaches `ItemSaver`) and PDF capture are shipped:
-a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
-imported-URL attachment through the app's own cookie jar. R36 hardening shipped 2026-11-25 (isolated browse context cleared at startup/shutdown, soft HTTPS,
-default-deny permissions, maintainer-only ESR tripwire). R38 closed 2026-11-25 with no in-app
-blocker ([ublock-spike.md](ublock-spike.md)): WebExtensions do not install in this build and the
-URL classifier has no lists. Remaining: retire the connector tree (`connectors/`, including
-`node_modules` and the XPI pipeline).
-**Google Docs is out of the app by owner decision (2026-11-25):** its page-side half is the
-connector's React/Kix client, so the Browse tab gates `docs.google.com/document/*` with an
-explainer and hands the URL to Firefox, where Zotero's official connector talks to CiteWell.
-CiteWell holds no Google session, and the D49 Docs cookie exception was withdrawn.
-Browse and settings tabs are shipped (D47/D48); the DNS pane rides the settings tab (D50). The
-[connector handoff](#handoff-2026-11-23-connector-build) below is superseded. The app build and
-tests are already Node-free.
+**Next: R24 Phase 2, the import merge** ([import.md](import.md)). R34 closed 2026-11-25: the Browse
+tab, save bridge, picker, proxies, PDF capture, Docs gate and R36 hardening shipped, R38 closed with
+no in-app blocker ([ublock-spike.md](ublock-spike.md)), and the connector tree itself is gone
+([connectors.md](connectors.md)). Google Docs stays out of the app: the Browse tab gates
+`docs.google.com/document/*` with an explainer and hands the URL to Firefox, where Zotero's official
+connector talks to CiteWell on port 23119. CiteWell holds no Google session. Browse and settings
+tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
+are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `68daadc51` and carries the Browse tab (D47) with
-its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate and the reworked
-toolbar (Go beside the bar, Save behind a divider, measured contrast), the settings tab with
-Ctrl+, (D48), and the DNS defaults (D50). Earlier `77c83f182` predates the dialog polish; `ff8e83940` predates the Docs gate;
-`ce441a1c0` predates the save bridge.
+Build note: the current AppImage is built from `146712a64` and carries the Browse tab (D47)
+with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
+23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
+measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
+`77c83f182` predates the dialog polish; `ff8e83940` predates the Docs gate; `ce441a1c0` predates
+the save bridge.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256
-  `0a71b1522a9268297955ae7cb48531e270e87b8886fa61d9fc1b19522f582b70`; Browse tab with the
-  save bridge, picker, PDF capture, proxies, Docs gate and reworked toolbar, settings tab, DNS defaults,
-  node-free build, version `10.0.9.SOURCE.68daadc51`)
-- `build/dist/CiteWell-Connector.xpi` is regenerated by `xtask connectors`; it is absent after a
-  clean `build/` trash until the connector is rebuilt.
+- `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256 `adf054157b54fb9baff71272969fb8c58adec1db63b10e2c9c5eecdf6c54bd75`; Browse tab with the
+  save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
+  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.146712a64`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -127,6 +109,9 @@ plan.
 - Working tree: only the pre-existing `.gitignore` quill-icon edit is uncommitted.
 
 ## Handoff 2026-11-23 (Connector build)
+
+**Superseded:** the connector tree was retired on 2026-11-25 (see the handoff at the top and
+[connectors.md](connectors.md)). This section is history.
 
 > **Superseded 2026-11-24 by D47** ([decisions.md](decisions.md)): the connector folds into an
 > in-app Browse tab and retires; the three options below are no longer live. Kept for context.
@@ -300,18 +285,14 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R34 — retire the connector tree (D47).** Everything else in R34 has shipped: browse tab,
-   save bridge, picker, proxies, PDF capture, Docs gate, R36 hardening, R38 decision. Remaining:
-   the deletion checklist in the handoff above. **Strata cadence (owner, 2026-11-25): one lean
-   plan/code pass at each milestone and security seam, never on grind/docs/test-only edits; the
-   wait ritual is in the gitignored `reviews/strata-during-waits.md`.**
-2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
-3. **R15 — Rust build toolchain.** Phases 1–5 are done (D43–D46); the last npm tree
-   (`connectors/`) retires under D47.
-4. **R32 optional follow-ups** — citation explorer and undo/save listener.
-5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+1. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
+2. **R32 optional follow-ups** — citation explorer and undo/save listener.
+3. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.
-6. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
+4. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
+5. **Strata cadence (owner, 2026-11-25):** one lean plan/code pass at each milestone and security
+   seam, never on grind/docs/test-only edits; the wait ritual is in the gitignored
+   `reviews/strata-during-waits.md`.
 
 ## Commands
 
@@ -341,7 +322,7 @@ Run without touching the real library:
 ./dist/CiteWell-x86_64.AppImage -datadir "$HOME/CiteWellData"
 ```
 
-Docs, Rust tests, agent tests, connector:
+Docs, Rust tests, agent tests:
 
 ```bash
 cargo run --manifest-path tools/docs-check/Cargo.toml
@@ -350,7 +331,6 @@ python3 -m unittest discover -s test/lo
 cargo test --manifest-path tools/Cargo.toml -p citewell-cli -p citewell-launcher -p citewell-import
 cargo build --manifest-path tools/Cargo.toml -p citewell-import   # source-build import helper
 test/runtests.sh importTest.js agentTest.js searchTest.js advancedSearchTest.js
-cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 ```
 
 Agent bridge quick check (app must be running; token appears in the data dir):
@@ -422,11 +402,14 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   Google Docs paths (D33).
 - `citewell mcp` exposes 17 tools; verified with initialize, tools/list and tools/call.
 - `SKILL.md` is the downloadable agent skill (Help → Agents and SKILL.md, or Agent access).
-- The connector identity lives in `connectors/brand.json`; `xtask` substitutes tokens and fails on
-  hardcoded English product names.
+- **The connector tree is retired (D47):** `connectors/`, `tools/rsvg-shim` and `xtask connectors`
+  are gone; do not re-import a connector. Google Docs citations use Zotero's official connector,
+  which reaches the app on `127.0.0.1:23119` when that port is free (`Zotero.Server.connectorPort`);
+  `23120` stays the app's own address (D19 amendment).
 - The styles page opens in CiteWell's internal viewer; a clicked `.csl` installs through the style
   MIME handler. The external browser still downloads, so Add from file remains the fallback.
-- The Google Docs integration is vendored, not a submodule, because it had to be patched. Its
-  sync-dependent parts remain gated by D14.
+- Google Docs stays outside the app (D47): the Browse tab gates `docs.google.com/document/*` and
+  hands the URL to Firefox, where Zotero's connector inserts citations against this app's
+  `/connector/document/*` endpoints. The sync-dependent parts of Docs remain gated by D14.
 
 *For the full documentation index, see [../README.md](../README.md).*
