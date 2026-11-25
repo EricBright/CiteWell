@@ -403,6 +403,28 @@ describe("Browse Tab", function () {
 			assert.notInclude(titles, "Beta", "a cancelled picker must save nothing");
 		});
 
+		it("should not hang when the picker throws", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, multiProvider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+
+			let original = Zotero_BrowseTab._selectItemsInteractive;
+			Zotero_BrowseTab._selectItemsInteractive = () => {
+				throw new Error("picker failed");
+			};
+			try {
+				button.click();
+				await waitForCallback(() => button.classList.contains("available"), 100, 10);
+			}
+			finally {
+				Zotero_BrowseTab._selectItemsInteractive = original;
+			}
+
+			assert.isFalse(button.classList.contains("saving"), "save must not stay stuck");
+		});
+
 		it("should drop the translator and disable Save when leaving the page", async function () {
 			let id = Zotero_BrowseTab.open();
 			Zotero_BrowseTab.setTranslatorProvider(id, provider);

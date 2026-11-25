@@ -500,8 +500,17 @@ var Zotero_BrowseTab = new (function () {
 			// makes the engine save nothing; the cancelled flag keeps that from being
 			// reported as a failure.
 			translate.setHandler("select", (remoteTranslate, items, resolve) => {
-				let selected = this._selectItemsInteractive(id, items, target);
-				if (selected === null) {
+				// resolve() runs on every path: the engine's selectItems contract cannot
+				// time out, so a throwing picker would otherwise hang the translation.
+				let selected = null;
+				try {
+					selected = this._selectItemsInteractive(id, items, target);
+				}
+				catch (e) {
+					Zotero.logError(e);
+					selected = null;
+				}
+				if (!selected) {
 					selectionCancelled = true;
 					resolve({});
 				}
