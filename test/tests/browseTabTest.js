@@ -118,6 +118,22 @@ describe("Browse Tab", function () {
 			assert.equal(icon.getAttribute("data-item-type"), "webpage");
 		});
 
+		it("should offer a + button in the tab bar that opens another browse tab", async function () {
+			Zotero_BrowseTab.open();
+			let button;
+			while (!button) {
+				await Zotero.Promise.delay(10);
+				button = doc.querySelector("#tab-bar-container .tab-add");
+			}
+			assert.isNotNull(button, "+ button should render in the tab strip");
+			assert.ok(button.getAttribute("aria-label"), "+ button should be labeled");
+
+			button.click();
+			const count = () => Zotero_Tabs._tabs.filter((t) => t.type === "browse").length;
+			await waitForCallback(() => count() >= 2, 100, 10);
+			assert.equal(count(), 2, "clicking + should open a second browse tab");
+		});
+
 		it("should keep independent state per tab", function () {
 			let first = Zotero_BrowseTab.open();
 			let second = Zotero_BrowseTab.open();

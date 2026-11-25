@@ -545,6 +545,14 @@ var Zotero_Tabs = new function () {
 			onTabSelect: this.select.bind(this),
 			onTabMove: this.move.bind(this),
 			onTabClose: this.close.bind(this),
+			onAddBrowse: () => {
+				try {
+					Zotero_BrowseTab.open();
+				}
+				catch (e) {
+					Zotero.logError(e);
+				}
+			},
 			onContextMenu: this._openMenu.bind(this),
 			onRefocus: this.refocus.bind(this),
 			onToggleAudio: this.toggleAudio.bind(this),

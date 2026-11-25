@@ -33,6 +33,28 @@
 	transform: rotate(-90deg);
 }
 
+// The "+" button at the end of the tab strip opens a new Browse tab (D47).
+.tab-add {
+	flex: 0 0 auto;
+	width: 26px;
+	height: 24px;
+	margin: 2px 4px;
+	padding: 0;
+
+	font: bold 15px/1 sans-serif;
+	color: inherit;
+	opacity: 0.6;
+	background: transparent;
+	border: 1px dashed var(--fill-quinary);
+	border-radius: 4px;
+	cursor: pointer;
+
+	&:hover {
+		opacity: 1;
+		background: var(--fill-quaternary);
+	}
+}
+
 .browse-urlbar {
 	flex: 1;
 	width: 100%;

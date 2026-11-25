@@ -48,6 +48,24 @@ var {
 	CSSItemTypeIcon
 } = require("./icons");
 const SCROLL_ARROW_SCROLL_BY = 222;
+
+let _tabAddLabel = null;
+function tabAddLabel() {
+	if (_tabAddLabel) {
+		return _tabAddLabel;
+	}
+	try {
+		const result = Zotero.ftl.formatValueSync("browse-tab-add");
+		if (result && result.value) {
+			_tabAddLabel = result.value;
+			return _tabAddLabel;
+		}
+	}
+	catch (e) {
+		// Zotero.ftl may not be ready this early; retry on later renders.
+	}
+	return "New Browse Tab";
+}
 const Tab = /*#__PURE__*/memo((props) => {
 	const {
 		icon,
@@ -433,6 +451,8 @@ const TabBar = /*#__PURE__*/forwardRef(function (props, ref) {
 	const handleScrollArrowDoubleClick = useCallback((event) => {
 		event.preventDefault();
 	}, []);
+	// "+" button label: Fluent once ready, English fallback until then (D47).
+	const addLabel = props.onAddBrowse ? tabAddLabel() : null;
 	return h("div", null, h("div", {
 		ref: tabsInnerContainerRef,
 		className: "tab-bar-inner-container",
@@ -490,7 +510,13 @@ const TabBar = /*#__PURE__*/forwardRef(function (props, ref) {
 		onTabClose: handleTabClose,
 		onTabMouseDown: handleTabMouseDown,
 		onAudioStatusClick: handleAudioStatusClick
-	})), h("div", {
+	})), props.onAddBrowse && h("button", {
+		type: "button",
+		className: "tab-add",
+		"aria-label": addLabel,
+		title: addLabel,
+		onClick: props.onAddBrowse
+	}, "+"), h("div", {
 		ref: spacerRef,
 		className: "spacer"
 	}))), h("div", {
@@ -525,6 +551,7 @@ TabBar.propTypes = {
 		onContextMenu: PropTypes.func.isRequired,
 		onDragEnd: PropTypes.func.isRequired,
 		onDragStart: PropTypes.func.isRequired,
+		onAddBrowse: PropTypes.func,
 		onTabClick: PropTypes.func.isRequired,
 		onTabMouseDown: PropTypes.func.isRequired,
 		selected: PropTypes.bool.isRequired,

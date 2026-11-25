@@ -1300,6 +1300,7 @@ menu-new-browse-tab =
     .label = New Browse Tab
 
 browse-tab-title = Browse
+browse-tab-add = New Browse Tab
 browse-nav-back = Back
 browse-nav-forward = Forward
 browse-nav-reload = Reload
