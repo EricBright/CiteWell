@@ -952,7 +952,15 @@ Two long-lived-tab fixes came with it: a process switch can replace the page's w
 `translate()` refuses a stale actor rather than running the old translator against the new
 document; and translation-failure reporting is forced off, with the engine's connector-only
 `Connector_Browser` global stubbed, because the app has no extension context and must not POST to
-zotero.org (D19). Google Docs glue, PDF capture and proxies remain later phases.
+zotero.org (D19).
+
+**Phase 3 scoping (2026-11-25).** The Docs half is far larger than "glue": the app ships only the
+server-side `document/execCommand` endpoint, while the entire page-side integration — a React UI
+injected into Docs, a Kix document driver, the Apps Script compatibility client and the menu
+script — lives in the connector (~4,700 source lines, 180 KB built). The owner chose to **defer
+Docs**, do **proxies and PDF capture first**, and keep the official connector installed for Docs
+until that work is proven; retirement stays gated on Docs. This is a sequencing decision, not a
+narrowing of R34's exit criterion.
 
 Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
 machinery, and user confusion over two connector identities, all for a leg the app can replace

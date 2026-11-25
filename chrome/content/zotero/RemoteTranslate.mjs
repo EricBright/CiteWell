@@ -233,7 +233,7 @@ export class RemoteTranslate {
 					attachmentMode: Zotero.Translate.ItemSaver.ATTACHMENT_MODE_DOWNLOAD,
 					forceTagType: 1,
 					referrer: this._browser.currentURI.spec,
-					// proxy: unimplemented in the client
+					proxy: this._getDetectedProxy(),
 				});
 				
 				let invokeDoneHandlersIfDone = () => {
@@ -302,6 +302,29 @@ export class RemoteTranslate {
 	newTest(testInit) {
 		let actor = this._getActor();
 		return actor.sendQuery("newTest", { translator: this._translator, testInit, id: this._id });
+	}
+
+	/**
+	 * The proxy detection matched for this page, if any. The detected translator returned
+	 * from the actor carries a cloned proxy descriptor; ItemSaver needs a real Zotero.Proxy
+	 * so it can deproxify item and attachment URLs.
+	 */
+	_getDetectedProxy() {
+		let translator = Array.isArray(this._translator) ? this._translator[0] : this._translator;
+		let proxy = translator && translator.proxy;
+		if (!proxy) {
+			return null;
+		}
+		if (typeof proxy.toProper == "function") {
+			return proxy;
+		}
+		try {
+			return new Zotero.Proxy(proxy);
+		}
+		catch (e) {
+			Zotero.logError(e);
+			return null;
+		}
 	}
 
 	/**

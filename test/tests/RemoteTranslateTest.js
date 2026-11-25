@@ -85,6 +85,25 @@ describe("RemoteTranslate", function () {
 		});
 	});
 
+	describe("#_getDetectedProxy()", function () {
+		it("should return null when detection matched no proxy", function () {
+			let translate = new RemoteTranslate();
+			translate._translator = [{ proxy: null }];
+			assert.isNull(translate._getDetectedProxy());
+			translate.dispose();
+		});
+
+		it("should rebuild a cloned proxy descriptor", function () {
+			let translate = new RemoteTranslate();
+			translate._translator = [{
+				proxy: { id: 1, scheme: 'https://proxy.example.com/%a' },
+			}];
+			let proxy = translate._getDetectedProxy();
+			assert.instanceOf(proxy, Zotero.Proxy);
+			translate.dispose();
+		});
+	});
+
 	describe("#setBrowser()", function () {
 		it("should keep upstream failure reporting off", async function () {
 			let translate = new RemoteTranslate();

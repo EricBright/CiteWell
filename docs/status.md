@@ -35,9 +35,12 @@ push target. The product branch may diverge without limit.
 connector's page-side scripts did **not** need porting, because the app's own `Translation` actor
 runs a web translator in the visible tab and `RemoteTranslate` saves the result. `RemoteTranslate`
 was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initTranslation` is
-awaited); multi-item pages open a picker (2b). Remaining: Google Docs glue, PDF capture, then D49
-hardening (R36), the uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI
-pipeline.
+awaited); multi-item pages open a picker (2b). Remaining, in order: proxies (small — pass the
+detected translator's proxy to `ItemSaver`), PDF capture from the tab, then D49 hardening (R36),
+the uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
+**Google Docs is deferred by owner decision (2026-11-25):** its page-side half is ~4,700 lines of
+React/Kix client code that lives only in the connector, so the official connector stays installed
+for Docs until that port (or a vendored-client spike) is taken on.
 Browse and settings tabs are shipped (D47/D48); the DNS pane rides the settings tab (D50). The
 [connector handoff](#handoff-2026-11-23-connector-build) below is superseded. The app build and
 tests are already Node-free.
@@ -262,8 +265,8 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    load, Save button states, save to the connector's own target, verified live with a
    Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
    multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
-   Google Docs glue, PDF capture, D49 hardening + the ESR tripwire, the uBlock spike, then the
-   connector tree to Trash. **Strata cadence (owner, 2026-11-25):
+   proxies, PDF capture, D49 hardening + the ESR tripwire, the uBlock spike, then the connector
+   tree to Trash. Google Docs is deferred; the connector remains for it. **Strata cadence (owner, 2026-11-25):
    one lean plan/code pass at each milestone and each security seam — the save bridge got
    both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
    test-only edits; 2 passes/8 hops per task.**
