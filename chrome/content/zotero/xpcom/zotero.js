@@ -263,6 +263,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 		if (this.restarting) return;
 		
 		await Zotero.Prefs.init();
+		Zotero.DNS.applyDefaults();
 		Zotero.Debug.init(options && options.forceDebugLog);
 		
 		// Make sure that Zotero isn't running as root

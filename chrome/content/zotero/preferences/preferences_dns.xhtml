@@ -1,0 +1,31 @@
+<vbox id="zotero-prefpane-dns"
+	onload="Zotero_Preferences.DNS.init()"
+	onunload="Zotero_Preferences.DNS.uninit()"
+>
+	<vbox class="main-section">
+		<groupbox aria-label="DNS">
+			<label><html:h2>DNS</html:h2></label>
+			<description>
+				Choose how CiteWell turns web addresses into connections. Every lookup —
+				the Browse tab and the app alike — uses this resolver.
+			</description>
+			<radiogroup id="dns-resolver" native="true"
+				oncommand="Zotero_Preferences.DNS.choose(this.value)">
+				<radio id="dns-cloudflare" value="cloudflare"
+					label="Cloudflare malware blocking (1.1.1.2 / 1.0.0.2) — recommended"/>
+				<radio id="dns-system" value="system"
+					label="System default — this computer's own DNS"/>
+			</radiogroup>
+			<description>
+				The default sends encrypted DNS-over-HTTPS queries straight to
+				<html:code>https://1.1.1.2/dns-query</html:code>, which blocks known
+				malware domains. Encrypted DNS hides lookups from the local network, but
+				it is not a VPN: sites you visit still see your address.
+			</description>
+			<description class="dns-muted">
+				DNS-over-TLS for NextDNS and other custom resolvers is a planned feature;
+				this engine speaks DNS-over-HTTPS today.
+			</description>
+		</groupbox>
+	</vbox>
+</vbox>

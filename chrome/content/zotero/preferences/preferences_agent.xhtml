@@ -25,7 +25,7 @@
 			<label><html:h2>Connection</html:h2></label>
 			<hbox align="center" class="agent-token-row">
 				<label value="Token" control="agent-token"/>
-				<textbox id="agent-token" readonly="true" flex="1" class="agent-token"/>
+				<html:input id="agent-token" type="text" readonly="true" flex="1" class="agent-token"/>
 				<button id="agent-token-copy" label="Copy" oncommand="Zotero_Preferences.Agent.copyToken()"/>
 				<button id="agent-token-rotate" label="Regenerate" oncommand="Zotero_Preferences.Agent.rotateToken()"/>
 			</hbox>
@@ -42,7 +42,7 @@
 				The CLI is a thin client for this bridge. Install it from a CiteWell source checkout,
 				then point it at this data directory:
 			</description>
-			<textbox id="agent-setup" multiline="true" readonly="true" class="agent-snippet"/>
+			<html:textarea id="agent-setup" readonly="true" class="agent-snippet"/>
 			<hbox>
 				<button id="agent-setup-copy" label="Copy setup" oncommand="Zotero_Preferences.Agent.copySetup()"/>
 				<button id="agent-audit-open" label="Open audit log" oncommand="Zotero_Preferences.Agent.openAuditLog()"/>

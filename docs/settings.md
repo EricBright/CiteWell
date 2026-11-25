@@ -56,6 +56,7 @@ documented.
 | `zotero-prefpane-cite` | zotero.preferences.prefpane.cite |
 | `zotero-prefpane-integrations` | Integrations |
 | `zotero-prefpane-agent` | Agent access |
+| `zotero-prefpane-dns` | DNS |
 | `zotero-prefpane-library` | Library & Files |
 | `zotero-prefpane-advanced` | zotero.preferences.prefpane.advanced |
 | `zotero-subpane-reset-sync` | zotero.preferences.subpane.resetSync |
@@ -125,6 +126,15 @@ Script: `preferences_agent.js`.
 | Section | Contents | Proposed destination |
 |---|---|---|
 | Agent access / Connection / Setup / Capabilities / Skill / Audit | `agent.enabled`, token/endpoint, setup guidance, audit | Agent & API |
+
+### DNS
+
+Source: [preferences_dns.xhtml](../chrome/content/zotero/preferences/preferences_dns.xhtml).
+Script: `preferences_dns.js`; core logic in `xpcom/dns.js` (`Zotero.DNS`).
+
+| Section | Contents / keys | Proposed destination |
+|---|---|---|
+| DNS | Resolver choice: Cloudflare malware blocking (`1.1.1.2` / `1.0.0.2`, DoH via `MODE_TRRONLY` to `https://1.1.1.2/dns-query`) or system DNS (`MODE_NATIVEONLY`); mirror pref `extensions.zotero.dns.resolver`, re-applied at startup (D50) | DNS & Network |
 
 ### Advanced
 

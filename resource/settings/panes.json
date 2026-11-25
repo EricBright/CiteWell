@@ -112,6 +112,21 @@
       }
     },
     {
+      "id": "zotero-prefpane-dns",
+      "rawLabel": "DNS",
+      "icon": "chrome://zotero/skin/20/universal/go-to.svg",
+      "order": 75,
+      "status": "active",
+      "content": {
+        "type": "custom",
+        "src": "chrome://zotero/content/preferences/preferences_dns.xhtml",
+        "scripts": [
+          "chrome://zotero/content/preferences/preferences_dns.js"
+        ],
+        "defaultXUL": true
+      }
+    },
+    {
       "id": "zotero-prefpane-library",
       "rawLabel": "Library & Files",
       "icon": "chrome://zotero/skin/20/universal/folder-open.svg",

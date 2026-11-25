@@ -100,6 +100,7 @@ const xpcomFilesLocal = [
 	'data/searches',
 	'data/tags',
 	'db',
+	'dns',
 	'libraryImport',
 	'dictionaries',
 	'duplicates',
