@@ -1258,6 +1258,26 @@ browser settings tab is still "Settings", and the pane is visibly selected insid
 The five second cap cannot be forced in the test harness without breaking the frame, so the failure
 rendering is exercised by calling the settle path directly; the probe's own timeout is review.
 
+## D57 — A pane failure is local to the pane
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+A settings pane can throw while the frame around it is perfectly ready: a broken build, a missing
+resource. The old path logged the error and left the previous pane on screen while the navigation
+list already marked the new pane as chosen, so the tab lied about what it was showing. Now:
+
+- a pane-level notice says **That settings pane could not be opened. Choose another pane from the
+  list.**, inside the tab but apart from the frame;
+- the navigation selection returns to the pane whose content is actually visible;
+- the notice clears on the next successful navigation;
+- the tab's own state stays `ready`; this is not the whole-tab `failed` state, because the rest of
+  Settings still works.
+
+Rejected: reusing the whole-tab failure notice, which would say Settings is broken when one pane
+is. Rejected: leaving the navigation selection on the failed pane, which is the misleading state
+this decision removes. Rejected: retrying the pane automatically; a pane failure is deterministic
+until the build changes.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

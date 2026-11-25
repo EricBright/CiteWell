@@ -37,7 +37,7 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 | 2 | The same test checks that each `docs-gate-stepN` string is one numbered line |
 | 3 | `test/tests/uiContrastTest.js` reads the toolbar's two colour pairs from `scss/components/_browseTab.scss` and fails below 3:1 in either theme. The other disabled styles in `scss/` are upstream components drawn by the platform theme, so they are review, not test |
 | 4 | `test/tests/browseTabTest.js` covers the toolbar order, the `key_focusBrowseURL` accelerator declaration and `focusOrOpen`/`focusURLBar`. A synthetic key press is not supported by the harness, so the declaration plus the tested command stands in for it |
-| 5 | Review, plus the Docs explainer test for the specific case it covers |
+| 5 | `test/tests/uiCopyTest.js` pins the Docs handoff shape: the button says browser, the reason names Firefox because it is specific. Legacy locale strings elsewhere are not scanned; a blanket scan would flag upstream data |
 | 6 | `test/tests/uiCopyTest.js` asserts the gate's one launch URL is the connectors page |
 
 A rule without a check is a rule waiting to rot. When a change cannot be tested, say so in its
