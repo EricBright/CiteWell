@@ -13,14 +13,14 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-25 (R34, R24 and its hazard closed; R8 answer known)
+## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
-Compaction anchor. Last code commit `8d8692c88` (docs commits follow). Installed AppImage
-`10.0.9.SOURCE.8d8692c88`, sha256
-`2f2428cf850228347c71ca1aa74cfa35e80b0c4329edc62e4965146b06b2d63c`, 125,860,344 bytes, installed
-at `~/AppImages/citewell.appimage` and launched against a scratch profile: `/connector/ping`
-returned 200 on **both** `23119` and `23120`. The integration manifest was repointed at the
-installed path with `--install-integration -datadir "$HOME/CiteWell"`.
+Compaction anchor. Last code commit `6b5c3a017` (docs commits follow). Installed AppImage
+`10.0.9.SOURCE.6b5c3a017`, sha256
+`148435588c44cead5decaa9e4f3ca2b133d1a53abe9ad63beb850c6b83340845`, 125,860,344 bytes, installed
+at `~/AppImages/citewell.appimage` and launched against a scratch profile with `--no-integration`:
+`/connector/ping` returned 200 on **both** `23119` and `23120`. The integration manifest points at
+the installed path and `~/CiteWell`.
 
 **Shipped today, in order.**
 
@@ -53,39 +53,31 @@ installed path with `--install-integration -datadir "$HOME/CiteWell"`.
    full restore path refuses database-only points rather than emptying the attachment tree.
    Verified end to end against a scratch library on 2026-11-25. Decision: [D52](decisions.md#d52--an-interrupted-merge-refuses-when-its-source-changed).
 
+5. **R8, Mozilla update channel removed.** A probe of the shipped build showed the inherited
+   updater fetching `zotero.org/.../update.xml` and failing with a 404, which both contacted
+   Zotero and could never have installed anything (signed MARs cannot patch squashfs). The build
+   now has no `[AppUpdate]` URL, `app.update.auto` is off, the manual/detail links point at
+   CiteWell's releases page, and Check for Updates states that there is no in-app channel yet and
+   offers the releases page instead of opening the wizard; the startup-error dialog's Check for
+   Update button does the same. A check now resolves locally as "Update URL not available" with no
+   network request. Decision: [D53](decisions.md#d53--there-is-no-mozilla-update-channel-and-check-for-updates-says-so).
+
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
-19/19 (including the same-title regression and the refusal), importer 10/10; docs 800/800;
-repo-guard green; docs gate green.
+19/19 (including the same-title regression and the refusal), update channel 4/4, importer 10/10;
+docs 800/800; repo-guard green; docs gate green.
 
-**Open decisions, in order.**
-
-1. **R8, update channel: answer is yes, the AppImage can update itself.** The specification names
-   "an updater tool built into the AppImage" and "libappimageupdate inside the payload"
-   ([docs](https://docs.appimage.org/packaging-guide/optional/updates.html)), and our AppGlider
-   already does it without Gear Lever: hidden temp download beside the running image, size and
-   SHA-256 verification plus an AppImage header check, rename to a versioned name, record ready
-   and replaced paths, restart with a clean environment, and the **new** instance deletes the old
-   file once no process uses it. The running file is never written.
-   Consequences:
-   - **We do not need Gear Lever, zsync or `.upd_info` for our own updater.** Those are the
-     optional second channel for third-party tools (R21). A full 126 MB download is the cost;
-     a delta needs zsync later.
-   - Mozilla's updater stays impossible (signed MARs cannot patch squashfs), so R8 still
-     neutralizes `[AppUpdate] URL` and the zotero.org pref endpoints, and Check for Updates must
-     not claim an update exists.
-   - CiteWell's open shape question is the file name: keep the stable
-     `~/AppImages/citewell.appimage` and rename over it (the old inode stays alive through the
-     mount, and the desktop entry plus the integration manifest keep one path), or adopt
-     versioned names and repoint the manifest like AppGlider. Written up in
-     [packaging.md](packaging.md#updates).
-   - The owner authorized **test releases on `EricBright/CiteWell`** to exercise the channel;
-     mark them as test builds and never reuse a real version number.
-2. **R6, UI behaviour spec**, still untouched.
+**The self-updater itself is R11/R21, not R8.** The shape is decided and written in
+[packaging.md](packaging.md#updates): the specification allows an updater built into the AppImage,
+AppGlider is the reference (download beside the running image, verify, run the candidate from a
+temporary name, let it commit itself over the stable path after it holds the profile lock, never
+write the running file). Gear Lever compatibility is recorded there too: keep the path and basename,
+install the published bytes exactly, keep `.upd_info` in every build, offer no channel Gear Lever
+does not follow. Test releases on `EricBright/CiteWell` are authorized; a test build must say so
+and never reuse a real version number.
 
 **What a fresh session should do:** read this section and [#pick-up-here](#pick-up-here), then
-start R8 (neutralize the inherited channel and teach Check for Updates the truth) or R6. R24 and
-its hazard are closed; do not redo R34 or R24; do not re-import a connector tree; do not delete
-the canonical Zotero sources.
+start R6. R34, R24, its hazard and R8 are closed; do not redo them; do not re-import a connector
+tree; do not delete the canonical Zotero sources.
 
 **Housekeeping.** Scratch from today's runs is under `~/.local/share/dsh-trash/2026-11-25/`
 (the acceptance copy of the canonical library, twice); the one-off acceptance harness is
@@ -113,7 +105,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.8d8692c88`, sha256 `2f2428c…`, 125,860,344 bytes), installed at `~/AppImages/citewell.appimage`; it carries empty AppImage update information (no channel yet) |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.6b5c3a017`, sha256 `1484355…`, 125,860,344 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -125,20 +117,21 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | **R24 done 2026-11-25, hazard closed the same day.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Fixed: same-title children dropped by title-keyed resume, the 25-item checkpoint duplicating children, and a changed source after an interruption now refusing with a database restore (D52); `importTest.js` 19/19, importer 10/10 |
-| Docs | README index, Rust docs gate, D1–D52 |
+| Docs | README index, Rust docs gate, D1–D53 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
-**Next: R8, then R6** ([roadmap.md](../roadmap.md)). R34 closed 2026-11-25: the Browse tab, save
+**Next: R6** ([roadmap.md](../roadmap.md)). R34 closed 2026-11-25: the Browse tab, save
 bridge, picker, proxies, PDF capture, Docs gate and R36 hardening shipped, R38 closed with no
 in-app blocker ([ublock-spike.md](ublock-spike.md)), and the connector tree itself is gone
 ([connectors.md](connectors.md)). R24 closed the same day, including the interrupted-merge hazard
-([import.md](import.md)). Google Docs stays out of the app: the Browse tab gates
+([import.md](import.md)), and R8 removed the inherited Mozilla update channel (D53), so the app
+contacts no update server. Google Docs stays out of the app: the Browse tab gates
 `docs.google.com/document/*` with an explainer and hands the URL to Firefox, where Zotero's official
 connector talks to CiteWell on port 23119. CiteWell holds no Google session. Browse and settings
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `8d8692c88` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `6b5c3a017` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -148,10 +141,10 @@ the save bridge.
 Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (125,860,344 bytes; sha256
-  `2f2428cf850228347c71ca1aa74cfa35e80b0c4329edc62e4965146b06b2d63c`; Browse tab with the
+  `148435588c44cead5decaa9e4f3ca2b133d1a53abe9ad63beb850c6b83340845`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
-  settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
-  version `10.0.9.SOURCE.8d8692c88`)
+  settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change, no
+  Mozilla update channel, version `10.0.9.SOURCE.6b5c3a017`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -355,12 +348,11 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R8 — implement the update channel** ([roadmap.md](../roadmap.md)): neutralize the inherited
-   Mozilla channel (`[AppUpdate] URL`, zotero.org pref endpoints) and make Check for Updates tell
-   the truth until the self-updater exists. The self-update shape and the AppGlider reference are
-   in [packaging.md](packaging.md#updates); the updater itself belongs to R11/R21, where a release
-   host exists. Test releases on the remote are authorized.
-2. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour change.
+1. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour
+   change; the owner's UI rules are in [#owners-ui-rules](#owners-ui-rules-carry-these-into-r6).
+2. **R11/R21 — releases, then the self-updater**: publish AppImage, `.zsync` and SHA-256 with
+   update information, then implement the in-app updater to the shape in
+   [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
 3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
    across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.
