@@ -279,22 +279,23 @@ var Zotero_BrowseTab = new (function () {
 		if (!url) {
 			return false;
 		}
-		let upgrade = httpsURL(url);
-		if (upgrade) {
-			state.httpsFallback = { from: url, to: upgrade };
-			url = upgrade;
-		}
-		else {
-			state.httpsFallback = null;
-		}
 		if (isDocsURL(url)) {
 			if (state.allowDocs !== docsURLKey(url)) {
 				this._gateDocs(id, url);
 				return true;
 			}
+			state.httpsFallback = null;
 		}
 		else {
 			state.allowDocs = null;
+			let upgrade = httpsURL(url);
+			if (upgrade) {
+				state.httpsFallback = { from: url, to: upgrade };
+				url = upgrade;
+			}
+			else {
+				state.httpsFallback = null;
+			}
 		}
 		if (isPDFURL(url) && this._capturePDF(id, url)) {
 			return true;
@@ -1340,6 +1341,9 @@ var Zotero_BrowseTab = new (function () {
 				let stopWindow = Ci.nsIWebProgressListener.STATE_STOP
 					| Ci.nsIWebProgressListener.STATE_IS_WINDOW;
 				if ((stateFlags & stopWindow) === stopWindow) {
+					// nsIRequest.status is the result code (nsresult), not the HTTP status:
+					// a 404 response still completes with NS_OK, while TLS/DNS/connect
+					// failures are non-zero. That is exactly the distinction needed here.
 					let requestStatus = 0;
 					try {
 						requestStatus = request.status;
@@ -1350,6 +1354,10 @@ var Zotero_BrowseTab = new (function () {
 						// The upgrade failed: load the original http page and mark it.
 						let fallback = tabState.httpsFallback;
 						tabState.httpsFallback = null;
+						if (isDocsURL(fallback.from)) {
+							self._gateDocs(id, fallback.from);
+							return;
+						}
 						self._setInsecure(id, true);
 						try {
 							tabState.browser.loadURI(Services.io.newURI(fallback.from), {
@@ -1550,6 +1558,9 @@ var Zotero_BrowseTab = new (function () {
 	// Safety net: clear whatever a previous session or a crash left in the Browse context
 	// before the first tab can use it, and try again on shutdown.
 	try {
+		// Cookie removal happens synchronously inside clearState(), so a page cannot
+		// inherit a cookie from a previous session before this runs; the awaited part
+		// only covers storages and caches.
 		Zotero_BrowseTab.clearState();
 		window.addEventListener("unload", () => Zotero_BrowseTab.clearState());
 	}

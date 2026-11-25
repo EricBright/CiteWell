@@ -229,7 +229,7 @@ describe("Browse Tab", function () {
 				"desktop-notification", "midi", "midi-sysex", "xr"]) {
 				assert.equal(
 					Services.prefs.getIntPref("permissions.default." + permission),
-					2,
+					Ci.nsIPermissionManager.DENY_ACTION,
 					permission + " must default to block"
 				);
 			}
