@@ -40,9 +40,10 @@ awaited); multi-item pages open a picker (2b). Proxies (the detected translator'
 a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
 imported-URL attachment through the app's own cookie jar. Remaining: D49 hardening (R36), the
 uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
-**Google Docs is deferred by owner decision (2026-11-25):** its page-side half is ~4,700 lines of
-React/Kix client code that lives only in the connector, so the official connector stays installed
-for Docs until that port (or a vendored-client spike) is taken on.
+**Google Docs is out of the app by owner decision (2026-11-25):** its page-side half is the
+connector's React/Kix client, so the Browse tab gates `docs.google.com/document/*` with an
+explainer and hands the URL to Firefox, where Zotero's official connector talks to CiteWell.
+CiteWell holds no Google session, and the D49 Docs cookie exception was withdrawn.
 Browse and settings tabs are shipped (D47/D48); the DNS pane rides the settings tab (D50). The
 [connector handoff](#handoff-2026-11-23-connector-build) below is superseded. The app build and
 tests are already Node-free.
@@ -268,8 +269,9 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
    multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
    proxies, PDF capture (content-type interception; verified live with an extensionless arXiv
-   PDF), D49 hardening + the ESR tripwire, the uBlock spike, then the connector tree to Trash.
-   Google Docs is deferred; the connector remains for it. **Strata cadence (owner, 2026-11-25):
+   PDF), the Docs gate, D49 hardening + the ESR tripwire, the uBlock spike, then the connector
+   tree to Trash — Docs no longer blocks it, because it runs through Zotero's official connector
+   in Firefox. **Strata cadence (owner, 2026-11-25):
    one lean plan/code pass at each milestone and each security seam — the save bridge got
    both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
    test-only edits; 2 passes/8 hops per task.**

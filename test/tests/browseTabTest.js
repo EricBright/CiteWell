@@ -197,6 +197,96 @@ describe("Browse Tab", function () {
 		});
 	});
 
+	describe("Google Docs gate", function () {
+		const DOCS_URL = "https://docs.google.com/document/d/abc123/edit";
+
+		it("should recognise only document URLs as Docs", function () {
+			assert.isTrue(Zotero_BrowseTab.isDocsURL(DOCS_URL));
+			assert.equal(Zotero_BrowseTab.docsURLKey(DOCS_URL), "abc123");
+			assert.equal(
+				Zotero_BrowseTab.docsURLKey(DOCS_URL + "?tab=t.0#heading=h.1"),
+				"abc123",
+				"query and fragment must not change the document key"
+			);
+			assert.isFalse(Zotero_BrowseTab.isDocsURL("https://docs.google.com/"));
+			assert.isFalse(Zotero_BrowseTab.isDocsURL("https://drive.google.com/document/d/x"));
+		});
+
+		it("should hand the URL to Firefox and not load it", function () {
+			let id = Zotero_BrowseTab.open();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			let original = Zotero_BrowseTab._showDocsGate;
+			let launch = sinon.stub(Zotero, "launchURL");
+			Zotero_BrowseTab._showDocsGate = () => "browser";
+			try {
+				assert.isTrue(Zotero_BrowseTab.navigate(id, DOCS_URL));
+				sinon.assert.calledWith(launch, DOCS_URL);
+				assert.notEqual(browser.currentURI && browser.currentURI.spec, DOCS_URL);
+			}
+			finally {
+				Zotero_BrowseTab._showDocsGate = original;
+				launch.restore();
+			}
+		});
+
+		it("should stay put when the gate is cancelled", function () {
+			let id = Zotero_BrowseTab.open();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			let original = Zotero_BrowseTab._showDocsGate;
+			let asked = null;
+			Zotero_BrowseTab._showDocsGate = (url) => {
+				asked = url;
+				return null;
+			};
+			try {
+				assert.isTrue(Zotero_BrowseTab.navigate(id, DOCS_URL));
+				assert.equal(asked, DOCS_URL);
+				assert.notEqual(browser.currentURI && browser.currentURI.spec, DOCS_URL);
+			}
+			finally {
+				Zotero_BrowseTab._showDocsGate = original;
+			}
+		});
+
+		it("should not gate the same document twice after continuing", function () {
+			let id = Zotero_BrowseTab.open();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			let original = Zotero_BrowseTab._showDocsGate;
+			let asked = 0;
+			let loadURI = sinon.stub(browser, "loadURI");
+			Zotero_BrowseTab._showDocsGate = () => {
+				asked++;
+				return "continue";
+			};
+			try {
+				Zotero_BrowseTab.navigate(id, DOCS_URL);
+				Zotero_BrowseTab.navigate(id, DOCS_URL + "?tab=t.0");
+				assert.equal(asked, 1, "the same document must not re-open the gate");
+			}
+			finally {
+				Zotero_BrowseTab._showDocsGate = original;
+				loadURI.restore();
+			}
+		});
+
+		it("should load the document when the user chooses to continue", function () {
+			let id = Zotero_BrowseTab.open();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			let original = Zotero_BrowseTab._showDocsGate;
+			let loadURI = sinon.stub(browser, "loadURI");
+			Zotero_BrowseTab._showDocsGate = () => "continue";
+			try {
+				assert.isTrue(Zotero_BrowseTab.navigate(id, DOCS_URL));
+				sinon.assert.calledOnce(loadURI);
+				assert.equal(loadURI.firstCall.args[0].spec, DOCS_URL);
+			}
+			finally {
+				Zotero_BrowseTab._showDocsGate = original;
+				loadURI.restore();
+			}
+		});
+	});
+
 	describe("Save bridge", function () {
 		const PORT = 16215;
 		let httpd, baseURL, pdfURL;

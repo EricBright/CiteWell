@@ -961,13 +961,16 @@ the app's own cookie jar. Extensionless PDF URLs (`/pdf/1706.03762v7`) and in-pa
 nothing parses or indexes the PDF, so DOI recognition and text search stay out. The tab shows
 the Save state rather than a rendered document.
 
-**Phase 3 scoping (2026-11-25).** The Docs half is far larger than "glue": the app ships only the
-server-side `document/execCommand` endpoint, while the entire page-side integration — a React UI
-injected into Docs, a Kix document driver, the Apps Script compatibility client and the menu
-script — lives in the connector (~4,700 source lines, 180 KB built). The owner chose to **defer
-Docs**, do **proxies and PDF capture first**, and keep the official connector installed for Docs
-until that work is proven; retirement stays gated on Docs. This is a sequencing decision, not a
-narrowing of R34's exit criterion.
+**Google Docs decision (2026-11-25, owner-approved).** Docs stays out of the app. Its page-side
+half is the connector's React/Kix client, updated by Zotero at Google's pace; re-hosting it would
+make CiteWell the maintainer of a shim and a rebuild path for someone else's moving target. The
+Browse tab therefore refuses `docs.google.com/document/*` with an explainer: citations in Docs
+come from Zotero's official connector in Firefox, which already talks to CiteWell through the
+unchanged `/connector/*` protocol. "Open in Firefox" hands the URL over, and a quiet "continue
+anyway" lets a reader open a document in-tab knowing citations will not work. Consequences: no
+Google credentials or sessions touch CiteWell, the D49 Docs exception is withdrawn, and the
+connector tree is no longer needed for Docs. R34's exit criterion is amended accordingly: Docs
+insertion works through the official connector in Firefox, not in-tab.
 
 Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
 machinery, and user confusion over two connector identities, all for a leg the app can replace
@@ -1028,15 +1031,13 @@ Rejected: in-place engine self-update — Gecko cannot replace the binary it run
 untested platform swap is how an install bricks. Rejected: pointing Firefox's own updater
 machinery at our servers — it assumes Firefox's packaging, not an AppImage.
 
-**Exception for Google Docs (2026-11-25, owner-approved).** A Docs session that is cleared on
-every close forces a fresh Google sign-in on every launch, and repeated authentication is exactly
-what risks tripping Google's account protections. The state rule therefore gains one narrow,
-opt-in exception: when *Stay signed in for Google Docs* is enabled, only `docs.google.com` and
-`accounts.google.com` session cookies persist across restarts — everything else is still cleared,
-and turning the setting off returns those sites to the default clearing behaviour. CiteWell never
-handles Google credentials, never automates sign-in, and never mints tokens: the Docs add-on runs
-under the user's own session and the app only relays document commands. If Google presents a
-challenge, the bridge stops and asks the user to sign in in the tab; it never retries on its own.
+**Withdrawn: the Google Docs session exception (2026-11-25).** The owner first approved an opt-in
+exception that would persist only `docs.google.com`/`accounts.google.com` session cookies. It was
+withdrawn the same day when Docs moved out of the app entirely: the Browse tab gates Docs with an
+explainer, and the working path is Firefox with Zotero's official connector, so CiteWell never
+needs a Google session at all. No Google-specific persistence ships; Google sites are cleared on
+close like every other site. This removes an exception, a preference and a class of login risk
+rather than adding them.
 
 ## D50 — DNS defaults to Cloudflare's malware-blocking pair; DoT comes later via a sidecar
 

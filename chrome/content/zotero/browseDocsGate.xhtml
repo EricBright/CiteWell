@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+	***** BEGIN LICENSE BLOCK *****
+
+	Copyright © 2026 Eric Bright
+	This file is part of CiteWell, a fork of Zotero.
+
+	CiteWell is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Affero General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	CiteWell is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Affero General Public License for more details.
+
+	You should have received a copy of the GNU Affero General Public License
+	along with CiteWell.  If not, see <http://www.gnu.org/licenses/>.
+
+	***** END LICENSE BLOCK *****
+-->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero/skin/zotero.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero/skin/overlay.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero-platform/content/overlay.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zotero-platform/content/zotero.css"?>
+
+<!--
+	Google Docs gate (D47). Docs citations need Zotero's official connector inside
+	Firefox; the in-app Browse tab cannot run extensions. window.arguments[0].result
+	becomes "firefox", "continue" or null (cancel).
+-->
+<window
+	id="citewell-docs-gate"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	width="520" height="300"
+	onload="load()">
+
+	<script src="chrome://zotero/content/browseDocsGate.js"/>
+
+	<vbox flex="1" style="padding: 16px;">
+		<description id="title" style="font-size: 1.2em; font-weight: bold; margin-bottom: 8px;"/>
+		<description id="body" style="margin-bottom: 10px;"/>
+		<description id="steps" style="margin-bottom: 10px; white-space: pre-line;"/>
+		<html:input id="url" readonly="readonly"
+			style="width: 100%; margin-bottom: 10px;" />
+		<spacer flex="1"/>
+		<hbox align="center">
+			<html:a id="continue" href="#" style="font-size: 0.9em; opacity: 0.75;"/>
+			<spacer flex="1"/>
+			<button id="cancel" oncommand="cancel()"/>
+			<button id="open-firefox" default="true" oncommand="openInFirefox()"/>
+		</hbox>
+	</vbox>
+</window>

@@ -154,6 +154,10 @@ var Zotero_BrowseTab = new (function () {
 	 * Focus the address bar and select its text, so typing replaces the URL instead of
 	 * appending to it.
 	 */
+	// Exported for tests and for callers that need the same host rule.
+	this.isDocsURL = isDocsURL;
+	this.docsURLKey = docsURLKey;
+
 	this.focusURLBar = function (id) {
 		let state = this._states.get(id);
 		if (!state) {
@@ -163,6 +167,28 @@ var Zotero_BrowseTab = new (function () {
 		state.urlbar.select();
 		return true;
 	};
+
+	/**
+	 * True for a Google Docs document. Docs citations need Zotero's official connector
+	 * inside Firefox (D47), so the in-app tab hands these URLs over instead of loading them.
+	 */
+	function docsURLKey(spec) {
+		try {
+			let url = new URL(spec);
+			if (url.hostname !== "docs.google.com") {
+				return null;
+			}
+			let match = url.pathname.match(/\/document\/(?:u\/\d+\/)?d\/([^/]+)/);
+			return match ? match[1] : null;
+		}
+		catch (e) {
+			return null;
+		}
+	}
+
+	function isDocsURL(spec) {
+		return !!docsURLKey(spec);
+	}
 
 	/**
 	 * True for a URL whose path names a PDF. The Browse tab has no PDF viewer (D30), so
@@ -244,6 +270,15 @@ var Zotero_BrowseTab = new (function () {
 		if (!url) {
 			return false;
 		}
+		if (isDocsURL(url)) {
+			if (state.allowDocs !== docsURLKey(url)) {
+				this._gateDocs(id, url);
+				return true;
+			}
+		}
+		else {
+			state.allowDocs = null;
+		}
 		if (isPDFURL(url) && this._capturePDF(id, url)) {
 			return true;
 		}
@@ -323,6 +358,76 @@ var Zotero_BrowseTab = new (function () {
 			}
 		}
 		state.staleTranslates = remaining;
+	};
+
+	/**
+	 * Google Docs needs the official connector inside Firefox (D47). Stop before any
+	 * Google request and let the user open the document in Firefox, cancel, or continue
+	 * knowing citations will not work.
+	 */
+	this._gateDocs = function (id, spec) {
+		let state = this._states.get(id);
+		if (!state || state.gating) {
+			return;
+		}
+		state.gating = true;
+		try {
+			state.browser.stop();
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+		let choice;
+		try {
+			choice = this._showDocsGate(spec);
+		}
+		finally {
+			state.gating = false;
+		}
+		// The tab can disappear while the modal is open.
+		state = this._states.get(id);
+		if (!state) {
+			return;
+		}
+		if (choice === "browser") {
+			try {
+				Zotero.launchURL(spec);
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		}
+		else if (choice === "continue") {
+			state.allowDocs = docsURLKey(spec);
+			try {
+				state.browser.loadURI(Services.io.newURI(spec), {
+					triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+				});
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		}
+		else {
+			this._refresh(id);
+		}
+	};
+
+	this._showDocsGate = function (url) {
+		try {
+			let args = { url, result: null };
+			window.openDialog(
+				"chrome://zotero/content/browseDocsGate.xhtml",
+				"citewell-docs-gate",
+				"chrome,modal,centerscreen,resizable",
+				args
+			);
+			return args.result;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			return null;
+		}
 	};
 
 	/**
@@ -417,6 +522,15 @@ var Zotero_BrowseTab = new (function () {
 			return;
 		}
 		let spec = specOverride || (state.browser.currentURI && state.browser.currentURI.spec) || "";
+		if (isDocsURL(spec)) {
+			if (state.allowDocs !== docsURLKey(spec)) {
+				this._gateDocs(id, spec);
+				return;
+			}
+		}
+		else {
+			state.allowDocs = null;
+		}
 		if (isPDFURL(spec)) {
 			this._capturePDF(id, spec);
 			return;
@@ -884,7 +998,42 @@ var Zotero_BrowseTab = new (function () {
 		}
 		let self = this;
 		this._pdfObserver = {
-			observe(subject) {
+			observe(subject, topic) {
+				if (topic === "http-on-modify-request") {
+					let requestChannel;
+					try {
+						requestChannel = subject.QueryInterface(Ci.nsIHttpChannel);
+					}
+					catch (e) {
+						return;
+					}
+					let requestSpec = requestChannel.URI.spec;
+					if (!isDocsURL(requestSpec)
+						|| !requestChannel.loadInfo
+						|| requestChannel.loadInfo.externalContentPolicyType
+							!== Ci.nsIContentPolicy.TYPE_DOCUMENT) {
+						return;
+					}
+					for (let [tabId, tabState] of self._states) {
+						if (tabState.browser.browserId !== requestChannel.browserId) {
+							continue;
+						}
+						if (tabState.allowDocs === docsURLKey(requestSpec)) {
+							return;
+						}
+						// Cancel before the request leaves; answering a modal from inside
+						// the observer would deadlock, so open it on the next turn.
+						try {
+							requestChannel.cancel(Cr.NS_BINDING_ABORTED);
+						}
+						catch (e) {
+							Zotero.logError(e);
+						}
+						setTimeout(() => self._gateDocs(tabId, requestSpec), 0);
+						return;
+					}
+					return;
+				}
 				let channel;
 				try {
 					channel = subject.QueryInterface(Ci.nsIHttpChannel);
@@ -920,6 +1069,7 @@ var Zotero_BrowseTab = new (function () {
 				}
 			},
 		};
+		Services.obs.addObserver(this._pdfObserver, "http-on-modify-request");
 		Services.obs.addObserver(this._pdfObserver, "http-on-examine-response");
 	};
 
@@ -927,6 +1077,7 @@ var Zotero_BrowseTab = new (function () {
 		if (this._pdfObserver && !this._states.size) {
 			try {
 				Services.obs.removeObserver(this._pdfObserver, "http-on-examine-response");
+				Services.obs.removeObserver(this._pdfObserver, "http-on-modify-request");
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -1009,6 +1160,8 @@ var Zotero_BrowseTab = new (function () {
 		browser.setAttribute("disableglobalhistory", "true");
 		browser.setAttribute("maychangeremoteness", "true");
 		browser.setAttribute("messagemanagergroup", "citewell-browse");
+		// A target=_blank link must not escape the Docs gate into an untracked window.
+		browser.setAttribute("disablewindowopen", "true");
 
 		vbox.appendChild(toolbar);
 		vbox.appendChild(browser);
@@ -1032,6 +1185,10 @@ var Zotero_BrowseTab = new (function () {
 			detectedURL: null,
 			// Set when the tab is pointed at a PDF: the Save action saves that file.
 			pdfURL: null,
+			// Document key the user explicitly chose to open in-tab ("continue anyway").
+			allowDocs: null,
+			// True while the Docs explainer is open, so overlapping requests cannot stack it.
+			gating: false,
 			// URL whose detection is currently in flight (null when none is).
 			detectingURL: null,
 			generation: 0,
@@ -1074,6 +1231,12 @@ var Zotero_BrowseTab = new (function () {
 				}
 				let startDocument = Ci.nsIWebProgressListener.STATE_START
 					| Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
+				if ((stateFlags & startDocument) === startDocument
+					&& request && request.URI && isDocsURL(request.URI.spec)
+					&& self._states.get(id)?.allowDocs !== docsURLKey(request.URI.spec)) {
+					self._gateDocs(id, request.URI.spec);
+					return;
+				}
 				if ((stateFlags & startDocument) === startDocument
 					&& request && request.URI && isPDFURL(request.URI.spec)) {
 					// A link to a PDF (or a redirect to one): stop before the viewer path.

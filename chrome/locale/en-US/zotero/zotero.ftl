@@ -1325,6 +1325,17 @@ browse-save-result-many = Saved { $count } items to CiteWell
 browse-save-cancelled = Nothing selected
 browse-save-pdf = Save PDF to CiteWell
 
+# Google Docs gate (D47)
+docs-gate-title = Google Docs needs Firefox
+docs-gate-body = Citations in Google Docs come from Zotero’s official connector, which runs inside Firefox. CiteWell’s built-in browser can’t run browser extensions.
+docs-gate-steps =
+    1. Open the document in Firefox.
+    2. Install Zotero Connector once, if it isn’t there.
+    3. Sign in to Google there — saves go to CiteWell automatically.
+docs-gate-open = Open in browser
+docs-gate-cancel = Cancel
+docs-gate-continue = Continue anyway (citations won’t work)
+
 # Browse item picker (D47 Phase 2b)
 browse-picker-title = Save to CiteWell
 browse-picker-intro = Choose which items to save
