@@ -64,6 +64,17 @@ describe("UI copy", function () {
 		}
 	});
 
+	it("should keep the Docs handoff generic and the reason specific", async function () {
+		let text = await readLocale(LOCALE_FILES[0]);
+		let open = text.match(/^docs-gate-open = (.+)$/m);
+		assert.ok(open, "docs-gate-open is missing");
+		assert.notInclude(open[1], "Firefox", "the button opens whatever browser is configured");
+		assert.include(open[1].toLowerCase(), "browser");
+		let title = text.match(/^docs-gate-title = (.+)$/m);
+		assert.ok(title, "docs-gate-title is missing");
+		assert.include(title[1], "Firefox", "the reason names Firefox because it is specific");
+	});
+
 	it("should send the Docs gate to the Connector page", async function () {
 		let text = await Zotero.File.getContentsAsync(
 			`${repoRoot()}/chrome/content/zotero/browseDocsGate.js`

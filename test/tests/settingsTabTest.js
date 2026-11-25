@@ -162,4 +162,41 @@ describe("Settings tab (D48)", function () {
 		assert.isNull(doc.querySelector(".settings-status"), "the status is removed when ready");
 		Zotero_Tabs.close(id2);
 	});
+
+	it("should keep a pane failure local and put the selection back", async function () {
+		this.timeout(45000);
+		let SettingsTab = win.Zotero_SettingsTab;
+		let Zotero_Tabs = win.Zotero_Tabs;
+		let id = SettingsTab.open();
+		assert.ok(id, "open() returns a tab id");
+		await waitForCallback(() => SettingsTab.getState(id) === "ready", 15000, 100);
+
+		let frameWin = SettingsTab.getFrame(id).contentWindow;
+		let navigation = frameWin.Zotero_Preferences.navigation;
+		let previous = navigation.value;
+		let original = frameWin.Zotero_Preferences.navigateToPane;
+		try {
+			frameWin.Zotero_Preferences.navigateToPane = () => {
+				throw new Error("pane fixture");
+			};
+			SettingsTab.open("zotero-prefpane-dns");
+			await waitForCallback(
+				() => doc.querySelector(".settings-status.error"),
+				10000,
+				50
+			);
+			let status = doc.querySelector(".settings-status.error");
+			assert.include(status.textContent, "could not be opened");
+			assert.equal(SettingsTab.getState(id), "ready", "the tab itself stays usable");
+			assert.equal(
+				navigation.value,
+				previous,
+				"the list must not claim a pane that never appeared"
+			);
+		}
+		finally {
+			frameWin.Zotero_Preferences.navigateToPane = original;
+			Zotero_Tabs.close(id);
+		}
+	});
 });

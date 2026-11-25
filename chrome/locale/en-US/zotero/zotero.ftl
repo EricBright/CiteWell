@@ -1304,6 +1304,7 @@ browse-tab-add = New Browse Tab
 settings-tab-title = Settings
 settings-tab-loading = Loading settings…
 settings-tab-failed = Settings could not be loaded. Close this tab and try again.
+settings-tab-pane-failed = That settings pane could not be opened. Choose another pane from the list.
 browse-nav-back = Back
 browse-nav-forward = Forward
 browse-nav-reload = Reload

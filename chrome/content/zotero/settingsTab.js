@@ -242,12 +242,57 @@ var Zotero_SettingsTab = new (function () {
 		if (!frameWindow || !this._states.has(id)) {
 			return;
 		}
+		let previous = null;
+		try {
+			previous = frameWindow.Zotero_Preferences.navigation?.value || null;
+		}
+		catch (e) {
+			previous = null;
+		}
 		try {
 			await frameWindow.Zotero_Preferences.navigateToPane(paneID, {});
+			// A successful pane replaces an earlier pane failure notice.
+			if (state.status) {
+				state.status.remove();
+				state.status = null;
+			}
 		}
 		catch (e) {
 			Zotero.logError(e);
+			// The navigation list may already mark the pane as chosen while the pane
+			// content is still the previous one. Put the selection back so the list
+			// does not claim a pane that never appeared.
+			try {
+				if (previous && frameWindow.Zotero_Preferences.navigation) {
+					frameWindow.Zotero_Preferences.navigation.value = previous;
+				}
+			}
+			catch (ignored) {}
+			this._showPaneFailure(state);
 		}
+	};
+
+	/**
+	 * A pane failed inside a ready frame. This is not the whole-tab failure state:
+	 * the rest of Settings still works, so the notice names the pane and lets the
+	 * person choose another.
+	 */
+	this._showPaneFailure = function (state) {
+		let message = ftl(
+			"settings-tab-pane-failed",
+			"That settings pane could not be opened. Choose another pane from the list."
+		);
+		if (state.status) {
+			state.status.textContent = message;
+			state.status.classList.add("error");
+			return;
+		}
+		let doc = state.iframe.ownerDocument;
+		let status = doc.createXULElement("description");
+		status.className = "settings-status error";
+		status.textContent = message;
+		state.iframe.parentNode.insertBefore(status, state.iframe);
+		state.status = status;
 	};
 
 	this._teardown = function (id) {
