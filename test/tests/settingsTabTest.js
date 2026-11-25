@@ -127,4 +127,39 @@ describe("Settings tab (D48)", function () {
 		assert.isNull(doc.getElementById(id), "tab container removed from the deck");
 		assert.isNull(SettingsTab.getFrame(id), "frame reference released");
 	});
+
+	it("shows a loading state and a failure state instead of a blank panel", async function () {
+		this.timeout(45000);
+		let SettingsTab = win.Zotero_SettingsTab;
+		let Zotero_Tabs = win.Zotero_Tabs;
+
+		// The failure renders into the same element the loading phase created, so it
+		// is checked while that element still exists. The 5 s probe cap cannot be
+		// forced without breaking the frame, so the rendering path is called directly.
+		let id = SettingsTab.open();
+		assert.ok(id, "open() returns a tab id");
+		assert.equal(SettingsTab.getState(id), "loading", "a new tab starts loading");
+		let state = SettingsTab._states.get(id);
+		SettingsTab._settleStatus(state, "failed");
+		assert.equal(SettingsTab.getState(id), "failed");
+		let failed = doc.querySelector(".settings-status");
+		assert.ok(failed, "the failure status is shown");
+		assert.include(failed.textContent, "could not be loaded");
+		Zotero_Tabs.close(id);
+		await waitForCallback(() => !SettingsTab.isOpen(id), 5000, 50);
+
+		let id2 = SettingsTab.open();
+		assert.equal(SettingsTab.getState(id2), "loading");
+		let status = doc.querySelector(".settings-status");
+		assert.ok(status, "the loading status is shown");
+		assert.include(status.textContent, "Loading settings");
+		await waitForCallback(
+			() => SettingsTab.getState(id2) === "ready",
+			15000,
+			100
+		);
+		assert.equal(SettingsTab.getState(id2), "ready");
+		assert.isNull(doc.querySelector(".settings-status"), "the status is removed when ready");
+		Zotero_Tabs.close(id2);
+	});
 });

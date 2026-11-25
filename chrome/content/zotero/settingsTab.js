@@ -109,6 +109,30 @@ var Zotero_SettingsTab = new (function () {
 		}
 	};
 
+	/**
+	 * The tab's load phase: "loading" until the frame's navigation list exists,
+	 * then "ready", or "failed" when the probe gives up.
+	 */
+	this.getState = function (id) {
+		let state = this._states.get(id);
+		return state ? state.phase : null;
+	};
+
+	this._settleStatus = function (state, phase) {
+		state.phase = phase;
+		if (!state.status) return;
+		if (phase === "ready") {
+			state.status.remove();
+			state.status = null;
+			return;
+		}
+		state.status.textContent = ftl(
+			"settings-tab-failed",
+			"Settings could not be loaded. Close this tab and try again."
+		);
+		state.status.classList.add("error");
+	};
+
 	this.getFrame = function (id) {
 		let state = this._states.get(id);
 		return state ? state.iframe : null;
@@ -124,13 +148,27 @@ var Zotero_SettingsTab = new (function () {
 		vbox.className = "settings-tab";
 		vbox.setAttribute("flex", "1");
 
+		// The frame document loads asynchronously and can fail to initialize. Say so
+		// instead of showing an empty panel, which reads as "settings are missing".
+		let status = doc.createXULElement("description");
+		status.className = "settings-status";
+		status.textContent = ftl("settings-tab-loading", "Loading settings…");
+		vbox.appendChild(status);
+
 		let iframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
 		iframe.className = "settings-frame";
 		iframe.setAttribute("src", "chrome://zotero/content/preferences/preferences.xhtml");
 		vbox.appendChild(iframe);
 		container.appendChild(vbox);
 
-		let state = { iframe, listeners: [], ready: null, _resolveReady: null };
+		let state = {
+			iframe,
+			status,
+			phase: "loading",
+			listeners: [],
+			ready: null,
+			_resolveReady: null,
+		};
 		state.ready = new Promise((resolve) => {
 			state._resolveReady = resolve;
 		});
@@ -157,6 +195,7 @@ var Zotero_SettingsTab = new (function () {
 				if (ready) {
 					this._attachFrameKeys(state, ready, id);
 				}
+				this._settleStatus(state, ready ? "ready" : "failed");
 				// Always settle: on timeout resolve null so awaiting _navigate
 				// unblocks instead of hanging forever (Strata finding 2).
 				state._resolveReady(ready);
