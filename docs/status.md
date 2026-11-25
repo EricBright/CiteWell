@@ -15,7 +15,7 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-25 (Phase 2/3 closeout)
 
-This is the compaction anchor. HEAD is `18ea17ed2`; the installed AppImage is
+This is the compaction anchor. The last code commit is `68daadc51` (docs-only commits follow); the installed AppImage is
 `10.0.9.SOURCE.68daadc51`, sha256 `0a71b1522a9268297955ae7cb48531e270e87b8886fa61d9fc1b19522f582b70`,
 125,852,152 bytes (docs-only commits since that build do not change code).
 
