@@ -1013,6 +1013,16 @@ Rejected: in-place engine self-update — Gecko cannot replace the binary it run
 untested platform swap is how an install bricks. Rejected: pointing Firefox's own updater
 machinery at our servers — it assumes Firefox's packaging, not an AppImage.
 
+**Exception for Google Docs (2026-11-25, owner-approved).** A Docs session that is cleared on
+every close forces a fresh Google sign-in on every launch, and repeated authentication is exactly
+what risks tripping Google's account protections. The state rule therefore gains one narrow,
+opt-in exception: when *Stay signed in for Google Docs* is enabled, only `docs.google.com` and
+`accounts.google.com` session cookies persist across restarts — everything else is still cleared,
+and turning the setting off returns those sites to the default clearing behaviour. CiteWell never
+handles Google credentials, never automates sign-in, and never mints tokens: the Docs add-on runs
+under the user's own session and the app only relays document commands. If Google presents a
+challenge, the bridge stops and asks the user to sign in in the tab; it never retries on its own.
+
 ## D50 — DNS defaults to Cloudflare's malware-blocking pair; DoT comes later via a sidecar
 
 **Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes

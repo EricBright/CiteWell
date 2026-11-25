@@ -347,6 +347,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | npm | Retired. Do not install, update, audit or add packages; `repo-guard` rejects package/lock changes and restored npm fallbacks (D32) |
 | New JavaScript/Python/shell file | `repo-guard` rejects added code unless its exact path is in `tools/policy-exceptions.txt` under a decision record (D4/D12/D38) |
 | Stale LibreOffice deployment | Not an Extension Manager entry. The installer moves only CiteWell `lu*.tmp_` cache dirs to `~/.cache/citewell/lo-repair/` and retries; never reset the profile |
+| Wayland pointer grants | Synthetic clicks can require a system permission popup that appears late, and the pointer may then move erratically. Treat a click that appears not to register as environment noise: confirm with logs, DB or tests before touching the app; never re-click in a loop or re-diagnose the non-issue. Prefer keyboard or the test harness; batch visual checks |
 
 ## Facts worth not re-litigating
 
