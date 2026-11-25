@@ -13,40 +13,82 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-25 (R34 and R24 closed)
+## Handoff 2026-11-25 (R34 and R24 closed; R8 recon done)
 
-The last code commit is `89ebff783`; the installed AppImage is
-`10.0.9.SOURCE.89ebff783`, sha256 `0b26bd24fe1c4d4fd0bcfa9525170191a018ba0eccba3c0ea06d6d51f4c42d45`, 125,852,152 bytes.
+Compaction anchor. Last code commit `89ebff783` (docs commits follow: `f54a5237c` and the session
+closeout). Installed AppImage `10.0.9.SOURCE.89ebff783`, sha256
+`0b26bd24fe1c4d4fd0bcfa9525170191a018ba0eccba3c0ea06d6d51f4c42d45`, 125,852,152 bytes, installed
+at `~/AppImages/citewell.appimage` and launched against a scratch profile: `/connector/ping`
+returned 200 on **both** `23119` and `23120`.
 
-**R34 is done.** The Browse tab and its save bridge (2a), picker (2b), PDF capture, proxies, Docs
-gate, R36 hardening and R38 decision shipped earlier on 2026-11-25; the connector tree itself is
-gone: `connectors/` (117 MB, including `node_modules`, the gulp/XPI pipeline and three submodule
-working trees) and `tools/rsvg-shim` went to Trash (D26), `xtask connectors` and its brand/icon
-pipeline left the build, the three `connectors/src/*` entries left `.gitmodules`, and
-[connectors.md](connectors.md) is now a retirement record.
+**Shipped today, in order.**
 
-One promise was untrue and is fixed. Zotero's official connector asks `127.0.0.1:23119` and
-nothing else, while CiteWell serves on `23120` (D19), so the Docs explainer's "Zotero's Connector
-talks to this app" could not happen. `Zotero.Server.init` now also serves the same handlers on
-`23119` when that port is free (`Zotero.Server.connectorPort`); the Docs gate reads it and step 3
-states the truth in both cases, and `server_connectorIntegrationTest.js` drives the Docs handshake
-through `23119`. Trade-off: whichever app starts first holds `23119`.
+1. **R34, connector retired.** `connectors/` (117 MB including `node_modules`, the gulp/XPI
+   pipeline and three submodule working trees) and `tools/rsvg-shim` went to Trash; `xtask
+   connectors`, its brand/icon pipeline and the `connectors/src/*` submodule entries are gone.
+   [connectors.md](connectors.md) is a retirement record. The Docs explainer's promise that
+   Zotero's Connector talks to this app was **false** (that connector asks only `23119`); the app
+   now serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), the
+   gate states the truth in both states, and `server_connectorIntegrationTest.js` drives the Docs
+   handshake through `23119`. Trade-off in D19's amendment: the first app started owns `23119`.
+2. **R24, import merge done.** Acceptance run: the canonical 1,771-item library merged into a
+   non-empty library as 946 items, 589 attachments, 83 notes, 53 collections, 1 saved search,
+   0 skipped, 153 fileless rows reported, source checksum unchanged, 38.1 s. Two data-loss defects
+   found and fixed: same-title children were dropped by title-based resume de-duplication (34
+   attachments + 1 note), and the 25-item checkpoint cadence could duplicate children after an
+   interruption. Details in [import.md](import.md#measured-acceptance-2026-11-25).
+3. **Strata workflow repaired.** The invocation details now live in the gitignored
+   `reviews/strata/README.md` with `python3 reviews/strata/ask.py` (installed as
+   `~/.local/bin/strata-ask`), and the global skill `~/.dsh/skills/delegate-strata-second-opinion`
+   was corrected: inline tool-free is the default, 2500+ tokens (600–800 returns empty `content`
+   because reasoning eats the budget), and findings must be verified against the code, not just
+   located. Pass outcomes: `reviews/strata/passes.md`.
 
-**R24 is done.** The acceptance run merged the canonical 1,771-item library into a non-empty
-library: 946 regular items, 589 attachments, 83 notes, 53 collections (import root + 51 source
-collections + the standalone-notes collection), 1 saved search, 0 skipped, 153 rows reported
-missing (148 without a path, 5 with an absent file), source checksum unchanged, 38.9 s. The run
-found two defects, both fixed before closing: a fresh merge dropped same-title children because
-resume de-duplication keyed on title and content type instead of source identity (34 attachments
-and 1 note on this library), and the 25-item checkpoint cadence could duplicate up to 24 children
-after an interruption. `importTest.js` is 18/18, including a same-title regression.
+**Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
+18/18 (including the same-title regression); docs 800/800; repo-guard green; docs gate green.
 
-Tests at this commit: Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import 18/18;
-docs and repo-guard green. `/connector/ping` answered 200 on both `23119` and `23120` in the
-installed AppImage. **Next: R8 (update-channel decision) and R6 (UI behaviour spec)** are the only
-Now items left; R32's citation explorer and undo listener stay optional ([roadmap.md](../roadmap.md)).
-The `/connector/*` endpoints stay, because Zotero's official connector is the Docs client; do not
-re-import a connector tree ([connectors.md](connectors.md)).
+**Open decisions, in order.**
+
+1. **R24 hazard: a retry after an interrupted merge duplicates if the source library changed in
+   between**, because the checkpoint matches on the source database hash. Current behaviour starts
+   a fresh merge on top of the partial result. Recommendation: refuse and point at that merge's
+   restore point, with a restore affordance. Recorded in import.md; needs the owner's call.
+2. **R8, update channel.** Recon done, nothing changed yet:
+   - The update URL lives in `app/assets/application.ini` `[AppUpdate] URL=`, pointing at
+     `https://www.zotero.org/download/client/update/...`. Prefs: `app.update.auto=true`,
+     `app.update.interval=86400`, `app.update.url.manual`/`.details` at zotero.org;
+     `build.sh` sets `app.update.channel=source`.
+   - "Check for Updates" opens Zotero's own wizard (`chrome/content/zotero/update/updates.xhtml`)
+     on top of `nsIApplicationUpdateService`; it cannot patch an AppImage (MAR files, Mozilla
+     signing).
+   - `app.update.enabled` does **not** exist in this ESR (a Strata claim, verified false);
+     telemetry/datareporting are already off in `app/assets/prefs.js`.
+   - Our AppImage carries **empty** update information (`--appimage-updateinformation` prints
+     nothing), no `.zsync`, no `.sha256`, no signing key. `appimagetool -u` and `zsyncmake` are
+     installed, so the AppImage self-update path (embed `zsync|URL`, publish `.zsync`, let Gear
+     Lever/AppImageUpdate delta-update and relaunch) is available once releases exist (R11, R21).
+     Plan for R8: neutralize `[AppUpdate] URL`, set the prefs, repoint Check for Updates to the
+     repository, document; verify with `app.update.log=true`. Open question: behaviour when
+     `[AppUpdate]` is absent (silent no-op versus a logged failure).
+3. **R6, UI behaviour spec**, still untouched.
+
+**What a fresh session should do:** read this section and [#pick-up-here](#pick-up-here), then
+start R8 (small, bounded) or the R24 hazard decision. Do not redo R34 or R24; do not re-import a
+connector tree; do not delete the canonical Zotero sources.
+
+**Housekeeping.** Scratch from today's runs is under `~/.local/share/dsh-trash/2026-11-25/`
+(the acceptance copy of the canonical library, twice); the one-off acceptance harness is
+`reviews/acceptance/importAcceptanceTest.js`, deliberately untracked. The canonical USB library
+was only read: `zotero.sqlite` still hashes to its pre-run baseline and its mtime is
+`2026-11-23 14:05`.
+
+**Pitfalls added today:** `IOUtils.writeAtomic` does not exist in this runtime; use
+`Zotero.File.putContentsAsync`, which already writes atomically via `OS.File.writeAtomic`. A
+`-profile` path must exist before launch or Gecko shows "Profile Missing". `/tmp` cannot be
+`gio trash`ed ("system internal mounts"), so move scratch to `~/.local/share/dsh-trash/<date>/`
+instead of deleting. Test-file edits need both `xtask build` and a test-enabled
+`app/scripts/dir_build -f` to reach the staged suite. chai 3.5's `isFunction` rejects
+Xray-wrapped functions; use `typeof`.
 
 ## Where the project stands
 
@@ -63,7 +105,7 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Plugins | **Parked, with a curated path (D31/D51):** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden; code is retained (D31). D51 opens a first-party-vetted security-extension path (uBlock Origin candidate — spike pending on content-script injection into browse tabs, background pages, and `webRequest`); arbitrary plugins stay closed |
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | **R24 done 2026-11-25.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.9 s. Two defects found that day are fixed: same-title children were dropped by resume de-duplication keyed on title, and the 25-item checkpoint could duplicate children on resume; `importTest.js` 18/18 |
+| Import | **R24 done 2026-11-25.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Two defects found that day are fixed: same-title children were dropped by resume de-duplication keyed on title, and the 25-item checkpoint could duplicate children on resume; `importTest.js` 18/18 |
 | Docs | README index, Rust docs gate, D1–D51 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 

@@ -221,7 +221,7 @@ A merge of the canonical library (`/run/media/eric/RedDragon/Zotero_Library`, 1,
 non-empty library imported 946 regular items, 589 attachments, 83 notes, 53 collections (the import
 root, the 51 source collections and one collection for the 3 standalone notes) and 1 saved search.
 It skipped nothing, reported 153 rows without a file (148 with no path and 5 whose file is absent),
-left the source checksum unchanged, and took 38.9 s.
+left the source checksum unchanged, and took 38.1 s.
 
 That run found two data-loss defects, both fixed before R24 closed:
 
