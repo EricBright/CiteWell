@@ -175,6 +175,24 @@ describe("Browse Tab", function () {
 			assert.equal(urlbar.selectionEnd, urlbar.value.length);
 		});
 
+		it("should bind Ctrl/Cmd+L to focusing the address bar", function () {
+			// The declaration is the part a synthetic key event cannot prove in this
+			// harness; the command it triggers is exercised by the focusOrOpen tests.
+			let win = Zotero.getMainWindow();
+			let key = win.document.getElementById("key_focusBrowseURL");
+			assert.ok(key, "the accelerator key must exist");
+			assert.equal(key.getAttribute("key"), "l");
+			assert.equal(key.getAttribute("modifiers"), "accel");
+			assert.equal(key.getAttribute("command"), "cmd_focusBrowseURL");
+			let command = win.document.getElementById("cmd_focusBrowseURL");
+			assert.ok(command, "the command must exist");
+			assert.include(
+				command.getAttribute("oncommand"),
+				"Zotero_BrowseTab.focusOrOpen",
+				"the command must be the Browse focus behaviour"
+			);
+		});
+
 		it("should reuse the selected browse tab from focusOrOpen", function () {
 			let id = Zotero_BrowseTab.open();
 			assert.equal(Zotero_BrowseTab.focusOrOpen(), id, "should not open a second tab");

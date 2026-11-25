@@ -97,8 +97,11 @@ the installed path and `~/CiteWell`.
    pairs from the stylesheet and requires at least 3:1 between enabled and disabled in both themes
    (measured 4.05:1 light, 3.45:1 dark). Every other disabled style belongs to an upstream
    component drawn by the platform theme, so it stays review, not a test that cannot fail.
+   The keyboard rule gained a declaration test: `browseTabTest` asserts the `key_focusBrowseURL`
+   declaration (key `l`, modifier `accel`) still points at the command that calls
+   `Zotero_BrowseTab.focusOrOpen`; the behaviour itself was already tested.
 
-**Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
+**Tests at this commit:** Browse 41/41, RemoteTranslate 12/12, connector integration 3/3, import
 21/21 (same-title regression, the refusal, database-only classification, checkpoint lifecycle),
 uiCopy 4/4, uiContrast 1/1, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 

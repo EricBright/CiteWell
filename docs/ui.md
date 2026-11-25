@@ -36,7 +36,7 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 | 1 | `test/tests/uiCopyTest.js` scans the en-US locale files and every preference pane XHTML; JS string literals are checked in review. It reads locale from the source tree because the test runtime can resolve to a translation (en-GB here) |
 | 2 | The same test checks that each `docs-gate-stepN` string is one numbered line |
 | 3 | `test/tests/uiContrastTest.js` reads the toolbar's two colour pairs from `scss/components/_browseTab.scss` and fails below 3:1 in either theme. The other disabled styles in `scss/` are upstream components drawn by the platform theme, so they are review, not test |
-| 4 | `test/tests/browseTabTest.js` covers the toolbar order and `focusOrOpen`/`focusURLBar`; the accelerator registration itself is review |
+| 4 | `test/tests/browseTabTest.js` covers the toolbar order, the `key_focusBrowseURL` accelerator declaration and `focusOrOpen`/`focusURLBar`. A synthetic key press is not supported by the harness, so the declaration plus the tested command stands in for it |
 | 5 | Review, plus the Docs explainer test for the specific case it covers |
 | 6 | `test/tests/uiCopyTest.js` asserts the gate's one launch URL is the connectors page |
 
