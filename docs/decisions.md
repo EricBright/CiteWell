@@ -1238,6 +1238,26 @@ The test opens the dialog non-modally, because a test that opens it modally bloc
 focuses the window before asserting the filter's focus, since a non-modal test window is not
 focused on creation.
 
+## D56 — The Settings tab says when it is loading, and when it failed
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+The Settings tab hosts the preferences document in an iframe. That document loads asynchronously and
+can fail to initialize (a broken build, a frame that never reaches its navigation list). Until now
+the tab showed an empty panel in both cases, which reads as "my settings are gone" rather than
+"still loading" or "this failed". A status line now says **Loading settings** while the readiness
+probe runs, is removed as soon as the navigation list exists, and after the probe's five second cap
+says **Settings could not be loaded. Close this tab and try again.** The tab exposes `loading`,
+`ready` and `failed` through `getState()` so a test can tell them apart.
+
+Rejected: a spinner. The wait is usually a fraction of a second, and a moving control in a settings
+surface draws attention to a non-event. Rejected: blocking the tab until ready; the tab is usable
+for reading the failure and closing itself. Rejected: changing the tab title to the pane name; a
+browser settings tab is still "Settings", and the pane is visibly selected inside it.
+
+The five second cap cannot be forced in the test harness without breaking the frame, so the failure
+rendering is exercised by calling the settle path directly; the probe's own timeout is review.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
