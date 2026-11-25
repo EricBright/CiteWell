@@ -1,6 +1,6 @@
 # Content blocking in the Browse tab (R38 spike)
 
-**Date:** 2026-11-25 · **Status:** spike complete; recommendation awaiting an owner decision · **Companions:** D51 in [decisions.md](decisions.md), roadmap R38
+**Date:** 2026-11-25 · **Status:** spike complete; owner approved the recommendation on 2026-11-25 · **Companions:** D51 in [decisions.md](decisions.md), roadmap R38
 
 R38 asked whether CiteWell should ship a curated security extension, with uBlock Origin as the
 candidate, and demanded answers in writing about content-script injection, background pages,

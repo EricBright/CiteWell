@@ -39,10 +39,10 @@ was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initT
 awaited); multi-item pages open a picker (2b). Proxies (the detected translator's proxy now reaches `ItemSaver`) and PDF capture are shipped:
 a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
 imported-URL attachment through the app's own cookie jar. R36 hardening shipped 2026-11-25 (isolated browse context cleared at startup/shutdown, soft HTTPS,
-default-deny permissions, maintainer-only ESR tripwire). The R38 spike is complete
-([ublock-spike.md](ublock-spike.md)): WebExtensions do not install in this build and the URL
-classifier has no lists, so the recommendation is no in-app blocker; owner approval is pending.
-After that decision: retire `connectors/node_modules` and the XPI pipeline.
+default-deny permissions, maintainer-only ESR tripwire). R38 closed 2026-11-25 with no in-app
+blocker ([ublock-spike.md](ublock-spike.md)): WebExtensions do not install in this build and the
+URL classifier has no lists. Remaining: retire the connector tree (`connectors/`, including
+`node_modules` and the XPI pipeline).
 **Google Docs is out of the app by owner decision (2026-11-25):** its page-side half is the
 connector's React/Kix client, so the Browse tab gates `docs.google.com/document/*` with an
 explainer and hands the URL to Firefox, where Zotero's official connector talks to CiteWell.
@@ -273,9 +273,9 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
    proxies, PDF capture (content-type interception; verified live with an extensionless arXiv
    PDF), the Docs gate, and R36 hardening (isolated browse context, soft HTTPS, default-deny
-   permissions, maintainer-only ESR tripwire), then the uBlock spike and the connector tree to
-   Trash — Docs no longer blocks it, because it runs through Zotero's official connector in
-   Firefox. **Strata cadence (owner, 2026-11-25):
+   permissions, maintainer-only ESR tripwire), and R38 (no in-app blocker; spike recorded). The
+   last step is the connector tree to Trash — Docs no longer blocks it, because it runs through
+   Zotero's official connector in Firefox. **Strata cadence (owner, 2026-11-25):
    one lean plan/code pass at each milestone and each security seam — the save bridge got
    both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
    test-only edits; 2 passes/8 hops per task.**
