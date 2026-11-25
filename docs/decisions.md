@@ -1278,6 +1278,35 @@ is. Rejected: leaving the navigation selection on the failed pane, which is the 
 this decision removes. Rejected: retrying the pane automatically; a pane failure is deterministic
 until the build changes.
 
+## D58 — Publish AppImages on GitHub releases, with source and without a key
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+R11 asks whether to publish Linux builds or stay source-only, and what happens about source and
+signing. The decision is to publish: the AppImage is the product, and a download that a person can
+verify and update is better than a build recipe.
+
+- **Where:** the project's own GitHub releases. Each release carries exactly three assets:
+  `CiteWell-x86_64.AppImage`, `CiteWell-x86_64.AppImage.zsync` and
+  `CiteWell-x86_64.AppImage.sha256`. Those names are the contract; `xtask appimage` writes them and
+  embeds the matching update information.
+- **Source offer:** the repository at the release tag is the corresponding source, which satisfies
+  the AGPL. The release notes say so and link the tag. No separate source archive is uploaded,
+  because GitHub already serves one and a second copy can drift.
+- **Signing:** no key yet. Verification is the published SHA-256 plus TLS, which catches a truncated
+  or swapped download but not a compromised release account. A detached signature (minisign or
+  AppImage signing) is the upgrade path and belongs with the self-updater work; until then the
+  release notes state the limit rather than implying more.
+- **Test builds:** published as prereleases so GitHub's `latest` (which the update information
+  points at) never offers them, and they never reuse a real version number.
+- **What is not published:** Windows and macOS builds do not exist, so the release does not imply
+  them.
+
+Rejected: source-only. It would make every user build a Firefox-based app with a Rust toolchain,
+and the update channel would have nothing to update. Rejected: signing with a self-issued key
+without a published key file and a documented verification command; a signature nobody can check is
+worse than an honest SHA-256.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

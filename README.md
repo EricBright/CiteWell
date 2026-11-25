@@ -13,7 +13,7 @@ Scholarship, and is not the place to report Zotero bugs.
 |---|---|
 | Branch | `citewell` |
 | Base | Zotero 10.0, upstream `864b2d47e` |
-| Version string | `10.0.9.SOURCE.bbcc182ee` |
+| Version string | `10.0.9.SOURCE.cf3e2382a` |
 | Build verified | Linux dev build, 2026-11-25 |
 | Platform | Linux x86_64, AppImage only |
 

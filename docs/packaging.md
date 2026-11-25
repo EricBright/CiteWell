@@ -143,8 +143,27 @@ CiteWell's shape, once R11 provides a release host:
    releases page, and Check for Updates reports that there is no in-app channel yet. A check
    resolves locally as "Update URL not available" and contacts no server.
 
-Test builds may be published to the remote (`EricBright/CiteWell`) to exercise this channel; the
-release body must say it is a test build, and a test build must never reuse a real version number.
+### Publishing a release
+
+`xtask appimage` writes three assets and proves the update information landed:
+
+| File | Purpose |
+|---|---|
+| `dist/CiteWell-x86_64.AppImage` | the build |
+| `dist/CiteWell-x86_64.AppImage.zsync` | delta updates for Gear Lever and AppImageUpdate |
+| `dist/CiteWell-x86_64.AppImage.sha256` | what the in-app updater verifies before installing |
+
+1. Build from a clean tree and note the version in `app/staging/Zotero_linux-x86_64/app/application.ini`.
+2. Tag the commit and publish a GitHub release at `EricBright/CiteWell` with those three files under
+   exactly those names. The update information points at `releases/latest`, so the asset names and
+   the `latest` release must agree.
+3. Say in the notes that the repository at the tag is the corresponding source (AGPL), and that
+   verification is SHA-256 over TLS rather than a signature (D58).
+4. A test build is a **prerelease** and never reuses a real version number. GitHub's `latest`
+   ignores prereleases, so Gear Lever and the update information will not offer it.
+
+A release that renames the AppImage, publishes two matching AppImages, or omits the `.zsync` breaks
+the update path even though the app itself still runs.
 
 ### Gear Lever and AppImageUpdate compatibility
 
@@ -180,8 +199,8 @@ so the same rules (stable path, published bytes, valid update information) cover
 
 - **Flatpak**: a later option. The same `AppDir` content can feed `flatpak-builder`; nothing is
   implemented.
-- **Signing**: no signing key is configured. A self-updater verifies a published SHA-256, which
-  protects against a truncated or swapped download but not against a compromised release; a
-  detached signature is the stronger form.
+- **Signing**: no signing key is configured (D58). A self-updater verifies the published SHA-256,
+  which protects against a truncated or swapped download but not against a compromised release; a
+  detached signature is the stronger form and is deferred with the updater.
 
 *For the full documentation index, see [../README.md](../README.md).*
