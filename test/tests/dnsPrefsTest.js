@@ -75,33 +75,43 @@ describe("DNS settings (D50)", function () {
 	});
 
 	it("surfaces the choice in the settings pane", async function () {
+		this.timeout(30000);
+		// D48: settings lives in a main-window tab — load the pane window and open
+		// settings through the same route every menu item uses.
+		let mainWin = await loadZoteroPane();
 		Zotero.DNS.apply("cloudflare");
 
-		Zotero.Utilities.Internal.openPreferences("zotero-prefpane-dns");
-		let paneWin = null;
-		await waitForCallback(() => {
-			paneWin = Services.wm.getMostRecentWindow("zotero:pref");
-			return paneWin && paneWin.document.getElementById("dns-resolver");
-		}, 3000, 50);
+		let id = mainWin.Zotero_SettingsTab.open("zotero-prefpane-dns");
+		let iframe = mainWin.Zotero_SettingsTab.getFrame(id);
+		assert.isNotNull(iframe, "settings tab frame exists");
+		let frameWin = iframe.contentWindow;
 
-		let group = paneWin.document.getElementById("dns-resolver");
+		await waitForCallback(() => {
+			try {
+				return frameWin.document.getElementById("dns-resolver");
+			}
+			catch (e) {
+				return false;
+			}
+		}, 10000, 100);
+		let group = frameWin.document.getElementById("dns-resolver");
 		assert.equal(group.value, "cloudflare", "pane reflects the recorded resolver");
 
 		// Drive the pane's own handler, as a click would.
-		paneWin.Zotero_Preferences.DNS.choose("system");
+		frameWin.Zotero_Preferences.DNS.choose("system");
 		assert.equal(Zotero.DNS.resolver, "system");
 		assert.equal(
 			Services.prefs.getIntPref("network.trr.mode"),
 			Ci.nsIDNSService.MODE_NATIVEONLY
 		);
 		// The view refreshes from state (init), which is what a reopen does.
-		paneWin.Zotero_Preferences.DNS.init();
+		frameWin.Zotero_Preferences.DNS.init();
 		assert.equal(
-			paneWin.document.getElementById("dns-resolver").value,
+			frameWin.document.getElementById("dns-resolver").value,
 			"system",
 			"pane state follows the choice"
 		);
 
-		paneWin.close();
+		mainWin.Zotero_Tabs.close(id);
 	});
 });

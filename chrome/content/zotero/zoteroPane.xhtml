@@ -79,6 +79,7 @@
 
 		Services.scriptloader.loadSubScript("chrome://zotero/content/tabs.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/browseTab.js", this);
+		Services.scriptloader.loadSubScript("chrome://zotero/content/settingsTab.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/zoteroPane.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/contextPane.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/fileInterface.js", this);
@@ -183,6 +184,10 @@
 				key="t"
 				modifiers="accel"
 				command="cmd_zotero_newBrowseTab"/>
+		<key id="key_openSettings"
+				key=","
+				modifiers="accel"
+				oncommand="Zotero.Utilities.Internal.openPreferences()"/>
 		<key id="key_showTabsMenu"
 				command="cmd_zotero_showTabsMenu"
 				modifiers="accel"/>

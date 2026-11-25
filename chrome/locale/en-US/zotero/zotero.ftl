@@ -1301,6 +1301,7 @@ menu-new-browse-tab =
 
 browse-tab-title = Browse
 browse-tab-add = New Browse Tab
+settings-tab-title = Settings
 browse-nav-back = Back
 browse-nav-forward = Forward
 browse-nav-reload = Reload

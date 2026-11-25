@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-24 · branch `citewell` · companion to
+Last updated 2026-11-25 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
@@ -31,9 +31,10 @@ push target. The product branch may diverge without limit.
 | Docs | README index, Rust docs gate, D1–D51 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
-**Next:** R34/R35 — the in-app tab work (D47, D48): build the browse tab and the settings tab
-off the same deck plumbing, port the connector's page-side save scripts and Google Docs glue,
-and only then trash `connectors/node_modules` and the XPI pipeline. The
+**Next:** R34 — the remaining connector work (D47): port the connector's page-side save scripts
+and Google Docs glue into the Browse tab, then D49 hardening (R36), the uBlock spike (R38), and
+only then trash `connectors/node_modules` and the XPI pipeline. Browse and settings tabs are
+shipped (D47/D48); the DNS pane rides the settings tab (D50). The
 [connector handoff](#handoff-2026-11-23-connector-build) below is superseded. The app build and
 tests are already Node-free.
 
@@ -248,20 +249,18 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R34/R35/R36/R37 — in-app tabs, connector retirement, browse hardening, DNS item
-   (D47–D50).** The active thread: browse tab (Phase 1 done, 12/12 tests), settings tab
-   (same plumbing) with the DNS item defaulting to 1.1.1.2/1.0.0.2, page-side save scripts,
-   Google Docs glue, D49 hardening, then the connector tree to Trash.
-2. **R38 — curated plugin path (D51).** Run the uBlock Origin spike (injection, background,
-   webRequest, license), then choose preload vs the settings Plugins section's add-only
-   suggestion.
-3. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
-4. **R15 — Rust build toolchain.** Phases 1–5 are done (D43–D46); the last npm tree
+1. **R34/R36/R38 — connector retirement, browse hardening, plugin spike (D47, D49, D51).**
+   Shipped: browse tab with address bar and "+" (13/13), settings tab with Ctrl+, (D48),
+   DNS pane defaulting to 1.1.1.2/1.0.0.2 (D50/R37) — 19/19 across suites. Remaining:
+   page-side save scripts, Google Docs glue, D49 hardening + the ESR tripwire, the uBlock
+   spike, then the connector tree to Trash.
+2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
+3. **R15 — Rust build toolchain.** Phases 1–5 are done (D43–D46); the last npm tree
    (`connectors/`) retires under D47.
-5. **R32 optional follow-ups** — citation explorer and undo/save listener.
-6. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+4. **R32 optional follow-ups** — citation explorer and undo/save listener.
+5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.
-7. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
+6. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
 
 ## Commands
 

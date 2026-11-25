@@ -1853,7 +1853,14 @@ Zotero.Utilities.Internal = {
 		if (typeof options == 'string') {
 			throw new Error("openPreferences() now takes an 'options' object -- update your code");
 		}
-		
+
+		// D48: settings lives in a main-window tab. The popup path below remains
+		// only as a fallback for the rare case with no main window at all.
+		let citewellWindow = Zotero.getMainWindow();
+		if (citewellWindow && citewellWindow.Zotero_SettingsTab) {
+			return citewellWindow.Zotero_SettingsTab.open(paneID);
+		}
+
 		// If window is already open, focus it
 		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 			.getService(Components.interfaces.nsIWindowMediator);

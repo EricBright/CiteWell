@@ -27,3 +27,5 @@ D47 test/tests/browseTabTest.js
 D50 chrome/content/zotero/xpcom/dns.js
 D50 chrome/content/zotero/preferences/preferences_dns.js
 D50 test/tests/dnsPrefsTest.js
+D48 chrome/content/zotero/settingsTab.js
+D48 test/tests/settingsTabTest.js

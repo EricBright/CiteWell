@@ -310,7 +310,9 @@ var Zotero_Tabs = new function () {
 		if (this.tabHooks[action] && this.tabHooks[action][type]) {
 			return this.tabHooks[action][type];
 		}
-		return async () => {};
+		// Types without a hook (browse, settings, future tabs) must still return an
+		// object: callers destructure results (e.g. { itemID } from restoreState).
+		return async () => ({});
 	};
 	this._hasHook = function (type, action) {
 		return !!(this.tabHooks[action] && this.tabHooks[action][type]);
@@ -397,8 +399,8 @@ var Zotero_Tabs = new function () {
 				title: tab.title,
 				renderTitle: tabContentType === "reader",
 				selected: tab.id == this._selectedID,
-				isItemType: tab.id !== "zotero-pane",
-				icon: tab.data?.icon || null,
+				isItemType: tab.id !== "zotero-pane" && !tab.data?.cssIcon,
+				icon: tab.data?.cssIcon || tab.data?.icon || null,
 				audioStatus: tab.audioStatus,
 			};
 		}));
