@@ -632,6 +632,14 @@ Zotero.LibraryImport = {
 
 		var hashBefore = await this.hashFile(sourceDb);
 		var resume = await this._findIncompleteMerge(sourcePath, hashBefore);
+		if (!resume) {
+			// An interrupted merge whose source has changed since cannot be resumed:
+			// the checkpoint no longer describes the rows it would skip. Merging again
+			// would duplicate the part that already landed, so refuse and name the
+			// restore point the interrupted merge kept.
+			var stale = await this._findStaleMerge(sourcePath, hashBefore);
+			if (stale) throw this._staleMergeError(stale, hashBefore);
+		}
 		var id = resume?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 		var staging = PathUtils.join(
 			this.dataDir, ".import", resume ? `merge-${id}-resume` : `merge-${id}`
@@ -1552,6 +1560,10 @@ Zotero.LibraryImport = {
 			return false;
 		}
 
+		if (request?.mode === "database") {
+			return this._applyDatabaseRestore(request);
+		}
+
 		try {
 			if (request.version !== 1) throw new Error("Unsupported restore request version");
 			if (request.dataDir !== this.dataDir) {
@@ -1638,6 +1650,87 @@ Zotero.LibraryImport = {
 			});
 			await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
 			return false;
+		}
+	},
+
+	/**
+	 * Swap a database snapshot in, before the next database open.
+	 *
+	 * Attachments and the search index stay where they are; only the database
+	 * moves. The current database is kept as a database-only restore point, and
+	 * the merge session that owned the snapshot is forgotten so a fresh merge of
+	 * the changed source is no longer refused.
+	 */
+	_applyDatabaseRestore: async function (request) {
+		var staging = null;
+		try {
+			if (request.version !== 1) throw new Error("Unsupported restore request version");
+			if (request.dataDir !== this.dataDir) {
+				throw new Error(
+					`The restore was staged for ${request.dataDir}, but CiteWell is using ${this.dataDir}.`
+				);
+			}
+			var snapshot = this._databaseSnapshotPath(request.backup);
+			if (!(await IOUtils.exists(snapshot))) {
+				throw new Error("The restore point is missing");
+			}
+			var dbPath = PathUtils.join(this.dataDir, "zotero.sqlite");
+			var current = await this._stateAtPath(dbPath);
+			var newId = `restore-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+			var newBackup = PathUtils.join(this.dataDir, ".import-backup", newId);
+			staging = PathUtils.join(this.dataDir, ".import", newId);
+			await Zotero.File.createDirectoryIfMissingAsync(staging);
+			await IOUtils.copy(snapshot, PathUtils.join(staging, "zotero.sqlite"));
+			await this._runSidecar([
+				"apply",
+				"--staging",
+				staging,
+				"--data-dir",
+				this.dataDir,
+				"--backup",
+				newBackup,
+				"--database-only",
+			]);
+			await this._writeBackupManifest(newBackup, {
+				version: 1,
+				kind: "restore-safety",
+				databaseOnly: true,
+				id: newId,
+				createdAt: new Date().toISOString(),
+				restoredFrom: snapshot,
+				replacedCounts: current,
+			});
+			await this._removeMergeCheckpointsForBackup(snapshot);
+			await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
+			await this._writeResult({
+				ok: true,
+				mode: "restore",
+				databaseOnly: true,
+				restoredFrom: snapshot,
+				backup: newBackup,
+				counts: current,
+				finishedAt: new Date().toISOString(),
+			});
+			Zotero.debug(`Restored the library database from ${snapshot}`);
+			return true;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			await this._writeResult({
+				ok: false,
+				mode: "restore",
+				databaseOnly: true,
+				restoredFrom: request?.backup || null,
+				error: String(e.message || e),
+				finishedAt: new Date().toISOString(),
+			});
+			await IOUtils.remove(this.restorePath, { ignoreAbsent: true });
+			return false;
+		}
+		finally {
+			if (staging) {
+				await IOUtils.remove(staging, { recursive: true, ignoreAbsent: true });
+			}
 		}
 	},
 
@@ -2084,6 +2177,139 @@ Zotero.LibraryImport = {
 		}
 		found.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
 		return found[0] || null;
+	},
+
+	/**
+	 * An interrupted merge of the same source whose checkpoint no longer matches
+	 * the source's current hash, newest first.
+	 *
+	 * `_findIncompleteMerge` only returns a checkpoint that can be resumed. This
+	 * finds the ones that cannot, so a retry is refused instead of silently
+	 * merging the whole source again on top of the partial result.
+	 */
+	_findStaleMerge: async function (sourcePath, sourceHash) {
+		if (!(await IOUtils.exists(this.mergeSessionsDir))) return null;
+		var source = String(sourcePath).replace(/\/+$/, "");
+		var found = [];
+		for (let path of await IOUtils.getChildren(this.mergeSessionsDir)) {
+			let data;
+			try {
+				data = JSON.parse(await Zotero.File.getContentsAsync(path));
+			}
+			catch (e) {
+				continue;
+			}
+			if (!data || data.status === "done") continue;
+			if (!data.sourceHash || data.sourceHash === sourceHash) continue;
+			if (String(data.source || "").replace(/\/+$/, "") !== source) continue;
+			found.push(data);
+		}
+		found.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+		return found[0] || null;
+	},
+
+	_staleMergeError: function (checkpoint, currentHash) {
+		var when = checkpoint.createdAt
+			? new Date(checkpoint.createdAt).toLocaleString()
+			: checkpoint.id;
+		var error = new Error(
+			`A merge of this Zotero library was interrupted on ${when}, and the library `
+				+ "has changed since then. Merging it again would duplicate what was already "
+				+ "imported. Restore CiteWell to its state before that merge, then merge again."
+				+ (checkpoint.backup ? ` Restore point: ${checkpoint.backup}` : "")
+		);
+		error.staleMerge = {
+			id: checkpoint.id,
+			source: checkpoint.source,
+			sourceHash: checkpoint.sourceHash,
+			currentHash,
+			backup: checkpoint.backup || null,
+			createdAt: checkpoint.createdAt || null,
+			status: checkpoint.status || null,
+			itemsImported: checkpoint.itemsImported || 0,
+			collections: checkpoint.collections || 0,
+		};
+		return error;
+	},
+
+	/**
+	 * Resolve a database snapshot that may be restored on its own.
+	 *
+	 * Two shapes qualify: a merge backup beside the active database
+	 * (`zotero.sqlite.<session>.bak`) and a database-only restore point inside
+	 * `.import-backup/`. A full restore point directory goes through
+	 * `queueRestore()` instead, because it also owns an attachment tree.
+	 */
+	_databaseSnapshotPath: function (path, dataDir = this.dataDir) {
+		var root = PathUtils.normalize(String(dataDir)).replace(/\/+$/, "");
+		var normalized = PathUtils.normalize(String(path));
+		if (!normalized.startsWith(root + "/")) {
+			throw new Error("That is not a CiteWell restore point.");
+		}
+		var relative = normalized.slice(root.length + 1);
+		if (!/^zotero\.sqlite\.[A-Za-z0-9._-]+\.bak$/.test(relative)
+				&& !/^\.import-backup\/[^/]+\/zotero\.sqlite$/.test(relative)) {
+			throw new Error("That is not a CiteWell database snapshot.");
+		}
+		return normalized;
+	},
+
+	/**
+	 * Stage a database-only restore. It runs before the next database open and
+	 * keeps the current database as a restore point; attachments stay in place.
+	 */
+	queueDatabaseRestore: async function (snapshotPath) {
+		if (await IOUtils.exists(this.requestPath)) {
+			throw new Error("An import is staged; restart or cancel it before restoring.");
+		}
+		if (await IOUtils.exists(this.restorePath)) {
+			throw new Error("A restore is already staged.");
+		}
+		var snapshot = this._databaseSnapshotPath(snapshotPath);
+		if (!(await IOUtils.exists(snapshot))) {
+			throw new Error("That restore point does not exist.");
+		}
+		await Zotero.File.putContentsAsync(
+			this.restorePath,
+			JSON.stringify({
+				version: 1,
+				mode: "database",
+				backup: snapshot,
+				dataDir: this.dataDir,
+				createdAt: new Date().toISOString(),
+			}, null, 2)
+		);
+	},
+
+	/**
+	 * Forget the merge sessions whose restore point is the snapshot being
+	 * restored: their partial import is gone, so a fresh merge may proceed.
+	 */
+	_removeMergeCheckpointsForBackup: async function (snapshotPath) {
+		if (!(await IOUtils.exists(this.mergeSessionsDir))) return 0;
+		var target = PathUtils.normalize(String(snapshotPath));
+		var removed = 0;
+		for (let path of await IOUtils.getChildren(this.mergeSessionsDir)) {
+			let data;
+			try {
+				data = JSON.parse(await Zotero.File.getContentsAsync(path));
+			}
+			catch (e) {
+				continue;
+			}
+			if (!data?.backup) continue;
+			let backup;
+			try {
+				backup = PathUtils.normalize(String(data.backup));
+			}
+			catch (e) {
+				continue;
+			}
+			if (backup !== target) continue;
+			await IOUtils.remove(path, { ignoreAbsent: true });
+			removed++;
+		}
+		return removed;
 	},
 
 	_writeMergeCheckpoint: async function (id, data) {

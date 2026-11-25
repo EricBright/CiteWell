@@ -30,6 +30,16 @@ const REPLACED: &[&str] = &[
     "storage",
 ];
 
+/// Files a database-only restore replaces. Attachments and the search index
+/// stay where they are: a merge adds files to the existing storage directory,
+/// so swapping it out would detach the restored database from every attachment.
+const REPLACED_DB: &[&str] = &[
+    "zotero.sqlite",
+    "zotero.sqlite-wal",
+    "zotero.sqlite-shm",
+    "zotero.sqlite-journal",
+];
+
 const SQLITE_HEADER: &[u8; 16] = b"SQLite format 3\0";
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -277,6 +287,36 @@ fn recover_interrupted_apply(data_dir: &Path) -> Result<(), String> {
 /// restored and the staging directory is left intact for a retry.
 pub fn apply(staging: &Path, data_dir: &Path, backup: &Path) -> Result<(), String> {
     verify_staging(staging)?;
+    apply_replacing(staging, data_dir, backup, REPLACED, true)
+}
+
+/// Replace only the data directory's database, keeping the attachments and the
+/// search index. Used to undo a merge: the database snapshot predates the merge,
+/// while the files it copied are harmless leftovers.
+///
+/// The staging directory holds just `zotero.sqlite`. On any error the old
+/// database is restored and the staging directory is left intact for a retry.
+pub fn apply_database(staging: &Path, data_dir: &Path, backup: &Path) -> Result<(), String> {
+    let db = staging.join("zotero.sqlite");
+    if !db.is_file() {
+        return Err(format!("database snapshot not found: {}", path_string(&db)));
+    }
+    if !is_sqlite_file(&db)? {
+        return Err(format!(
+            "database snapshot is not SQLite: {}",
+            path_string(&db)
+        ));
+    }
+    apply_replacing(staging, data_dir, backup, REPLACED_DB, false)
+}
+
+fn apply_replacing(
+    staging: &Path,
+    data_dir: &Path,
+    backup: &Path,
+    replaced: &[&str],
+    install_storage: bool,
+) -> Result<(), String> {
     if !data_dir.is_dir() {
         return Err(format!(
             "data directory not found: {}",
@@ -300,20 +340,24 @@ pub fn apply(staging: &Path, data_dir: &Path, backup: &Path) -> Result<(), Strin
         .map_err(|e| format!("writing {}: {e}", path_string(&marker)))?;
 
     let swap = (|| -> Result<(), String> {
-        for name in REPLACED {
+        for name in replaced {
             move_if_exists(&data_dir.join(name), &backup.join(name))?;
         }
-        // A backup is also a valid restore point for `apply`, so it must have
-        // the storage directory even when the replaced library had no files.
-        fs::create_dir_all(backup.join("storage"))
-            .map_err(|e| format!("creating {}: {e}", path_string(&backup.join("storage"))))?;
+        if install_storage {
+            // A backup is also a valid restore point for `apply`, so it must have
+            // the storage directory even when the replaced library had no files.
+            fs::create_dir_all(backup.join("storage"))
+                .map_err(|e| format!("creating {}: {e}", path_string(&backup.join("storage"))))?;
+        }
         fs::rename(
             staging.join("zotero.sqlite"),
             data_dir.join("zotero.sqlite"),
         )
         .map_err(|e| format!("installing database: {e}"))?;
-        fs::rename(staging.join("storage"), data_dir.join("storage"))
-            .map_err(|e| format!("installing attachments: {e}"))?;
+        if install_storage {
+            fs::rename(staging.join("storage"), data_dir.join("storage"))
+                .map_err(|e| format!("installing attachments: {e}"))?;
+        }
         Ok(())
     })();
 
@@ -451,6 +495,47 @@ mod tests {
 
         apply(&staging, &data, &backup).unwrap();
         assert!(backup.join("storage").is_dir());
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn apply_database_keeps_storage_and_index() {
+        let root = temp("apply-database");
+        let data = root.join("data");
+        let staging = root.join("staging");
+        let backup = root.join("backup");
+
+        write_db(&data.join("zotero.sqlite"), "old");
+        write_file(&data.join("storage/OLD/old.pdf"), "old-pdf");
+        write_db(&data.join("fulltext.sqlite"), "old-index");
+        write_db(&staging.join("zotero.sqlite"), "before-merge");
+
+        apply_database(&staging, &data, &backup).unwrap();
+
+        let installed = fs::read(data.join("zotero.sqlite")).unwrap();
+        assert!(installed.ends_with(b"before-merge"));
+        let kept = fs::read(backup.join("zotero.sqlite")).unwrap();
+        assert!(kept.ends_with(b"old"));
+        assert!(data.join("storage/OLD/old.pdf").is_file());
+        assert!(data.join("fulltext.sqlite").is_file());
+        // Only the database was moved aside, not the attachments.
+        assert!(!backup.join("storage").exists());
+        assert!(!data.join(APPLY_MARKER).exists());
+
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn apply_database_rejects_a_non_sqlite_snapshot() {
+        let root = temp("apply-database-bad");
+        let data = root.join("data");
+        let staging = root.join("staging");
+        write_db(&data.join("zotero.sqlite"), "old");
+        write_file(&staging.join("zotero.sqlite"), "not a database");
+
+        assert!(apply_database(&staging, &data, &root.join("backup")).is_err());
+        assert!(fs::read(data.join("zotero.sqlite")).unwrap().ends_with(b"old"));
+
         fs::remove_dir_all(&root).unwrap();
     }
 

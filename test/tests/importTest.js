@@ -93,6 +93,87 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should refuse a merge whose source changed after an interruption", async function () {
+		this.timeout(60000);
+		// merge() refuses an empty current library, so give it one item.
+		let existing = new Zotero.Item("book");
+		existing.libraryID = 1;
+		existing.setField("title", "Stale merge fixture");
+		await existing.saveTx();
+
+		let root = OS.Path.join(Zotero.DataDirectory.dir, "stale-merge");
+		let source = OS.Path.join(root, "source");
+		let backup = OS.Path.join(Zotero.DataDirectory.dir, "zotero.sqlite.merge-staletest.bak");
+		let id = "stale-merge-test";
+		try {
+			await Zotero.File.createDirectoryIfMissingAsync(source);
+			await IOUtils.write(OS.Path.join(source, "zotero.sqlite"), new Uint8Array([1, 2, 3]));
+			await IOUtils.write(backup, new Uint8Array([9]));
+			await Zotero.LibraryImport._writeMergeCheckpoint(id, {
+				source,
+				sourceHash: "hash-of-the-interrupted-run",
+				status: "notes",
+				backup,
+				createdAt: "2026-11-24T10:00:00.000Z",
+				itemsImported: 7,
+			});
+
+			let error = null;
+			try {
+				await Zotero.LibraryImport.merge(source);
+			}
+			catch (e) {
+				error = e;
+			}
+			assert.ok(error, "merge should be refused");
+			assert.ok(error.staleMerge, `expected staleMerge, got: ${error && error.message}`);
+			assert.equal(error.staleMerge.backup, backup);
+			assert.equal(error.staleMerge.itemsImported, 7);
+			assert.include(error.message, backup);
+			assert.include(error.message, "interrupted");
+
+			// The changed source is not resumed by the old checkpoint.
+			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(
+				source,
+				await Zotero.LibraryImport.hashFile(OS.Path.join(source, "zotero.sqlite"))
+			));
+
+			// A database-only restore can be staged from that restore point.
+			await Zotero.LibraryImport.queueDatabaseRestore(backup);
+			let request = JSON.parse(
+				await Zotero.File.getContentsAsync(Zotero.LibraryImport.restorePath)
+			);
+			assert.equal(request.mode, "database");
+			assert.equal(request.backup, backup);
+			await Zotero.LibraryImport.cancelRestore();
+
+			let refused = null;
+			try {
+				await Zotero.LibraryImport.queueDatabaseRestore(
+					OS.Path.join(Zotero.DataDirectory.dir, "zotero.sqlite")
+				);
+			}
+			catch (e) {
+				refused = e;
+			}
+			assert.ok(refused, "the live database is not a restorable snapshot");
+			assert.include(refused.message, "not a CiteWell database snapshot");
+		}
+		finally {
+			await Zotero.LibraryImport._removeMergeCheckpoint(id);
+			await Zotero.LibraryImport.cancelRestore();
+			await IOUtils.remove(root, { recursive: true, ignoreAbsent: true });
+			await IOUtils.remove(backup, { ignoreAbsent: true });
+			// Later tests expect an empty library (the adopt-copy path).
+			await resetData();
+			let rows = await Zotero.DB.queryAsync(
+				"SELECT i.itemID, i.libraryID, it.typeName, i.key FROM items i "
+				+ "JOIN itemTypes it ON it.itemTypeID=i.itemTypeID"
+			);
+			assert.lengthOf(rows, 0, `rows=${JSON.stringify(rows)}`);
+		}
+	});
+
 	it("should follow identity aliases through a chain", function () {
 		let identity = Zotero.LibraryImport;
 		identity._identityKeys = new Map([

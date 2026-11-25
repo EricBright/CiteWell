@@ -13,13 +13,13 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use citewell_import::{apply, count_tree, stage_with_progress, verify_staging};
+use citewell_import::{apply, apply_database, count_tree, stage_with_progress, verify_staging};
 
 fn usage() -> String {
     "usage:\n  \
      citewell-import stage --source DIR --staging DIR\n  \
      citewell-import verify --staging DIR\n  \
-     citewell-import apply --staging DIR --data-dir DIR --backup DIR\n"
+     citewell-import apply --staging DIR --data-dir DIR --backup DIR [--database-only]\n"
         .to_string()
 }
 
@@ -29,6 +29,7 @@ struct Arguments {
     staging: Option<PathBuf>,
     data_dir: Option<PathBuf>,
     backup: Option<PathBuf>,
+    database_only: bool,
 }
 
 fn parse() -> Result<Arguments, String> {
@@ -49,6 +50,7 @@ fn parse() -> Result<Arguments, String> {
         staging: None,
         data_dir: None,
         backup: None,
+        database_only: false,
     };
 
     while let Some(arg) = args.next() {
@@ -57,6 +59,7 @@ fn parse() -> Result<Arguments, String> {
             "--staging" => parsed.staging = Some(take(&mut args, &arg)?),
             "--data-dir" => parsed.data_dir = Some(take(&mut args, &arg)?),
             "--backup" => parsed.backup = Some(take(&mut args, &arg)?),
+            "--database-only" => parsed.database_only = true,
             other => return Err(format!("unknown argument: {other}\n{}", usage())),
         }
     }
@@ -96,8 +99,14 @@ fn run() -> Result<(), String> {
             let staging = require(args.staging, "--staging")?;
             let data_dir = require(args.data_dir, "--data-dir")?;
             let backup = require(args.backup, "--backup")?;
-            apply(&staging, &data_dir, &backup)?;
-            println!("ok applied backup={}", display(&backup));
+            if args.database_only {
+                apply_database(&staging, &data_dir, &backup)?;
+                println!("ok applied-database backup={}", display(&backup));
+            }
+            else {
+                apply(&staging, &data_dir, &backup)?;
+                println!("ok applied backup={}", display(&backup));
+            }
         }
         other => return Err(format!("unknown command: {other}\n{}", usage())),
     }

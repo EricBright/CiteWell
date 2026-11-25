@@ -669,14 +669,64 @@ Zotero_Preferences.Library = {
 			Zotero.logError(e);
 			this._el("library-progress").hidden = true;
 			progressRow.setError();
-			progressRow.setText(`Merge failed: ${e.message || e}`);
-			progressWin.startCloseTimer(8000);
-			this._setStatus(`Merge failed: ${e.message || e}`, true);
+			if (e.staleMerge) {
+				progressRow.setText("Merge refused: the Zotero library changed after an interrupted merge.");
+				progressWin.startCloseTimer(8000);
+				this._setStatus("Merge refused: the library changed after an interrupted merge.", true);
+				await this._askRestoreBeforeMerge(e.staleMerge);
+			}
+			else {
+				progressRow.setText(`Merge failed: ${e.message || e}`);
+				progressWin.startCloseTimer(8000);
+				this._setStatus(`Merge failed: ${e.message || e}`, true);
+			}
 		}
 		finally {
 			this._busy = false;
 			this._disable(false);
 			await this._refreshCurrent();
+		}
+	},
+
+	/**
+	 * A retry of an interrupted merge was refused because the source changed.
+	 * Name the restore point that merge kept and offer to restore it.
+	 */
+	_askRestoreBeforeMerge: async function (stale) {
+		var when = stale.createdAt ? new Date(stale.createdAt).toLocaleString() : stale.id;
+		var text = `A merge of the Zotero library at\n\n${stale.source}\n\n`
+			+ `was interrupted on ${when}, and that library has changed since then.\n\n`
+			+ "Merging it again would add a second copy of what was already imported.\n\n"
+			+ "Restore CiteWell to its state before that merge, then merge again.";
+		if (stale.itemsImported) {
+			text += ` That merge had imported `
+				+ `${this._plural(stale.itemsImported, "item", "items")} before it stopped.`;
+		}
+		if (stale.backup) {
+			text += `\n\nRestore point: ${stale.backup}`;
+		}
+		text += "\n\nRestoring keeps the current library as a restore point and restarts "
+			+ "CiteWell. Attachment files stay in place.";
+		var ps = Services.prompt;
+		var flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
+			+ ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING;
+		var index = ps.confirmEx(
+			window, "Merge refused", text, flags, "Restore…", "Cancel", null, null, {}
+		);
+		if (index !== 0) return;
+		if (!stale.backup) {
+			this._setStatus("That merge did not record a restore point; nothing was restored.", true);
+			return;
+		}
+		try {
+			await Zotero.LibraryImport.queueDatabaseRestore(stale.backup);
+			await this._refreshPending();
+			this._setStatus("Restore staged. CiteWell must restart to finish.");
+			this._askRestart();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Could not stage the restore: ${e.message || e}`, true);
 		}
 	},
 
@@ -778,6 +828,7 @@ Zotero_Preferences.Library = {
 			label.setAttribute("flex", "1");
 
 			let kind = backup.manifest?.kind;
+			let databaseOnly = !!backup.manifest?.databaseOnly;
 			let text = backup.createdAt
 				? new Date(backup.createdAt).toLocaleString()
 				: backup.id;
@@ -785,6 +836,7 @@ Zotero_Preferences.Library = {
 			else if (kind === "adopt") text += " · before the first import";
 			else if (kind === "restore-safety") text += " · before a restore";
 			else text += " · restore point";
+			if (databaseOnly) text += " · database only";
 
 			let counts = backup.manifest?.replacedCounts;
 			if (counts) {
@@ -798,17 +850,55 @@ Zotero_Preferences.Library = {
 			label.value = text;
 
 			let restore = document.createXULElement("button");
-			restore.setAttribute("label", "Restore…");
+			restore.setAttribute("label", databaseOnly ? "Restore database…" : "Restore…");
 			restore.disabled = this._busy || this._pendingImport || this._pendingRestore;
-			restore.addEventListener("command", () => this._restorePoint(backup));
+			restore.addEventListener("command", () => databaseOnly
+				? this._restoreDatabasePoint(backup)
+				: this._restorePoint(backup));
 
 			row.append(label, restore);
 			container.append(row);
 		}
 	},
 
+	_restoreDatabasePoint: async function (backup) {
+		if (this._busy || this._pendingImport || this._pendingRestore) return;
+		var db = PathUtils.join(backup.path, "zotero.sqlite");
+		var when = backup.createdAt ? new Date(backup.createdAt).toLocaleString() : backup.id;
+		var text = `Restore the library database from ${when}?\n\n`
+			+ "This point holds a database snapshot only. Attachment files and the search index "
+			+ "stay in place; the current database is kept as a new restore point.\n\n"
+			+ "CiteWell will restart, and Zotero is never affected.";
+		if (!(await IOUtils.exists(db))) {
+			this._setStatus("That restore point has no database; restore cancelled.", true);
+			return;
+		}
+		var ps = Services.prompt;
+		if (ps.confirmEx(window, "Restore database", text, ps.STD_YES_NO_BUTTONS,
+			null, null, null, null, {}) !== 0) {
+			this._setStatus("");
+			return;
+		}
+		try {
+			await Zotero.LibraryImport.queueDatabaseRestore(db);
+			await this._refreshPending();
+			await this._renderRestorePoints();
+			this._setStatus("Restore staged. CiteWell must restart to finish.");
+			this._askRestart();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			this._setStatus(`Could not stage the restore: ${e.message || e}`, true);
+		}
+	},
+
 	_restorePoint: async function (backup) {
 		if (this._busy || this._pendingImport || this._pendingRestore) return;
+		// A database-only point has no attachment tree; swapping it through the
+		// full restore path would detach every attachment.
+		if (backup.manifest?.databaseOnly) {
+			return this._restoreDatabasePoint(backup);
+		}
 		var ps = Services.prompt;
 		var when = backup.createdAt ? new Date(backup.createdAt).toLocaleString() : backup.id;
 
