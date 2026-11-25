@@ -1012,6 +1012,38 @@ Rejected: writing system resolver configuration (`/etc/resolv.conf`, NetworkMana
 machine-wide state, outside what a citation app may touch (D19 scope). Rejected: presenting the
 choice as anonymity — it changes who answers lookups and blocks malware domains; it is not a VPN.
 
+## D51 — The plugin facility stays: a curated security-extension path opens
+
+**Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes
+
+D31's park stands — shipped builds still initialize no plugin loader and execute no arbitrary
+third-party plugin code — but "parked" no longer means "closed forever." The owner's direction
+is a **curated security path**: keep the facility so CiteWell can, deliberately, ship or offer
+one vetted extension — uBlock Origin is the named candidate — because a browsing app gains real
+protection from a blocker (malvertising and drive-by pages are the main way a research browser
+gets hurt), and cleaner pages help translator detection in the Browse tab.
+
+Two candidate shapes, chosen only after the spike below: **preload** (a vendored, AMO-signed
+XPI ships inside the AppImage, enabled) or **suggestion** (a Plugins sub-section in the D48
+settings tab offers it, add-only like the D35 installer, installing from the vendored copy —
+never from a URL, never from disk picked by the user). Either way the settings section shows
+status; the loader stays closed for everything else, and there is still no UI to install
+arbitrary XPIs.
+
+Spike gate before the shape decision — the shipped runtime already carries `XPIProvider` and
+`declarativeNetRequest` (verified in the platform's `omni.ja`, and XPIProvider's lifecycle runs
+in our test boots), but these must be proven end-to-end: content scripts inject into browse-tab
+contents; the extension's background/event page runs in this app; `webRequest` blocking exists
+if full uBO rather than uBO Lite is wanted; and the vendoring/license story holds (uBO is
+GPL-3.0 — preserved alongside AGPL-3.0-or-later, source kept in-repo). If the spike fails, the
+path stays recorded and the settings section ships without it — no dead control, per D50's
+rule for future features.
+
+Rejected: reopening general plugin installation — D31's original risk (arbitrary local code
+execution, a compatibility obligation the project dropped) still stands for everything outside
+the vetted path. Rejected: sending anything of ours to AMO for this — the XPI we vendor is
+uBlock's own signed build; D47's no-submission rule is untouched.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
