@@ -233,7 +233,12 @@ That run found two data-loss defects, both fixed before R24 closed:
    before those fields existed.
 2. **The checkpoint cadence could duplicate children.** Recording every 25 imports meant an
    interruption could re-import up to 24 notes or attachments on resume. A checkpoint is now
-   written after every child, which cost nothing measurable (the acceptance run stayed at 38.9 s).
+   written, and awaited, after every child, which cost nothing measurable (38.1 s).
+
+**Known hazard.** An interrupted merge is found again by source path and database hash. If the
+Zotero library changes between the interruption and the retry, the checkpoint is ignored and the
+retry merges the whole library again on top of the partial result. The safe behaviour is to refuse
+and point at that merge's restore point; it is pending a decision.
 
 The source library itself carries 148 attachment rows with no path and two missing storage
 directories; those are inherited, reported, and never invented.

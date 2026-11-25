@@ -15,8 +15,8 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-25 (R34 and R24 closed)
 
-The last code commit is `9ade71e44`; the installed AppImage is
-`10.0.9.SOURCE.9ade71e44`, sha256 `c929c9ca164433b3bd8a8116072063c7cb907339a85de595cc0323324ea05d46`, 125,852,152 bytes.
+The last code commit is `89ebff783`; the installed AppImage is
+`10.0.9.SOURCE.89ebff783`, sha256 `0b26bd24fe1c4d4fd0bcfa9525170191a018ba0eccba3c0ea06d6d51f4c42d45`, 125,852,152 bytes.
 
 **R34 is done.** The Browse tab and its save bridge (2a), picker (2b), PDF capture, proxies, Docs
 gate, R36 hardening and R38 decision shipped earlier on 2026-11-25; the connector tree itself is
@@ -52,7 +52,7 @@ re-import a connector tree ([connectors.md](connectors.md)).
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.9ade71e44`, sha256 `c929c9c…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.89ebff783`, sha256 `0b26bd2…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -76,7 +76,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `9ade71e44` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `89ebff783` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -87,7 +87,7 @@ Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256 `c929c9ca164433b3bd8a8116072063c7cb907339a85de595cc0323324ea05d46`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
-  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.9ade71e44`)
+  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.89ebff783`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -294,11 +294,15 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 1. **R8 — update-channel decision** ([roadmap.md](../roadmap.md)): keep the `source` channel or remove
    update checks; the updater must never point at Zotero's servers.
 2. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour change.
-3. **R32 optional follow-ups** — citation explorer and undo/save listener.
-4. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+3. **R24 follow-up (one decision, one test).** A retry after an interrupted merge duplicates if the
+   source library changed in between, because the checkpoint matches on the source hash; decide
+   whether to refuse and point at the restore point ([import.md](import.md#measured-acceptance-2026-11-25)).
+   The resume path also deserves a kill-mid-merge test.
+4. **R32 optional follow-ups** — citation explorer and undo/save listener.
+5. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.
-5. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
-6. **Strata cadence (owner, 2026-11-25):** one lean plan/code pass at each milestone and security
+6. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
+7. **Strata cadence (owner, 2026-11-25):** one lean plan/code pass at each milestone and security
    seam, never on grind/docs/test-only edits; the wait ritual is in the gitignored
    `reviews/strata-during-waits.md`.
 
