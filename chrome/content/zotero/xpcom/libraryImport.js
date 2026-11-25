@@ -1244,9 +1244,9 @@ Zotero.LibraryImport = {
 				});
 				notesCount++;
 				processedNoteIDs.add(note.itemID);
-				// Record every note as it lands: a checkpoint that lags would make a
-				// resume import the same note twice.
-				onCheckpoint?.({ status: "notes", notes: [...processedNoteIDs] });
+				// Record every note as it lands, and wait for the write: a checkpoint that
+				// lags or races would make a resume import the same note twice.
+				await onCheckpoint?.({ status: "notes", notes: [...processedNoteIDs] });
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -1322,8 +1322,9 @@ Zotero.LibraryImport = {
 							processedAttachmentIDs.add(attachment.itemID);
 							resumedAttachmentMap.set(attachment.itemID, importedAttachment.id);
 							importedAttachments++;
-							// Same rule as notes: one record per file, or a resume duplicates it.
-							onCheckpoint?.({
+							// Same rule as notes: one record per file, awaited, or a resume
+							// duplicates it.
+							await onCheckpoint?.({
 								status: "attachments",
 								attachments: Object.fromEntries(resumedAttachmentMap),
 							});
@@ -2087,6 +2088,9 @@ Zotero.LibraryImport = {
 
 	_writeMergeCheckpoint: async function (id, data) {
 		await Zotero.File.createDirectoryIfMissingAsync(this.mergeSessionsDir);
+		// putContentsAsync writes through OS.File.writeAtomic, so a crash leaves either the
+		// previous checkpoint or the new one; a half-written file would be skipped by
+		// _findIncompleteMerge and silently start a second full merge.
 		await Zotero.File.putContentsAsync(
 			this._checkpointPath(id),
 			JSON.stringify({ version: 1, id, ...data }, null, 2)
