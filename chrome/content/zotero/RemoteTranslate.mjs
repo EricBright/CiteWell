@@ -33,6 +33,11 @@ ChromeUtils.defineESModuleGetters(globalThis, {
 export class RemoteTranslate {
 	_browser = null;
 
+	// The Translation actor resolved in #setBrowser(), reused for detect/translate/test.
+	// Re-resolving it per call would let a navigation between detect() and translate()
+	// swap the document under a translator that was detected for the previous one.
+	_actor = null;
+
 	_id = Zotero.Utilities.randomString();
 	
 	_translator = null;
@@ -54,7 +59,8 @@ export class RemoteTranslate {
 	 */
 	async setBrowser(browser) {
 		this._browser = browser;
-		let actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		this._actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		let actor = this._actor;
 
 		// Make only relevant prefs available
 		// https://github.com/zotero/zotero-connectors/blob/d5f025de9b4f513535cbf4639c6b59bf115d790d/src/common/zotero.js#L264-L265
@@ -69,7 +75,10 @@ export class RemoteTranslate {
 			prefs.reportTranslationFailure = false;
 		}
 		
-		await actor.sendAsyncMessage("initTranslation", {
+		// A query, not a fire-and-forget message: detection must not reach the actor before
+		// its translation sandbox exists (the child answers a detect before init with a null
+		// sandbox and the detection is lost).
+		await actor.sendQuery("initTranslation", {
 			schemaJSON: Zotero.File.getResource('resource://zotero/schema/global/schema.json'),
 			dateFormatsJSON: Zotero.File.getResource('resource://zotero/schema/dateFormats.json'),
 			prefs,
@@ -148,7 +157,7 @@ export class RemoteTranslate {
 	 * @return {Promise<Object[] | null>} Resolves to detected translator array (null on error)
 	 */
 	async detect() {
-		let actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		let actor = this._getActor();
 		this._translator = await actor.sendQuery("detect", { translator: this._translator, id: this._id });
 		return this._translator;
 	}
@@ -161,7 +170,7 @@ export class RemoteTranslate {
 	 * @return {Promise<Object[] | null>} Resolves to returned items (null on error)
 	 */
 	async translate(options = {}) {
-		let actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		let actor = this._getActor();
 		let items = [];
 		try {
 			let jsonItems = await actor.sendQuery("translate", { translator: this._translator, id: this._id });
@@ -234,7 +243,7 @@ export class RemoteTranslate {
 	 * @return {Promise<{ test: Object, status: String, message: String } | null>} Null on error
 	 */
 	runTest(test) {
-		let actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		let actor = this._getActor();
 		return actor.sendQuery("runTest", { translator: this._translator, test, id: this._id });
 	}
 
@@ -246,8 +255,20 @@ export class RemoteTranslate {
 	 * @return {Promise<Object | null>} Resolves to the created test object (null on error)
 	 */
 	newTest(testInit) {
-		let actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
+		let actor = this._getActor();
 		return actor.sendQuery("newTest", { translator: this._translator, testInit, id: this._id });
+	}
+
+	/**
+	 * The actor this instance was set up with. Resolution happens once, in #setBrowser():
+	 * after a navigation the pinned actor is dead and sendQuery rejects, instead of
+	 * silently running a stale translator against the new document.
+	 */
+	_getActor() {
+		if (this._actor) {
+			return this._actor;
+		}
+		return this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
 	}
 
 	/**

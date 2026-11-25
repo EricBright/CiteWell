@@ -125,8 +125,9 @@ The build now copies exactly what the UI asks for:
 `connectors/node_modules`, the gulp pipeline and `xtask connectors` are deleted once the in-app
 path is proven, and no AMO submission ever happens. Until that retirement phase, the build still
 uses upstream's `build.sh` + gulp pipeline and the isolated `connectors/node_modules` tree — the
-last npm tree in the repository. Do not invest in this pipeline: `connectors/src` is now the
-porting source for the page-side scripts the Browse tab reuses.
+last npm tree in the repository. Do not invest in this pipeline: the Browse tab's page-side
+save does **not** reuse `connectors/src` (see Phase 2a below); the source is a reference for the
+remaining glue — Google Docs, PDF capture, proxies — until the retirement phase.
 
 ```bash
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
@@ -135,6 +136,24 @@ cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
 Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a Rust
 `rsvg-convert` replacement, so no librsvg binary is needed. It also applies CiteWell branding,
 the book-section icons and the state-dot composites after the upstream pipeline.
+
+## Phase 2a (2026-11-25): the save bridge landed without a port
+
+The Browse tab's "Save to CiteWell" action runs web translators through the app's own
+`Translation` JSWindowActor and `RemoteTranslate.mjs`, then saves through `ItemSaver` to the
+connector's own target (`getSaveTarget()`: focused collection, else the library row). None of
+`src/common/inject/` was ported and none of it is needed: that layer exists only because an
+extension has no in-process translation actor.
+
+`RemoteTranslate.mjs` gained two long-lived-tab fixes: the actor is resolved once in
+`setBrowser()` and reused (a navigation between detection and translation now fails instead of
+translating the new document with a stale translator), and `initTranslation` is a query rather
+than a fire-and-forget message (detection could otherwise reach an actor whose sandbox does not
+exist yet). A live check saved a Wikipedia article with its snapshot; `browseTabTest.js` covers
+detection, saving, navigation-away and teardown.
+
+For the retirement gate, still to port or verify: multi-item selection (the connector's picker),
+Google Docs glue, and PDF capture.
 
 ## Load it
 
@@ -191,7 +210,7 @@ git subtree pull --prefix connectors connectors/main --squash
 Conflicts should be confined to the files in the patch table. Verify with
 `cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors`, then load the XPI again.
 
-Under D47 upstream pulls stop once the page-side scripts are ported into the app; after that the
-source is a frozen porting reference until it, too, goes to Trash.
+Under D47 upstream pulls stop once the remaining glue is ported into the app; after that the
+source is a frozen reference until it, too, goes to Trash.
 
 *For the full documentation index, see [../README.md](../README.md).*

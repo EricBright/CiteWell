@@ -171,4 +171,118 @@ describe("Browse Tab", function () {
 			assert.isTrue(Zotero_BrowseTab.isOpen(id), "tab stays open after rejection");
 		});
 	});
+
+	describe("Save bridge", function () {
+		const PORT = 16215;
+		let httpd, baseURL;
+		let dummyTranslator, provider;
+
+		function saveButton(id) {
+			return doc.getElementById(id).querySelector(".browse-save");
+		}
+
+		before(async function () {
+			dummyTranslator = buildDummyTranslator('web', `
+				function detectWeb() {
+					return "book";
+				}
+
+				function doWeb() {
+					var item = new Zotero.Item("book");
+					item.title = document.title;
+					item.complete();
+				}
+			`);
+
+			provider = Zotero.Translators.makeTranslatorProvider({
+				get(translatorID) {
+					return translatorID == dummyTranslator.translatorID ? dummyTranslator : false;
+				},
+
+				async getAllForType(type) {
+					return type == 'web' ? [dummyTranslator] : [];
+				}
+			});
+
+			var { HttpServer } = ChromeUtils.importESModule(
+				"chrome://remote/content/server/httpd.sys.mjs"
+			);
+			httpd = new HttpServer();
+			httpd.start(PORT);
+			httpd.registerPathHandler("/save", {
+				handle(request, response) {
+					response.setHeader("Content-Type", "text/html; charset=utf-8");
+					response.write(
+						"<!DOCTYPE html><html><head><title>Browse Save Test</title></head>"
+						+ "<body><h1>Save</h1></body></html>"
+					);
+				}
+			});
+			baseURL = `http://127.0.0.1:${PORT}/save`;
+		});
+
+		after(async function () {
+			await new Promise(resolve => httpd.stop(resolve));
+		});
+
+		it("should render a disabled Save button on a blank tab", function () {
+			let id = Zotero_BrowseTab.open();
+			let button = saveButton(id);
+			assert.isNotNull(button, "Save button should exist in the toolbar");
+			assert.isTrue(button.disabled, "Save starts disabled until a page is detected");
+			assert.ok(button.getAttribute("tooltiptext"), "Save button should be labeled");
+		});
+
+		it("should detect a translator on load and enable Save", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, provider);
+			assert.isTrue(Zotero_BrowseTab.navigate(id, baseURL));
+
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+			assert.isTrue(button.classList.contains("available"));
+			assert.include(button.getAttribute("tooltiptext"), "Dummy Translator");
+		});
+
+		it("should save the page into the user library", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, provider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+
+			button.click();
+			await waitForCallback(() => button.classList.contains("saved"), 100, 10);
+
+			let items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID, true);
+			assert.isTrue(
+				items.some(item => item.getField("title") === "Browse Save Test"),
+				"saved item should be in the user library"
+			);
+		});
+
+		it("should drop the translator and disable Save when leaving the page", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, provider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			browser.loadURI(Services.io.newURI("about:blank"), {
+				triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+			});
+			await waitForCallback(() => button.disabled, 100, 10);
+			assert.isTrue(button.classList.contains("none"));
+		});
+
+		it("should tear down cleanly while detection is in flight", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, provider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			Zotero_Tabs.close(id);
+			await Zotero.Promise.delay(300);
+			assert.isFalse(Zotero_BrowseTab.isOpen(id));
+		});
+	});
 });

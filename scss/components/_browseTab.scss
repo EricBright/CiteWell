@@ -20,8 +20,41 @@
 	padding: 2px;
 }
 
+// Universal SVGs use context-fill; without a fill value they render black, which is
+// invisible on a dark toolbar. Fill is an inherited property, so this reaches the icon.
+.browse-toolbar toolbarbutton {
+	fill: currentColor;
+}
+
 .browse-nav[disabled] {
 	opacity: 0.4;
+}
+
+// Save button (D47 Phase 2a): a book mark while idle/detecting, a pulse while a save runs,
+// a tick for the brief success state. The success tick must stay legible even though the
+// button is disabled in that state.
+.browse-save {
+	min-width: 26px;
+	min-height: 24px;
+	padding: 2px;
+
+	&.saving image {
+		animation: browse-save-pulse 1s ease-in-out infinite;
+	}
+
+	&.saved {
+		opacity: 1;
+	}
+
+	&.failed {
+		opacity: 0.8;
+	}
+}
+
+@keyframes browse-save-pulse {
+	50% {
+		opacity: 0.3;
+	}
 }
 
 // The chevron sprite points down; rotate it into a back/forward arrow.

@@ -927,6 +927,18 @@ Because CiteWell now renders arbitrary web content, D28 gains a carve-out: Firef
 patches are pulled promptly rather than at leisure. R15's "npm tree gone entirely" completes
 when the retirement phase deletes the connector tree.
 
+**Implementation note (Phase 2a, 2026-11-25).** The phase list above said "port the connector's
+page-side scripts as frame scripts"; that step proved unnecessary and is dropped. The app's own
+`Translation` JSWindowActor already executes a web translator in any `<browser>` and
+`RemoteTranslate.mjs` saves the result, so the Browse tab's Save button drives that pipeline
+directly — none of `connectors/src/common/inject/` is ported. Two fixes were needed in
+`RemoteTranslate.mjs` for a long-lived visible tab: the actor is resolved once in `setBrowser()`
+and pinned for later calls (a navigation between detection and translation now fails instead of
+running a stale translator against the new document), and `initTranslation` is a query rather
+than a fire-and-forget message, so detection cannot race a sandbox that does not exist yet.
+Multi-item selection (the connector's picker) remains Phase 2b; Google Docs glue, PDF capture and
+proxies remain later phases.
+
 Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
 machinery, and user confusion over two connector identities, all for a leg the app can replace
 with a tab. Rejected: keeping the gulp/XPI build indefinitely — it preserves the last npm tree

@@ -1308,3 +1308,16 @@ browse-nav-reload = Reload
 
 browse-urlbar =
     .placeholder = Enter a web address
+
+# Browse tab save bridge (D47 Phase 2)
+browse-save-available = Save to CiteWell
+browse-save-tooltip = Save to CiteWell — { $translator }
+browse-save-detecting = Looking for citation data…
+browse-save-none = No citation data on this page
+browse-save-saving = Saving…
+browse-save-saved = Saved to CiteWell
+browse-save-failed = Couldn’t save to CiteWell
+browse-save-empty = Nothing to save from this page
+browse-save-progress-headline = Saving to CiteWell
+browse-save-result-one = Saved “{ $title }” to CiteWell
+browse-save-result-many = Saved { $count } items to CiteWell

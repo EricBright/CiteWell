@@ -20,7 +20,7 @@ push target. The product branch may diverge without limit.
 | App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.ce441a1c0`, sha256 `95490f10…`, 125,827,576 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | App/connector use the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
-| Connector | **Retiring under D47 (R34):** the standalone Firefox add-on folds into an in-app Browse tab; there is never an AMO submission. Until the retirement phase, the imported upstream source still builds as **CiteWell Connector**, ID `citewell-connector@sophy.ca`, port 23120, via `connectors/node_modules` |
+| Connector | **Retiring under D47 (R34):** the standalone Firefox add-on folds into an in-app Browse tab; there is never an AMO submission. **Save bridge shipped 2026-11-25:** the Browse tab detects a web translator and saves the page to the connector's own target (focused collection, else the library) via the app's `Translation` actor and `RemoteTranslate` — no connector inject script was ported. Remaining: multi-item picker (2b), Google Docs glue, PDF capture. Until the retirement phase, the imported upstream source still builds as **CiteWell Connector**, ID `citewell-connector@sophy.ca`, port 23120, via `connectors/node_modules` |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
 | PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
@@ -31,10 +31,13 @@ push target. The product branch may diverge without limit.
 | Docs | README index, Rust docs gate, D1–D51 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
-**Next:** R34 — the remaining connector work (D47): port the connector's page-side save scripts
-and Google Docs glue into the Browse tab, then D49 hardening (R36), the uBlock spike (R38), and
-only then trash `connectors/node_modules` and the XPI pipeline. Browse and settings tabs are
-shipped (D47/D48); the DNS pane rides the settings tab (D50). The
+**Next:** R34 — the remaining connector work (D47). The save bridge shipped 2026-11-25: the
+connector's page-side scripts did **not** need porting, because the app's own `Translation` actor
+runs a web translator in the visible tab and `RemoteTranslate` saves the result. `RemoteTranslate`
+was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initTranslation` is
+awaited). Remaining: the multi-item picker (2b), Google Docs glue, PDF capture, then D49 hardening
+(R36), the uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
+Browse and settings tabs are shipped (D47/D48); the DNS pane rides the settings tab (D50). The
 [connector handoff](#handoff-2026-11-23-connector-build) below is superseded. The app build and
 tests are already Node-free.
 
@@ -251,11 +254,14 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 1. **R34/R36/R38 — connector retirement, browse hardening, plugin spike (D47, D49, D51).**
    Shipped: browse tab with address bar and "+" (13/13), settings tab with Ctrl+, (D48),
-   DNS pane defaulting to 1.1.1.2/1.0.0.2 (D50/R37) — 19/19 across suites. Remaining:
-   page-side save scripts, Google Docs glue, D49 hardening + the ESR tripwire, the uBlock
-   spike, then the connector tree to Trash. **Strata cadence (owner, 2026-11-25): one lean
-   plan/code pass at each milestone and each security seam — Phase 2's frame-script bridge
-   is next — never on grind, docs, or test-only edits; 2 passes/8 hops per task.**
+   DNS pane defaulting to 1.1.1.2/1.0.0.2 (D50/R37), and the **Save bridge** — detection on
+   load, Save button states, save to the connector's own target, verified live with a
+   Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
+   multi-item picker, Google Docs glue, PDF capture, D49 hardening + the ESR tripwire, the
+   uBlock spike, then the connector tree to Trash. **Strata cadence (owner, 2026-11-25):
+   one lean plan/code pass at each milestone and each security seam — the save bridge got
+   both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
+   test-only edits; 2 passes/8 hops per task.**
 2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
 3. **R15 — Rust build toolchain.** Phases 1–5 are done (D43–D46); the last npm tree
    (`connectors/`) retires under D47.
