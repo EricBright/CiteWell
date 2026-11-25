@@ -73,7 +73,7 @@ function load() {
 
 	let intro = document.getElementById("intro");
 	intro.textContent = ftl("browse-picker-intro", "Choose which items to save")
-		+ (_args.target ? " — " + _args.target : "");
+		+ (_args.target ? ": " + _args.target : "");
 
 	document.getElementById("pattern").setAttribute(
 		"placeholder", ftl("browse-picker-filter", "Filter items")

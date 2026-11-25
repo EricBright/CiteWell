@@ -1313,7 +1313,7 @@ browse-insecure = Not secure: this site uses plain HTTP
 
 # Browse tab save bridge (D47 Phase 2)
 browse-save-available = Save to CiteWell
-browse-save-tooltip = Save to CiteWell — { $translator }
+browse-save-tooltip = Save to CiteWell: { $translator }
 browse-save-detecting = Looking for citation data…
 browse-save-none = No citation data on this page
 browse-save-saving = Saving…

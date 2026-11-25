@@ -516,7 +516,7 @@ var Zotero_BrowseTab = new (function () {
 		if (name === "available" && translatorLabel) {
 			text = ftl(
 				"browse-save-tooltip",
-				"Save to CiteWell — " + translatorLabel,
+				"Save to CiteWell: " + translatorLabel,
 				{ translator: translatorLabel }
 			);
 		}

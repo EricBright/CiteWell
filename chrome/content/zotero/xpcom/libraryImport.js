@@ -949,7 +949,7 @@ Zotero.LibraryImport = {
 			state = await Zotero.DB.executeTransaction(async () => {
 			root = new Zotero.Collection();
 			root.libraryID = 1;
-			root.name = `Imported from Zotero — ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+			root.name = `Imported from Zotero (${new Date().toISOString().slice(0, 16).replace("T", " ")})`;
 			await root.save();
 			collectionCount++;
 

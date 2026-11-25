@@ -248,7 +248,7 @@ Zotero.Attention = new function () {
 					if (entry.originalTitle === undefined) {
 						entry.originalTitle = doc.title;
 					}
-					doc.title = "⚠ CiteWell — waiting for you";
+					doc.title = "⚠ CiteWell: waiting for you";
 				}
 				else {
 					adapter.clearTitleCue(entry);

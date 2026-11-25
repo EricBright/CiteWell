@@ -179,7 +179,7 @@ Zotero_Preferences.Library = {
 				let details = result.failed.slice(0, 3)
 					.map(item => `${item.title || item.key}: ${item.error}`)
 					.join(" · ");
-				this._setStatus(`Migration failures — ${details}`, true);
+				this._setStatus(`Migration failures: ${details}`, true);
 			}
 		}
 		catch (e) {
@@ -216,7 +216,7 @@ Zotero_Preferences.Library = {
 		if (merge) merge.hidden = this._current.empty;
 		if (currentStatus) {
 			if (this._current.empty) {
-				currentStatus.textContent = "Empty — ready for a first import.";
+				currentStatus.textContent = "Empty, ready for a first import.";
 			}
 			else {
 				currentStatus.textContent = `${this._plural(this._current.regularItems ?? this._current.items, "item", "items")}, `

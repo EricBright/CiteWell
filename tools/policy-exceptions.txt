@@ -32,3 +32,4 @@ D48 test/tests/settingsTabTest.js
 D47 chrome/content/zotero/browseItemSelector.js
 D47 chrome/content/zotero/browseDocsGate.js
 D53 test/tests/updateChannelTest.js
+D54 test/tests/uiCopyTest.js
