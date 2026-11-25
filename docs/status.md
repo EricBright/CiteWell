@@ -13,6 +13,41 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-25 (Phase 2/3 closeout)
+
+This is the compaction anchor. HEAD is `18ea17ed2`; the installed AppImage is
+`10.0.9.SOURCE.68daadc51`, sha256 `0a71b1522a9268297955ae7cb48531e270e87b8886fa61d9fc1b19522f582b70`,
+125,852,152 bytes (docs-only commits since that build do not change code).
+
+Shipped today, in order: the Browse save bridge (2a), the toolbar rework (Go beside the bar, Save
+behind a divider, measured contrast), Ctrl/Cmd+L, the multi-item picker (2b), proxy passthrough to
+`ItemSaver`, PDF capture by content type, the Google Docs gate, and R36 hardening. R38 closed with
+no in-app blocker. Test suites: Browse 40/40, RemoteTranslate 12/12; docs and repo-guard green.
+
+Key decisions: Docs runs in Firefox with Zotero's official connector and the app gates
+`docs.google.com/document/*` (no Google session in CiteWell; the D49 cookie exception was
+withdrawn). R36's HTTPS is soft: try https, fall back with a "Not secure" marker. ESR tripwire is
+a maintainer-only CI issue. The Strata wait ritual lives in the gitignored
+`reviews/strata-during-waits.md`, not in tracked docs.
+
+**Next and last Phase-3 step: retire the connector tree.** References to check, from the survey on
+2026-11-25:
+
+1. `.gitmodules` has three `connectors/src/*` submodule entries to remove.
+2. `tools/xtask/src/main.rs` has the `connectors` subcommand and brand substitution around
+   `connectors/brand.json`; remove those and the help line.
+3. Docs to rewrite: this file, `decisions.md` D47/D34 notes, `connectors.md` (turn into a short
+   retirement record), the README index row, roadmap R34 to Done.
+4. Remove the tree with `gio trash connectors` (about 96 MB, includes `node_modules` and the three
+   submodule working trees), plus any `build/dist/CiteWell-Connector.xpi`; then commit the
+   deletions and `.gitmodules` change.
+5. Verify: `cargo run --manifest-path tools/Cargo.toml -p xtask -- build`,
+   `test/runtests.sh browseTabTest.js RemoteTranslateTest.js`, docs-check and repo-guard. The
+   connector protocol endpoints in the app stay (the official connector uses them).
+
+Do not delete `connectors/` before the references above are gone; do not touch the canonical
+Zotero sources.
+
 ## Where the project stands
 
 | Area | State |
@@ -265,20 +300,11 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R34/R36/R38 — connector retirement, browse hardening, plugin spike (D47, D49, D51).**
-   Shipped: browse tab with address bar and "+" (13/13), settings tab with Ctrl+, (D48),
-   DNS pane defaulting to 1.1.1.2/1.0.0.2 (D50/R37), and the **Save bridge** — detection on
-   load, Save button states, save to the connector's own target, verified live with a
-   Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
-   multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
-   proxies, PDF capture (content-type interception; verified live with an extensionless arXiv
-   PDF), the Docs gate, and R36 hardening (isolated browse context, soft HTTPS, default-deny
-   permissions, maintainer-only ESR tripwire), and R38 (no in-app blocker; spike recorded). The
-   last step is the connector tree to Trash — Docs no longer blocks it, because it runs through
-   Zotero's official connector in Firefox. **Strata cadence (owner, 2026-11-25):
-   one lean plan/code pass at each milestone and each security seam — the save bridge got
-   both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
-   test-only edits; 2 passes/8 hops per task.**
+1. **R34 — retire the connector tree (D47).** Everything else in R34 has shipped: browse tab,
+   save bridge, picker, proxies, PDF capture, Docs gate, R36 hardening, R38 decision. Remaining:
+   the deletion checklist in the handoff above. **Strata cadence (owner, 2026-11-25): one lean
+   plan/code pass at each milestone and security seam, never on grind/docs/test-only edits; the
+   wait ritual is in the gitignored `reviews/strata-during-waits.md`.**
 2. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
 3. **R15 — Rust build toolchain.** Phases 1–5 are done (D43–D46); the last npm tree
    (`connectors/`) retires under D47.
