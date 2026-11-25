@@ -1014,9 +1014,9 @@ window for the most common visit, which is a check-a-setting glance.
 The Browse tab inherits Gecko's content-process sandbox: every page runs in a separate,
 seccomp-locked process that dies with the app and never sees the library, profile, or chrome.
 What persists is *state*, so the tab disposes state too: browse-tab cookies and site storage are
-cleared when the app closes, HTTPS-only is on for browse content, and every powerful permission
-(camera, microphone, notifications, geolocation) is default-deny — a citation tool has no
-business granting them. Popups stay blocked and downloads go through explicit UI only. An outer
+cleared when the app closes, plain HTTP is upgraded when the site supports it and clearly marked
+when it does not, and every powerful permission (camera, microphone, notifications, geolocation)
+is default-deny — a citation tool has no business granting them. Popups stay blocked and downloads go through explicit UI only. An outer
 container (bubblewrap and friends) is rejected: it would add input, clipboard, and IME plumbing
 over Gecko's own sandbox for marginal gain, and complexity is itself a security cost.
 
@@ -1030,6 +1030,18 @@ tested release path. Delivery of those releases rides R21's AppImage update chan
 Rejected: in-place engine self-update — Gecko cannot replace the binary it runs from, and an
 untested platform swap is how an install bricks. Rejected: pointing Firefox's own updater
 machinery at our servers — it assumes Firefox's packaging, not an AppImage.
+
+**Implemented (R36, 2026-11-25).** Browse content runs in one reserved `userContextId` (20260), so
+nothing a browsed site stores shares a jar with CiteWell's own requests. That context is cleared at
+startup (the safety net for a crash or a killed process) and on shutdown: cookies through the cookie
+manager, and DOM storage, IndexedDB, service workers, caches and quota through
+`nsIClearDataService` with an origin-attributes pattern. The app's default context is untouched,
+verified by a page-set cookie test. HTTPS is soft by owner decision: non-loopback `http` is tried
+over `https` first and falls back to the original page with a "Not secure" marker if the upgrade
+fails; loopback is exempt so http-only catalogues and the test server work. Powerful permissions
+are default-deny through prefs. The ESR tripwire is maintainer-only (owner clarification): a weekly
+CI workflow opens or comments a repository issue when Mozilla's ESR is newer than the pin. Nothing
+is shown in the app, because a user could not act on it.
 
 **Withdrawn: the Google Docs session exception (2026-11-25).** The owner first approved an opt-in
 exception that would persist only `docs.google.com`/`accounts.google.com` session cookies. It was

@@ -9,7 +9,6 @@ upstream merges are not roadmap items.
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R34 | In-app Browse tab; retire the Firefox connector and the AMO dance (D47 in [docs/decisions.md](docs/decisions.md)) | The Gecko engine, live-page translation and all nineteen connector endpoints already ship in-app; the add-on is a third leg held together by someone else's approval queue | A page browsed in-app saves an item via translator detection; Google Docs insertion works through Zotero's official connector in Firefox (the in-app tab gates Docs with an explainer, D47); `connectors/node_modules` and the XPI pipeline are in Trash (D26); no AMO listing exists or is wanted |
-| R36 | Browse exposure bounded: state disposed on close, default-deny permissions, ESR patch tripwire (D49) | A browsing app inherits browsing risks; the sandbox covers processes, so state and patch latency are what remain | Browse site data is gone after app close; HTTPS-only and permission default-deny verified; a weekly check flags a newer Firefox ESR than the pin |
 | R38 | Curated plugin path: uBlock Origin spike, then preload or settings suggestion (D51) | The Browse tab inherits web risk; a vetted blocker is the cheapest mitigation, and the runtime already ships XPIProvider + declarativeNetRequest | The spike answers injection/background/webRequest/license questions in writing; then exactly one shape ships (vendored preload, or the settings Plugins section's add-only suggestion); the loader stays closed for everything else |
 | R24 | Import/merge a Zotero library without touching it (design in [docs/import.md](docs/import.md)) | A fork must not trap an existing library, but must never write Zotero's data | Adopt a copy for an empty library; merge 1k items with attachments into a non-empty one; source checksum unchanged |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
@@ -21,6 +20,7 @@ Completed outcomes, kept for context.
 
 | ID | Outcome | Evidence |
 |---|---|---|
+| R36 | Browse exposure bounded: state disposed, permissions default-deny, ESR tripwire (D49) | Evidence: reserved context 20260 cleared at startup/shutdown (cookie + clearData tests); soft HTTPS with fallback; permission prefs at block; weekly CI issue-only ESR check; 39/39 browse tests |
 | R30 | Dependency freeze guard | `tools/repo-guard` rejects package/lock changes; `.npmrc` is fail-closed (D32) |
 | R22 | Agent interface | `tools/cli` provides the CLI and MCP server over `/agent/v1` |
 | R17 | Connector rebrand | `connectors/brand.json` carries the CiteWell identity |

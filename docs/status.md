@@ -38,8 +38,9 @@ runs a web translator in the visible tab and `RemoteTranslate` saves the result.
 was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initTranslation` is
 awaited); multi-item pages open a picker (2b). Proxies (the detected translator's proxy now reaches `ItemSaver`) and PDF capture are shipped:
 a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
-imported-URL attachment through the app's own cookie jar. Remaining: D49 hardening (R36), the
-uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
+imported-URL attachment through the app's own cookie jar. R36 hardening shipped 2026-11-25 (isolated browse context cleared at startup/shutdown, soft HTTPS,
+default-deny permissions, maintainer-only ESR tripwire). Remaining: the uBlock spike (R38), and only
+then trash `connectors/node_modules` and the XPI pipeline.
 **Google Docs is out of the app by owner decision (2026-11-25):** its page-side half is the
 connector's React/Kix client, so the Browse tab gates `docs.google.com/document/*` with an
 explainer and hands the URL to Firefox, where Zotero's official connector talks to CiteWell.
@@ -269,9 +270,10 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
    multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
    proxies, PDF capture (content-type interception; verified live with an extensionless arXiv
-   PDF), the Docs gate, D49 hardening + the ESR tripwire, the uBlock spike, then the connector
-   tree to Trash — Docs no longer blocks it, because it runs through Zotero's official connector
-   in Firefox. **Strata cadence (owner, 2026-11-25):
+   PDF), the Docs gate, and R36 hardening (isolated browse context, soft HTTPS, default-deny
+   permissions, maintainer-only ESR tripwire), then the uBlock spike and the connector tree to
+   Trash — Docs no longer blocks it, because it runs through Zotero's official connector in
+   Firefox. **Strata cadence (owner, 2026-11-25):
    one lean plan/code pass at each milestone and each security seam — the save bridge got
    both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
    test-only edits; 2 passes/8 hops per task.**
@@ -381,6 +383,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   (10,321,920 bytes). The ProseMirror editor bundle is gone; trashed/restored legacy notes open in a
   read-only text view. `editorInstance` remains only for annotation-to-note helpers, which go with
   D30. Do not rerun the migration on this library.
+- **Browse state is isolated:** tabs run in `userContextId` 20260, cleared at startup and shutdown;
+  the ESR tripwire is a CI issue for maintainers, never an in-app notice.
 - **PDF behavior is external-only:** no reader or pdf.js ships; PDFs open in the host; PDF text is
   not indexed; annotation creation/listing, annotation-to-note actions and the citation-dialog
   annotation mode are gone. Existing annotations export to sidecars. Do not add PDF features back.
