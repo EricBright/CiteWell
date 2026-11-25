@@ -1328,10 +1328,10 @@ browse-save-pdf = Save PDF to CiteWell
 # Google Docs gate (D47)
 docs-gate-title = Google Docs needs Firefox
 docs-gate-body = Citations in Google Docs come from Zotero’s official connector, which runs inside Firefox. CiteWell’s built-in browser can’t run browser extensions.
-docs-gate-steps =
-    1. Open the document in Firefox.
-    2. Install Zotero Connector once, if it isn’t there.
-    3. Sign in to Google there — saves go to CiteWell automatically.
+docs-gate-step1 = 1. Open the document in Firefox.
+docs-gate-step2 = 2. Install Zotero Connector once, if it isn’t there.
+docs-gate-step3 = 3. Sign in to Google there. Saves reach CiteWell automatically, because Zotero’s Connector talks to this app.
+docs-gate-get-connector = Get Zotero Connector
 docs-gate-open = Open in browser
 docs-gate-cancel = Cancel
 docs-gate-continue = Continue anyway (citations won’t work)

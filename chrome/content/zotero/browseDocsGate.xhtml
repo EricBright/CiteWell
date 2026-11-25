@@ -43,7 +43,13 @@
 	<vbox flex="1" style="padding: 16px;">
 		<description id="title" style="font-size: 1.2em; font-weight: bold; margin-bottom: 8px;"/>
 		<description id="body" style="margin-bottom: 10px;"/>
-		<description id="steps" style="margin-bottom: 10px; white-space: pre-line;"/>
+		<vbox id="steps" style="margin-bottom: 10px;">
+			<description id="step1"/>
+			<description id="step2"/>
+			<description id="step3"/>
+			<html:a id="get-connector" href="#"
+				style="font-size: 0.9em; margin-top: 4px;"/>
+		</vbox>
 		<html:input id="url" readonly="readonly"
 			style="width: 100%; margin-bottom: 10px;" />
 		<spacer flex="1"/>

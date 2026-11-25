@@ -59,11 +59,26 @@ function load() {
 		"Citations in Google Docs come from Zotero’s official connector, which runs inside "
 			+ "Firefox. CiteWell’s built-in browser can’t run browser extensions."
 	);
-	document.getElementById("steps").textContent = ftl(
-		"docs-gate-steps",
-		"1. Open the document in Firefox.\n2. Install Zotero Connector once, if it isn’t there.\n"
-			+ "3. Sign in to Google there — saves go to CiteWell automatically."
+	// One description per step so the numbering is a real list, not wrapped prose.
+	document.getElementById("step1").textContent = ftl(
+		"docs-gate-step1", "1. Open the document in Firefox."
 	);
+	document.getElementById("step2").textContent = ftl(
+		"docs-gate-step2", "2. Install Zotero Connector once, if it isn’t there."
+	);
+	document.getElementById("step3").textContent = ftl(
+		"docs-gate-step3",
+		"3. Sign in to Google there. Saves reach CiteWell automatically, because Zotero’s "
+			+ "Connector talks to this app."
+	);
+	let connectorLink = document.getElementById("get-connector");
+	connectorLink.textContent = ftl("docs-gate-get-connector", "Get Zotero Connector");
+	connectorLink.addEventListener("click", (event) => {
+		event.preventDefault();
+		// The connectors page, not the main download: the latter can land people on the
+		// Zotero application instead of the browser extension.
+		Zotero.launchURL("https://www.zotero.org/download/connectors");
+	});
 	document.getElementById("open-firefox").setAttribute(
 		"label", ftl("docs-gate-open", "Open in browser")
 	);
