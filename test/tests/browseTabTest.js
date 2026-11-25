@@ -164,6 +164,31 @@ describe("Browse Tab", function () {
 			assert.isNull(Zotero_BrowseTab.getBrowser(second));
 		});
 
+		it("should focus and select the address bar text", function () {
+			let id = Zotero_BrowseTab.open();
+			let urlbar = doc.getElementById(id).querySelector(".browse-urlbar");
+			urlbar.value = "https://example.com/x";
+
+			assert.isTrue(Zotero_BrowseTab.focusURLBar(id));
+			assert.equal(doc.activeElement, urlbar);
+			assert.equal(urlbar.selectionStart, 0);
+			assert.equal(urlbar.selectionEnd, urlbar.value.length);
+		});
+
+		it("should reuse the selected browse tab from focusOrOpen", function () {
+			let id = Zotero_BrowseTab.open();
+			assert.equal(Zotero_BrowseTab.focusOrOpen(), id, "should not open a second tab");
+			assert.equal(Zotero_Tabs.selectedID, id);
+		});
+
+		it("should open a browse tab from focusOrOpen when the library is selected", function () {
+			Zotero_Tabs.select("zotero-pane");
+			let id = Zotero_BrowseTab.focusOrOpen();
+			assert.isTrue(Zotero_BrowseTab.isOpen(id));
+			assert.equal(Zotero_Tabs.selectedID, id);
+			assert.equal(doc.activeElement, doc.getElementById(id).querySelector(".browse-urlbar"));
+		});
+
 		it("should not navigate when the address bar input is rejected", function () {
 			let id = Zotero_BrowseTab.open();
 			assert.isFalse(Zotero_BrowseTab.navigate(id, "javascript:alert(1)"));

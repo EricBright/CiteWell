@@ -136,6 +136,35 @@ var Zotero_BrowseTab = new (function () {
 	};
 
 	/**
+	 * Ctrl/Cmd+L: focus the address bar of the selected Browse tab, or open one when the
+	 * selected tab is the Library (there is nowhere else to type a web address).
+	 */
+	this.focusOrOpen = function () {
+		let id = Zotero_Tabs.selectedID;
+		if (!this.isOpen(id)) {
+			id = this.open();
+		}
+		if (id) {
+			this.focusURLBar(id);
+		}
+		return id;
+	};
+
+	/**
+	 * Focus the address bar and select its text, so typing replaces the URL instead of
+	 * appending to it.
+	 */
+	this.focusURLBar = function (id) {
+		let state = this._states.get(id);
+		if (!state) {
+			return false;
+		}
+		state.urlbar.focus();
+		state.urlbar.select();
+		return true;
+	};
+
+	/**
 	 * Normalize user input to a loadable http/https URL, or null if it must not be loaded.
 	 * Exported as-is for tests: this function is the security gate for the address bar.
 	 *
