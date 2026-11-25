@@ -59,8 +59,6 @@ export class RemoteTranslate {
 	 */
 	async setBrowser(browser) {
 		this._browser = browser;
-		this._actor = this._browser.browsingContext.currentWindowGlobal.getActor("Translation");
-		let actor = this._actor;
 
 		// Make only relevant prefs available
 		// https://github.com/zotero/zotero-connectors/blob/d5f025de9b4f513535cbf4639c6b59bf115d790d/src/common/zotero.js#L264-L265
@@ -71,20 +69,62 @@ export class RemoteTranslate {
 			'capitalizeTitles',
 			'translators.',
 		]);
-		if (this._disableErrorReporting) {
-			prefs.reportTranslationFailure = false;
-		}
-		
-		// A query, not a fire-and-forget message: detection must not reach the actor before
-		// its translation sandbox exists (the child answers a detect before init with a null
-		// sandbox and the detection is lost).
-		await actor.sendQuery("initTranslation", {
+		// CiteWell never reports translation failures to zotero.org (D19 isolation), and
+		// the report path in the shared engine also assumes a connector global the app does
+		// not have. Keep it off for every in-app translation.
+		prefs.reportTranslationFailure = false;
+		this._initPrefs = {
 			schemaJSON: Zotero.File.getResource('resource://zotero/schema/global/schema.json'),
 			dateFormatsJSON: Zotero.File.getResource('resource://zotero/schema/dateFormats.json'),
 			prefs,
-		});
+		};
+
+		await this._initActor(this._browser.browsingContext.currentWindowGlobal.getActor("Translation"));
 	}
-	
+
+	/**
+	 * True while the pinned actor still belongs to the page's current window global. A
+	 * process switch or navigation replaces the global (and its actor), and the old actor
+	 * then refuses queries ("cannot send at the moment").
+	 */
+	_actorIsCurrent() {
+		if (!this._actor) {
+			return false;
+		}
+		try {
+			let windowGlobal = this._browser.browsingContext.currentWindowGlobal;
+			return !!windowGlobal && windowGlobal.getActor("Translation") === this._actor;
+		}
+		catch (e) {
+			return false;
+		}
+	}
+
+	async _initActor(actor) {
+		this._actor = actor;
+		// A query, not a fire-and-forget message: detection must not reach the actor before
+		// its translation sandbox exists (the child answers a detect before init with a null
+		// sandbox and the detection is lost).
+		await actor.sendQuery("initTranslation", this._initPrefs);
+	}
+
+	/**
+	 * Detection always targets the document that is loaded now, so it is allowed to move
+	 * to a fresh actor after a process switch. Translation may not: it must use the actor
+	 * it was detected with (see #translate).
+	 */
+	async _ensureActor() {
+		if (this._actorIsCurrent()) {
+			return this._actor;
+		}
+		let windowGlobal = this._browser.browsingContext.currentWindowGlobal;
+		if (!windowGlobal) {
+			throw new Error("The page is no longer available");
+		}
+		await this._initActor(windowGlobal.getActor("Translation"));
+		return this._actor;
+	}
+
 	/**
 	 * Set a handler on the proxied Zotero.Translate instance.
 	 * The handler function is passed this RemoteTranslate as its first argument.
@@ -157,7 +197,7 @@ export class RemoteTranslate {
 	 * @return {Promise<Object[] | null>} Resolves to detected translator array (null on error)
 	 */
 	async detect() {
-		let actor = this._getActor();
+		let actor = await this._ensureActor();
 		this._translator = await actor.sendQuery("detect", { translator: this._translator, id: this._id });
 		return this._translator;
 	}
@@ -170,7 +210,12 @@ export class RemoteTranslate {
 	 * @return {Promise<Object[] | null>} Resolves to returned items (null on error)
 	 */
 	async translate(options = {}) {
-		let actor = this._getActor();
+		if (!this._actorIsCurrent()) {
+			// Do not re-resolve here: that would run the detected translator against a
+			// document it was not detected for.
+			throw new Error("The page changed while it was being saved");
+		}
+		let actor = this._actor;
 		let items = [];
 		try {
 			let jsonItems = await actor.sendQuery("translate", { translator: this._translator, id: this._id });

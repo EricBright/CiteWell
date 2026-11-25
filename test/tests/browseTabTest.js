@@ -201,6 +201,7 @@ describe("Browse Tab", function () {
 		const PORT = 16215;
 		let httpd, baseURL;
 		let dummyTranslator, provider;
+		let multiTranslator, multiProvider;
 
 		function saveButton(id) {
 			return doc.getElementById(id).querySelector(".browse-save");
@@ -218,6 +219,33 @@ describe("Browse Tab", function () {
 					item.complete();
 				}
 			`);
+
+			multiTranslator = buildDummyTranslator('web', `
+				function detectWeb() {
+					return "multiple";
+				}
+
+				function doWeb() {
+					Zotero.selectItems({ a: "Alpha", b: "Beta" }, function (selected) {
+						if (!selected) return;
+						for (let key in selected) {
+							var item = new Zotero.Item("book");
+							item.title = selected[key];
+							item.complete();
+						}
+					});
+				}
+			`);
+
+			multiProvider = Zotero.Translators.makeTranslatorProvider({
+				get(translatorID) {
+					return translatorID == multiTranslator.translatorID ? multiTranslator : false;
+				},
+
+				async getAllForType(type) {
+					return type == 'web' ? [multiTranslator] : [];
+				}
+			});
 
 			provider = Zotero.Translators.makeTranslatorProvider({
 				get(translatorID) {
@@ -328,6 +356,51 @@ describe("Browse Tab", function () {
 				items.some(item => item.getField("title") === "Browse Save Test"),
 				"saved item should be in the user library"
 			);
+		});
+
+		it("should save only the items chosen in the picker", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, multiProvider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+
+			let original = Zotero_BrowseTab._selectItemsInteractive;
+			Zotero_BrowseTab._selectItemsInteractive = () => ({ a: "Alpha" });
+			try {
+				button.click();
+				await waitForCallback(() => button.classList.contains("saved"), 100, 10);
+			}
+			finally {
+				Zotero_BrowseTab._selectItemsInteractive = original;
+			}
+
+			let items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID, true);
+			let titles = items.map(item => item.getField("title"));
+			assert.include(titles, "Alpha", "checked item should be saved");
+			assert.notInclude(titles, "Beta", "unchecked item should not be saved");
+		});
+
+		it("should cancel cleanly when the picker is dismissed", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.setTranslatorProvider(id, multiProvider);
+			Zotero_BrowseTab.navigate(id, baseURL);
+			let button = saveButton(id);
+			await waitForCallback(() => !button.disabled, 100, 10);
+
+			let original = Zotero_BrowseTab._selectItemsInteractive;
+			Zotero_BrowseTab._selectItemsInteractive = () => null;
+			try {
+				button.click();
+				await waitForCallback(() => button.classList.contains("available"), 100, 10);
+			}
+			finally {
+				Zotero_BrowseTab._selectItemsInteractive = original;
+			}
+
+			let items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID, true);
+			let titles = items.map(item => item.getField("title"));
+			assert.notInclude(titles, "Beta", "a cancelled picker must save nothing");
 		});
 
 		it("should drop the translator and disable Save when leaving the page", async function () {

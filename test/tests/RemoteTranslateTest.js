@@ -85,6 +85,22 @@ describe("RemoteTranslate", function () {
 		});
 	});
 
+	describe("#setBrowser()", function () {
+		it("should keep upstream failure reporting off", async function () {
+			let translate = new RemoteTranslate();
+			let browser = new HiddenBrowser();
+			await browser.load(getTestDataUrl('test.html'));
+			await translate.setBrowser(browser);
+
+			// D19: in-app translation never reports failures to zotero.org, and the shared
+			// engine's report path needs a connector global the app does not have.
+			assert.equal(translate._initPrefs.prefs.reportTranslationFailure, false);
+
+			translate.dispose();
+			browser.destroy();
+		});
+	});
+
 	describe("#setHandler()", function () {
 		it("should receive handler calls from the translator", async function () {
 			let translate = new RemoteTranslate();

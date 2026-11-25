@@ -29,3 +29,4 @@ D50 chrome/content/zotero/preferences/preferences_dns.js
 D50 test/tests/dnsPrefsTest.js
 D48 chrome/content/zotero/settingsTab.js
 D48 test/tests/settingsTabTest.js
+D47 chrome/content/zotero/browseItemSelector.js

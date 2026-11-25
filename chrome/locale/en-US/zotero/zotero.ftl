@@ -1322,3 +1322,14 @@ browse-save-empty = Nothing to save from this page
 browse-save-progress-headline = Saving to CiteWell
 browse-save-result-one = Saved “{ $title }” to CiteWell
 browse-save-result-many = Saved { $count } items to CiteWell
+browse-save-cancelled = Nothing selected
+
+# Browse item picker (D47 Phase 2b)
+browse-picker-title = Save to CiteWell
+browse-picker-intro = Choose which items to save
+browse-picker-filter = Filter items
+browse-picker-select-all = Select All
+browse-picker-deselect-all = Deselect All
+browse-picker-cancel = Cancel
+browse-picker-save = Save
+browse-picker-count = { $selected } of { $total } selected

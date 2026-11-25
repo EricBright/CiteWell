@@ -480,6 +480,7 @@ var Zotero_BrowseTab = new (function () {
 		let savedItems = [];
 		let errorMessage = null;
 		let aborted = false;
+		let selectionCancelled = false;
 		state.saving = true;
 		this._setSaveState(id, "saving");
 		let progress = this._showProgress(
@@ -494,6 +495,19 @@ var Zotero_BrowseTab = new (function () {
 			});
 			translate.setHandler("error", (remoteTranslate, message) => {
 				errorMessage = String(message);
+			});
+			// Phase 2b: the translator asks which of several items to save. An empty map
+			// makes the engine save nothing; the cancelled flag keeps that from being
+			// reported as a failure.
+			translate.setHandler("select", (remoteTranslate, items, resolve) => {
+				let selected = this._selectItemsInteractive(id, items, target);
+				if (selected === null) {
+					selectionCancelled = true;
+					resolve({});
+				}
+				else {
+					resolve(selected);
+				}
 			});
 			// Re-detect right before translating. Detection result for the *current*
 			// document, not the one that was loaded when the button was enabled: a page can
@@ -536,7 +550,7 @@ var Zotero_BrowseTab = new (function () {
 		finally {
 			// Handlers close over this save's counters; drop them so a later save on the
 			// same tab does not accumulate closures.
-			for (let name of ["itemDone", "error"]) {
+			for (let name of ["itemDone", "select", "error"]) {
 				try {
 					translate.clearHandlers(name);
 				}
@@ -555,7 +569,11 @@ var Zotero_BrowseTab = new (function () {
 				// Saved items are the truth, not the `done` flag: a translator can report
 				// success with nothing to save, and a late attachment error must not claim
 				// that nothing landed.
-				if (savedItems.length) {
+				if (selectionCancelled && !savedItems.length) {
+					this._setSaveState(id, "available", state.translators[0].label || "");
+					this._finishProgress(progress, "cancelled");
+				}
+				else if (savedItems.length) {
 					this._setSaveState(id, "saved");
 					this._finishProgress(progress, "saved", {
 						items: savedItems,
@@ -587,6 +605,7 @@ var Zotero_BrowseTab = new (function () {
 				return {
 					libraryID: target.library.libraryID,
 					collections: target.collection ? [target.collection.id] : undefined,
+					label: target.collection ? target.collection.name : target.library.name,
 				};
 			}
 		}
@@ -596,7 +615,35 @@ var Zotero_BrowseTab = new (function () {
 		return {
 			libraryID: Zotero.Libraries.userLibraryID,
 			collections: undefined,
+			label: Zotero.Libraries.userLibrary.name,
 		};
+	};
+
+	/**
+	 * Show the 2b item picker modally and return the selected id -> value map, or null
+	 * when the user cancels or the dialog cannot open. openDialog is synchronous, so the
+	 * translation can never be left waiting on a picker that will not answer; the dialog
+	 * also writes null from beforeunload for a window-manager close.
+	 */
+	this._selectItemsInteractive = function (id, items, target) {
+		let state = this._states.get(id);
+		if (!state) {
+			return null;
+		}
+		try {
+			let args = { items, target: (target && target.label) || "", result: null };
+			window.openDialog(
+				"chrome://zotero/content/browseItemSelector.xhtml",
+				"citewell-browse-item-selector",
+				"chrome,modal,centerscreen,resizable",
+				args
+			);
+			return args.result;
+		}
+		catch (e) {
+			Zotero.logError(e);
+			return null;
+		}
 	};
 
 	/**
@@ -642,6 +689,10 @@ var Zotero_BrowseTab = new (function () {
 					progress.addDescription(payload.error);
 				}
 				progress.startCloseTimer(4000);
+			}
+			else if (kind === "cancelled") {
+				progress.changeHeadline(ftl("browse-save-cancelled", "Nothing selected"));
+				progress.startCloseTimer(2500);
 			}
 			else if (kind === "error") {
 				progress.changeHeadline(ftl("browse-save-failed", "Couldn't save to CiteWell"));

@@ -942,8 +942,17 @@ directly — none of `connectors/src/common/inject/` is ported. Two fixes were n
 and pinned for later calls (a navigation between detection and translation now fails instead of
 running a stale translator against the new document), and `initTranslation` is a query rather
 than a fire-and-forget message, so detection cannot race a sandbox that does not exist yet.
-Multi-item selection (the connector's picker) remains Phase 2b; Google Docs glue, PDF capture and
-proxies remain later phases.
+**Phase 2b note (2026-11-25).** Multi-item pages now open a modal picker
+(`browseItemSelector.xhtml` + `.js`) that follows the connector's shape: the translator's
+id -> value map, where a value may carry `{ title, checked }`, comes back filtered to the checked
+rows. It answers on every exit path (Save, Cancel, Esc, window close), so the translation can
+never be left suspended, and a cancelled picker reports "Nothing selected" instead of a failure.
+Two long-lived-tab fixes came with it: a process switch can replace the page's window global, so
+`RemoteTranslate.detect()` may re-resolve the actor (a fresh detection is safe) while
+`translate()` refuses a stale actor rather than running the old translator against the new
+document; and translation-failure reporting is forced off, with the engine's connector-only
+`Connector_Browser` global stubbed, because the app has no extension context and must not POST to
+zotero.org (D19). Google Docs glue, PDF capture and proxies remain later phases.
 
 Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
 machinery, and user confusion over two connector identities, all for a leg the app can replace

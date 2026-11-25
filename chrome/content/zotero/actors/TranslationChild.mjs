@@ -224,6 +224,13 @@ export class TranslationChild extends JSWindowActorChild {
 
 		let { Zotero } = sandbox;
 
+		// The shared engine's failure path calls this connector-only global. The app has no
+		// extension context; a harmless stub keeps a translator error from becoming a
+		// TypeError. Failure reporting itself is disabled by RemoteTranslate's prefs.
+		Zotero.Connector_Browser = {
+			isIncognito: async () => false,
+		};
+
 		Zotero.Debug.init(1);
 		Zotero.Debug.setStore(true);
 		
