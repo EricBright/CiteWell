@@ -163,7 +163,9 @@ CiteWell's shape, once R11 provides a release host:
    ignores prereleases, so Gear Lever and the update information will not offer it.
 
 A release that renames the AppImage, publishes two matching AppImages, or omits the `.zsync` breaks
-the update path even though the app itself still runs.
+the update path even though the app itself still runs. `appimagetool` also drops a `.zsync` in the
+working directory as a byproduct; the release assets are the three files under `dist/`, not that
+copy.
 
 ### Gear Lever and AppImageUpdate compatibility
 
