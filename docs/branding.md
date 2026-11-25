@@ -99,9 +99,12 @@ Windows Vista and later.
 
 ## Update channel
 
-The build reports `app.update.channel = "source"`. A fork must not check Zotero's update servers,
-so either keep the source channel (no updates) or remove the update UI — decide in R8. Do not
-point the updater at `download.zotero.org`.
+The build reports `app.update.channel = "source"`, `app/assets/application.ini` carries **no**
+`[AppUpdate] URL`, and `app.update.auto` is off. A check therefore fails locally as "Update URL
+not available" and contacts no server. The Check for Updates command states that CiteWell has no
+in-app channel yet and offers the repository's releases page; it never opens the inherited
+Mozilla wizard. See [packaging.md](packaging.md#updates) for the self-update plan. Do not point
+the updater at `download.zotero.org`.
 
 ## After changing anything here
 

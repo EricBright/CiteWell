@@ -1156,18 +1156,38 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	}
 	
 	
-	this.openCheckForUpdatesWindow = function ({ modal } = {}) {
-		let win = Services.wm.getMostRecentWindow('Update:Wizard');
-		if (win) {
-			win.focus();
-		}
-		else {
-			let flags = 'chrome,centerscreen';
-			if (modal) {
-				flags += ',modal';
-			}
-			Services.ww.openWindow(null, 'chrome://zotero/content/update/updates.xhtml',
-				'updateChecker', flags, null);
+	this.UPDATE_RELEASES_URL = 'https://github.com/EricBright/CiteWell/releases';
+
+	/**
+	 * The one place the UI asks about updates.
+	 *
+	 * CiteWell does not use Mozilla's updater: the app is an AppImage, and signed
+	 * MAR files cannot patch a squashfs image. The build carries no update URL,
+	 * so this must not open the inherited wizard, which would only report that a
+	 * check failed. It states the truth and offers the releases page.
+	 */
+	this.openCheckForUpdatesWindow = function () {
+		let ps = Services.prompt;
+		let flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
+			+ ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING;
+		let text = "CiteWell does not use Zotero's update service, and this build has no "
+			+ "in-app update channel yet.\n\n"
+			+ "CiteWell is a single AppImage file: updating means replacing that file with "
+			+ "a newer one from the releases page.\n\n"
+			+ "Zotero's servers are not contacted.";
+		let index = ps.confirmEx(
+			null,
+			"Check for Updates",
+			text,
+			flags,
+			"Open releases page",
+			"Close",
+			null,
+			null,
+			{}
+		);
+		if (index === 0) {
+			Zotero.launchURL(Zotero.UPDATE_RELEASES_URL);
 		}
 	};
 	

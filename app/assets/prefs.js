@@ -107,17 +107,13 @@ pref("extensions.ui.lastCategory", "addons://list/extension");
 // Don't show "Using experimental APIs requires a privileged add-on" warning
 pref("extensions.experiments.enabled", true);
 
-// Not set on Windows in Firefox anymore since it's a per-installation pref,
-// but we override that in fetch_xulrunner
-pref("app.update.auto", true);
-
-// URL user can browse to manually if for some reason all update installation
-// attempts fail.
-pref("app.update.url.manual", "https://www.zotero.org/download");
-
-// A default value for the "More information about this update" link
-// supplied in the "An update is available" page of the update wizard.
-pref("app.update.url.details", "https://www.zotero.org/support/changelog");
+// CiteWell has no Mozilla update channel. `app/assets/application.ini` carries
+// no `[AppUpdate] URL`, so the update service has nothing to check and a check
+// fails locally as "Update URL not available" without a network request. The
+// URLs below are where a person can look for a new build instead.
+pref("app.update.auto", false);
+pref("app.update.url.manual", "https://github.com/EricBright/CiteWell/releases");
+pref("app.update.url.details", "https://github.com/EricBright/CiteWell/releases");
 
 // Interval: Time between checks for a new version (in seconds)
 //           default=1 day

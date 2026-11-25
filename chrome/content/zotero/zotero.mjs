@@ -407,10 +407,17 @@ try {
 						{}
 					);
 					if (index == 0) {
-						Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-							.getService(Components.interfaces.nsIWindowWatcher)
-							.openWindow(null, 'chrome://zotero/content/update/updates.xhtml',
-								'updateChecker', 'chrome,centerscreen,modal', null);
+						// CiteWell has no Mozilla update channel; send the person to the
+						// place a new AppImage would be published instead of a wizard
+						// that can only report a failed check.
+						let uri = Components.classes["@mozilla.org/network/io-service;1"]
+							.getService(Components.interfaces.nsIIOService)
+							.newURI("https://github.com/EricBright/CiteWell/releases", null, null);
+						let handler = Components.classes['@mozilla.org/uriloader/external-protocol-service;1']
+							.getService(Components.interfaces.nsIExternalProtocolService)
+							.getProtocolHandlerInfo('https');
+						handler.preferredAction = Components.interfaces.nsIHandlerInfo.useSystemDefault;
+						handler.launchWithURI(uri, null);
 					}
 				}
 				zContext.Zotero.Utilities.Internal.quitZotero();

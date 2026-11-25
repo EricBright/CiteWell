@@ -137,9 +137,11 @@ CiteWell's shape, once R11 provides a release host:
    `zsync|<url>` or `gh-releases-zsync|EricBright|CiteWell|latest|CiteWell-*-x86_64.AppImage.zsync`,
    plus the `.zsync` and a SHA-256 file in the release. Gear Lever and AppImageUpdate can then verify
    and delta-update the same artifact. Useful, optional, and never the only channel.
-3. **Mozilla's updater is not a route.** `nsIApplicationUpdateService` patches with signed MAR files
-   and cannot patch a squashfs image, so R8 neutralizes the inherited `[AppUpdate]` URL and the
-   zotero.org pref endpoints instead of pretending they work.
+3. **Mozilla's updater is not a route, and R8 has removed it.** `nsIApplicationUpdateService`
+   patches with signed MAR files and cannot patch a squashfs image. Since 2026-11-25 the build
+   carries no `[AppUpdate]` URL, `app.update.auto` is off, the manual/details links point at our
+   releases page, and Check for Updates reports that there is no in-app channel yet. A check
+   resolves locally as "Update URL not available" and contacts no server.
 
 Test builds may be published to the remote (`EricBright/CiteWell`) to exercise this channel; the
 release body must say it is a test build, and a test build must never reuse a real version number.

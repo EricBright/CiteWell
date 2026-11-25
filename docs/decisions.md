@@ -1166,6 +1166,32 @@ A database-only restore is not the full restore: it swaps `zotero.sqlite` and le
 the search index in place. The full restore path refuses database-only points rather than emptying
 the attachment tree, and the Restore points list labels them and offers **Restore database…**.
 
+## D53 — There is no Mozilla update channel, and Check for Updates says so
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+The inherited channel was worse than useless. The build pointed
+`nsIApplicationUpdateService` at `zotero.org/download/client/update/...`, and a probe of the
+shipped build showed a foreground check fetching that URL and failing with a 404 ("Update XML file
+not found"). So the app contacted Zotero's servers, and the only UI for it (Mozilla's wizard) could
+not have installed anything in any case: signed MAR files cannot patch a squashfs AppImage.
+
+The build now carries **no** `[AppUpdate]` URL (`app/assets/application.ini`), `app.update.auto` is
+false, and `app.update.url.manual`/`.details` point at CiteWell's releases page. The service still
+permits a check, but with no URL it resolves locally as `update_url_not_available` ("Update URL not
+available") with `request: null`, so no server is contacted; verified with the same probe before and
+after the change. Check for Updates no longer opens the wizard: it states that this build has no
+in-app channel yet, that updating an AppImage means replacing the file, and offers the releases
+page. The startup-error dialog's "Check for Update" button opens that page too.
+
+Rejected: leaving the wizard reachable, since it exists only to report a check that cannot succeed.
+Rejected: pointing the URL at our host now, because there is nothing to serve until R11 and a URL
+that 404s is worse than an honest absence. The self-updater (R11/R21) replaces this notice, and the
+Gear Lever compatibility rules in [packaging.md](packaging.md#updates) apply to it.
+
+The Mozilla wizard under `chrome/content/zotero/update/` is now unreferenced and left in the tree;
+removing it is cleanup, not a behaviour change.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

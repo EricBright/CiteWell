@@ -8,7 +8,7 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R8 | Update channel decision: no Mozilla channel; the AppImage updates itself ([packaging.md](docs/packaging.md#updates)) | A fork must not point its updater at Zotero's servers | Decided 2026-11-25: yes, the AppImage can initiate its own update without Gear Lever (AppGlider precedent); R8 still neutralizes `[AppUpdate]` and the zotero.org endpoints, and Check for Updates must tell the truth until the self-updater ships with R11/R21 |
+| R8 | Update channel decision: no Mozilla channel; the AppImage updates itself ([packaging.md](docs/packaging.md#updates)) | A fork must not point its updater at Zotero's servers | **Done 2026-11-25.** `[AppUpdate]` removed, `app.update.auto=false`, manual/details point at our releases, Check for Updates tells the truth and offers the releases page instead of the Mozilla wizard (D53). The in-app self-updater itself ships with R11/R21, when a release host exists |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
 
 ## Done
