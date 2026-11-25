@@ -934,6 +934,34 @@ with a tab. Rejected: keeping the gulp/XPI build indefinitely — it preserves t
 Gecko already ships with the platform; a second engine would double the artifact and blur the
 D12 Rust boundary.
 
+## D48 — Views live in main-window tabs; transient moments stay dialogs
+
+**Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes
+
+Settings (a separate popup window today) becomes a tab in the main-window deck, beside the
+pinned Library tab and the D47 Browse tab. The owner's repopull app sets the pattern — one main
+window, a fixed sidebar, stacked pages, Settings reachable as a nav item, nothing for a view
+popping out — and CiteWell follows the same rule with its native tab deck, where the Library
+view is already the first tab. Content views (catalogue, browse, settings) open as tabs and
+persist across switching.
+
+Transient moments stay dialogs on purpose: confirmations, pickers, small name entries, progress
+windows, and the LibreOffice/Word citation dialogs — those must float over the user's document,
+not inside CiteWell. Modality is a feature while a decision is being made; repopull's own Clone
+dialog is the same carve-out.
+
+`Zotero.Utilities.Internal.openPreferences(paneID, …)` is the single choke point every opener
+already uses; it routes to the settings tab — selecting it if already open, then the requested
+pane — instead of opening a window. The preferences shell (navigation list, search, panes loaded
+by `_loadPane`) is reused inside the tab, and Ctrl+W closes the tab. Whether the existing
+`preferences.xhtml` window document is hosted directly or its shell is mounted in the deck is
+settled by a spike before the switch.
+
+Rejected: forcing *every* remaining window into a tab — the import wizard, error report and
+style preview are momentary flows; converting each needs its own reason, so they stay until one
+exists. Rejected: leaving settings a separate window — it hides the catalogue behind a second
+window for the most common visit, which is a check-a-setting glance.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
