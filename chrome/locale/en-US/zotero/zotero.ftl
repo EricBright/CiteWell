@@ -1305,6 +1305,7 @@ settings-tab-title = Settings
 browse-nav-back = Back
 browse-nav-forward = Forward
 browse-nav-reload = Reload
+browse-nav-go = Go
 
 browse-urlbar =
     .placeholder = Enter a web address

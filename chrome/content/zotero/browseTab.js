@@ -655,10 +655,10 @@ var Zotero_BrowseTab = new (function () {
 		}, SAVED_STATE_MS);
 	};
 
-	this._makeNavButton = function (doc, className, icon, labelKey, fallbackLabel) {
+	this._makeNavButton = function (doc, className, icon, labelKey, fallbackLabel, iconDir) {
 		let button = doc.createXULElement("toolbarbutton");
 		button.className = "browse-nav " + className;
-		button.setAttribute("image", ICON_DIR + icon);
+		button.setAttribute("image", (iconDir || ICON_DIR) + icon);
 		button.setAttribute("aria-label", ftl(labelKey, fallbackLabel));
 		return button;
 	};
@@ -697,6 +697,14 @@ var Zotero_BrowseTab = new (function () {
 		urlbar.setAttribute("data-l10n-id", "browse-urlbar");
 		urlbar.setAttribute("data-l10n-attrs", "placeholder");
 
+		// The control hugging the address bar is Go, the convention every browser trained
+		// users on. Save-to-library sits on the far side of a divider so it is not mistaken
+		// for the address bar's submit action (owner feedback, 2026-11-25).
+		let goButton = this._makeNavButton(
+			doc, "browse-go", "arrow-right.svg", "browse-nav-go", "Go",
+			"chrome://zotero/skin/20/universal/"
+		);
+
 		let saveButton = this._makeNavButton(
 			doc, "browse-save", "book.svg", "browse-save-available", "Save to CiteWell"
 		);
@@ -714,6 +722,10 @@ var Zotero_BrowseTab = new (function () {
 		toolbar.appendChild(forwardButton);
 		toolbar.appendChild(reloadButton);
 		toolbar.appendChild(urlbar);
+		toolbar.appendChild(goButton);
+		let divider = doc.createXULElement("separator");
+		divider.className = "browse-divider";
+		toolbar.appendChild(divider);
 		toolbar.appendChild(saveButton);
 
 		let browser = doc.createXULElement("browser");
@@ -849,6 +861,7 @@ var Zotero_BrowseTab = new (function () {
 				Zotero.logError(e);
 			}
 		});
+		listen(goButton, "command", () => this.navigate(id, urlbar.value));
 		listen(saveButton, "command", () => this._save(id));
 
 		// Translate dynamically-created l10n markup (the urlbar placeholder).

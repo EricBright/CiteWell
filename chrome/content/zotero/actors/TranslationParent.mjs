@@ -16,7 +16,7 @@ export const TranslationManager = new (class {
 	}
 	
 	getTranslatorProvider(id) {
-		return this._registeredRemoteTranslates.get(id).translatorProvider;
+		return this._registeredRemoteTranslates.get(id)?.translatorProvider || null;
 	}
 	
 	setTranslatorProvider(id, provider) {
@@ -45,8 +45,15 @@ export const TranslationManager = new (class {
 	}
 
 	async runHandler(id, name, ...args) {
-		let remoteTranslate = this._registeredRemoteTranslates.get(id).remoteTranslate;
-		let handlers = this._registeredRemoteTranslates.get(id).handlers[name];
+		let registered = this._registeredRemoteTranslates.get(id);
+		// A disposed RemoteTranslate can still receive in-flight calls from the page (a
+		// detection cancelled by closing the tab, for example). There is no consumer left,
+		// so drop them instead of throwing across the actor boundary.
+		if (!registered) {
+			return null;
+		}
+		let remoteTranslate = registered.remoteTranslate;
+		let handlers = registered.handlers[name];
 		let returnValue = null;
 		if (handlers) {
 			for (let handler of handlers) {

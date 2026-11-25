@@ -884,7 +884,13 @@ test runner use only `cargo`, `xtask` and the vendored resources. `repo-guard` p
 retired npm metadata while still rejecting a reintroduction or dependency change.
 
 This retires the FTL-to-JSON/localize workflow and root ESLint. Locale files and the vendored test
-libraries remain; there is no in-repo tool to update them until R7. Reintroducing any npm tree
+libraries remain; there is no in-repo tool to update them until R7.
+
+**Implementation note (2026-11-25):** the three test libraries were still git symlinks into the
+removed root tree (`test/resource/{chai,mocha,co-mocha}.js -> ../../node_modules/...`), so a clean
+build — `gio trash build` and rebuild — could not run the harness at all. They are now real files
+at the versions the last `package.json` pinned (chai 3.5.0, mocha 3.4.2, co-mocha 1.2.0; all MIT),
+with provenance recorded in `test/content/runtests.html`. The harness now survives a clean build. Reintroducing any npm tree
 requires owner approval under D32. The `connectors/` tree keeps its own `node_modules` because
 `xtask connectors` uses the upstream gulp build to preserve the Firefox connector; that tree is
 separate from the app build and is the remaining Node build dependency.

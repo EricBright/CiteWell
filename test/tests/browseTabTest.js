@@ -225,6 +225,34 @@ describe("Browse Tab", function () {
 			await new Promise(resolve => httpd.stop(resolve));
 		});
 
+		it("should put Go beside the address bar and Save behind a divider", function () {
+			let id = Zotero_BrowseTab.open();
+			let container = doc.getElementById(id);
+			let urlbar = container.querySelector(".browse-urlbar");
+			let go = container.querySelector(".browse-go");
+			let divider = container.querySelector(".browse-divider");
+			let save = container.querySelector(".browse-save");
+			assert.isNotNull(go, "Go button should exist");
+			assert.isNotNull(divider, "divider should exist");
+			assert.equal(go.previousElementSibling, urlbar, "Go should hug the address bar");
+			assert.equal(go.nextElementSibling, divider);
+			assert.equal(divider.nextElementSibling, save, "Save should sit past the divider");
+			assert.equal(go.getAttribute("aria-label"), "Go");
+		});
+
+		it("should navigate when Go is clicked", async function () {
+			let id = Zotero_BrowseTab.open();
+			let container = doc.getElementById(id);
+			container.querySelector(".browse-urlbar").value = baseURL;
+			container.querySelector(".browse-go").click();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			await waitForCallback(
+				() => browser.currentURI && browser.currentURI.spec === baseURL,
+				100, 10
+			);
+			assert.equal(browser.currentURI.spec, baseURL);
+		});
+
 		it("should render a disabled Save button on a blank tab", function () {
 			let id = Zotero_BrowseTab.open();
 			let button = saveButton(id);

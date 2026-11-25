@@ -21,13 +21,34 @@
 }
 
 // Universal SVGs use context-fill; without a fill value they render black, which is
-// invisible on a dark toolbar. Fill is an inherited property, so this reaches the icon.
+// invisible on a dark toolbar. Fill is inherited, so this reaches the icon.
+//
+// Contrast policy (owner feedback 2026-11-25; WCAG 2.2 SC 1.4.11 and ISO 9241-3 both
+// put the floor for non-text controls at 3:1, and text at 4.5:1):
+//  - enabled controls: --fill-primary — 9.8:1 dark, 16.1:1 light (≈9–12:1 measured)
+//  - disabled controls: --fill-secondary — 4.8:1 dark, 4.7:1 light (≈4.5:1 measured)
+// Both are computed against the actual toolbar fill (56,56,60 dark / 245,245,245 light).
+//
+// Why not opacity: the old `opacity: 0.4` multiplied an already-muted fill and left the
+// disabled back/forward arrows at 2.0:1; --fill-tertiary at full opacity only reaches
+// 2.5:1 (2.1:1 light), still under the floor. Hence --fill-secondary for disabled.
 .browse-toolbar toolbarbutton {
 	fill: currentColor;
+	color: var(--fill-primary);
 }
 
 .browse-nav[disabled] {
-	opacity: 0.4;
+	color: var(--fill-secondary);
+	opacity: 1;
+}
+
+// A hairline keeps the Go action next to the bar and Save-to-library visibly separate.
+.browse-divider {
+	flex: 0 0 auto;
+	width: 1px;
+	height: 18px;
+	margin: 0 2px;
+	background: var(--fill-quinary);
 }
 
 // Save button (D47 Phase 2a): a book mark while idle/detecting, a pulse while a save runs,
@@ -43,11 +64,12 @@
 	}
 
 	&.saved {
+		color: var(--fill-primary);
 		opacity: 1;
 	}
 
 	&.failed {
-		opacity: 0.8;
+		color: var(--fill-secondary);
 	}
 }
 

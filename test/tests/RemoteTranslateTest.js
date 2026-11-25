@@ -2,6 +2,7 @@
 
 const { HiddenBrowser } = ChromeUtils.importESModule("chrome://zotero/content/HiddenBrowser.mjs");
 const { RemoteTranslate } = ChromeUtils.importESModule("chrome://zotero/content/RemoteTranslate.mjs");
+const { TranslationManager } = ChromeUtils.importESModule("chrome://zotero/content/actors/TranslationParent.mjs");
 
 describe("RemoteTranslate", function () {
 	let dummyTranslator;
@@ -64,6 +65,26 @@ describe("RemoteTranslate", function () {
 		await new Promise(resolve => httpd.stop(resolve));
 	});
 	
+	describe("#dispose()", function () {
+		it("should ignore handler calls that arrive after disposal", async function () {
+			let translate = new RemoteTranslate();
+			let browser = new HiddenBrowser();
+			await browser.load(getTestDataUrl('test.html'));
+			await translate.setBrowser(browser);
+			let id = translate._id;
+			assert.isNotNull(id);
+
+			translate.dispose();
+
+			// A late page callback (detection cancelled by closing a tab) must not throw
+			// across the actor boundary.
+			assert.isNull(await TranslationManager.runHandler(id, 'itemDone', null));
+			assert.isNull(TranslationManager.getTranslatorProvider(id));
+
+			browser.destroy();
+		});
+	});
+
 	describe("#setHandler()", function () {
 		it("should receive handler calls from the translator", async function () {
 			let translate = new RemoteTranslate();

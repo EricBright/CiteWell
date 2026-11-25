@@ -333,6 +333,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `-datadir` with no value | Gecko ignored it and opened `~/Zotero`; the Rust `AppRun` now exits 2 |
 | XHTML changes not copied by a test build | `cargo run ... -p xtask -- build` then `app/scripts/dir_build -p l` before trusting the staged app |
 | `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |
+| Clean build cannot run tests | `test/resource/{chai,mocha,co-mocha}.js` used to be symlinks into the npm tree D46 deleted; they are now vendored real files (chai 3.5.0, mocha 3.4.2, co-mocha 1.2.0, MIT). Do not restore the symlinks |
 | Upgrading Firefox | Not a config bump: adapt the upstream `fxN` port series; procedure in [sync.md](sync.md) |
 | Constrained environments | `MOZ_FORCE_DISABLE_E10S=1`; `--appimage-extract-and-run` if FUSE is absent |
 | Import helper missing in a source build | Build it with `cargo build -p citewell-import`; the AppImage carries its own copy |
