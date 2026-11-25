@@ -1208,14 +1208,24 @@ Zotero.LibraryImport = {
 		}
 
 		var notesCount = 0;
+		var processedNoteIDs = new Set(
+			Array.isArray(resumeState?.notes) ? resumeState.notes : []
+		);
+		// Checkpoints written before notes were recorded only have the title guard, which
+		// cannot tell "already imported" from "another note with the same title". A fresh
+		// merge has no earlier children at all, so it must never guess.
+		var legacyNoteResume = !!(resumeState && !Array.isArray(resumeState.notes));
 		for (let note of source.notes) {
 			if (note.parentItemID && skippedSourceIDs.has(note.parentItemID)) {
 				skippedNotes++;
 				continue;
 			}
+			if (processedNoteIDs.has(note.itemID)) {
+				continue;
+			}
 			let parent = note.parentItemID ? itemMap.get(note.parentItemID) : null;
 			let title = note.title || (parent?.getField("title") || "Note");
-			if (parent && this._hasChildAttachment(parent, title, "text/html")) {
+			if (legacyNoteResume && parent && this._hasChildAttachment(parent, title, "text/html")) {
 				continue;
 			}
 			let html = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>`
@@ -1233,6 +1243,10 @@ Zotero.LibraryImport = {
 					charset: "UTF-8",
 				});
 				notesCount++;
+				processedNoteIDs.add(note.itemID);
+				if (onCheckpoint && notesCount % 25 === 0) {
+					onCheckpoint({ status: "notes", notes: [...processedNoteIDs] });
+				}
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -1243,12 +1257,31 @@ Zotero.LibraryImport = {
 			}
 			onProgress?.(`Notes: ${notesCount}/${source.notes.length}`);
 		}
+		if (onCheckpoint && processedNoteIDs.size) {
+			onCheckpoint({ status: "notes", notes: [...processedNoteIDs] });
+		}
 
 		var processedAttachments = 0;
 		var attachmentMap = new Map();
+		var processedAttachmentIDs = new Set();
+		var resumedAttachmentMap = new Map();
+		if (resumeState?.attachments && typeof resumeState.attachments === "object") {
+			for (let [sourceID, destID] of Object.entries(resumeState.attachments)) {
+				resumedAttachmentMap.set(Number(sourceID), destID);
+				processedAttachmentIDs.add(Number(sourceID));
+			}
+		}
+		var legacyAttachmentResume = !!(resumeState && !resumeState.attachments);
 		for (let attachment of source.attachments) {
 			processedAttachments++;
 			if (skippedSourceIDs.has(attachment.parentItemID)) {
+				skippedAttachments++;
+			}
+			else if (processedAttachmentIDs.has(attachment.itemID)) {
+				// Copied by the interrupted pass; map it so annotations can follow.
+				if (resumedAttachmentMap.has(attachment.itemID)) {
+					attachmentMap.set(attachment.itemID, resumedAttachmentMap.get(attachment.itemID));
+				}
 				skippedAttachments++;
 			}
 			else {
@@ -1274,9 +1307,9 @@ Zotero.LibraryImport = {
 						attachment.title || PathUtils.filename(filePath),
 						attachment.contentType
 					);
-					if (existingAttachment) {
-						// A resumed merge may already have copied this attachment.
-						// Map it so its annotations can still follow.
+					if (existingAttachment && legacyAttachmentResume) {
+						// Old checkpoint: the attachment may predate this run. Map it so its
+						// annotations can still follow, and count it as already there.
 						attachmentMap.set(attachment.itemID, existingAttachment.id);
 						skippedAttachments++;
 					}
@@ -1290,7 +1323,15 @@ Zotero.LibraryImport = {
 							if (attachment.contentType) options.contentType = attachment.contentType;
 							let importedAttachment = await Zotero.Attachments.importFromFile(options);
 							attachmentMap.set(attachment.itemID, importedAttachment.id);
+							processedAttachmentIDs.add(attachment.itemID);
+							resumedAttachmentMap.set(attachment.itemID, importedAttachment.id);
 							importedAttachments++;
+							if (onCheckpoint && importedAttachments % 25 === 0) {
+								onCheckpoint({
+									status: "attachments",
+									attachments: Object.fromEntries(resumedAttachmentMap),
+								});
+							}
 						}
 						catch (e) {
 							Zotero.logError(e);
@@ -1303,6 +1344,13 @@ Zotero.LibraryImport = {
 					|| processedAttachments === source.attachments.length) {
 				onProgress?.(`Attachments: ${processedAttachments}/${source.attachments.length}`);
 			}
+		}
+
+		if (onCheckpoint && resumedAttachmentMap.size) {
+			onCheckpoint({
+				status: "attachments",
+				attachments: Object.fromEntries(resumedAttachmentMap),
+			});
 		}
 
 		var annotationTypes = ["", "highlight", "note", "image", "ink", "underline", "text"];

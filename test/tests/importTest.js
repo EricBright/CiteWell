@@ -25,8 +25,10 @@ describe("Library import", function () {
 
 	it("should be loaded in the application", function () {
 		assert.ok(Zotero.LibraryImport);
-		assert.isFunction(Zotero.LibraryImport.detectSources);
-		assert.isFunction(Zotero.LibraryImport.applyPending);
+		// chai 3.5's isFunction runs Object.prototype.toString, which an Xray-wrapped
+		// function fails even though it is callable; typeof is the honest check here.
+		assert.equal(typeof Zotero.LibraryImport.detectSources, "function");
+		assert.equal(typeof Zotero.LibraryImport.applyPending, "function");
 	});
 
 	it("should parse profiles.ini sections", function () {
@@ -714,6 +716,77 @@ describe("Library import", function () {
 			Zotero.LibraryImport._identityKeys = null;
 			Zotero.LibraryImport._identityGroups = null;
 			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+		}
+	});
+
+	it("should keep same-title notes and snapshots in a fresh merge", async function () {
+		this.timeout(60000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "same-title-source");
+		await Zotero.File.createDirectoryIfMissingAsync(source);
+		try {
+			await resetData();
+			let item = new Zotero.Item("book");
+			item.libraryID = 1;
+			item.setField("title", "Shared title");
+			await item.saveTx();
+
+			let snapshot = async (name, body) => {
+				let file = OS.Path.join(Zotero.DataDirectory.dir, name);
+				await Zotero.File.putContentsAsync(file, body);
+				await Zotero.Attachments.importFromFile({
+					file,
+					parentItemID: item.id,
+					title: "Snapshot",
+					contentType: "text/html",
+				});
+				await IOUtils.remove(file, { ignoreAbsent: true });
+			};
+			await snapshot("shared-a.html", "<p>first snapshot</p>");
+			await snapshot("shared-b.html", "<p>second snapshot</p>");
+
+			// Two notes on one parent derive the same title from it; both are real notes.
+			for (let i = 1; i <= 2; i++) {
+				let note = new Zotero.Item("note");
+				note.libraryID = 1;
+				note.parentID = item.id;
+				note.setNote(`<p>Note body ${i}</p>`);
+				await note.saveTx();
+			}
+
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			await Zotero.File.copyDirectory(
+				OS.Path.join(Zotero.DataDirectory.dir, "storage"),
+				OS.Path.join(source, "storage")
+			);
+
+			await resetData();
+			let destination = new Zotero.Item("book");
+			destination.libraryID = 1;
+			destination.setField("title", "Destination stays");
+			await destination.saveTx();
+
+			let result = await Zotero.LibraryImport.merge(source, { skipExactDuplicates: false });
+			assert.equal(result.notes, 2, "both same-title notes must merge");
+			assert.equal(result.attachments, 2, "both same-title snapshots must merge");
+			assert.equal(result.skippedAttachments, 0);
+			assert.equal(result.missingAttachments, 0);
+
+			let merged = (await Zotero.Items.getAll(1)).find(
+				candidate => candidate.isRegularItem()
+					&& candidate.getField("title") === "Shared title"
+			);
+			assert.ok(merged);
+			assert.lengthOf(merged.getAttachments(), 4, "two notes + two snapshots");
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
 		}
 	});
 });
