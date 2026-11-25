@@ -954,6 +954,13 @@ document; and translation-failure reporting is forced off, with the engine's con
 `Connector_Browser` global stubbed, because the app has no extension context and must not POST to
 zotero.org (D19).
 
+**PDF capture (Phase 3, 2026-11-25).** A PDF response in a Browse tab is intercepted by content
+type (`http-on-examine-response`) after a URL-suffix fast path, the channel is cancelled before
+Gecko's removed viewer path (D30), and the file is saved as an imported-URL attachment through
+the app's own cookie jar. Extensionless PDF URLs (`/pdf/1706.03762v7`) and in-page links work;
+nothing parses or indexes the PDF, so DOI recognition and text search stay out. The tab shows
+the Save state rather than a rendered document.
+
 **Phase 3 scoping (2026-11-25).** The Docs half is far larger than "glue": the app ships only the
 server-side `document/execCommand` endpoint, while the entire page-side integration — a React UI
 injected into Docs, a Kix document driver, the Apps Script compatibility client and the menu

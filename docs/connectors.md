@@ -152,8 +152,9 @@ than a fire-and-forget message (detection could otherwise reach an actor whose s
 exist yet). A live check saved a Wikipedia article with its snapshot; `browseTabTest.js` covers
 detection, saving, navigation-away and teardown.
 
-For the retirement gate, still to port or verify: multi-item selection (the connector's picker),
-Google Docs glue, and PDF capture.
+The multi-item picker, proxy deproxification and PDF capture have since shipped in-app. For the
+retirement gate, still to port or verify: Google Docs (deferred by the owner — its page-side half
+is the connector's React/Kix client).
 
 ## Load it
 

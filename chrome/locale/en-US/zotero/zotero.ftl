@@ -1323,6 +1323,7 @@ browse-save-progress-headline = Saving to CiteWell
 browse-save-result-one = Saved “{ $title }” to CiteWell
 browse-save-result-many = Saved { $count } items to CiteWell
 browse-save-cancelled = Nothing selected
+browse-save-pdf = Save PDF to CiteWell
 
 # Browse item picker (D47 Phase 2b)
 browse-picker-title = Save to CiteWell

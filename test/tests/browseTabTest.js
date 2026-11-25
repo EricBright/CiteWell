@@ -199,7 +199,7 @@ describe("Browse Tab", function () {
 
 	describe("Save bridge", function () {
 		const PORT = 16215;
-		let httpd, baseURL;
+		let httpd, baseURL, pdfURL;
 		let dummyTranslator, provider;
 		let multiTranslator, multiProvider;
 
@@ -271,7 +271,24 @@ describe("Browse Tab", function () {
 					);
 				}
 			});
+			const pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+				+ "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+				+ "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 100 100]>>endobj\n"
+				+ "trailer<</Root 1 0 R>>\n%%EOF\n";
+			httpd.registerPathHandler("/paper", {
+				handle(request, response) {
+					response.setHeader("Content-Type", "application/pdf");
+					response.write(pdf);
+				}
+			});
+			httpd.registerPathHandler("/paper.pdf", {
+				handle(request, response) {
+					response.setHeader("Content-Type", "application/pdf");
+					response.write(pdf);
+				}
+			});
 			baseURL = `http://127.0.0.1:${PORT}/save`;
+			pdfURL = `http://127.0.0.1:${PORT}/paper.pdf`;
 		});
 
 		after(async function () {
@@ -423,6 +440,39 @@ describe("Browse Tab", function () {
 			}
 
 			assert.isFalse(button.classList.contains("saving"), "save must not stay stuck");
+		});
+
+		it("should capture a PDF URL as an attachment instead of loading it", async function () {
+			let id = Zotero_BrowseTab.open();
+			assert.isTrue(Zotero_BrowseTab.navigate(id, pdfURL));
+			let button = saveButton(id);
+			await waitForCallback(() => button.classList.contains("pdf"), 100, 10);
+			assert.isFalse(button.disabled, "Save should be enabled for a PDF");
+
+			button.click();
+			await waitForCallback(() => button.classList.contains("saved"), 100, 20);
+
+			let items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID, true);
+			let pdfs = items.filter(
+				item => item.isAttachment() && item.attachmentContentType === "application/pdf"
+			);
+			assert.isTrue(pdfs.length > 0, "a PDF attachment should be saved");
+			assert.isTrue(pdfs.some(item => item.getField("title") === "paper"));
+		});
+
+		it("should capture a PDF that has no .pdf suffix", async function () {
+			let id = Zotero_BrowseTab.open();
+			assert.isTrue(Zotero_BrowseTab.navigate(id, `http://127.0.0.1:${PORT}/paper`));
+			let button = saveButton(id);
+			await waitForCallback(() => button.classList.contains("pdf"), 100, 10);
+			assert.isFalse(button.disabled);
+
+			button.click();
+			await waitForCallback(() => button.classList.contains("saved"), 100, 20);
+			let items = await Zotero.Items.getAll(Zotero.Libraries.userLibraryID, true);
+			assert.isTrue(items.some(
+				item => item.isAttachment() && item.attachmentContentType === "application/pdf"
+			));
 		});
 
 		it("should drop the translator and disable Save when leaving the page", async function () {

@@ -165,6 +165,20 @@ var Zotero_BrowseTab = new (function () {
 	};
 
 	/**
+	 * True for a URL whose path names a PDF. The Browse tab has no PDF viewer (D30), so
+	 * these are captured as attachments instead of being navigated to.
+	 */
+	function isPDFURL(spec) {
+		try {
+			let url = new URL(spec);
+			return /\.pdf$/i.test(url.pathname);
+		}
+		catch (e) {
+			return false;
+		}
+	}
+
+	/**
 	 * Normalize user input to a loadable http/https URL, or null if it must not be loaded.
 	 * Exported as-is for tests: this function is the security gate for the address bar.
 	 *
@@ -229,6 +243,9 @@ var Zotero_BrowseTab = new (function () {
 		let url = this.normalizeURL(input);
 		if (!url) {
 			return false;
+		}
+		if (isPDFURL(url) && this._capturePDF(id, url)) {
+			return true;
 		}
 		state.browser.loadURI(Services.io.newURI(url), {
 			triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
@@ -308,6 +325,31 @@ var Zotero_BrowseTab = new (function () {
 		state.staleTranslates = remaining;
 	};
 
+	/**
+	 * Stop a PDF navigation before Gecko's removed viewer path (D30) and put the tab into
+	 * the PDF save state. Safe to call twice for the same URL.
+	 */
+	this._capturePDF = function (id, spec) {
+		let state = this._states.get(id);
+		if (!state || !spec) {
+			return false;
+		}
+		state.generation++;
+		state.detectingURL = null;
+		state.detectedURL = spec;
+		state.pdfURL = spec;
+		this._clearDetectTimer(state);
+		this._retireTranslate(state);
+		this._setSaveState(id, "pdf");
+		try {
+			state.browser.stop();
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+		return true;
+	};
+
 	// Button text per state. Keys are the -suffix in zotero.ftl; values are plain fallbacks.
 	const SAVE_LABELS = {
 		detecting: ["browse-save-detecting", "Looking for citation data…"],
@@ -316,6 +358,7 @@ var Zotero_BrowseTab = new (function () {
 		saving: ["browse-save-saving", "Saving…"],
 		saved: ["browse-save-saved", "Saved to CiteWell"],
 		failed: ["browse-save-failed", "Couldn't save to CiteWell"],
+		pdf: ["browse-save-pdf", "Save PDF to CiteWell"],
 	};
 	const SAVE_ICONS = {
 		detecting: "book.svg",
@@ -324,6 +367,7 @@ var Zotero_BrowseTab = new (function () {
 		saving: "book.svg",
 		saved: "tick.svg",
 		failed: "cross.svg",
+		pdf: "book.svg",
 	};
 
 	/**
@@ -351,7 +395,8 @@ var Zotero_BrowseTab = new (function () {
 			"detecting", "none", "available", "saving", "saved", "failed"
 		);
 		state.saveButton.classList.add(name);
-		state.saveButton.disabled = name !== "available";
+		// "pdf" is an actionable state too: it saves the file rather than a translation.
+		state.saveButton.disabled = name !== "available" && name !== "pdf";
 		state.saveButton.setAttribute("image", ICON_DIR + SAVE_ICONS[name]);
 		state.saveButton.setAttribute("tooltiptext", text);
 		state.saveButton.setAttribute("aria-label", text);
@@ -366,13 +411,24 @@ var Zotero_BrowseTab = new (function () {
 	 * abandons a detection that never settles, because the actor waits for the page to finish
 	 * loading and a page that never does must not leave the button stuck.
 	 */
-	this._detect = async function (id) {
+	this._detect = async function (id, specOverride) {
 		let state = this._states.get(id);
 		if (!state) {
 			return;
 		}
-		let spec = (state.browser.currentURI && state.browser.currentURI.spec) || "";
+		let spec = specOverride || (state.browser.currentURI && state.browser.currentURI.spec) || "";
+		if (isPDFURL(spec)) {
+			this._capturePDF(id, spec);
+			return;
+		}
+		state.pdfURL = null;
 		if (!spec || spec === "about:blank") {
+			if (state.pdfURL) {
+				// Stopping a PDF load resets the browser to about:blank; the capture state
+				// must survive that reset.
+				this._setSaveState(id, "pdf");
+				return;
+			}
 			// Invalidate any detection still running for the previous page, then forget it.
 			state.generation++;
 			state.detectingURL = null;
@@ -466,7 +522,13 @@ var Zotero_BrowseTab = new (function () {
 	 */
 	this._save = async function (id) {
 		let state = this._states.get(id);
-		if (!state || state.saving || !state.translators || !state.translate) {
+		if (!state || state.saving) {
+			return;
+		}
+		if (state.pdfURL) {
+			return this._savePDF(id, state);
+		}
+		if (!state.translators || !state.translate) {
 			return;
 		}
 		let translate = state.translate;
@@ -597,6 +659,57 @@ var Zotero_BrowseTab = new (function () {
 				else {
 					this._setSaveState(id, "failed");
 					this._finishProgress(progress, "empty");
+				}
+			}
+		}
+	};
+
+	/**
+	 * Save a PDF page as an imported-URL attachment. The download runs through the app's
+	 * own cookie jar, which is the same jar the tab uses, so authenticated PDFs work
+	 * without exposing the file to the page.
+	 */
+	this._savePDF = async function (id, state) {
+		let generation = state.generation;
+		let url = state.pdfURL;
+		state.saving = true;
+		this._setSaveState(id, "saving");
+		let target = this._getSaveTarget();
+		let progress = this._showProgress("browse-save-progress-headline", "Saving to CiteWell");
+		let item = null;
+		let errorMessage = null;
+		try {
+			let title = "PDF";
+			try {
+				let leaf = decodeURIComponent(new URL(url).pathname.split("/").pop() || "");
+				title = leaf.replace(/\.pdf$/i, "") || "PDF";
+			}
+			catch (e) {}
+			item = await Zotero.Attachments.importFromURL({
+				url,
+				contentType: "application/pdf",
+				title,
+				libraryID: target.libraryID,
+				collections: target.collections,
+			});
+		}
+		catch (e) {
+			errorMessage = e.message || String(e);
+			Zotero.logError(e);
+		}
+		finally {
+			state.saving = false;
+			if (this._isCurrent(id, state, generation)) {
+				if (item) {
+					this._setSaveState(id, "saved");
+					this._finishProgress(progress, "saved", { items: [item], error: null });
+					this._restoreSaveButtonLater(id, generation);
+				}
+				else {
+					this._setSaveState(id, "failed");
+					this._finishProgress(
+						progress, "error", errorMessage || "Couldn't save the PDF"
+					);
 				}
 			}
 		}
@@ -735,7 +848,10 @@ var Zotero_BrowseTab = new (function () {
 			if (!this._isCurrent(id, state, generation) || state.saving) {
 				return;
 			}
-			if (state.translators) {
+			if (state.pdfURL) {
+				this._setSaveState(id, "pdf");
+			}
+			else if (state.translators) {
 				this._setSaveState(id, "available", state.translators[0].label || "");
 			}
 			else {
@@ -752,7 +868,66 @@ var Zotero_BrowseTab = new (function () {
 		return button;
 	};
 
+	/**
+	 * Watch responses in our tabs: a PDF is captured by content type, not by URL suffix,
+	 * because real PDF URLs often carry none (`/pdf/1706.03762v7`). The channel is
+	 * cancelled before the (removed, D30) viewer path consumes it, and the saved copy is
+	 * fetched again through the app's cookie jar.
+	 */
+	this._ensurePDFObserver = function () {
+		if (this._pdfObserver) {
+			return;
+		}
+		let self = this;
+		this._pdfObserver = {
+			observe(subject) {
+				let channel;
+				try {
+					channel = subject.QueryInterface(Ci.nsIHttpChannel);
+				}
+				catch (e) {
+					return;
+				}
+				if (channel.contentType !== "application/pdf") {
+					return;
+				}
+				let browserId = channel.browserId;
+				for (let [id, state] of self._states) {
+					if (!state.browser || state.browser.browserId !== browserId) {
+						continue;
+					}
+					// Already captured (a second request for the same document).
+					if (state.pdfURL) {
+						return;
+					}
+					try {
+						channel.cancel(Cr.NS_BINDING_ABORTED);
+					}
+					catch (e) {
+						Zotero.logError(e);
+					}
+					self._capturePDF(id, channel.URI.spec);
+					return;
+				}
+			},
+		};
+		Services.obs.addObserver(this._pdfObserver, "http-on-examine-response");
+	};
+
+	this._dropPDFObserverIfIdle = function () {
+		if (this._pdfObserver && !this._states.size) {
+			try {
+				Services.obs.removeObserver(this._pdfObserver, "http-on-examine-response");
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+			this._pdfObserver = null;
+		}
+	};
+
 	this._build = function (container, id) {
+		this._ensurePDFObserver();
 		let doc = container.ownerDocument;
 
 		let vbox = doc.createXULElement("vbox");
@@ -846,6 +1021,8 @@ var Zotero_BrowseTab = new (function () {
 			translatorProvider: null,
 			translators: null,
 			detectedURL: null,
+			// Set when the tab is pointed at a PDF: the Save action saves that file.
+			pdfURL: null,
 			// URL whose detection is currently in flight (null when none is).
 			detectingURL: null,
 			generation: 0,
@@ -880,10 +1057,18 @@ var Zotero_BrowseTab = new (function () {
 				// The location-change notification fires at the start of the load, when
 				// currentURI may still be the previous document, so pass the destination.
 				self._refresh(id, location && location.spec);
-				self._detect(id);
+				self._detect(id, location && location.spec);
 			},
 			onStateChange(progress, request, stateFlags, status) {
 				if (!progress.isTopLevel) {
+					return;
+				}
+				let startDocument = Ci.nsIWebProgressListener.STATE_START
+					| Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
+				if ((stateFlags & startDocument) === startDocument
+					&& request && request.URI && isPDFURL(request.URI.spec)) {
+					// A link to a PDF (or a redirect to one): stop before the viewer path.
+					self._capturePDF(id, request.URI.spec);
 					return;
 				}
 				let stopWindow = Ci.nsIWebProgressListener.STATE_STOP
@@ -1068,5 +1253,6 @@ var Zotero_BrowseTab = new (function () {
 			target.removeEventListener(event, handler);
 		}
 		state.listeners = [];
+		this._dropPDFObserverIfIdle();
 	};
 })();

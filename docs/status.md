@@ -23,7 +23,8 @@ push target. The product branch may diverge without limit.
 | Connector | **Retiring under D47 (R34):** the standalone Firefox add-on folds into an in-app Browse tab; there is never an AMO submission. **Save bridge shipped 2026-11-25:** the Browse tab detects a web translator and saves the page to the connector's own target (focused collection, else the library) via the app's `Translation` actor and `RemoteTranslate` — no connector inject script was ported. Multi-item pages open a picker (2b, shipped 2026-11-25). Remaining: Google Docs glue, PDF capture. Until the retirement phase, the imported upstream source still builds as **CiteWell Connector**, ID `citewell-connector@sophy.ca`, port 23120, via `connectors/node_modules` |
 | Agent access | `/agent/v1`: items, translators, attachments, notes, collections, UI, `export.note`; 17 MCP tools; `citewell` CLI; audit log. PDF annotation verbs are gone (D30) |
 | Notes | New and agent notes are `.md` attachments. The 82 legacy notes in the disposable `~/CiteWell` library migrated with 0 failures; 82 are in Trash, 83 `.md` attachments exist and the database backup is kept. Attachment pane shows parent, date and a plain-text excerpt; Markdown attachments are re-indexed at startup and on selection, and `quicksearch-everything` finds their text. The ProseMirror editor is replaced by a read-only legacy view; the `editorInstance` module and its annotation serialization are gone, and the note window/tab remains only as a read-only legacy surface (D37) |
-| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index. Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
+| PDF | **Removed:** no reader, document worker, pdf.js or PDF text index; the Browse tab
+captures a PDF response as an imported-URL attachment instead of rendering it (D47 Phase 3). Attachments open through the host; item-pane/notes-context annotation controls, Add Note from Annotations and the citation-dialog annotation mode are gone; the agent has 17 tools. Existing annotations export once to `storage/<key>/annotations.md` from Library preferences. The data layer remains only for that export (D30) |
 | Plugins | **Parked, with a curated path (D31/D51):** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden; code is retained (D31). D51 opens a first-party-vetted security-extension path (uBlock Origin candidate — spike pending on content-script injection into browse tabs, background pages, and `webRequest`); arbitrary plugins stay closed |
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are removed (D46). The connector tree keeps its own Node build tree until D47's retirement phase removes it |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
@@ -35,9 +36,10 @@ push target. The product branch may diverge without limit.
 connector's page-side scripts did **not** need porting, because the app's own `Translation` actor
 runs a web translator in the visible tab and `RemoteTranslate` saves the result. `RemoteTranslate`
 was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initTranslation` is
-awaited); multi-item pages open a picker (2b). Remaining, in order: proxies (small — pass the
-detected translator's proxy to `ItemSaver`), PDF capture from the tab, then D49 hardening (R36),
-the uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
+awaited); multi-item pages open a picker (2b). Proxies (the detected translator's proxy now reaches `ItemSaver`) and PDF capture are shipped:
+a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
+imported-URL attachment through the app's own cookie jar. Remaining: D49 hardening (R36), the
+uBlock spike (R38), and only then trash `connectors/node_modules` and the XPI pipeline.
 **Google Docs is deferred by owner decision (2026-11-25):** its page-side half is ~4,700 lines of
 React/Kix client code that lives only in the connector, so the official connector stays installed
 for Docs until that port (or a vendored-client spike) is taken on.
@@ -265,8 +267,9 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    load, Save button states, save to the connector's own target, verified live with a
    Wikipedia article and snapshot attachments — 18/18 browse tests. Remaining: the
    multi-item picker (verified live on a PubMed search page: 10 items chosen and saved),
-   proxies, PDF capture, D49 hardening + the ESR tripwire, the uBlock spike, then the connector
-   tree to Trash. Google Docs is deferred; the connector remains for it. **Strata cadence (owner, 2026-11-25):
+   proxies, PDF capture (content-type interception; verified live with an extensionless arXiv
+   PDF), D49 hardening + the ESR tripwire, the uBlock spike, then the connector tree to Trash.
+   Google Docs is deferred; the connector remains for it. **Strata cadence (owner, 2026-11-25):
    one lean plan/code pass at each milestone and each security seam — the save bridge got
    both on 2026-11-25; the next pass belongs to the picker or D49 — never on grind, docs, or
    test-only edits; 2 passes/8 hops per task.**
