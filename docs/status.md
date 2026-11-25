@@ -93,9 +93,14 @@ the canonical Zotero sources.
 was only read: `zotero.sqlite` still hashes to its pre-run baseline and its mtime is
 `2026-11-23 14:05`.
 
-**Pitfalls added today:** the test suite is packaged inside `omni.ja`, so a test-file edit needs
-`xtask build` **and** `dir_build` before `test/runtests.sh` sees it; editing only the source file
-runs the previous suite and the stack lines point at the old file. `IOUtils.writeAtomic` does not
+**Pitfalls added today:** a scratch smoke launch of the installed AppImage must pass
+`--no-integration`; otherwise the launch auto-installs the attention integration and rewrites the
+real `~/.config/citewell/integration.txt` and `citewell-attention.service` to the scratch
+`-datadir` (done twice on 2026-11-25, repaired both times with
+`--install-integration -datadir "$HOME/CiteWell"`). Use an existing `-profile` directory too. The
+test suite is packaged inside `omni.ja`, so a test-file edit needs `xtask build` **and**
+`dir_build` before `test/runtests.sh` sees it; editing only the source file runs the previous
+suite and the stack lines point at the old file. `IOUtils.writeAtomic` does not
 exist in this runtime; use
 `Zotero.File.putContentsAsync`, which already writes atomically via `OS.File.writeAtomic`. A
 `-profile` path must exist before launch or Gecko shows "Profile Missing". `/tmp` cannot be

@@ -144,6 +144,36 @@ CiteWell's shape, once R11 provides a release host:
 Test builds may be published to the remote (`EricBright/CiteWell`) to exercise this channel; the
 release body must say it is a test build, and a test build must never reuse a real version number.
 
+### Gear Lever and AppImageUpdate compatibility
+
+An in-app update must not break the update channel the person chose when they installed. Gear
+Lever's rules decide what that requires (read from its source, `mijorus/gearlever`):
+
+- It integrates AppImages into `~/Applications`, writes a desktop entry whose `Exec` is that path,
+  and **keys every per-app setting on `md5(file_path)`** (`ini_config.py`). Renaming the file orphans
+  the person's settings and desktop entry, so the stable path and basename are mandatory, not
+  cosmetic. Gear Lever's own replace-update keeps the old basename for the same reason.
+- It decides whether an update is available by comparing the **local file's SHA-1 with the SHA-1 in
+  the remote `.zsync`**, or its SHA-256 with the release asset's digest, falling back to file size
+  (`GithubUpdater.is_update_available`). It does not parse versions. Therefore **the self-updater
+  must install the published asset byte for byte**. A locally rebuilt or post-processed copy makes
+  Gear Lever see a permanent mismatch and offer the same version forever.
+- It reads the update information from the installed file with
+  `readelf --string-dump=.upd_info` (`UpdateManagerChecker.check_app_embedded_url`). A build without
+  `.upd_info` is not updateable by Gear Lever or AppImageUpdate at all, so every release we publish
+  must embed it, and every file our self-updater installs must be such a release.
+- It scans `~/Applications` for AppImages. Temporary or backup files must not use an `.appimage`
+  name; a hidden temp without that suffix is invisible to it.
+- It refuses to update while the app is running by comparing `ps -eo exe` with the path, which does
+  match an AppImage's runtime process. Our own updater runs inside the app, so it replaces the file
+  only after the old process has quit and never writes the running file.
+- Never offer a channel Gear Lever does not follow. If an in-app update installs a test or preview
+  build while `latest` still points at stable, Gear Lever will treat stable as an update and move
+  the person back.
+
+AppImageUpdate has no per-app state: it updates the file it is given and reads `.upd_info` from it,
+so the same rules (stable path, published bytes, valid update information) cover it.
+
 ## Not done yet
 
 - **Flatpak**: a later option. The same `AppDir` content can feed `flatpak-builder`; nothing is
