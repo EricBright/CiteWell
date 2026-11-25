@@ -1,9 +1,10 @@
 "use strict";
 
 // Shipped copy, not code comments and not data formats (docs/ui.md, D54).
-// The test runtime serves a cached locale package through chrome://, so the
-// scan reads the source files the build copies. Preference panes are content,
-// not locale, and are read through chrome:// as shipped.
+// The test runtime can run under a translation (it resolves to en-GB on this
+// machine), so the scan reads the en-US source files, which are the copy this
+// project owns and the build copies. Preference panes are content, not locale,
+// and are read through chrome:// as shipped.
 const LOCALE_FILES = [
 	"chrome/locale/en-US/zotero/zotero.ftl",
 	"chrome/locale/en-US/zotero/zotero.properties",
@@ -61,6 +62,14 @@ describe("UI copy", function () {
 				`${pane.src}\n${offenders(text).join("\n")}`
 			);
 		}
+	});
+
+	it("should send the Docs gate to the Connector page", async function () {
+		let text = await Zotero.File.getContentsAsync(
+			`${repoRoot()}/chrome/content/zotero/browseDocsGate.js`
+		);
+		assert.include(text, "https://www.zotero.org/download/connectors");
+		assert.notInclude(text, "https://www.zotero.org/download\"");
 	});
 
 	it("should keep every Docs gate step on one numbered line", async function () {

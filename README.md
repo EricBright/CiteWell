@@ -13,8 +13,8 @@ Scholarship, and is not the place to report Zotero bugs.
 |---|---|
 | Branch | `citewell` |
 | Base | Zotero 10.0, upstream `864b2d47e` |
-| Version string | `10.0.9.SOURCE.864b2d47e` |
-| Build verified | Linux dev build, 2026-11-23 |
+| Version string | `10.0.9.SOURCE.bbcc182ee` |
+| Build verified | Linux dev build, 2026-11-25 |
 | Platform | Linux x86_64, AppImage only |
 
 Work in progress and scope: [roadmap.md](roadmap.md).
@@ -56,20 +56,20 @@ budgets by `tools/docs-check`. Everything else is on-demand.
 | `README.md` | always | starting any session | Identity, commands, repository map, this index |
 | `AGENTS.md` | always | working as an AI agent | Agent contract: language rule, naming invariant, doc rules |
 | `roadmap.md` | on-demand | choosing what to work on | Now / Next / Later, not-doing, exit criteria |
-| `docs/status.md` | on-demand | resuming after a break or a context reset | Current state, next work, pitfalls |
+| `docs/status.md` | on-demand | resuming after a break | Current state, next work, pitfalls |
 | `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
 | `COPYING` | once | legal questions | Full AGPL-3.0 text |
 | `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
 | `docs/sync.md` | on-demand | relating CiteWell to upstream | Branch model; upstream is reference only |
-| `docs/branding.md` | on-demand | changing titles, icons, installer, or channel | Where each piece of branding lives |
-| `docs/decisions.md` | on-demand | asking why something is the way it is | Decision records and dead ends |
+| `docs/branding.md` | on-demand | titles, icons, installer, channel | Where each piece of branding lives |
+| `docs/decisions.md` | on-demand | asking why something is | Decision records and dead ends |
 | `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
-| `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
+| `docs/rust.md` | on-demand | choosing a language or dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
 | `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, what replaced it, 23119 listener |
-| `docs/export.md` | on-demand | planning or running a vault export | Obsidian/Markdown export design and safety rules |
-| `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
-| `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |
+| `docs/export.md` | on-demand | planning a vault export | Obsidian/Markdown export design and safety rules |
+| `docs/cli.md` | on-demand | agents and scripting | `citewell` CLI, local API, write authorization |
+| `docs/agent.md` | on-demand | the agent bridge and MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
 | `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants, milestones |
 | `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and honest trade-offs |
@@ -77,6 +77,7 @@ budgets by `tools/docs-check`. Everything else is on-demand.
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `docs/settings.md` | on-demand | reorganizing settings or adding a pane | Inventory, target tabs, registry rules |
+| `docs/ui.md` | on-demand | UI copy, layout, interaction | Rules and their tests |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License

@@ -1192,6 +1192,27 @@ Gear Lever compatibility rules in [packaging.md](packaging.md#updates) apply to 
 The Mozilla wizard under `chrome/content/zotero/update/` is now unreferenced and left in the tree;
 removing it is cleanup, not a behaviour change.
 
+## D54 — UI behaviour gets one spec and a test per change
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+R6 exists because UI changes had accumulated as patches rather than specified behaviour. The rules
+the owner set out now live on their own page, [ui.md](ui.md), not in a handoff paragraph: copy
+carries no em dashes, steps sit one per line, disabled controls are visibly distinct with the
+measured pair recorded, browser habits decide placement and Ctrl/Cmd+L, wording is honest, and Docs
+links to the Connector page. Every R6 change records a decision and ships a test that can fail; a
+rule that cannot be tested says so instead of gaining a test that cannot fail.
+
+The first change is the copy rule. `test/tests/uiCopyTest.js` scans the shipped locale files and
+every preference pane XHTML, and checks that each Docs gate step is one numbered line. It
+deliberately does not scan JavaScript literals or data formats (exported Markdown, CSL output, file
+names): those are review territory, and a repository-wide string lint would flag comments and
+translation data, force exceptions, and train people to ignore it. Contrast cannot be measured by
+this harness, so the pair is recorded in ui.md and re-measured when a control changes.
+
+Rejected: enforcing the copy rule by review alone. The scan is cheap and fails on exactly the thing
+the owner asked for, while review had already missed seven instances.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

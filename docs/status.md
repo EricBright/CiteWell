@@ -15,9 +15,9 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
-Compaction anchor. Last code commit `bbcc182ee` (docs commits follow). Installed AppImage
-`10.0.9.SOURCE.bbcc182ee`, sha256
-`eb890c63b855f20ff68fde6fb350bc34da83233dd5bdff9f4fed7a24efeb0e9d`, 125,864,440 bytes, installed
+Compaction anchor. Last code commit `4bf82bc30` (docs commits follow). Installed AppImage
+`10.0.9.SOURCE.4bf82bc30`, sha256
+`432876366a1296efcb885511bd272ce30e93ca91fc70e20bf7a561d24eec37bb`, 125,864,440 bytes, installed
 at `~/AppImages/citewell.appimage` and launched against a scratch profile with `--no-integration`:
 `/connector/ping` returned 200 on **both** `23119` and `23120`. The integration manifest points at
 the installed path and `~/CiteWell`.
@@ -85,9 +85,18 @@ the installed path and `~/CiteWell`.
    at requests. Verified end to end with a scratch data directory whose database had been moved
    aside: the app restored it, removed the marker and answered on 23120.
 
+9. **R6 started: the UI behaviour spec and the copy rule** (`4bf82bc30`). [ui.md](ui.md) makes the
+   owner's rules binding and says where each is enforced; [D54](decisions.md#d54--ui-behaviour-gets-one-spec-and-a-test-per-change)
+   records the protocol. The first change removed every em dash from the copy the project owns
+   (save tooltip, picker intro, status lines, attention title, import collection name, locale
+   strings, agent and DNS pane text) and added `uiCopyTest.js`: it scans the en-US locale files,
+   every preference pane as shipped, the Docs gate's launch URL, and the one-numbered-line rule for
+   its steps. Locale is read from the source tree because the test runtime can resolve to a
+   translation (en-GB here); the copy rule covers en-US. Tests: uiCopy 4/4.
+
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
 21/21 (same-title regression, the refusal, database-only classification, checkpoint lifecycle),
-update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
+uiCopy 4/4, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 
 **The self-updater itself is R11/R21, not R8.** The shape is decided and written in
 [packaging.md](packaging.md#updates): the specification allows an updater built into the AppImage,
@@ -131,7 +140,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.bbcc182ee`, sha256 `eb890c6…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.4bf82bc30`, sha256 `4328763…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -143,7 +152,7 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | **R24 done 2026-11-25, hazard closed the same day.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Fixed: same-title children dropped by title-keyed resume, the 25-item checkpoint duplicating children, and a changed source after an interruption now refusing with a database restore (D52); `importTest.js` 19/19, importer 10/10 |
-| Docs | README index, Rust docs gate, D1–D53 |
+| Docs | README index, Rust docs gate, D1–D54 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
 **Next: R6** ([roadmap.md](../roadmap.md)). R34 closed 2026-11-25: the Browse tab, save
@@ -157,7 +166,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `bbcc182ee` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `4bf82bc30` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -167,11 +176,11 @@ the save bridge.
 Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (125,864,440 bytes; sha256
-  `eb890c63b855f20ff68fde6fb350bc34da83233dd5bdff9f4fed7a24efeb0e9d`; Browse tab with the
+  `432876366a1296efcb885511bd272ce30e93ca91fc70e20bf7a561d24eec37bb`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
   settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
-  its restore hardening, the checkpoint-lifecycle fixes, startup recovery of a leftover swap, no
-  Mozilla update channel, version `10.0.9.SOURCE.bbcc182ee`)
+  its restore hardening, the checkpoint-lifecycle fixes, startup recovery of a leftover swap, the
+  R6 copy pass, no Mozilla update channel, version `10.0.9.SOURCE.4bf82bc30`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
