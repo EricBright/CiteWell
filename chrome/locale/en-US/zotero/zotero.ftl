@@ -1294,3 +1294,15 @@ menu-edit-redo-action = Redo { $action }
 
 local-api-authorize-title = Local API Authorization
 local-api-authorize-text = “{ $appName }”, an application running on your computer, wants to modify your { -app-name } library.
+
+# Browse tab (D47)
+menu-new-browse-tab =
+    .label = New Browse Tab
+
+browse-tab-title = Browse
+browse-nav-back = Back
+browse-nav-forward = Forward
+browse-nav-reload = Reload
+
+browse-urlbar =
+    .placeholder = Enter a web address

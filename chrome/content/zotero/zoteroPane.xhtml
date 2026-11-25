@@ -78,6 +78,7 @@
 		Services.scriptloader.loadSubScript("chrome://zotero/content/customElements.js", this);
 
 		Services.scriptloader.loadSubScript("chrome://zotero/content/tabs.js", this);
+		Services.scriptloader.loadSubScript("chrome://zotero/content/browseTab.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/zoteroPane.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/contextPane.js", this);
 		Services.scriptloader.loadSubScript("chrome://zotero/content/fileInterface.js", this);
@@ -117,6 +118,7 @@
 		<command id="cmd_zotero_newCollection" oncommand="ZoteroPane_Local.newCollection(ZoteroPane_Local.getSelectedCollections()[0]?.key)"/>
 		<command id="cmd_zotero_newFeed_fromURL" oncommand="ZoteroPane_Local.newFeedFromURL()"/>
 		<command id="cmd_zotero_addByIdentifier" oncommand="Zotero_Lookup.showPanel()"/>
+		<command id="cmd_zotero_newBrowseTab" oncommand="Zotero_BrowseTab.open()"/>
 		<command id="cmd_zotero_newStandaloneFileAttachment" oncommand="ZoteroPane.addAttachmentFromDialog()"/>
 		<command id="cmd_zotero_newStandaloneLinkedFileAttachment" oncommand="ZoteroPane.addAttachmentFromDialog(true)"/>
 		<command id="cmd_zotero_newChildFileAttachment" oncommand="ZoteroPane.addAttachmentFromDialog(false, ZoteroPane.getSelectedItems()[0].id)"/>
@@ -177,6 +179,10 @@
 				modifiers="accel,shift"/>
 		<key id="key_back"/>
 		<key id="key_forward"/>
+		<key id="key_newBrowseTab"
+				key="t"
+				modifiers="accel"
+				command="cmd_zotero_newBrowseTab"/>
 		<key id="key_showTabsMenu"
 				command="cmd_zotero_showTabsMenu"
 				modifiers="accel"/>
@@ -246,6 +252,11 @@
 								class="menu-type-library"
 								data-l10n-id="menu-add-by-identifier"
 								command="cmd_zotero_addByIdentifier"
+							/>
+							<menuitem
+								id="menu_newBrowseTab"
+								data-l10n-id="menu-new-browse-tab"
+								command="cmd_zotero_newBrowseTab"
 							/>
 							<menu
 									id="menu_attachmentAdd"

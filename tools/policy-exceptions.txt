@@ -22,3 +22,5 @@ D41 resource/ace/worker-javascript.js
 D41 resource/csl-validator-wasm/csl-validator.mjs
 D41 resource/csl-validator-wasm/rnv.mjs
 D41 resource/csl-validator-wasm/worker.mjs
+D47 chrome/content/zotero/browseTab.js
+D47 test/tests/browseTabTest.js
