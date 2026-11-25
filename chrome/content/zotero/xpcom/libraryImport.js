@@ -1447,6 +1447,19 @@ Zotero.LibraryImport = {
 	 * A restore request wins over an import request; the pane never queues both.
 	 */
 	applyPending: async function () {
+		// A swap can be interrupted after its request was already cleared, or a
+		// helper can be killed mid-move. Only the marker is left then, and nothing
+		// else would run recovery: the app would open a half-moved database (or none
+		// at all) and stay that way. Finish the swap before looking at work items.
+		if (await IOUtils.exists(PathUtils.join(this.dataDir, this.APPLY_MARKER))) {
+			try {
+				await this._runSidecar(["recover", "--data-dir", this.dataDir]);
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		}
+
 		if (await IOUtils.exists(this.restorePath)) {
 			return this._applyRestorePending();
 		}
