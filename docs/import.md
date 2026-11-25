@@ -112,7 +112,9 @@ Every replace, adopt and restore writes a restore point. A merge writes one befo
 a database-only restore writes one for the state it replaces. The Library pane lists them with
 date, origin, item/collection counts and size. A point marked **database only** (a merge backup, or
 the state a database restore replaced) holds a database snapshot and nothing else: restoring it
-swaps the database and leaves attachments and the search index in place. Restoring a full point:
+swaps the database and leaves attachments and the search index in place. The absence of a
+`storage/` directory is what makes a point database-only; a manifest is a convenience, not the
+test, because a crash can land between the swap and the manifest write. Restoring a full point:
 
 1. Inspects the selected point first; an empty or corrupt point is refused rather than swapped in.
 2. Names the restore point's item/collection counts and the current library's counts in the
@@ -120,6 +122,8 @@ swaps the database and leaves attachments and the search index in place. Restori
 3. Moves the current library into a new restore point and swaps the selected one into place at the
    next start.
 4. Leaves both states recoverable: the previous current state is the new restore point.
+5. A database swap that fails part way is recovered before the request is dropped, so a marker
+   from a killed helper cannot roll the library back on the next operation.
 
 Backups are kept until the person removes them. They live under `<data>/.import-backup/` and are
 shown in the Locations list.

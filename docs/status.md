@@ -15,9 +15,9 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
-Compaction anchor. Last code commit `6b5c3a017` (docs commits follow). Installed AppImage
-`10.0.9.SOURCE.6b5c3a017`, sha256
-`148435588c44cead5decaa9e4f3ca2b133d1a53abe9ad63beb850c6b83340845`, 125,860,344 bytes, installed
+Compaction anchor. Last code commit `bf0341193` (docs commits follow). Installed AppImage
+`10.0.9.SOURCE.bf0341193`, sha256
+`40c48f777c23184024a842e76f51d7148bd89312138408666d26b8aaef0a76cc`, 125,864,440 bytes, installed
 at `~/AppImages/citewell.appimage` and launched against a scratch profile with `--no-integration`:
 `/connector/ping` returned 200 on **both** `23119` and `23120`. The integration manifest points at
 the installed path and `~/CiteWell`.
@@ -62,9 +62,19 @@ the installed path and `~/CiteWell`.
    Update button does the same. A check now resolves locally as "Update URL not available" with no
    network request. Decision: [D53](decisions.md#d53--there-is-no-mozilla-update-channel-and-check-for-updates-says-so).
 
+6. **Restore hardening from a second-opinion pass** (`bf0341193`). Two holes in the new
+   database-only restore: a backup is database-only by the absence of `storage/`, not only by a
+   manifest the sidecar cannot write, so a crash between the swap and the manifest used to leave a
+   point the full restore path would accept and restore with an empty attachment tree
+   (`queueRestore` now refuses it, `listBackups` marks it, the pane routes it to Restore database);
+   and a sidecar killed between moving the database aside and removing its marker left the marker,
+   so a later apply would have rolled a completed restore back. The importer gained a `recover`
+   command, and the failure path runs it before dropping the request. Tests: importer 12/12,
+   import 20/20.
+
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
-19/19 (including the same-title regression and the refusal), update channel 4/4, importer 10/10;
-docs 800/800; repo-guard green; docs gate green.
+20/20 (including the same-title regression, the refusal and the database-only classification),
+update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 
 **The self-updater itself is R11/R21, not R8.** The shape is decided and written in
 [packaging.md](packaging.md#updates): the specification allows an updater built into the AppImage,
@@ -85,7 +95,10 @@ tree; do not delete the canonical Zotero sources.
 was only read: `zotero.sqlite` still hashes to its pre-run baseline and its mtime is
 `2026-11-23 14:05`.
 
-**Pitfalls added today:** a scratch smoke launch of the installed AppImage must pass
+**Pitfalls added today:** `Zotero.File.createDirectoryIfMissingAsync` did not create a nested
+directory whose parent had just been created in the test runtime (it returned without the directory
+appearing). Use `IOUtils.makeDirectory(path, { createAncestors: true, ignoreExisting: true })` for a
+new nested path; `_applyDatabaseRestore` does. A scratch smoke launch of the installed AppImage must pass
 `--no-integration`; otherwise the launch auto-installs the attention integration and rewrites the
 real `~/.config/citewell/integration.txt` and `citewell-attention.service` to the scratch
 `-datadir` (done twice on 2026-11-25, repaired both times with
@@ -105,7 +118,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.6b5c3a017`, sha256 `1484355…`, 125,860,344 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.bf0341193`, sha256 `40c48f7…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -131,7 +144,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `6b5c3a017` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `bf0341193` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -140,11 +153,11 @@ the save bridge.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,860,344 bytes; sha256
-  `148435588c44cead5decaa9e4f3ca2b133d1a53abe9ad63beb850c6b83340845`; Browse tab with the
+- `dist/CiteWell-x86_64.AppImage` (125,864,440 bytes; sha256
+  `40c48f777c23184024a842e76f51d7148bd89312138408666d26b8aaef0a76cc`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
-  settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change, no
-  Mozilla update channel, version `10.0.9.SOURCE.6b5c3a017`)
+  settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
+  its restore hardening, no Mozilla update channel, version `10.0.9.SOURCE.bf0341193`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
