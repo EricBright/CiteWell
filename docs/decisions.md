@@ -1213,6 +1213,31 @@ this harness, so the pair is recorded in ui.md and re-measured when a control ch
 Rejected: enforcing the copy rule by review alone. The scan is cheap and fails on exactly the thing
 the owner asked for, while review had already missed seven instances.
 
+## D55 — The item picker's keyboard contract
+
+**Date:** 2026-11-25 · **Status:** accepted · **Reversible:** yes
+
+The Browse tab's picker is a modal dialog that a web translator waits on. Its contract is now
+written and tested (`test/tests/browsePickerTest.js`, five cases):
+
+1. The filter has focus when the dialog opens, so typing narrows the list immediately.
+2. Escape cancels and answers the caller with null. So does closing the window.
+3. Save is disabled while nothing is checked, and the count says "N of M selected".
+4. A filter hides unmatched rows but never hides a checked one, so a stray filter cannot hide the
+   selection that is about to be saved.
+5. **Enter in the filter does not save.** Save is reached by clicking, by Tab to the button, or by
+   the platform's default-button routing.
+
+The last point is the one that needed a decision. The translator may pre-check rows, so a filtered
+list plus Enter could commit a selection the person never confirmed. A test now fails if Enter in
+the filter starts answering the caller. Rejected: auto-checking every row that matches the filter;
+the filter is a view, not a selection. Rejected: focusing the list instead of the filter; the
+reason to open the picker is usually to narrow a long list.
+
+The test opens the dialog non-modally, because a test that opens it modally blocks itself; it
+focuses the window before asserting the filter's focus, since a non-modal test window is not
+focused on creation.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

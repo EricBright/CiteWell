@@ -100,10 +100,13 @@ the installed path and `~/CiteWell`.
    The keyboard rule gained a declaration test: `browseTabTest` asserts the `key_focusBrowseURL`
    declaration (key `l`, modifier `accel`) still points at the command that calls
    `Zotero_BrowseTab.focusOrOpen`; the behaviour itself was already tested.
+   The item picker's keyboard contract is now specified and tested (D55): filter focused on open,
+   Escape cancels with null, Save disabled until something is checked, a filter never hides a
+   checked row, and Enter in the filter does not save. Tests: picker 5/5.
 
 **Tests at this commit:** Browse 41/41, RemoteTranslate 12/12, connector integration 3/3, import
 21/21 (same-title regression, the refusal, database-only classification, checkpoint lifecycle),
-uiCopy 4/4, uiContrast 1/1, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
+uiCopy 4/4, uiContrast 1/1, picker 5/5, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 
 **The self-updater itself is R11/R21, not R8.** The shape is decided and written in
 [packaging.md](packaging.md#updates): the specification allows an updater built into the AppImage,
