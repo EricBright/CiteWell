@@ -15,9 +15,9 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
-Compaction anchor. Last code commit `bf0341193` (docs commits follow). Installed AppImage
-`10.0.9.SOURCE.bf0341193`, sha256
-`40c48f777c23184024a842e76f51d7148bd89312138408666d26b8aaef0a76cc`, 125,864,440 bytes, installed
+Compaction anchor. Last code commit `ef612c3c6` (docs commits follow). Installed AppImage
+`10.0.9.SOURCE.ef612c3c6`, sha256
+`62c7456b3efaa22ee1ba9426ff688a88b699b1b64ce46b1ce5a009bdf4a19535`, 125,864,440 bytes, installed
 at `~/AppImages/citewell.appimage` and launched against a scratch profile with `--no-integration`:
 `/connector/ping` returned 200 on **both** `23119` and `23120`. The integration manifest points at
 the installed path and `~/CiteWell`.
@@ -72,8 +72,15 @@ the installed path and `~/CiteWell`.
    command, and the failure path runs it before dropping the request. Tests: importer 12/12,
    import 20/20.
 
+7. **Checkpoint lifecycle closed** (`ef612c3c6`). A completed merge forgot only the checkpoint it
+   used, so an older one for the same source could later refuse a merge with nothing partial left;
+   it now forgets them all for that source. A checkpoint whose backup is gone (or which never
+   recorded one) used to refuse forever with no action that could work; the dialog now says so,
+   points at the restore-point list, and offers to discard the record after a second confirmation
+   naming the duplication it allows. Tests: import 21/21.
+
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
-20/20 (including the same-title regression, the refusal and the database-only classification),
+21/21 (same-title regression, the refusal, database-only classification, checkpoint lifecycle),
 update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 
 **The self-updater itself is R11/R21, not R8.** The shape is decided and written in
@@ -118,7 +125,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.bf0341193`, sha256 `40c48f7…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.ef612c3c6`, sha256 `62c7456…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and it carries empty AppImage update information until R21 |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -144,7 +151,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `bf0341193` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `ef612c3c6` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -154,10 +161,11 @@ the save bridge.
 Artifacts are local and gitignored:
 
 - `dist/CiteWell-x86_64.AppImage` (125,864,440 bytes; sha256
-  `40c48f777c23184024a842e76f51d7148bd89312138408666d26b8aaef0a76cc`; Browse tab with the
+  `62c7456b3efaa22ee1ba9426ff688a88b699b1b64ce46b1ce5a009bdf4a19535`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
   settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
-  its restore hardening, no Mozilla update channel, version `10.0.9.SOURCE.bf0341193`)
+  its restore hardening, the checkpoint-lifecycle fixes, no Mozilla update channel, version
+  `10.0.9.SOURCE.ef612c3c6`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
