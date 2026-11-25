@@ -8,6 +8,7 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
+| R34 | In-app Browse tab; retire the Firefox connector and the AMO dance (D47 in [docs/decisions.md](docs/decisions.md)) | The Gecko engine, live-page translation and all nineteen connector endpoints already ship in-app; the add-on is a third leg held together by someone else's approval queue | A page browsed in-app saves an item via translator detection; Google Docs insertion works in-tab; `connectors/node_modules` and the XPI pipeline are in Trash (D26); no AMO listing exists or is wanted |
 | R24 | Import/merge a Zotero library without touching it (design in [docs/import.md](docs/import.md)) | A fork must not trap an existing library, but must never write Zotero's data | Adopt a copy for an empty library; merge 1k items with attachments into a non-empty one; source checksum unchanged |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
@@ -27,7 +28,7 @@ Completed outcomes, kept for context.
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R32 | LibreOffice feature parity: six menu actions, field-based citations, bibliography ([plan](docs/libreoffice-parity.md)) | The scaffold only inserts APA text at the end of the document; users expect Zotero's citation workflow | M5 passed 2026-11-22: add/edit citation, refresh, unlink, bibliography, Add Note and table fields; AppImage rebuilt; add-only install available on request |
-| R15 | Rust build toolchain: delete unnecessary Node steps first, then replace Babel/Sass as needed (D41) | Removes the frozen Node build dependency | No Node/npm tree needed; bundles built by Rust tools pass the same tests |
+| R15 | Rust build toolchain: delete unnecessary Node steps first, then replace Babel/Sass as needed (D41) | Removes the frozen Node build dependency | No Node/npm tree needed; bundles built by Rust tools pass the same tests — app build done (D43–D46); the connector tree closes out under R34/D47 |
 | R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` creates maintenance work, even without upstream parity | Written strategy; first string renamed without touching upstream locale files |
 | R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |
 | R12 | Test coverage for the changed behaviour | Meaningful only once the removals and notes model exist | New behaviour has failing-before, passing-after tests |
@@ -51,6 +52,7 @@ Completed outcomes, kept for context.
 | Embedding a PDF viewer, PDF annotation tools, or PDF full-text search | D30: the host owns PDFs; the renderer is the largest inherited attack surface |
 | An in-app note editor, Markdown renderer, or HTML note storage | D29: notes are `.md` files edited by the host; no second document model |
 | Loading third-party plugins in shipped builds | D31: arbitrary local code execution with no product need |
+| Submitting a Firefox add-on to AMO, or shipping a connector XPI as the primary path | D47: the connector folds into an in-app browsing tab; no listing, signing or review cycle |
 | Adding npm packages, vendoring the note editor, or updating the lockfile | D32: npm is retired; no new dependency tree |
 | Adding Rust crates or a second toolchain without owner approval | D32: std-only by default; ask first |
 | Tracking upstream merges or Zotero feature parity | D28: CiteWell is a new application; `zotero/zotero` is reference only |

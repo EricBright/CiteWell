@@ -893,6 +893,47 @@ Rejected: keeping a root tree “just in case” — it was 398 MB and the build
 Rejected: deleting the connector tree in the same pass — it would remove the Firefox connector
 build without a Rust replacement.
 
+## D47 — The Firefox connector folds into the app as a browsing tab
+
+**Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes, with owner approval
+
+CiteWell gains an in-app **Browse** tab — address bar, a slim tab strip, navigation, and a
+"Save to CiteWell" action driven by translator detection — and the standalone Firefox connector
+retires: no Firefox add-on listing, no AMO submission or review cycle, no signed XPI, no
+third-party distribution leg. The app remains the single downloadable artifact alongside the
+LibreOffice extension it already carries. This supersedes the connector-handoff options in
+`status.md` and ends the D46 exception for `connectors/node_modules` once the retirement phase
+runs.
+
+The plan is cheap because the app already contains the connector's machinery: web translation
+runs in-process (`RemoteTranslate.mjs`, the `TranslationParent`/`TranslationChild` actors, and
+`HiddenBrowser.mjs` drive live pages in isolated content processes today, as Scaffold and the
+feeds do); `xpcom/translate` is the same engine the connector ships, alongside all 759
+translators; all nineteen `/connector/*` protocol endpoints already live in `server_connector.js`;
+snapshots (`SingleFileChild`) and printing (`ZoteroPrintChild`) already exist; and `<browser>`
+embeddings are proven in `basicViewer.xhtml`. The add-on's only irreplaceable contribution was a
+visible page context — the tab supplies that in-process.
+
+Phases, in order: record the decision; build the browse tab; port the connector's page-side
+scripts as frame scripts to drive the save button; port the remaining glue (Google Docs
+integration, PDF capture, proxies, preferences); only then retire the connector tree — deleting
+`connectors/node_modules` (~96 MB), the gulp build and `xtask connectors`, with removals going
+to Trash under D26 — and finally set the browsing policy. Deletion is gated: the in-app path must
+be proven against everything the add-on did before anything is removed. Zotero compatibility is
+preserved by the unchanged connector protocol, so a sideloaded official Zotero Connector still
+works against CiteWell. The LibreOffice extension is unaffected.
+
+Because CiteWell now renders arbitrary web content, D28 gains a carve-out: Firefox ESR security
+patches are pulled promptly rather than at leisure. R15's "npm tree gone entirely" completes
+when the retirement phase deletes the connector tree.
+
+Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
+machinery, and user confusion over two connector identities, all for a leg the app can replace
+with a tab. Rejected: keeping the gulp/XPI build indefinitely — it preserves the last npm tree
+(96 MB) for a distribution no longer shipped. Rejected: embedding a second browser engine —
+Gecko already ships with the platform; a second engine would double the artifact and blur the
+D12 Rust boundary.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

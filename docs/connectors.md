@@ -121,10 +121,12 @@ The build now copies exactly what the UI asks for:
 
 ## Build
 
-The app build is Node-free, but the connector build still uses upstream's `build.sh` + gulp
-pipeline and the isolated `connectors/node_modules` tree. That tree is the last npm tree in the
-repository; removing it requires either vendoring the current Firefox output or porting the
-connector build (see [status.md](status.md#handoff-2026-11-23-connector-build)).
+**Retiring under D47:** the standalone connector folds into the app's in-app Browse tab (R34);
+`connectors/node_modules`, the gulp pipeline and `xtask connectors` are deleted once the in-app
+path is proven, and no AMO submission ever happens. Until that retirement phase, the build still
+uses upstream's `build.sh` + gulp pipeline and the isolated `connectors/node_modules` tree — the
+last npm tree in the repository. Do not invest in this pipeline: `connectors/src` is now the
+porting source for the page-side scripts the Browse tab reuses.
 
 ```bash
 cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
@@ -135,6 +137,9 @@ Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a
 the book-section icons and the state-dot composites after the upstream pipeline.
 
 ## Load it
+
+**Legacy path (D47):** once the in-app Browse tab ships, nothing is loaded into Firefox. This
+flow remains only for porting comparison until the retirement phase.
 
 1. Start CiteWell (`./build/dist/CiteWell-x86_64.AppImage` or the staged build).
 2. Firefox → `about:debugging` → This Firefox → Load Temporary Add-on → pick
@@ -169,11 +174,12 @@ is upstream translation work, tracked by R7.
 
 The id is what makes this a separate add-on: it installs alongside the real Zotero Connector,
 gets its own storage, and cannot be mistaken for it. Changing the id later creates a *new*
-add-on rather than updating this one, so settle it before submitting to AMO.
+add-on rather than updating this one. D47 removes the AMO question entirely: no listing is ever
+submitted, so the id matters only while the add-on is still built.
 
 `update_url` remains `https://zotero.org/AUTOFILLED` and is inert: Firefox asks it about
 `citewell-connector@sophy.ca`, and Zotero's update manifest only lists `zotero@chnm.gmu.edu`.
-Point it at the URL AMO provides once a listing exists.
+Under D47 no listing ever exists, so it stays inert until the retirement phase removes it.
 
 ## Updating from upstream
 
@@ -184,5 +190,8 @@ git subtree pull --prefix connectors connectors/main --squash
 
 Conflicts should be confined to the files in the patch table. Verify with
 `cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors`, then load the XPI again.
+
+Under D47 upstream pulls stop once the page-side scripts are ported into the app; after that the
+source is a frozen porting reference until it, too, goes to Trash.
 
 *For the full documentation index, see [../README.md](../README.md).*
