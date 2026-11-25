@@ -63,6 +63,7 @@ budgets by `tools/docs-check`. Everything else is on-demand.
 | `docs/sync.md` | on-demand | relating CiteWell to upstream | Branch model; upstream is reference only |
 | `docs/branding.md` | on-demand | changing titles, icons, installer, or channel | Where each piece of branding lives |
 | `docs/decisions.md` | on-demand | asking why something is the way it is | Decision records and dead ends |
+| `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
 | `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
 | `docs/connectors.md` | on-demand | changing the browser connector | Import, patch list, XPI build, rebranding gaps |

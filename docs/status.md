@@ -39,8 +39,10 @@ was hardened for a long-lived tab (the actor is pinned in `setBrowser()`; `initT
 awaited); multi-item pages open a picker (2b). Proxies (the detected translator's proxy now reaches `ItemSaver`) and PDF capture are shipped:
 a PDF response is intercepted by content type before Gecko's removed viewer (D30) and saved as an
 imported-URL attachment through the app's own cookie jar. R36 hardening shipped 2026-11-25 (isolated browse context cleared at startup/shutdown, soft HTTPS,
-default-deny permissions, maintainer-only ESR tripwire). Remaining: the uBlock spike (R38), and only
-then trash `connectors/node_modules` and the XPI pipeline.
+default-deny permissions, maintainer-only ESR tripwire). The R38 spike is complete
+([ublock-spike.md](ublock-spike.md)): WebExtensions do not install in this build and the URL
+classifier has no lists, so the recommendation is no in-app blocker; owner approval is pending.
+After that decision: retire `connectors/node_modules` and the XPI pipeline.
 **Google Docs is out of the app by owner decision (2026-11-25):** its page-side half is the
 connector's React/Kix client, so the Browse tab gates `docs.google.com/document/*` with an
 explainer and hands the URL to Firefox, where Zotero's official connector talks to CiteWell.

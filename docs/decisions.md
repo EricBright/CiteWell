@@ -1109,6 +1109,14 @@ execution, a compatibility obligation the project dropped) still stands for ever
 the vetted path. Rejected: sending anything of ours to AMO for this — the XPI we vendor is
 uBlock's own signed build; D47's no-submission rule is untouched.
 
+**Spike result (R38, 2026-11-25).** See [ublock-spike.md](ublock-spike.md). WebExtensions do not
+install in this application as built: uBlock Origin 1.77 (signed) and a minimal hand-built MV2
+extension both fail with `ERROR_CORRUPT_FILE`, while `xpinstall.enabled` is true and signatures are
+not required. The URL classifier also has no tracking-list data, so built-in content blocking is
+inert. Recommendation: ship no in-app blocker; keep the sandbox, soft HTTPS and default-deny
+permissions, and leave "use Firefox with uBlock Origin" as documentation rather than a control.
+This changes the shape D51 expected; owner approval is pending.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
