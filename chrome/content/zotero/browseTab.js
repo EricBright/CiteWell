@@ -704,6 +704,8 @@ var Zotero_BrowseTab = new (function () {
 			doc, "browse-go", "arrow-right.svg", "browse-nav-go", "Go",
 			"chrome://zotero/skin/20/universal/"
 		);
+		// Like every browser tab, Go is inert until there is an address to go to.
+		goButton.disabled = true;
 
 		let saveButton = this._makeNavButton(
 			doc, "browse-save", "book.svg", "browse-save-available", "Save to CiteWell"
@@ -831,10 +833,22 @@ var Zotero_BrowseTab = new (function () {
 			}
 		});
 
+		const markRejected = (navigated) => {
+			if (navigated) {
+				urlbar.removeAttribute("aria-invalid");
+			}
+			else {
+				urlbar.setAttribute("aria-invalid", "true");
+			}
+		};
+		listen(urlbar, "input", () => {
+			goButton.disabled = !urlbar.value.trim();
+			urlbar.removeAttribute("aria-invalid");
+		});
 		listen(urlbar, "keydown", (event) => {
 			if (event.key === "Enter" || event.keyCode === 13) {
 				event.preventDefault();
-				this.navigate(id, urlbar.value);
+				markRejected(this.navigate(id, urlbar.value));
 			}
 		});
 		listen(backButton, "command", () => {
@@ -861,7 +875,9 @@ var Zotero_BrowseTab = new (function () {
 				Zotero.logError(e);
 			}
 		});
-		listen(goButton, "command", () => this.navigate(id, urlbar.value));
+		listen(goButton, "command", () => {
+			markRejected(this.navigate(id, urlbar.value));
+		});
 		listen(saveButton, "command", () => this._save(id));
 
 		// Translate dynamically-created l10n markup (the urlbar placeholder).

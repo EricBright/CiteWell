@@ -238,12 +238,28 @@ describe("Browse Tab", function () {
 			assert.equal(go.nextElementSibling, divider);
 			assert.equal(divider.nextElementSibling, save, "Save should sit past the divider");
 			assert.equal(go.getAttribute("aria-label"), "Go");
+			assert.isTrue(go.disabled, "Go starts disabled with an empty address bar");
+		});
+
+		it("should enable Go only while the address bar has text", function () {
+			let id = Zotero_BrowseTab.open();
+			let urlbar = doc.getElementById(id).querySelector(".browse-urlbar");
+			let go = doc.getElementById(id).querySelector(".browse-go");
+			assert.isTrue(go.disabled);
+			urlbar.value = baseURL;
+			urlbar.dispatchEvent(new win.Event("input", { bubbles: true }));
+			assert.isFalse(go.disabled, "typing should enable Go");
+			urlbar.value = "   ";
+			urlbar.dispatchEvent(new win.Event("input", { bubbles: true }));
+			assert.isTrue(go.disabled, "whitespace-only input should disable Go");
 		});
 
 		it("should navigate when Go is clicked", async function () {
 			let id = Zotero_BrowseTab.open();
 			let container = doc.getElementById(id);
-			container.querySelector(".browse-urlbar").value = baseURL;
+			let urlbar = container.querySelector(".browse-urlbar");
+			urlbar.value = baseURL;
+			urlbar.dispatchEvent(new win.Event("input", { bubbles: true }));
 			container.querySelector(".browse-go").click();
 			let browser = Zotero_BrowseTab.getBrowser(id);
 			await waitForCallback(

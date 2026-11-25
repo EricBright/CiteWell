@@ -25,20 +25,24 @@
 //
 // Contrast policy (owner feedback 2026-11-25; WCAG 2.2 SC 1.4.11 and ISO 9241-3 both
 // put the floor for non-text controls at 3:1, and text at 4.5:1):
-//  - enabled controls: --fill-primary — 9.8:1 dark, 16.1:1 light (≈9–12:1 measured)
-//  - disabled controls: --fill-secondary — 4.8:1 dark, 4.7:1 light (≈4.5:1 measured)
-// Both are computed against the actual toolbar fill (56,56,60 dark / 245,245,245 light).
+//  - enabled controls: #ffffff dark / #1a1a1a light — 11.7:1 and 16.0:1
+//  - disabled controls: #8a8a8a dark / #7a7a7a light — 3.4:1 and 3.9:1
+// The enabled/disabled gap is ~3.5-4x in contrast ratio, so "inactive" reads as a
+// different state instead of a slightly dimmer one. Measured against the toolbar fill
+// (56,56,60 dark / 245,245,245 light; the values also keep >=3:1 against the plain
+// `Field` fallback and the darker chrome strip, so a theme change cannot silently
+// fall back under the floor).
 //
-// Why not opacity: the old `opacity: 0.4` multiplied an already-muted fill and left the
-// disabled back/forward arrows at 2.0:1; --fill-tertiary at full opacity only reaches
-// 2.5:1 (2.1:1 light), still under the floor. Hence --fill-secondary for disabled.
+// Why explicit colors: the old opacity: 0.4 left the arrows at 2.0:1; --fill-tertiary at
+// full opacity reaches only 2.5:1 dark / 2.1:1 light; --fill-secondary reaches 4.8:1, which
+// is readable but too close to enabled (owner feedback: the states looked alike).
 .browse-toolbar toolbarbutton {
 	fill: currentColor;
-	color: var(--fill-primary);
+	@include light-dark(color, #1a1a1a, #ffffff);
 }
 
 .browse-nav[disabled] {
-	color: var(--fill-secondary);
+	@include light-dark(color, #7a7a7a, #8a8a8a);
 	opacity: 1;
 }
 
@@ -48,7 +52,7 @@
 	width: 1px;
 	height: 18px;
 	margin: 0 2px;
-	background: var(--fill-quinary);
+	background: var(--fill-tertiary);
 }
 
 // Save button (D47 Phase 2a): a book mark while idle/detecting, a pulse while a save runs,
@@ -64,18 +68,19 @@
 	}
 
 	&.saved {
-		color: var(--fill-primary);
+		@include light-dark(color, #1a1a1a, #ffffff);
 		opacity: 1;
 	}
 
 	&.failed {
-		color: var(--fill-secondary);
+		@include light-dark(color, #7a7a7a, #8a8a8a);
 	}
 }
 
 @keyframes browse-save-pulse {
 	50% {
-		opacity: 0.3;
+		// Never below the 3:1 floor: 0.6 of the enabled fill keeps ~6:1 at the trough.
+		opacity: 0.6;
 	}
 }
 
@@ -126,5 +131,14 @@
 	&:focus {
 		outline: 2px solid -moz-accent-color;
 		outline-offset: -1px;
+	}
+
+	// A rejected address (javascript:, whitespace, unparsable) is shown, not swallowed.
+	&[aria-invalid="true"] {
+		border-color: var(--accent-red);
+
+		&:focus {
+			outline-color: var(--accent-red);
+		}
 	}
 }
