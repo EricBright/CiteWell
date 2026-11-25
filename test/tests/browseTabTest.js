@@ -224,6 +224,21 @@ describe("Browse Tab", function () {
 			assert.isNull(urlbar.getAttribute("data-insecure"));
 		});
 
+		it("should keep the insecure marker only on its own page", function () {
+			let id = Zotero_BrowseTab.open();
+			let urlbar = doc.getElementById(id).querySelector(".browse-urlbar");
+			let state = Zotero_BrowseTab._states.get(id);
+			state.insecureURL = "http://example.invalid/page";
+			Zotero_BrowseTab._setInsecure(id, true);
+
+			Zotero_BrowseTab._updateInsecureFor(id, "http://example.invalid/page");
+			assert.equal(urlbar.getAttribute("data-insecure"), "true");
+
+			Zotero_BrowseTab._updateInsecureFor(id, "http://example.invalid/other");
+			assert.isNull(urlbar.getAttribute("data-insecure"));
+			assert.isNull(state.insecureURL);
+		});
+
 		it("should deny powerful permissions by default", function () {
 			for (let permission of ["camera", "microphone", "geolocation",
 				"desktop-notification", "midi", "midi-sysex", "xr"]) {

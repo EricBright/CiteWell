@@ -279,6 +279,10 @@ var Zotero_BrowseTab = new (function () {
 		if (!url) {
 			return false;
 		}
+		if (state.insecureURL) {
+			state.insecureURL = null;
+			this._setInsecure(id, false);
+		}
 		if (isDocsURL(url)) {
 			if (state.allowDocs !== docsURLKey(url)) {
 				this._gateDocs(id, url);
@@ -288,6 +292,11 @@ var Zotero_BrowseTab = new (function () {
 		}
 		else {
 			state.allowDocs = null;
+			// A PDF is captured as given, never upgraded: its download happens in the app,
+			// so an https:// rewrite that does not exist would be captured instead.
+			if (isPDFURL(url) && this._capturePDF(id, url)) {
+				return true;
+			}
 			let upgrade = httpsURL(url);
 			if (upgrade) {
 				state.httpsFallback = { from: url, to: upgrade };
@@ -296,9 +305,6 @@ var Zotero_BrowseTab = new (function () {
 			else {
 				state.httpsFallback = null;
 			}
-		}
-		if (isPDFURL(url) && this._capturePDF(id, url)) {
-			return true;
 		}
 		state.browser.loadURI(Services.io.newURI(url), {
 			triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
@@ -553,6 +559,7 @@ var Zotero_BrowseTab = new (function () {
 			this._capturePDF(id, spec);
 			return;
 		}
+		this._updateInsecureFor(id, spec);
 		// A real navigation ends the PDF state; the about:blank reset that follows a
 		// stopped PDF load must not (handled below).
 		if (spec && spec !== "about:blank") {
@@ -1070,6 +1077,20 @@ var Zotero_BrowseTab = new (function () {
 		}
 	};
 
+	/**
+	 * Keep the insecure marker only while the tab still shows the page it belongs to.
+	 */
+	this._updateInsecureFor = function (id, spec) {
+		let state = this._states.get(id);
+		if (!state) {
+			return;
+		}
+		if (spec !== state.insecureURL) {
+			this._setInsecure(id, false);
+			state.insecureURL = null;
+		}
+	};
+
 	this._makeNavButton = function (doc, className, icon, labelKey, fallbackLabel, iconDir) {
 		let button = doc.createXULElement("toolbarbutton");
 		button.className = "browse-nav " + className;
@@ -1284,6 +1305,8 @@ var Zotero_BrowseTab = new (function () {
 			gating: false,
 			// { from, to } while an http -> https upgrade is being attempted.
 			httpsFallback: null,
+			// The http URL whose page is currently displayed with the insecure marker.
+			insecureURL: null,
 			// URL whose detection is currently in flight (null when none is).
 			detectingURL: null,
 			generation: 0,
@@ -1358,6 +1381,7 @@ var Zotero_BrowseTab = new (function () {
 							self._gateDocs(id, fallback.from);
 							return;
 						}
+						tabState.insecureURL = fallback.from;
 						self._setInsecure(id, true);
 						try {
 							tabState.browser.loadURI(Services.io.newURI(fallback.from), {
