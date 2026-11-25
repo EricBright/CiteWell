@@ -13,40 +13,46 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-25 (R34 closed: the connector tree is gone)
+## Handoff 2026-11-25 (R34 and R24 closed)
 
-The last code commit is `146712a64`; the installed AppImage is
-`10.0.9.SOURCE.146712a64`, sha256 `adf054157b54fb9baff71272969fb8c58adec1db63b10e2c9c5eecdf6c54bd75`, 125,852,152 bytes.
+The last code commit is `9ade71e44`; the installed AppImage is
+`10.0.9.SOURCE.9ade71e44`, sha256 `c929c9ca164433b3bd8a8116072063c7cb907339a85de595cc0323324ea05d46`, 125,852,152 bytes.
 
-R34 is done. The Browse tab and its save bridge (2a), picker (2b), PDF capture, proxies, Docs
-gate, R36 hardening and R38 decision shipped earlier on 2026-11-25; this pass removed the tree
-itself: `connectors/` (117 MB, including `node_modules`, the gulp/XPI pipeline and three
-submodule working trees) and `tools/rsvg-shim` went to Trash (D26), `xtask connectors` and its
-brand/icon pipeline left the build, the three `connectors/src/*` entries left `.gitmodules`, and
-every document that described the build now records the retirement
-([connectors.md](connectors.md)).
+**R34 is done.** The Browse tab and its save bridge (2a), picker (2b), PDF capture, proxies, Docs
+gate, R36 hardening and R38 decision shipped earlier on 2026-11-25; the connector tree itself is
+gone: `connectors/` (117 MB, including `node_modules`, the gulp/XPI pipeline and three submodule
+working trees) and `tools/rsvg-shim` went to Trash (D26), `xtask connectors` and its brand/icon
+pipeline left the build, the three `connectors/src/*` entries left `.gitmodules`, and
+[connectors.md](connectors.md) is now a retirement record.
 
-One promise was untrue and is now fixed. Zotero's official connector asks `127.0.0.1:23119` and
+One promise was untrue and is fixed. Zotero's official connector asks `127.0.0.1:23119` and
 nothing else, while CiteWell serves on `23120` (D19), so the Docs explainer's "Zotero's Connector
-talks to this app" could not happen. `Zotero.Server.init` now starts a second `HttpServer` on
-`23119` when that port is free and exposes it as `Zotero.Server.connectorPort`; the Docs gate
-reads it and step 3 states the truth in both cases. `server_connectorIntegrationTest.js` drives
-the Docs handshake through `23119`. Trade-off: whichever app starts first holds the port, so a
-Zotero launched after CiteWell cannot bind `23119` and its connector will not connect.
+talks to this app" could not happen. `Zotero.Server.init` now also serves the same handlers on
+`23119` when that port is free (`Zotero.Server.connectorPort`); the Docs gate reads it and step 3
+states the truth in both cases, and `server_connectorIntegrationTest.js` drives the Docs handshake
+through `23119`. Trade-off: whichever app starts first holds `23119`.
 
-Tests at this commit: Browse 40/40, RemoteTranslate 12/12, connector integration 3/3; docs and
-repo-guard green. The installed AppImage was launched against a scratch profile and
-`/connector/ping` returned 200 on both `23119` and `23120`, so Zotero's connector target answers
-in the real artifact, not only in the harness. Next: **R24 Phase 2, the import merge** ([import.md](import.md)); R15's "no npm
-tree" exit criterion is now met as well. The `/connector/*` endpoints stay in the app, because
-Zotero's official connector is the client for Google Docs. Do not re-import a connector tree
-([connectors.md](connectors.md)).
+**R24 is done.** The acceptance run merged the canonical 1,771-item library into a non-empty
+library: 946 regular items, 589 attachments, 83 notes, 53 collections (import root + 51 source
+collections + the standalone-notes collection), 1 saved search, 0 skipped, 153 rows reported
+missing (148 without a path, 5 with an absent file), source checksum unchanged, 38.9 s. The run
+found two defects, both fixed before closing: a fresh merge dropped same-title children because
+resume de-duplication keyed on title and content type instead of source identity (34 attachments
+and 1 note on this library), and the 25-item checkpoint cadence could duplicate up to 24 children
+after an interruption. `importTest.js` is 18/18, including a same-title regression.
+
+Tests at this commit: Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import 18/18;
+docs and repo-guard green. `/connector/ping` answered 200 on both `23119` and `23120` in the
+installed AppImage. **Next: R8 (update-channel decision) and R6 (UI behaviour spec)** are the only
+Now items left; R32's citation explorer and undo listener stay optional ([roadmap.md](../roadmap.md)).
+The `/connector/*` endpoints stay, because Zotero's official connector is the Docs client; do not
+re-import a connector tree ([connectors.md](connectors.md)).
 
 ## Where the project stands
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.146712a64`, sha256 `adf0541…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.9ade71e44`, sha256 `c929c9c…`, 125,852,152 bytes), installed at `~/AppImages/citewell.appimage` |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -57,7 +63,7 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Plugins | **Parked, with a curated path (D31/D51):** `PLUGINS_ENABLED=false`; loader initialization returns early, plugin enumeration returns empty and Tools → Plugins is hidden; code is retained (D31). D51 opens a first-party-vetted security-extension path (uBlock Origin candidate — spike pending on content-script injection into browse tabs, background pages, and `webRequest`); arbitrary plugins stay closed |
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
-| Import | R24 Phase 3a merged into `citewell`: detector, Library pane, Rust `citewell-import`; adopt-copy, replace, restore points, merge of regular items, collections, notes, attachments, annotations and saved searches; dedup report/skip/review; resumable child passes |
+| Import | **R24 done 2026-11-25.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.9 s. Two defects found that day are fixed: same-title children were dropped by resume de-duplication keyed on title, and the 25-item checkpoint could duplicate children on resume; `importTest.js` 18/18 |
 | Docs | README index, Rust docs gate, D1–D51 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
@@ -70,7 +76,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `146712a64` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `9ade71e44` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -79,9 +85,9 @@ the save bridge.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256 `adf054157b54fb9baff71272969fb8c58adec1db63b10e2c9c5eecdf6c54bd75`; Browse tab with the
+- `dist/CiteWell-x86_64.AppImage` (125,852,152 bytes; sha256 `c929c9ca164433b3bd8a8116072063c7cb907339a85de595cc0323324ea05d46`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
-  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.146712a64`)
+  settings tab, DNS defaults, no connector tree, version `10.0.9.SOURCE.9ade71e44`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -285,12 +291,14 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 ## Pick up here
 
-1. **R24 Phase 2 — import merge** ([import.md](import.md)). The next substantial feature.
-2. **R32 optional follow-ups** — citation explorer and undo/save listener.
-3. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
+1. **R8 — update-channel decision** ([roadmap.md](../roadmap.md)): keep the `source` channel or remove
+   update checks; the updater must never point at Zotero's servers.
+2. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour change.
+3. **R32 optional follow-ups** — citation explorer and undo/save listener.
+4. **R31 — translator safeguards: parked by the owner (2026-11-22).** Revisit only if the threat
    model changes.
-4. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
-5. **Strata cadence (owner, 2026-11-25):** one lean plan/code pass at each milestone and security
+5. **Deferred manual checks** — KDE/GNOME/XWayland matrix; end-to-end settings review.
+6. **Strata cadence (owner, 2026-11-25):** one lean plan/code pass at each milestone and security
    seam, never on grind/docs/test-only edits; the wait ritual is in the gitignored
    `reviews/strata-during-waits.md`.
 

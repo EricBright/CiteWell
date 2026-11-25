@@ -215,4 +215,27 @@ The pane states plainly that Zotero is not modified and that CiteWell's library 
 | 3 | Attachments, annotations and saved-search definitions imported |
 | 4 | Duplicate report, skip, review and resumable merge checkpoint |
 
+## Measured acceptance (2026-11-25)
+
+A merge of the canonical library (`/run/media/eric/RedDragon/Zotero_Library`, 1,771 items) into a
+non-empty library imported 946 regular items, 589 attachments, 83 notes, 53 collections (the import
+root, the 51 source collections and one collection for the 3 standalone notes) and 1 saved search.
+It skipped nothing, reported 153 rows without a file (148 with no path and 5 whose file is absent),
+left the source checksum unchanged, and took 38.9 s.
+
+That run found two data-loss defects, both fixed before R24 closed:
+
+1. **A fresh merge dropped same-title children.** Resume de-duplication keyed on
+   (parent, title, content type), so a second snapshot titled like the first, or a second note
+   titled like its parent, looked already imported. On this library that silently discarded 34 of
+   589 copyable attachments and one note. Notes and attachments now record their source IDs in the
+   merge checkpoint and skip only those; the old title rule applies only to checkpoints written
+   before those fields existed.
+2. **The checkpoint cadence could duplicate children.** Recording every 25 imports meant an
+   interruption could re-import up to 24 notes or attachments on resume. A checkpoint is now
+   written after every child, which cost nothing measurable (the acceptance run stayed at 38.9 s).
+
+The source library itself carries 148 attachment rows with no path and two missing storage
+directories; those are inherited, reported, and never invented.
+
 *For the full documentation index, see [../README.md](../README.md).*
