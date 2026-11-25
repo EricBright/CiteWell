@@ -12,6 +12,12 @@
 
 mod build;
 
+/// What Gear Lever and AppImageUpdate read out of the AppImage. `latest` is GitHub's
+/// newest stable release, so a test build must be published as a prerelease to stay
+/// out of it.
+const UPDATE_INFORMATION: &str =
+    "gh-releases-zsync|EricBright|CiteWell|latest|CiteWell-*x86_64.AppImage.zsync";
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -442,6 +448,8 @@ fn appimage_inner() -> Result<PathBuf, String> {
     let status = Command::new(&tool)
         .env("ARCH", "x86_64")
         .arg("--no-appstream")
+        .arg("-u")
+        .arg(UPDATE_INFORMATION)
         .arg(&appdir)
         .arg(&output)
         .status()
@@ -450,6 +458,57 @@ fn appimage_inner() -> Result<PathBuf, String> {
     if !status.success() {
         return Err(format!("{tool} exited with {status}"));
     }
+
+    // The update information is the contract Gear Lever reads out of the file with
+    // readelf; prove it landed instead of trusting the packaging tool.
+    let printed = Command::new(&output)
+        .arg("--appimage-updateinformation")
+        .output()
+        .map_err(|e| format!("reading the embedded update information: {e}"))?;
+    let embedded = String::from_utf8_lossy(&printed.stdout).trim().to_string();
+    if embedded != UPDATE_INFORMATION {
+        return Err(format!(
+            "embedded update information is {embedded:?}, expected {UPDATE_INFORMATION:?}"
+        ));
+    }
+
+    // The zsync file and the checksum are release assets, not build afterthoughts:
+    // without them Gear Lever can describe the update but not fetch it.
+    let file = output
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "the AppImage has no file name".to_string())?
+        .to_string();
+    let zsync = output.with_file_name(format!("{file}.zsync"));
+    let zsync_status = Command::new("zsyncmake")
+        .arg("-u")
+        .arg(format!(
+            "https://github.com/EricBright/CiteWell/releases/latest/download/{file}"
+        ))
+        .arg("-o")
+        .arg(&zsync)
+        .arg(&output)
+        .status()
+        .map_err(|e| format!("running zsyncmake: {e}"))?;
+    if !zsync_status.success() || !zsync.is_file() {
+        return Err(format!("zsyncmake did not write {}", zsync.display()));
+    }
+
+    let sum = Command::new("sha256sum")
+        .arg(&output)
+        .output()
+        .map_err(|e| format!("running sha256sum: {e}"))?;
+    if !sum.status.success() {
+        return Err("sha256sum failed".to_string());
+    }
+    let text = String::from_utf8_lossy(&sum.stdout);
+    let hash = text
+        .split_whitespace()
+        .next()
+        .ok_or_else(|| "sha256sum printed no hash".to_string())?;
+    let checksum = output.with_file_name(format!("{file}.sha256"));
+    fs::write(&checksum, format!("{hash}  {file}\n"))
+        .map_err(|e| format!("writing {}: {e}", checksum.display()))?;
 
     Ok(output)
 }
