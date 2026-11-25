@@ -8,7 +8,6 @@ upstream merges are not roadmap items.
 
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
-| R34 | In-app Browse tab; retire the Firefox connector and the AMO dance (D47 in [docs/decisions.md](docs/decisions.md)) | The Gecko engine, live-page translation and all nineteen connector endpoints already ship in-app; the add-on is a third leg held together by someone else's approval queue | A page browsed in-app saves an item via translator detection; Google Docs insertion works through Zotero's official connector in Firefox (the in-app tab gates Docs with an explainer, D47); `connectors/node_modules` and the XPI pipeline are in Trash (D26); no AMO listing exists or is wanted |
 | R24 | Import/merge a Zotero library without touching it (design in [docs/import.md](docs/import.md)) | A fork must not trap an existing library, but must never write Zotero's data | Adopt a copy for an empty library; merge 1k items with attachments into a non-empty one; source checksum unchanged |
 | R8 | Update channel decision: keep `source` channel, or remove update checks | A fork must not point its updater at Zotero's servers | Explicit setting in the build config, documented |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
@@ -19,11 +18,12 @@ Completed outcomes, kept for context.
 
 | ID | Outcome | Evidence |
 |---|---|---|
+| R34 | In-app Browse tab; the Firefox connector and the AMO dance retired (D47) | Browse saves via translator detection (2a), multi-item picker (2b), PDF capture; Docs runs through Zotero's official connector, tested against the app's `23119` listener (`server_connectorIntegrationTest.js`); the Docs gate explains both states; `connectors/` and `tools/rsvg-shim` in Trash, `xtask connectors` gone, no AMO listing |
 | R38 | Content blocking decision: no in-app blocker (D51) | Evidence: [docs/ublock-spike.md](docs/ublock-spike.md); signed uBO and minimal MV2 both fail ERROR_CORRUPT_FILE; classifier has no list data; owner approved; loader stays closed |
 | R36 | Browse exposure bounded: state disposed, permissions default-deny, ESR tripwire (D49) | Evidence: reserved context 20260 cleared at startup/shutdown (cookie + clearData tests); soft HTTPS with fallback; permission prefs at block; weekly CI issue-only ESR check; 39/39 browse tests |
 | R30 | Dependency freeze guard | `tools/repo-guard` rejects package/lock changes; `.npmrc` is fail-closed (D32) |
 | R22 | Agent interface | `tools/cli` provides the CLI and MCP server over `/agent/v1` |
-| R17 | Connector rebrand | `connectors/brand.json` carries the CiteWell identity |
+| R17 | Connector rebrand | Retired with the connector tree (R34); Zotero's official connector keeps its own branding |
 | R35 | Settings as a main-window tab (D48) | `openPreferences()` routes to the settings tab and opens no `zotero:pref` window (asserted in settingsTabTest); Ctrl+, opens it; the DNS pane deep-links inside the frame; visual verification 2026-11-25; 19/19 tests |
 | R37 | DNS settings item: Cloudflare malware-blocking pair by default (D50) | Settings → DNS pane; `Zotero.DNS` applies `MODE_TRRONLY` to `https://1.1.1.2/dns-query` at startup with no first-run prompt; the system option round-trips; dnsPrefsTest 4/4 |
 
@@ -32,7 +32,7 @@ Completed outcomes, kept for context.
 | ID | Outcome | Why now | Exit criterion |
 |---|---|---|---|
 | R32 | LibreOffice feature parity: six menu actions, field-based citations, bibliography ([plan](docs/libreoffice-parity.md)) | The scaffold only inserts APA text at the end of the document; users expect Zotero's citation workflow | M5 passed 2026-11-22: add/edit citation, refresh, unlink, bibliography, Add Note and table fields; AppImage rebuilt; add-only install available on request |
-| R15 | Rust build toolchain: delete unnecessary Node steps first, then replace Babel/Sass as needed (D41) | Removes the frozen Node build dependency | No Node/npm tree needed; bundles built by Rust tools pass the same tests — app build done (D43–D46); the connector tree closes out under R34/D47 |
+| R15 | Rust build toolchain: delete unnecessary Node steps first, then replace Babel/Sass as needed (D41) | Removes the frozen Node build dependency | No Node/npm tree needed; bundles built by Rust tools pass the same tests — app build done (D43–D46); no npm tree remains anywhere (R34/D47) |
 | R7 | Localisation strategy for user-visible strings | Naively editing `chrome/locale/*` creates maintenance work, even without upstream parity | Written strategy; first string renamed without touching upstream locale files |
 | R10 | User-facing documentation rename | Cosmetic until the UI rename lands | No user-facing doc says Zotero except in attribution |
 | R12 | Test coverage for the changed behaviour | Meaningful only once the removals and notes model exist | New behaviour has failing-before, passing-after tests |

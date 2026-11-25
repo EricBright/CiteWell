@@ -1,217 +1,57 @@
-# The Firefox connector
+# The bundled Firefox connector, retired
 
-CiteWell's browser connector is built from the upstream `zotero/zotero-connectors` project,
-imported at `connectors/` and built for **Firefox only**. It is **not** the AMO-published Zotero
-Connector: it has a different extension ID, different branding and the patches listed below, so
-Firefox installs it as a separate add-on. Chrome and Safari code stays in the tree but is never
-built: pruning it would be a fork re-applied on every upstream update.
+**Status: removed 2026-11-25 under D47/R34.** This page is the record of what the tree did, what
+replaced it, and what deliberately stayed behind. There is no connector source in this repository
+and nothing here is mergeable with upstream any more.
 
-## What was imported, and how
+## What it was
 
-| Item | Value |
+The tree at `connectors/` was a `git subtree` import of `zotero/zotero-connectors` (branch `main`,
+imported at `02271dc76` on 2026-11-05, the 5.0.x line) built for Firefox only as **CiteWell
+Connector**, extension id `citewell-connector@sophy.ca`. It was never the AMO-published Zotero
+Connector: different id, different branding, and a patch list (skin icons from the app, one
+`book-section` shape for every item type, brand tokens from `brand.json`, generated dark and
+state-dot artwork). It talked to the app on `127.0.0.1:23120`, the port D19 gave CiteWell so it
+could sit next to Zotero. The build was upstream's `build.sh` plus gulp, with its own
+`node_modules` (96 MB): the last npm tree in the repository after D46.
+
+The add-on existed for one reason the app could not satisfy at the time: a visible page context
+with translator detection and a save action. D47's Browse tab supplied that in-process, and Google
+Docs was the only remaining piece only an extension could host, because its page-side half is
+Zotero's React/Kix client.
+
+## What replaced it
+
+| Need | Replacement |
 |---|---|
-| Source | `https://github.com/zotero/zotero-connectors`, branch `main` |
-| Imported at | `02271dc76` (5.0.x line, 2026-11-05) |
-| Method | `git subtree add --prefix connectors --squash` |
-| Build output | `connectors/build/firefox` → `build/dist/CiteWell-Connector.xpi` |
+| Save a page to the library | Browse tab Save: `RemoteTranslate` detects a web translator and `ItemSaver` saves to the app's own target (D47 Phase 2a/2b) |
+| Multi-item pages | `browseItemSelector.xhtml` picker |
+| PDFs | Captured by content type in the Browse tab and imported as an attachment (D47 Phase 3) |
+| Google Docs citations | Zotero's **official** connector in Firefox; the Browse tab gates `docs.google.com/document/*` with an explainer and never contacts Google itself (D47, owner-approved) |
+| Protocol compatibility | Unchanged: all `/connector/*` endpoints stay in `server_connector.js` and `server_connectorIntegration.js` |
 
-`git-subtree` is not installed by default on this machine; the official contrib script lives in
-`~/.local/bin/git-subtree` and is invoked with that directory on `PATH`.
+The official connector only asks `127.0.0.1:23119` (its default, with no port setting in its UI).
+CiteWell keeps `23120` as its own address and also serves the same handlers on `23119` when that
+port is free, which is what lets Docs citations reach this app; when a running Zotero owns
+`23119`, the app says so in the Docs explainer instead of pretending otherwise. The listener is
+`Zotero.Server.connectorPort`, covered by `server_connectorIntegrationTest.js`.
 
-## Our patches to upstream files
+## What was removed
 
-Keep this list complete. Every entry is a future merge conflict, and the list is what makes an
-upstream pull mechanical.
+On 2026-11-25, in one pass: the whole `connectors/` tree (117 MB, including `node_modules`, the
+gulp/XPI pipeline and three submodule working trees), `tools/rsvg-shim` (its rasteriser, used only
+by that icon pipeline), the `xtask connectors` command with its brand substitution and hardcoded-
+name guard, and the three `connectors/src/*` entries in `.gitmodules`. Removals went to Trash
+under D26. `build/dist/CiteWell-Connector.xpi` no longer exists and nothing regenerates it.
 
-| File | Change | Why |
-|---|---|---|
-| `connectors/src/zotero` (gitlink) | removed | it is a 1.2 GB copy of the app; CiteWell **is** that repo |
-| `connectors/build.sh` | `APP_DIR` + three path constants | skin icons, locales and `singlefile.js` come from the app root |
-| `connectors/.gitmodules` | `src/zotero` entry removed | no nested app |
-| root `.gitmodules` | four entries for `connectors/src/*` | git only reads submodules from the root |
-| `connectors/src/zotero-google-docs-integration` | submodule removed, source vendored | it needs patching, and a submodule cannot be patched from here |
-| `.../kixAddZoteroMenu.js`, `.../ui.jsx` | `book-section` icon (light/dark) and "CiteWell" label | the toolbar in Google Docs must match the connector |
-| `connectors/images/toolbar` | regenerated at build time | produced by our Rust rasteriser, not committed |
-| `connectors/icons/` | deleted (~170 files) | per-type and status artwork is unused now that every icon is book-section |
-| `connectors/build.sh` | `TOOLBAR_IMAGES` emptied, `Icon-*.png` copy removed | icons are generated by `xtask`, not shipped as source |
-| `connectors/gulpfile.js` | Safari default icon uses book-section | the last Z reference outside comments |
-| `connectors/src/common/cachedTypes.js` | `getImageSrc` returns `book-section` for every item type | one icon for all types, per the design |
-| build output | dark set added: `book-section-dark.svg`, `book-section-dark@2x.svg`, toolbar PNGs | the connector ships no dark item icons |
-| build output | `Icon-{16,32,64,128}.png` re-rendered from `book-section` | upstream ships the Zotero mark |
-| build output | `manifest.json`: `default_icon` + `theme_icons` point at book-section | remove the flash of a different shape |
+The patch table that used to live here was a merge aid. With the tree gone it would be a list of
+edits to files this repository does not contain, so only the durable lessons remain: one icon
+shape for every item type, state as a corner dot, and brand values in one place.
 
-## One icon for every item type
+## If Docs needs work later
 
-`getImageSrc` ignores the requested type: every badge is `book-section`. In dark mode it
-returns the `-dark` variant instead:
-
-| Context | Light | Dark |
-|---|---|---|
-| Toolbar (background) | `images/toolbar/book-section.png` (+ `@16`, `@48`) | `images/toolbar/book-section-dark.png` (+ `@16`, `@48`) |
-| In-page UI (content script) | `images/book-section@2x.svg` | `images/book-section-dark@2x.svg` |
-
-The dark assets are rendered by `xtask` from `chrome/skin/default/zotero/item-type/16/dark/`,
-because the connector's own build only copies the light set. Selection happens when the icon is
-set, so a theme change mid-session shows the new variant on the next state change, not instantly.
-
-## One shape, always
-
-A toolbar button that changes shape as it learns about a page forces the user to re-read it
-every time. CiteWell's connector therefore uses a single shape — `book-section` — for the
-extension icon, the default toolbar state, and every item badge. Only colour changes with the
-theme.
-
-| Surface | Asset |
-|---|---|
-| Extension icon (add-ons page, install) | `Icon-16/32/64/128.png`, rendered from `book-section` |
-| Toolbar, default and per tab | `images/toolbar/book-section*.png` for every item type |
-| Dark theme | `*-dark` variants of the same files, via `theme_icons` and `matchMedia` |
-
-State is a **corner dot on the same silhouette**, never a different shape:
-
-| State | Dot colour | Toolbar title |
-|---|---|---|
-| saving | amber `#F0A020` | Saving… |
-| saved | green `#39BF68` | Saved |
-| error | red `#DB2C3A` | Save failed |
-| offline | grey `#8A8F98` | Offline |
-
-Shape is constant; colour carries the state. Colour alone is not accessible, so the toolbar
-title states it in words — that is the channel that works for colour-blind users and screen
-readers.
-
-Multi-item translators (previously `collection.png`) and the connector status button
-(previously the Z) use the same icon. The one remaining non-book shape is the progress meter in
-the save popup, which reports percentage rather than identity.
-
-## Google Docs
-
-The Docs integration is **vendored source**, not a submodule: it had to be patched, and a
-submodule's contents cannot be changed from this repository. The cost is that its updates are
-manual — pull the upstream repo and re-apply the diff — which is acceptable for a project this
-small and this stable.
-
-Its toolbar button uses the same `book-section` icon as everything else, light or dark, and the
-menu entry reads "CiteWell". The previous icon reference
-(`images/zotero-z-16px-offline.png`) did not exist in the build at all, so the button was
-already rendering without an image.
-
-## Icon sources
-
-There are none. The connector used to carry `icons/z*.svg` and ~160 `icons/badged/*` files,
-one per item type, plus four `Icon-*.png` marks. After unification nothing referenced them:
-
-- item badges come from `book-section`
-- states come from the generated dot composites
-- the extension icon is rendered from `book-section` at 16/32/64/128
-
-The folder is deleted, `build.sh` no longer tries to render or copy it, and every icon in the
-bundle is produced from the app skin at build time.
-
-The build now copies exactly what the UI asks for:
-
-| Copied | Files |
-|---|---|
-| `book-section@2x.svg` (light content icon) | 1 |
-| `progress_arcs.png`, `csl-style.png`, `prefs-*.png`, `zotero-app-*.png` | 8 (the source folder now holds exactly these seven) |
-| toolbar `book-section*` (base, dark, 4 states × 3 sizes) | 30 |
-
-`copyResources` excludes `common/images` so a wholesale rsync cannot re-add the Z marks, and
-`xtask` renders the light base icon that previously came from `icons/badged/book-section.svg`.
-
-## Build
-
-**Retiring under D47:** the standalone connector folds into the app's in-app Browse tab (R34);
-`connectors/node_modules`, the gulp pipeline and `xtask connectors` are deleted once the in-app
-path is proven, and no AMO submission ever happens. Until that retirement phase, the build still
-uses upstream's `build.sh` + gulp pipeline and the isolated `connectors/node_modules` tree — the
-last npm tree in the repository. Do not invest in this pipeline: the Browse tab's page-side
-save does **not** reuse `connectors/src` (see Phase 2a below); the source is a reference for the
-remaining glue — Google Docs, PDF capture, proxies — until the retirement phase.
-
-```bash
-cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors
-```
-
-Output: `build/dist/CiteWell-Connector.xpi`. The build uses `tools/rsvg-shim`, a Rust
-`rsvg-convert` replacement, so no librsvg binary is needed. It also applies CiteWell branding,
-the book-section icons and the state-dot composites after the upstream pipeline.
-
-## Phase 2a (2026-11-25): the save bridge landed without a port
-
-The Browse tab's "Save to CiteWell" action runs web translators through the app's own
-`Translation` JSWindowActor and `RemoteTranslate.mjs`, then saves through `ItemSaver` to the
-connector's own target (`getSaveTarget()`: focused collection, else the library row). None of
-`src/common/inject/` was ported and none of it is needed: that layer exists only because an
-extension has no in-process translation actor.
-
-`RemoteTranslate.mjs` gained two long-lived-tab fixes: the actor is resolved once in
-`setBrowser()` and reused (a navigation between detection and translation now fails instead of
-translating the new document with a stale translator), and `initTranslation` is a query rather
-than a fire-and-forget message (detection could otherwise reach an actor whose sandbox does not
-exist yet). A live check saved a Wikipedia article with its snapshot; `browseTabTest.js` covers
-detection, saving, navigation-away and teardown.
-
-The multi-item picker, proxy deproxification and PDF capture have since shipped in-app. For the
-retirement gate, still to port or verify: Google Docs (deferred by the owner — its page-side half
-is the connector's React/Kix client).
-
-## Load it
-
-**Legacy path (D47):** once the in-app Browse tab ships, nothing is loaded into Firefox. This
-flow remains only for porting comparison until the retirement phase.
-
-1. Start CiteWell (`./build/dist/CiteWell-x86_64.AppImage` or the staged build).
-2. Firefox → `about:debugging` → This Firefox → Load Temporary Add-on → pick
-   `connectors/build/firefox/manifest.json`.
-3. Save a page and a PDF; check the toolbar badge states.
-
-A temporary add-on disappears when Firefox restarts. An unsigned XPI cannot be installed
-permanently; signing needs an AMO account and is out of scope.
-
-## Identity and brand values
-
-One file holds every product name: `connectors/brand.json`.
-
-| Key | Value |
-|---|---|
-| `name` | CiteWell |
-| `connector` | CiteWell Connector |
-| `description` | Save references to CiteWell from your web browser |
-| `defaultTitle` | Save to CiteWell |
-| `extensionId` | `citewell-connector@sophy.ca` |
-| `homepage`, `issues` | this repository |
-
-Source strings carry tokens — `{{brand}}`, `{{connector}}`, `{{description}}`,
-`{{defaultTitle}}`, `{{extensionId}}`, `{{homepage}}`, `{{issues}}` — including
-`CLIENT_NAME` in `zotero_config.js`, which is substituted into dozens of messages at runtime.
-`xtask` replaces the tokens in the packaged extension after the build, so the welcome screen,
-settings tabs, permission prompts and the OAuth application name all come from the same values.
-
-It then **fails the build** if an English UI message still hardcodes `Zotero Connector` or
-`Save to Zotero`. Code comments, test fixtures and non-English translations are exempt; the last
-is upstream translation work, tracked by R7.
-
-The id is what makes this a separate add-on: it installs alongside the real Zotero Connector,
-gets its own storage, and cannot be mistaken for it. Changing the id later creates a *new*
-add-on rather than updating this one. D47 removes the AMO question entirely: no listing is ever
-submitted, so the id matters only while the add-on is still built.
-
-`update_url` remains `https://zotero.org/AUTOFILLED` and is inert: Firefox asks it about
-`citewell-connector@sophy.ca`, and Zotero's update manifest only lists `zotero@chnm.gmu.edu`.
-Under D47 no listing ever exists, so it stays inert until the retirement phase removes it.
-
-## Updating from upstream
-
-```bash
-git fetch connectors main
-git subtree pull --prefix connectors connectors/main --squash
-```
-
-Conflicts should be confined to the files in the patch table. Verify with
-`cargo run --manifest-path tools/Cargo.toml -p xtask -- connectors`, then load the XPI again.
-
-Under D47 upstream pulls stop once the remaining glue is ported into the app; after that the
-source is a frozen reference until it, too, goes to Trash.
+Zotero's connector is a third-party project. Changes belong in its repository, or in the app's
+`/connector/*` handling; nothing about Docs is re-imported here. The app never holds a Google
+session and no Google request is ever made from CiteWell itself (D47, D49).
 
 *For the full documentation index, see [../README.md](../README.md).*

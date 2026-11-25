@@ -40,13 +40,3 @@
 [submodule "app/modules/zotero-libreoffice-integration"]
 	path = app/modules/zotero-libreoffice-integration
 	url = https://github.com/zotero/zotero-libreoffice-integration.git
-
-[submodule "connectors/src/translate"]
-	path = connectors/src/translate
-	url = https://github.com/zotero/translate.git
-[submodule "connectors/src/utilities"]
-	path = connectors/src/utilities
-	url = https://github.com/zotero/utilities.git
-[submodule "connectors/src/zotero-schema"]
-	path = connectors/src/zotero-schema
-	url = https://github.com/zotero/zotero-schema

@@ -375,7 +375,7 @@ mod tests {
     #[test]
     fn nested_node_modules_are_forbidden() {
         assert!(forbidden_path("node_modules/x/index.js").is_some());
-        assert!(forbidden_path("connectors/node_modules/x").is_some());
+        assert!(forbidden_path("tools/node_modules/x").is_some());
         assert!(forbidden_path("docs/node_modules.md").is_none());
     }
 

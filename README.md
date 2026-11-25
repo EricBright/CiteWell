@@ -66,7 +66,7 @@ budgets by `tools/docs-check`. Everything else is on-demand.
 | `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
 | `docs/rust.md` | on-demand | before choosing a language or a dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
-| `docs/connectors.md` | on-demand | changing the browser connector | Import, patch list, XPI build, rebranding gaps |
+| `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, what replaced it, 23119 listener |
 | `docs/export.md` | on-demand | planning or running a vault export | Obsidian/Markdown export design and safety rules |
 | `docs/cli.md` | on-demand | connecting an agent or scripting the app | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | building the agent bridge or its MCP tools | `/agent/v1`, verb surface, token model, phases |

@@ -10,7 +10,7 @@ is always an explicit action from a settings pane.
 |---|---|---|
 | Data directory | `~/Zotero` | `~/CiteWell` |
 | Profile | `~/.config/zotero/zotero` (or `~/.zotero`) | `~/.config/citewell/profile` |
-| Local API / connector | `127.0.0.1:23119` | `127.0.0.1:23120` |
+| Local API / connector | `127.0.0.1:23119` | `127.0.0.1:23120`, plus the connector protocol on `23119` when that port is free (Zotero's connector needs it) |
 | Plugins and prefs | Zotero's profile | CiteWell's profile |
 
 `APP_ID` remains `zotero@zotero.org` for plugin compatibility (D3), but that identity never selects

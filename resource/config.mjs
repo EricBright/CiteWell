@@ -33,7 +33,9 @@ export var ZOTERO_CONFIG = {
 	SYNC_INFO_URL: "https://www.zotero.org/support/sync",
 	TROUBLESHOOTING_URL: "https://www.zotero.org/support/getting_help",
 	FEEDBACK_URL: "https://forums.zotero.org/",
-	CONNECTORS_URL: "https://github.com/EricBright/CiteWell/blob/citewell/docs/connectors.md",
+	// CiteWell ships no connector of its own (D47); this is Zotero's official one, which
+	// Google Docs citations need and which reaches CiteWell on port 23119.
+	CONNECTORS_URL: "https://www.zotero.org/download/connectors",
 	CHANGELOG_URL: "https://github.com/EricBright/CiteWell/commits/citewell",
 	CREDITS_URL: 'https://www.zotero.org/support/credits_and_acknowledgments',
 	LICENSING_URL: 'https://www.zotero.org/support/licensing',

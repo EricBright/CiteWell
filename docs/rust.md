@@ -55,9 +55,9 @@ The failure tells the author to stop and ask. This is intentionally a gate, not 
 
 ## R15 — the build toolchain
 
-Status: **phase 5 build runner ported 2026-11-23; the root app build is Node-free.** D41–D46
-govern the order: delete the need before choosing a replacement. The connector tree keeps a
-separate Node build tree for the Firefox connector.
+Status: **phase 5 build runner ported 2026-11-23; the build is Node-free.** D41–D46 govern the
+order: delete the need before choosing a replacement. D47 then retired the connector tree, which
+held the last npm tree in the repository; nothing in the build invokes Node or npm now.
 
 Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 
@@ -66,7 +66,7 @@ Inventory of the legacy Node path (`js-build/`, `.babelrc`, `package.json`):
 | Babel | **Removed.** 45 files rewritten to CommonJS and `h()`; no `preset-env`; five vendored-resource patches moved to `tools/xtask/src/build.rs` | Done; do not reintroduce a JSX/ESM compiler |
 | Browserify | Removed from the build. `react-select` and test-only Sinon are tracked vendored bundles; `url` is replaced by the WHATWG URL API | Done; keep the vendored files checksummed |
 | Sass | **Replaced by grass 0.13.4** via `xtask sass`: 165 files, 21 entries, 304 `@import`s, 41 mixins, 9 functions and 57 control-flow blocks; compressed CSS, no source maps | Done; grass is build-only |
-| Node runner | **Replaced by `xtask build`**: JS copy/patch, test-data copy, symlinks and Sass. No signatures or watcher. Root npm/FTL/ESLint tree removed (D46). | Done; the connector tree is separate |
+| Node runner | **Replaced by `xtask build`**: JS copy/patch, test-data copy, symlinks and Sass. No signatures or watcher. Root npm/FTL/ESLint tree removed (D46). | Done; no npm tree remains (D47) |
 
 This changes the plan: Browserify is not “Rust bundler” work; it is deletion work. `url` had two call
 sites and should use the URL API. The Sinon bundle is test-only. Babel is gone; Sass is now the only
@@ -81,8 +81,8 @@ Phases:
 4. **Sass decision.** Done: keep Sass and compile it with grass (D43). Native CSS was rejected on
    source size and feature use; source maps were dropped because the app does not consume them.
 5. **Orchestration.** The build runner is ported to `xtask build`; the watcher is removed and the
-   root npm tree, FTL tooling and ESLint config are gone (D46). The connector tree keeps its
-   own Node build tree.
+   root npm tree, FTL tooling and ESLint config are gone (D46). The connector tree's Node build
+   went with the tree (D47), so no npm tree remains.
 
 Exit: no Node runtime or npm tree is needed to build; bundles produced by Rust tools pass the same
 tests. React/React DOM replacement is explicitly outside R15.
@@ -121,8 +121,8 @@ host plus Timer module). These are source rewrites, not compiler features.
   `node_modules/sinon/pkg/sinon-no-sourcemaps.js` (1,511,175 bytes; SHA-256
   `9dec805edbe8b238565a05a73a3bc54f8001cdb44734e754042e49290bf6d209`). It is test-only.
 - The root `node_modules`, `package.json`, `package-lock.json`, FTL helpers and ESLint config were
-  removed under D46. The build no longer reads or needs them. The connector tree has its own
-  Node build tree.
+  removed under D46. The build no longer reads or needs them, and the connector tree's Node build
+  left with the tree (D47).
 
 Tests after the deletion: `utilities_internalTest.js` 85/85 (including the new URL cases),
 `importTest.js` 17/17, `tagSelectorTest.js` 29/29, and `attachmentReadObserverTest.js` 8/8. A clean
@@ -183,8 +183,8 @@ build completed with no browserify task, and the staging build succeeded.
   `node_modules`.
 - **Node invocations are gone from the build.** `build_and_run` and `test/runtests.sh` call
   `cargo run -p xtask -- build`; `.signatures.json` and the watcher are gone. The root `node_modules`,
-  npm metadata, `js-build/`, FTL tools and ESLint config are removed (D46). The connector tree
-  keeps its own Node tree.
+  npm metadata, `js-build/`, FTL tools and ESLint config are removed (D46), and the connector tree
+  took the last npm tree with it (D47).
 - **Tests:** the build output matched the Node build exactly; the 85/85 utilities suite and the
   broader app/UI checks remain the behavioral oracle. The watcher was not ported: rerunning the
   fast build is the replacement.

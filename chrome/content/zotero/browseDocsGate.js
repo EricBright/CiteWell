@@ -64,13 +64,24 @@ function load() {
 		"docs-gate-step1", "1. Open the document in Firefox."
 	);
 	document.getElementById("step2").textContent = ftl(
-		"docs-gate-step2", "2. Install Zotero Connector once, if it isn’t there."
+		"docs-gate-step2", "2. Install Zotero’s official Connector once, if it isn’t there."
 	);
-	document.getElementById("step3").textContent = ftl(
-		"docs-gate-step3",
-		"3. Sign in to Google there. Saves reach CiteWell automatically, because Zotero’s "
-			+ "Connector talks to this app."
-	);
+	// Zotero's connector only asks port 23119. CiteWell answers there when it could claim
+	// the port, so the promise in step 3 is true only then; otherwise the connector is
+	// talking to whatever else owns the port, and the step says what to do about it.
+	let connectorPort = Zotero.Server && Zotero.Server.connectorPort;
+	document.getElementById("step3").textContent = connectorPort
+		? ftl(
+			"docs-gate-step3",
+			"3. Sign in to Google there. Zotero’s Connector talks to this app, so citations "
+				+ "use your CiteWell library."
+		)
+		: ftl(
+			"docs-gate-step3-busy",
+			"3. Sign in to Google there. Another app has Zotero’s port, usually a running "
+				+ "Zotero, so the Connector reaches that app instead. Close Zotero and restart "
+				+ "CiteWell to use your CiteWell library."
+		);
 	let connectorLink = document.getElementById("get-connector");
 	connectorLink.textContent = ftl("docs-gate-get-connector", "Get Zotero Connector");
 	connectorLink.addEventListener("click", (event) => {

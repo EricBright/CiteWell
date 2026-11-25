@@ -32,8 +32,9 @@ workspace with the tools you already use, and treats automation and repairabilit
 - The engine and SQLite schema, so an existing library can be imported.
 - Translators, with their update channel intact (D33).
 - CSL styles and locales.
-- The Firefox connector and the Google Docs integration; the sync-dependent parts of Google Docs
-  remain gated.
+- Zotero's official browser connector and the Google Docs integration, through the unchanged
+  `/connector/*` protocol; CiteWell ships no add-on of its own (D47), and the sync-dependent parts
+  of Google Docs remain gated.
 
 ## The selling points
 
@@ -81,10 +82,9 @@ Rust `grass` compiler. React, Monaco, Ace, the CSL validator and the citeproc WA
 `resource/`, so a build does not read `node_modules`.
 
 There is no Java runtime, no PDF.js, no third-party Python package in the LibreOffice extension and
-no install step. The only remaining npm tree is `connectors/node_modules` (about 96 MB), because the
-Firefox connector still uses its upstream gulp build; it is isolated from the app build and is the
-next porting candidate. A smaller dependency and parser surface means fewer CVEs to track and a
-build one person can still reproduce (D32, D41–D46, [rust.md](rust.md)).
+no install step. There is also no npm tree anywhere: the last one left with the connector (D47). A
+smaller dependency and parser surface means fewer CVEs to track and a build one person can still
+reproduce (D32, D41–D47, [rust.md](rust.md)).
 
 ### 7. Linux-native, one file
 

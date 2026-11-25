@@ -27,7 +27,12 @@ var { HttpServer } = ChromeUtils.importESModule("chrome://remote/content/server/
 var { NetUtil } = ChromeUtils.importESModule("resource://gre/modules/NetUtil.sys.mjs");
 
 Zotero.Server = new function () {
-	var _onlineObserverRegistered, serv;
+	var _onlineObserverRegistered, serv, connectorServ;
+	// Zotero's official connector asks 127.0.0.1:23119 and nothing else; CiteWell owns
+	// 23120 so the two applications can coexist. Serving the same handlers on 23119 as
+	// well, when that port is free, is what lets Google Docs citations reach this app
+	// through the official connector (D47). Null when 23119 belongs to another process.
+	this.connectorPort = null;
 	this.responseCodes = {
 		200:"OK",
 		201:"Created",
@@ -86,6 +91,23 @@ Zotero.Server = new function () {
 			Zotero.logError(e);
 			Zotero.debug("Not initializing HTTP server");
 			serv = undefined;
+			return;
+		}
+
+		try {
+			connectorServ = new HttpServer();
+			connectorServ.registerPrefixHandler('/', this.handleRequest);
+			connectorServ.start(23119);
+			this.connectorPort = connectorServ.identity.primaryPort;
+			Zotero.debug(`Connector-compatible listener on 127.0.0.1:${this.connectorPort}`);
+		}
+		catch (e) {
+			// Zotero is running, or something else owns the port. The official connector
+			// will talk to that application instead; the Docs gate says so.
+			connectorServ = undefined;
+			this.connectorPort = null;
+			Zotero.debug("Port 23119 is taken; Zotero's connector cannot reach this app "
+				+ "for Google Docs citations");
 		}
 	};
 	
@@ -98,6 +120,11 @@ Zotero.Server = new function () {
 	 * releases bound port
 	 */
 	this.close = function () {
+		if (connectorServ) {
+			connectorServ.stop();
+			connectorServ = undefined;
+			this.connectorPort = null;
+		}
 		if (!serv) return;
 		serv.stop();
 		serv = undefined;

@@ -305,6 +305,14 @@ Rejected: auto-detecting and adopting `~/Zotero` on first run — it looks conve
 it collides with Zotero and can route an agent to the wrong library. Rejected: a shared profile
 to reuse plugins — plugins can be installed separately; shared state is the larger risk.
 
+**Amendment (2026-11-25, D47).** `23120` stays CiteWell's address: the CLI, the agent bridge and
+the local API keep using it, so no tool can be routed to the wrong library by a port choice.
+Zotero's official connector, however, asks only `127.0.0.1:23119`, so the app additionally serves
+the same handlers there when that port is free (`Zotero.Server.connectorPort`); that listener is
+what lets Google Docs citations reach this app. Whichever application starts first holds `23119`:
+if it is CiteWell, a Zotero started later cannot bind it and its connector cannot connect. The
+Docs explainer reports that state instead of promising a connection that does not exist.
+
 ## D20 — Markdown is the default authoring and interchange format
 
 **Date:** 2026-11-20 · **Status:** accepted for APIs and docs; superseded by D29 for note storage · **Reversible:** yes
@@ -891,9 +899,8 @@ removed root tree (`test/resource/{chai,mocha,co-mocha}.js -> ../../node_modules
 build — `gio trash build` and rebuild — could not run the harness at all. They are now real files
 at the versions the last `package.json` pinned (chai 3.5.0, mocha 3.4.2, co-mocha 1.2.0; all MIT),
 with provenance recorded in `test/content/runtests.html`. The harness now survives a clean build. Reintroducing any npm tree
-requires owner approval under D32. The `connectors/` tree keeps its own `node_modules` because
-`xtask connectors` uses the upstream gulp build to preserve the Firefox connector; that tree is
-separate from the app build and is the remaining Node build dependency.
+requires owner approval under D32. The `connectors/` tree kept its own `node_modules` under this decision;
+D47 retired that tree on 2026-11-25, so no npm tree remains in the repository.
 
 Rejected: keeping a root tree “just in case” — it was 398 MB and the build no longer reads it.
 Rejected: deleting the connector tree in the same pass — it would remove the Firefox connector
@@ -971,6 +978,22 @@ anyway" lets a reader open a document in-tab knowing citations will not work. Co
 Google credentials or sessions touch CiteWell, the D49 Docs exception is withdrawn, and the
 connector tree is no longer needed for Docs. R34's exit criterion is amended accordingly: Docs
 insertion works through the official connector in Firefox, not in-tab.
+
+**Retirement note (2026-11-25).** The tree is gone, not archived in place: `connectors/` (117 MB,
+including `node_modules`, the gulp/XPI pipeline and three submodule working trees) and
+`tools/rsvg-shim` went to Trash under D26; `xtask connectors`, the brand substitution and the
+hardcoded-name guard left the build; the three `connectors/src/*` entries left `.gitmodules`; and
+[connectors.md](connectors.md) is now a retirement record rather than a build guide. The
+`/connector/*` endpoints stayed, because Zotero's official connector is the Docs client.
+
+That client only asks `127.0.0.1:23119`, which this decision had not accounted for: CiteWell
+serves on `23120` (D19), so the Docs explainer's promise that "Zotero's Connector talks to this
+app" was false as shipped. The fix is a second `HttpServer` on `23119` when the port is free,
+exposed as `Zotero.Server.connectorPort`. The Docs gate reads it: step 3 either says the connector
+reaches CiteWell or says another app (usually a running Zotero) holds the port and what to do
+about it. `server_connectorIntegrationTest.js` drives the Docs handshake through `23119`, so the
+claim is tested rather than asserted. The coexistence cost is in D19's amendment: the first app to
+start owns `23119`.
 
 Rejected: submitting our own add-on to AMO — recurring review friction, signing and update
 machinery, and user confusion over two connector identities, all for a leg the app can replace
