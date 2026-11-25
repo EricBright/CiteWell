@@ -694,6 +694,7 @@ Zotero_Preferences.Library = {
 	 */
 	_askRestoreBeforeMerge: async function (stale) {
 		var when = stale.createdAt ? new Date(stale.createdAt).toLocaleString() : stale.id;
+		var usable = !!(stale.backup && await IOUtils.exists(stale.backup));
 		var text = `A merge of the Zotero library at\n\n${stale.source}\n\n`
 			+ `was interrupted on ${when}, and that library has changed since then.\n\n`
 			+ "Merging it again would add a second copy of what was already imported.\n\n"
@@ -702,20 +703,48 @@ Zotero_Preferences.Library = {
 			text += ` That merge had imported `
 				+ `${this._plural(stale.itemsImported, "item", "items")} before it stopped.`;
 		}
-		if (stale.backup) {
-			text += `\n\nRestore point: ${stale.backup}`;
+		if (usable) {
+			text += `\n\nRestore point: ${stale.backup}`
+				+ "\n\nRestoring keeps the current library as a restore point and restarts "
+				+ "CiteWell. Attachment files stay in place.";
 		}
-		text += "\n\nRestoring keeps the current library as a restore point and restarts "
-			+ "CiteWell. Attachment files stay in place.";
+		else {
+			text += "\n\nThat merge left no usable restore point. Restore the library from a "
+				+ "point made before that date under Restore points, then merge again. If no such "
+				+ "point exists, the record of the interrupted merge can be discarded, but the "
+				+ "items it already imported stay in the library and merging again adds a second "
+				+ "copy of them.";
+		}
 		var ps = Services.prompt;
 		var flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
 			+ ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING;
 		var index = ps.confirmEx(
-			window, "Merge refused", text, flags, "Restore…", "Cancel", null, null, {}
+			window,
+			"Merge refused",
+			text,
+			flags,
+			usable ? "Restore…" : "Discard checkpoint…",
+			usable ? "Cancel" : "Close",
+			null,
+			null,
+			{}
 		);
 		if (index !== 0) return;
-		if (!stale.backup) {
-			this._setStatus("That merge did not record a restore point; nothing was restored.", true);
+		if (!usable) {
+			var warning = "Discard the record of that interrupted merge?\n\n"
+				+ "The items it already imported stay in the library, and merging that library "
+				+ "again will add a second copy of them.\n\n"
+				+ "Only do this if no restore point from before that merge exists.";
+			if (ps.confirmEx(window, "Discard checkpoint", warning, ps.STD_YES_NO_BUTTONS,
+				null, null, null, null, {}) !== 0) {
+				return;
+			}
+			var removed = await Zotero.LibraryImport.discardIncompleteMerge(stale.source);
+			this._setStatus(
+				`Discarded ${this._plural(removed, "interrupted merge", "interrupted merges")}. `
+					+ "Merging again can duplicate what was already imported.",
+				true
+			);
 			return;
 		}
 		try {

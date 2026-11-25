@@ -174,6 +174,33 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should forget every checkpoint for a source after a merge", async function () {
+		let source = "/tmp/forget-source-library";
+		let ids = ["test-forget-a", "test-forget-b"];
+		try {
+			await Zotero.LibraryImport._writeMergeCheckpoint(ids[0], {
+				source,
+				sourceHash: "first-hash",
+				status: "items",
+			});
+			await Zotero.LibraryImport._writeMergeCheckpoint(ids[1], {
+				source,
+				sourceHash: "second-hash",
+				status: "notes",
+			});
+			assert.equal(
+				await Zotero.LibraryImport.discardIncompleteMerge(source),
+				2
+			);
+			assert.isNull(await Zotero.LibraryImport._findStaleMerge(source, "third-hash"));
+		}
+		finally {
+			for (let id of ids) {
+				await Zotero.LibraryImport._removeMergeCheckpoint(id);
+			}
+		}
+	});
+
 	it("should follow identity aliases through a chain", function () {
 		let identity = Zotero.LibraryImport;
 		identity._identityKeys = new Map([

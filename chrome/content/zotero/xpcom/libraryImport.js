@@ -745,6 +745,10 @@ Zotero.LibraryImport = {
 			}
 
 			await this._removeMergeCheckpoint(id);
+			// A completed merge makes every other checkpoint for this source moot.
+			// Left behind, an older one would refuse the next merge as "interrupted"
+			// even though nothing partial remains.
+			await this._removeMergeCheckpointsForSource(sourcePath);
 			await this._writeResult({
 				ok: true,
 				mode: "merge",
@@ -2318,6 +2322,35 @@ Zotero.LibraryImport = {
 	 * Forget the merge sessions whose restore point is the snapshot being
 	 * restored: their partial import is gone, so a fresh merge may proceed.
 	 */
+	/**
+	 * Forget an interrupted merge that can be neither resumed nor rolled back
+	 * (its backup is gone, or it never recorded one). The partial import stays in
+	 * the library, so the caller must warn that merging again duplicates it.
+	 */
+	discardIncompleteMerge: async function (sourcePath) {
+		return this._removeMergeCheckpointsForSource(sourcePath);
+	},
+
+	_removeMergeCheckpointsForSource: async function (sourcePath) {
+		if (!(await IOUtils.exists(this.mergeSessionsDir))) return 0;
+		var source = String(sourcePath).replace(/\/+$/, "");
+		var removed = 0;
+		for (let path of await IOUtils.getChildren(this.mergeSessionsDir)) {
+			let data;
+			try {
+				data = JSON.parse(await Zotero.File.getContentsAsync(path));
+			}
+			catch (e) {
+				continue;
+			}
+			if (!data?.source) continue;
+			if (String(data.source).replace(/\/+$/, "") !== source) continue;
+			await IOUtils.remove(path, { ignoreAbsent: true });
+			removed++;
+		}
+		return removed;
+	},
+
 	_removeMergeCheckpointsForBackup: async function (snapshotPath) {
 		if (!(await IOUtils.exists(this.mergeSessionsDir))) return 0;
 		var target = PathUtils.normalize(String(snapshotPath));
