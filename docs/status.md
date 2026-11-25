@@ -320,6 +320,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | Rebuilding while the AppImage runs | The output is mounted and cannot be replaced; quit it first |
 | `pkill -f "<pattern>"` | Matches the invoking shell and kills it; use `-x` or explicit PIDs |
 | `-datadir "~/…"` | Quoted `~` is not expanded; use `"$HOME/…"` |
+| Major document edits | Snapshot first: commit the current state (a disposable checkpoint) *before* big docs/roadmap edits — a collapsed table is then one `git restore` away, not a hand rebuild (learned 2026-11-25) |
 | `-datadir` with no value | Gecko ignored it and opened `~/Zotero`; the Rust `AppRun` now exits 2 |
 | XHTML changes not copied by a test build | `cargo run ... -p xtask -- build` then `app/scripts/dir_build -p l` before trusting the staged app |
 | `agent-token` missing just after launch | The port can listen a moment before the token is written; retry after a second |

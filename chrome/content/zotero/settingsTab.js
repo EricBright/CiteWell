@@ -69,6 +69,12 @@ var Zotero_SettingsTab = new (function () {
 	 */
 	this.open = function (paneID) {
 		let existing = this._findTab();
+		// Defensive: if a close path ever skipped onClose, drop the stale state
+		// instead of selecting a dead tab id (Strata code pass, finding 4).
+		if (existing && !document.getElementById(existing)) {
+			this._teardown(existing);
+			existing = null;
+		}
 		if (existing) {
 			Zotero_Tabs.select(existing);
 			if (paneID) {
@@ -114,7 +120,6 @@ var Zotero_SettingsTab = new (function () {
 
 	this._build = function (container, id) {
 		let doc = container.ownerDocument;
-
 		let vbox = doc.createXULElement("vbox");
 		vbox.className = "settings-tab";
 		vbox.setAttribute("flex", "1");
@@ -151,10 +156,13 @@ var Zotero_SettingsTab = new (function () {
 				clearInterval(timer);
 				if (ready) {
 					this._attachFrameKeys(state, ready, id);
-					state._resolveReady(ready);
 				}
+				// Always settle: on timeout resolve null so awaiting _navigate
+				// unblocks instead of hanging forever (Strata finding 2).
+				state._resolveReady(ready);
 			}
 		}, 50);
+		state.timer = timer;
 
 		return state;
 	};
@@ -163,6 +171,11 @@ var Zotero_SettingsTab = new (function () {
 	 * Ctrl+W inside the frame closes the settings tab. Key events do not cross
 	 * the frame boundary on their own (Strata risk: main keysets never see frame
 	 * focus), so the frame listens for itself.
+	 *
+	 * v1 limitation (documented, Strata finding 3): the bridge is bound to the
+	 * frame window captured at ready-time. The preferences document never
+	 * navigates itself — panes inject into the same document — so there is no
+	 * reload path to re-bind; if that ever changes, re-attach on frame load.
 	 */
 	this._attachFrameKeys = function (state, frameWindow, id) {
 		let onKey = (event) => {
@@ -204,6 +217,15 @@ var Zotero_SettingsTab = new (function () {
 			return;
 		}
 		this._states.delete(id);
+		// Stop the readiness probe and settle any awaiters (Strata findings 1+2):
+		// a closed tab must not leave a live timer probing a detached frame.
+		if (state.timer) {
+			clearInterval(state.timer);
+			state.timer = null;
+		}
+		if (state._resolveReady) {
+			state._resolveReady(null);
+		}
 		for (let [target, event, handler] of state.listeners) {
 			try {
 				target.removeEventListener(event, handler);
