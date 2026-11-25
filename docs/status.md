@@ -348,6 +348,19 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
    seam, never on grind/docs/test-only edits; the wait ritual is in the gitignored
    `reviews/strata-during-waits.md`.
 
+## Owner's UI rules (carry these into R6)
+
+- No em-dashes in user-facing copy.
+- Numbered steps sit on their own lines, one description per step.
+- Enabled and disabled controls must be plainly distinguishable; measure the contrast rather than
+  trusting the eye. The Browse toolbar uses `#ffffff`/`#1a1a1a` for enabled and
+  `#8a8a8a`/`#7a7a7a` for disabled (roughly 3.4x apart, above the 3:1 non-text floor).
+- Browser habits win: Go belongs immediately after the address bar, Save lives behind a divider at
+  the far right, and Ctrl/Cmd+L focuses and selects the URL (opening the Browse tab from Library).
+- Wording stays honest: the default browser may not be Firefox, so a handoff says "your browser"
+  unless the situation is specific.
+- Docs points at Zotero's connectors page, not the main download page.
+
 ## Commands
 
 Fetch the Gecko runtime once per version (gitignored):
