@@ -1244,9 +1244,9 @@ Zotero.LibraryImport = {
 				});
 				notesCount++;
 				processedNoteIDs.add(note.itemID);
-				if (onCheckpoint && notesCount % 25 === 0) {
-					onCheckpoint({ status: "notes", notes: [...processedNoteIDs] });
-				}
+				// Record every note as it lands: a checkpoint that lags would make a
+				// resume import the same note twice.
+				onCheckpoint?.({ status: "notes", notes: [...processedNoteIDs] });
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -1257,10 +1257,6 @@ Zotero.LibraryImport = {
 			}
 			onProgress?.(`Notes: ${notesCount}/${source.notes.length}`);
 		}
-		if (onCheckpoint && processedNoteIDs.size) {
-			onCheckpoint({ status: "notes", notes: [...processedNoteIDs] });
-		}
-
 		var processedAttachments = 0;
 		var attachmentMap = new Map();
 		var processedAttachmentIDs = new Set();
@@ -1326,12 +1322,11 @@ Zotero.LibraryImport = {
 							processedAttachmentIDs.add(attachment.itemID);
 							resumedAttachmentMap.set(attachment.itemID, importedAttachment.id);
 							importedAttachments++;
-							if (onCheckpoint && importedAttachments % 25 === 0) {
-								onCheckpoint({
-									status: "attachments",
-									attachments: Object.fromEntries(resumedAttachmentMap),
-								});
-							}
+							// Same rule as notes: one record per file, or a resume duplicates it.
+							onCheckpoint?.({
+								status: "attachments",
+								attachments: Object.fromEntries(resumedAttachmentMap),
+							});
 						}
 						catch (e) {
 							Zotero.logError(e);
@@ -1344,13 +1339,6 @@ Zotero.LibraryImport = {
 					|| processedAttachments === source.attachments.length) {
 				onProgress?.(`Attachments: ${processedAttachments}/${source.attachments.length}`);
 			}
-		}
-
-		if (onCheckpoint && resumedAttachmentMap.size) {
-			onCheckpoint({
-				status: "attachments",
-				attachments: Object.fromEntries(resumedAttachmentMap),
-			});
 		}
 
 		var annotationTypes = ["", "highlight", "note", "image", "ink", "underline", "text"];
