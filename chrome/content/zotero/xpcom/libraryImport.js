@@ -1581,6 +1581,17 @@ Zotero.LibraryImport = {
 			if (!(await IOUtils.exists(PathUtils.join(request.backup, "zotero.sqlite")))) {
 				throw new Error("The restore point has no database");
 			}
+			if (!(await IOUtils.exists(PathUtils.join(request.backup, "storage")))) {
+				// An older request, or one staged against a database-only point:
+				// swap the database alone instead of installing an empty storage.
+				return this._applyDatabaseRestore({
+					version: 1,
+					mode: "database",
+					backup: PathUtils.join(request.backup, "zotero.sqlite"),
+					dataDir: request.dataDir,
+					createdAt: request.createdAt,
+				});
+			}
 			// Old restore points may have no storage directory; the helper
 			// requires one, and an empty directory is the correct empty state.
 			await Zotero.File.createDirectoryIfMissingAsync(
@@ -1679,7 +1690,9 @@ Zotero.LibraryImport = {
 			var newId = `restore-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 			var newBackup = PathUtils.join(this.dataDir, ".import-backup", newId);
 			staging = PathUtils.join(this.dataDir, ".import", newId);
-			await Zotero.File.createDirectoryIfMissingAsync(staging);
+			// `.import` may not exist yet, and makeDirectory is the one helper that
+			// creates the ancestors.
+			await IOUtils.makeDirectory(staging, { createAncestors: true, ignoreExisting: true });
 			await IOUtils.copy(snapshot, PathUtils.join(staging, "zotero.sqlite"));
 			await this._runSidecar([
 				"apply",
@@ -1716,6 +1729,15 @@ Zotero.LibraryImport = {
 		}
 		catch (e) {
 			Zotero.logError(e);
+			// A sidecar killed between moving the old database aside and removing
+			// its marker leaves the marker behind. Finish that swap now: otherwise
+			// a later apply would restore the pre-merge database on top of this one.
+			try {
+				await this._runSidecar(["recover", "--data-dir", this.dataDir]);
+			}
+			catch (recoveryError) {
+				Zotero.logError(recoveryError);
+			}
 			await this._writeResult({
 				ok: false,
 				mode: "restore",
@@ -1780,6 +1802,12 @@ Zotero.LibraryImport = {
 				id: PathUtils.filename(child),
 				path: child,
 				manifest,
+				// The sidecar always gives a full restore point a storage directory,
+				// even an empty one; a point without it holds a database only. The
+				// property, not the manifest, decides: a crash between the sidecar
+				// and the manifest write must not turn a database point into a full
+				// one that would swap the attachment tree out.
+				databaseOnly: !(await IOUtils.exists(PathUtils.join(child, "storage"))),
 				dbSize: (await IOUtils.stat(db)).size,
 				storageSize: await this._treeSize(PathUtils.join(child, "storage")),
 				createdAt: manifest?.createdAt || stat.lastModified,
@@ -1814,6 +1842,11 @@ Zotero.LibraryImport = {
 		}
 		if (!(await IOUtils.exists(PathUtils.join(backupPath, "zotero.sqlite")))) {
 			throw new Error("That restore point has no database.");
+		}
+		if (!(await IOUtils.exists(PathUtils.join(backupPath, "storage")))) {
+			throw new Error(
+				"That restore point holds only a database; restore it with Restore database."
+			);
 		}
 		await Zotero.File.putContentsAsync(
 			this.restorePath,

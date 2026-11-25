@@ -828,7 +828,7 @@ Zotero_Preferences.Library = {
 			label.setAttribute("flex", "1");
 
 			let kind = backup.manifest?.kind;
-			let databaseOnly = !!backup.manifest?.databaseOnly;
+			let databaseOnly = backup.databaseOnly ?? !!backup.manifest?.databaseOnly;
 			let text = backup.createdAt
 				? new Date(backup.createdAt).toLocaleString()
 				: backup.id;
@@ -896,7 +896,7 @@ Zotero_Preferences.Library = {
 		if (this._busy || this._pendingImport || this._pendingRestore) return;
 		// A database-only point has no attachment tree; swapping it through the
 		// full restore path would detach every attachment.
-		if (backup.manifest?.databaseOnly) {
+		if (backup.databaseOnly || backup.manifest?.databaseOnly) {
 			return this._restoreDatabasePoint(backup);
 		}
 		var ps = Services.prompt;

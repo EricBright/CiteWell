@@ -262,7 +262,12 @@ describe("Library import", function () {
 	it("should list and queue a restore point", async function () {
 		let root = OS.Path.join(Zotero.DataDirectory.dir, ".import-backup");
 		let backup = OS.Path.join(root, "test-backup");
-		await Zotero.File.createDirectoryIfMissingAsync(backup);
+		await IOUtils.makeDirectory(backup, { createAncestors: true, ignoreExisting: true });
+		// A full restore point always carries a storage directory, even an empty one.
+		await IOUtils.makeDirectory(
+			OS.Path.join(backup, "storage"),
+			{ createAncestors: true, ignoreExisting: true }
+		);
 		await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
 		await IOUtils.copy(
 			Zotero.DataDirectory.getDatabase(),
@@ -287,6 +292,47 @@ describe("Library import", function () {
 
 			await Zotero.LibraryImport.cancelRestore();
 			assert.isFalse(await Zotero.LibraryImport.hasPendingRestore());
+		}
+		finally {
+			await Zotero.LibraryImport.cancelRestore();
+			await IOUtils.remove(backup, { recursive: true, ignoreAbsent: true });
+		}
+	});
+
+	it("should treat a restore point without storage as database only", async function () {
+		let root = OS.Path.join(Zotero.DataDirectory.dir, ".import-backup");
+		let backup = OS.Path.join(root, "test-db-only");
+		await Zotero.File.createDirectoryIfMissingAsync(backup);
+		await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+		await IOUtils.copy(
+			Zotero.DataDirectory.getDatabase(),
+			OS.Path.join(backup, "zotero.sqlite")
+		);
+
+		try {
+			let backups = await Zotero.LibraryImport.listBackups();
+			let point = backups.find(item => item.id === "test-db-only");
+			assert.ok(point);
+			assert.isTrue(point.databaseOnly, `point=${JSON.stringify(point)}`);
+
+			let refused = null;
+			try {
+				await Zotero.LibraryImport.queueRestore(backup);
+			}
+			catch (e) {
+				refused = e;
+			}
+			assert.ok(refused, "the full restore path must refuse a database-only point");
+			assert.include(refused.message, "only a database");
+
+			await Zotero.LibraryImport.queueDatabaseRestore(
+				OS.Path.join(backup, "zotero.sqlite")
+			);
+			let request = JSON.parse(
+				await Zotero.File.getContentsAsync(Zotero.LibraryImport.restorePath)
+			);
+			assert.equal(request.mode, "database");
+			await Zotero.LibraryImport.cancelRestore();
 		}
 		finally {
 			await Zotero.LibraryImport.cancelRestore();

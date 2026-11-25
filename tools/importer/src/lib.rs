@@ -285,6 +285,23 @@ fn recover_interrupted_apply(data_dir: &Path) -> Result<(), String> {
 ///
 /// The caller must have the database closed. On any error the old files are
 /// restored and the staging directory is left intact for a retry.
+/// Finish an interrupted swap: put everything the marker's backup holds back
+/// into the data directory and remove the marker. A no-op when no swap was
+/// interrupted.
+///
+/// The app calls this after a sidecar failure. Without it a marker left behind
+/// by a process killed between the file move and the marker removal would make
+/// the next apply silently roll the restored database back.
+pub fn recover(data_dir: &Path) -> Result<(), String> {
+    if !data_dir.is_dir() {
+        return Err(format!(
+            "data directory not found: {}",
+            path_string(data_dir)
+        ));
+    }
+    recover_interrupted_apply(data_dir)
+}
+
 pub fn apply(staging: &Path, data_dir: &Path, backup: &Path) -> Result<(), String> {
     verify_staging(staging)?;
     apply_replacing(staging, data_dir, backup, REPLACED, true)
@@ -495,6 +512,37 @@ mod tests {
 
         apply(&staging, &data, &backup).unwrap();
         assert!(backup.join("storage").is_dir());
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn recover_puts_a_marked_backup_back() {
+        let root = temp("recover-marker");
+        let data = root.join("data");
+        let backup = root.join("backup");
+        write_db(&data.join("zotero.sqlite"), "partial");
+        write_db(&backup.join("zotero.sqlite"), "old");
+        fs::write(data.join(APPLY_MARKER), backup.to_string_lossy().as_bytes()).unwrap();
+
+        recover(&data).unwrap();
+
+        assert!(fs::read(data.join("zotero.sqlite")).unwrap().ends_with(b"old"));
+        assert!(!data.join(APPLY_MARKER).exists());
+        assert!(!backup.join("zotero.sqlite").exists());
+
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn recover_without_a_marker_is_a_no_op() {
+        let root = temp("recover-plain");
+        let data = root.join("data");
+        write_db(&data.join("zotero.sqlite"), "current");
+
+        recover(&data).unwrap();
+
+        assert!(fs::read(data.join("zotero.sqlite")).unwrap().ends_with(b"current"));
+
         fs::remove_dir_all(&root).unwrap();
     }
 

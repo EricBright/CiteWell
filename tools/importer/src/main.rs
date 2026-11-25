@@ -13,13 +13,16 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use citewell_import::{apply, apply_database, count_tree, stage_with_progress, verify_staging};
+use citewell_import::{
+    apply, apply_database, count_tree, recover, stage_with_progress, verify_staging,
+};
 
 fn usage() -> String {
     "usage:\n  \
      citewell-import stage --source DIR --staging DIR\n  \
      citewell-import verify --staging DIR\n  \
-     citewell-import apply --staging DIR --data-dir DIR --backup DIR [--database-only]\n"
+     citewell-import apply --staging DIR --data-dir DIR --backup DIR [--database-only]\n  \
+     citewell-import recover --data-dir DIR\n"
         .to_string()
 }
 
@@ -94,6 +97,11 @@ fn run() -> Result<(), String> {
             verify_staging(&staging)?;
             let report = count_tree(&staging.join("storage"))?;
             println!("ok verified files={} bytes={}", report.files, report.bytes);
+        }
+        "recover" => {
+            let data_dir = require(args.data_dir, "--data-dir")?;
+            recover(&data_dir)?;
+            println!("ok recovered");
         }
         "apply" => {
             let staging = require(args.staging, "--staging")?;
