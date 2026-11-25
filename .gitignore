@@ -8,3 +8,9 @@ dist/
 
 __pycache__/
 *.pyc
+
+quill-icon-vector.svg
+quill-icon-vector.vectorcraft
+
+# Agent review scratch (Strata harvests — ephemeral, per-session)
+reviews/
