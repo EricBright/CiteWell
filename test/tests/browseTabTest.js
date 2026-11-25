@@ -94,6 +94,14 @@ describe("Browse Tab", function () {
 			assert.equal(browser.getAttribute("type"), "content");
 			assert.isTrue(browser.hasAttribute("maychangeremoteness"));
 
+			// The address bar must be a rendering HTML input — bare XUL <textbox> attaches
+			// but does not draw on this platform (regression caught in the AppImage).
+			let urlbar = container.querySelector(".browse-urlbar");
+			assert.isNotNull(urlbar, "address bar element should exist");
+			assert.equal(urlbar.localName, "input", "address bar must be an HTML input");
+			assert.equal(urlbar.namespaceURI, "http://www.w3.org/1999/xhtml");
+			assert.equal(doc.activeElement, urlbar, "address bar should take focus on open");
+
 			assert.equal(Zotero_Tabs.selectedID, id, "new tab should be selected");
 			assert.isTrue(Zotero_BrowseTab.isOpen(id));
 		});

@@ -214,9 +214,14 @@ var Zotero_BrowseTab = new (function () {
 			doc, "browse-reload", "refresh.svg", "browse-nav-reload", "Reload"
 		);
 
-		let urlbar = doc.createXULElement("textbox");
+		// A real HTML input, not a XUL <textbox>: this platform no longer renders bare
+		// <textbox> (verified visually in the AppImage — the element attached but never
+		// drew), while HTML inputs render fine inside XUL boxes, as the search box proves.
+		let urlbar = doc.createElementNS("http://www.w3.org/1999/xhtml", "input");
 		urlbar.className = "browse-urlbar";
-		urlbar.setAttribute("flex", "1");
+		urlbar.setAttribute("type", "text");
+		urlbar.setAttribute("autocomplete", "off");
+		urlbar.setAttribute("spellcheck", "false");
 		urlbar.setAttribute("data-l10n-id", "browse-urlbar");
 		urlbar.setAttribute("data-l10n-attrs", "placeholder");
 
@@ -267,7 +272,7 @@ var Zotero_BrowseTab = new (function () {
 			}
 		});
 
-		listen(urlbar, "keypress", (event) => {
+		listen(urlbar, "keydown", (event) => {
 			if (event.key === "Enter" || event.keyCode === 13) {
 				event.preventDefault();
 				this.navigate(id, urlbar.value);
