@@ -132,8 +132,12 @@ var Zotero_BrowseTab = new (function () {
 		}
 		// If the input declares a scheme ("javascript:", "file:", "data:", …), it must be
 		// one of the two web schemes — checked on the raw input, before any rewriting, so a
-		// scheme that merely looks like a host can never slip through.
-		let schemeMatch = trimmed.match(/^([a-z][a-z0-9+.-]*):/i);
+		// scheme that merely looks like a host can never slip through. A host:port form
+		// ("localhost:8080", digits after the colon) declares a port, not a scheme.
+		let looksLikeHostPort = /^[a-z0-9.-]+:\d+(?:[/?#].*)?$/i.test(trimmed);
+		let schemeMatch = looksLikeHostPort
+			? null
+			: trimmed.match(/^([a-z][a-z0-9+.-]*):/i);
 		let candidate;
 		if (schemeMatch) {
 			let scheme = schemeMatch[1].toLowerCase();
@@ -246,6 +250,9 @@ var Zotero_BrowseTab = new (function () {
 			state.listeners.push([target, event, handler]);
 		};
 
+		// v1 event set: load + pagetitlechanged covers navigations and redirects. JS-only
+		// pushState changes update on the next real load; a webProgress location listener
+		// is the hardening path if stale bar/button state ever shows up in use.
 		listen(browser, "load", () => this._refresh(id));
 		listen(browser, "pagetitlechanged", () => {
 			this._refresh(id);

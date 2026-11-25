@@ -39,6 +39,21 @@ describe("Browse Tab", function () {
 			);
 		});
 
+		it("should treat host:port input as a destination, not a scheme", function () {
+			assert.equal(
+				Zotero_BrowseTab.normalizeURL("localhost:8080"),
+				"https://localhost:8080/"
+			);
+			assert.equal(
+				Zotero_BrowseTab.normalizeURL("127.0.0.1:8080"),
+				"https://127.0.0.1:8080/"
+			);
+			assert.equal(
+				Zotero_BrowseTab.normalizeURL("example.com:8443/path"),
+				"https://example.com:8443/path"
+			);
+		});
+
 		it("should reject non-web schemes", function () {
 			let rejected = [
 				"javascript:alert(1)",
@@ -114,6 +129,15 @@ describe("Browse Tab", function () {
 			await waitForCallback(() => !doc.getElementById(id), 100, 10);
 			assert.isFalse(Zotero_BrowseTab.isOpen(id), "state should be torn down");
 			assert.isNull(Zotero_BrowseTab.getBrowser(id));
+		});
+
+		it("should clear every browse tab's state via closeAll", function () {
+			let first = Zotero_BrowseTab.open();
+			let second = Zotero_BrowseTab.open();
+			Zotero_Tabs.closeAll();
+			assert.isFalse(Zotero_BrowseTab.isOpen(first));
+			assert.isFalse(Zotero_BrowseTab.isOpen(second));
+			assert.isNull(Zotero_BrowseTab.getBrowser(second));
 		});
 
 		it("should not navigate when the address bar input is rejected", function () {
