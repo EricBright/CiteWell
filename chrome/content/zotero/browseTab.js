@@ -421,7 +421,11 @@ var Zotero_BrowseTab = new (function () {
 			this._capturePDF(id, spec);
 			return;
 		}
-		state.pdfURL = null;
+		// A real navigation ends the PDF state; the about:blank reset that follows a
+		// stopped PDF load must not (handled below).
+		if (spec && spec !== "about:blank") {
+			state.pdfURL = null;
+		}
 		if (!spec || spec === "about:blank") {
 			if (state.pdfURL) {
 				// Stopping a PDF load resets the browser to about:blank; the capture state
@@ -888,7 +892,12 @@ var Zotero_BrowseTab = new (function () {
 				catch (e) {
 					return;
 				}
-				if (channel.contentType !== "application/pdf") {
+				// Only a top-level document load means "the tab is showing a PDF". A PDF
+				// fetched as a subresource (iframe, object, XHR preview) must not hijack
+				// the tab into the capture state.
+				if (channel.contentType !== "application/pdf"
+					|| !channel.loadInfo
+					|| channel.loadInfo.externalContentPolicyType !== Ci.nsIContentPolicy.TYPE_DOCUMENT) {
 					return;
 				}
 				let browserId = channel.browserId;
