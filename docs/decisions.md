@@ -962,6 +962,30 @@ style preview are momentary flows; converting each needs its own reason, so they
 exists. Rejected: leaving settings a separate window — it hides the catalogue behind a second
 window for the most common visit, which is a check-a-setting glance.
 
+## D49 — Browse exposure: dispose state, never mutate the engine
+
+**Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes
+
+The Browse tab inherits Gecko's content-process sandbox: every page runs in a separate,
+seccomp-locked process that dies with the app and never sees the library, profile, or chrome.
+What persists is *state*, so the tab disposes state too: browse-tab cookies and site storage are
+cleared when the app closes, HTTPS-only is on for browse content, and every powerful permission
+(camera, microphone, notifications, geolocation) is default-deny — a citation tool has no
+business granting them. Popups stay blocked and downloads go through explicit UI only. An outer
+container (bubblewrap and friends) is rejected: it would add input, clipboard, and IME plumbing
+over Gecko's own sandbox for marginal gain, and complexity is itself a security cost.
+
+The Firefox engine does not hot-update. The engine *is* the application binary; swapping
+platform code under a running app invites version-mismatched failure. Instead a weekly scheduled
+check — same cadence as the CodeQL audit (D44) — compares the pinned ESR (`153.7.0esr`, D15)
+with Mozilla's published ESR release and flags the repository when a new one ships; platform
+security patches then land promptly under the D47 carve-out to D28 and ship through the normal,
+tested release path. Delivery of those releases rides R21's AppImage update channel.
+
+Rejected: in-place engine self-update — Gecko cannot replace the binary it runs from, and an
+untested platform swap is how an install bricks. Rejected: pointing Firefox's own updater
+machinery at our servers — it assumes Firefox's packaging, not an AppImage.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
