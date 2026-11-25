@@ -986,6 +986,32 @@ Rejected: in-place engine self-update — Gecko cannot replace the binary it run
 untested platform swap is how an install bricks. Rejected: pointing Firefox's own updater
 machinery at our servers — it assumes Firefox's packaging, not an AppImage.
 
+## D50 — DNS defaults to Cloudflare's malware-blocking pair; DoT comes later via a sidecar
+
+**Date:** 2026-11-24 · **Status:** accepted · **Reversible:** yes
+
+Settings gains a DNS item whose default is Cloudflare's malware-blocking resolver pair
+**1.1.1.2 / 1.0.0.2** (the "Families" malware-only pair), with an option to fall back to the
+system resolver. In Gecko the pair is honored as the trust anchor: the app configures TRR
+(`network.trr.*` — verified present in the shipped runtime's `greprefs.js`) so lookups go to
+Cloudflare's encrypted endpoint for that pair, `https://security.cloudflare-dns.com/dns-query`,
+bootstrapped directly through 1.1.1.2, with the built-in `localhost,local` exclusions kept. The
+setting applies app-wide — the Browse tab and every request the app itself makes — because all
+of it resolves through the same Gecko networking stack.
+
+Gecko speaks DoH, not DoT: a native "DNS over TLS" field cannot be wired to it. DoT for NextDNS
+and custom resolvers is therefore recorded as a future feature on the sidecar path (R16): a
+small Rust stub on loopback speaks DoT/DoH upstream and Gecko is pointed at it. Not built now;
+the settings item may describe it as a future capability, but ships no dead control.
+
+Implementation notes: the exact TRR mode (preferred-with-fallback vs. required) is verified
+against the platform when the pane is built, and the default is applied at startup so a fresh
+profile is protected without a first-run prompt.
+
+Rejected: writing system resolver configuration (`/etc/resolv.conf`, NetworkManager) — that is
+machine-wide state, outside what a citation app may touch (D19 scope). Rejected: presenting the
+choice as anonymity — it changes who answers lookups and blocks malware domains; it is not a VPN.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
