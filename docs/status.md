@@ -93,10 +93,14 @@ the installed path and `~/CiteWell`.
    every preference pane as shipped, the Docs gate's launch URL, and the one-numbered-line rule for
    its steps. Locale is read from the source tree because the test runtime can resolve to a
    translation (en-GB here); the copy rule covers en-US. Tests: uiCopy 4/4.
+   The disabled-state audit added `uiContrastTest.js`: it reads the Browse toolbar's two colour
+   pairs from the stylesheet and requires at least 3:1 between enabled and disabled in both themes
+   (measured 4.05:1 light, 3.45:1 dark). Every other disabled style belongs to an upstream
+   component drawn by the platform theme, so it stays review, not a test that cannot fail.
 
 **Tests at this commit:** Browse 40/40, RemoteTranslate 12/12, connector integration 3/3, import
 21/21 (same-title regression, the refusal, database-only classification, checkpoint lifecycle),
-uiCopy 4/4, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
+uiCopy 4/4, uiContrast 1/1, update channel 4/4, importer 12/12; docs 800/800; repo-guard green; docs gate green.
 
 **The self-updater itself is R11/R21, not R8.** The shape is decided and written in
 [packaging.md](packaging.md#updates): the specification allows an updater built into the AppImage,

@@ -16,9 +16,10 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
    never wrap two steps into one sentence.
 3. **Disabled is visible.** An enabled and a disabled control must be distinguishable without
    squinting. Measure contrast, do not trust the eye. The Browse toolbar uses `#ffffff` on
-   `#1a1a1a` when enabled and `#8a8a8a` on `#7a7a7a` when disabled (about 3.4 times apart, above the
-   3:1 non-text floor). A new custom control ships with its measured pairs; native controls keep
-   their platform look.
+   `#1a1a1a` when enabled and `#8a8a8a` on `#7a7a7a` when disabled. Measured from those text
+   colours, the states are 4.05:1 apart in the light theme and 3.45:1 in the dark theme, above the
+   3:1 non-text floor. A new custom control ships with its measured pairs; native controls keep
+   their platform look, whose disabled rendering the test harness cannot sample.
 4. **Browser habits win.** Go sits immediately after the address bar, Save sits behind a divider at
    the far right, and Ctrl/Cmd+L opens the Browse tab from the Library and focuses and selects the
    URL.
@@ -34,7 +35,7 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 |---|---|
 | 1 | `test/tests/uiCopyTest.js` scans the en-US locale files and every preference pane XHTML; JS string literals are checked in review. It reads locale from the source tree because the test runtime can resolve to a translation (en-GB here) |
 | 2 | The same test checks that each `docs-gate-stepN` string is one numbered line |
-| 3 | Not machine-checked: the measured pair is recorded above and re-measured when a control changes |
+| 3 | `test/tests/uiContrastTest.js` reads the toolbar's two colour pairs from `scss/components/_browseTab.scss` and fails below 3:1 in either theme. The other disabled styles in `scss/` are upstream components drawn by the platform theme, so they are review, not test |
 | 4 | `test/tests/browseTabTest.js` covers the toolbar order and `focusOrOpen`/`focusURLBar`; the accelerator registration itself is review |
 | 5 | Review, plus the Docs explainer test for the specific case it covers |
 | 6 | `test/tests/uiCopyTest.js` asserts the gate's one launch URL is the connectors page |
