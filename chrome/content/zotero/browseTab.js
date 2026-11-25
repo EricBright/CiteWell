@@ -50,6 +50,15 @@ var Zotero_BrowseTab = new (function () {
 
 	const ICON_DIR = "chrome://zotero/skin/16/universal/";
 	const MAX_TAB_TITLE = 100;
+	// Reserved userContextId for all Browse content. Kept out of the app's default context,
+	// so clearing it can never wipe Zotero's own cookies, and high enough not to collide
+	// with container ids.
+	const BROWSE_CONTEXT_ID = 20260;
+	const BROWSE_CLEAR_FLAGS = Services.clearData.CLEAR_COOKIES_AND_SITE_DATA
+		| Services.clearData.CLEAR_ALL_CACHES
+		| Services.clearData.CLEAR_DOM_QUOTA
+		| Services.clearData.CLEAR_HSTS
+		| Services.clearData.CLEAR_BFCACHE;
 	// How long the Save button shows the "saved" tick before returning to its normal state.
 	const SAVED_STATE_MS = 1500;
 	// A detection that has not settled by then is abandoned: the actor waits for the page
@@ -269,6 +278,14 @@ var Zotero_BrowseTab = new (function () {
 		let url = this.normalizeURL(input);
 		if (!url) {
 			return false;
+		}
+		let upgrade = httpsURL(url);
+		if (upgrade) {
+			state.httpsFallback = { from: url, to: upgrade };
+			url = upgrade;
+		}
+		else {
+			state.httpsFallback = null;
 		}
 		if (isDocsURL(url)) {
 			if (state.allowDocs !== docsURLKey(url)) {
@@ -978,6 +995,80 @@ var Zotero_BrowseTab = new (function () {
 		}, SAVED_STATE_MS);
 	};
 
+	/**
+	 * Wipe everything the Browse context stored (cookies, DOM storage, IndexedDB, service
+	 * workers, caches, quota) without touching the app's default context. Runs at startup
+	 * as the safety net for a crash, and on shutdown.
+	 */
+	this.clearState = function () {
+		// Cookies first with the manager call the app already uses for isolated contexts;
+		// the pattern clear then covers storages, workers and caches.
+		try {
+			Services.cookies.removeCookiesWithOriginAttributes(
+				JSON.stringify({ userContextId: BROWSE_CONTEXT_ID })
+			);
+		}
+		catch (e) {
+			Zotero.logError(e);
+		}
+		return new Promise(resolve => {
+			try {
+				Services.clearData.deleteDataFromOriginAttributesPattern(
+					{ userContextId: BROWSE_CONTEXT_ID },
+					BROWSE_CLEAR_FLAGS,
+					resolve
+				);
+			}
+			catch (e) {
+				Zotero.logError(e);
+				resolve();
+			}
+		});
+	};
+
+	/**
+	 * The https:// form of an http URL, or null if no upgrade applies. Loopback stays
+	 * http: library catalogues and the test server live there.
+	 */
+	function httpsURL(spec) {
+		try {
+			let url = new URL(spec);
+			if (url.protocol !== "http:") {
+				return null;
+			}
+			let host = url.hostname.toLowerCase();
+			if (host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1") {
+				return null;
+			}
+			url.protocol = "https:";
+			return url.href;
+		}
+		catch (e) {
+			return null;
+		}
+	}
+	this.httpsURL = httpsURL;
+
+	/**
+	 * Mark the address bar when a site only works over plain HTTP.
+	 */
+	this._setInsecure = function (id, insecure) {
+		let state = this._states.get(id);
+		if (!state) {
+			return;
+		}
+		if (insecure) {
+			state.urlbar.setAttribute("data-insecure", "true");
+			state.urlbar.setAttribute(
+				"tooltiptext", ftl("browse-insecure", "Not secure: this site uses plain HTTP")
+			);
+		}
+		else {
+			state.urlbar.removeAttribute("data-insecure");
+			state.urlbar.removeAttribute("tooltiptext");
+		}
+	};
+
 	this._makeNavButton = function (doc, className, icon, labelKey, fallbackLabel, iconDir) {
 		let button = doc.createXULElement("toolbarbutton");
 		button.className = "browse-nav " + className;
@@ -1158,6 +1249,7 @@ var Zotero_BrowseTab = new (function () {
 		browser.setAttribute("type", "content");
 		browser.setAttribute("flex", "1");
 		browser.setAttribute("disableglobalhistory", "true");
+		browser.setAttribute("usercontextid", String(BROWSE_CONTEXT_ID));
 		browser.setAttribute("maychangeremoteness", "true");
 		browser.setAttribute("messagemanagergroup", "citewell-browse");
 		// A target=_blank link must not escape the Docs gate into an untracked window.
@@ -1189,6 +1281,8 @@ var Zotero_BrowseTab = new (function () {
 			allowDocs: null,
 			// True while the Docs explainer is open, so overlapping requests cannot stack it.
 			gating: false,
+			// { from, to } while an http -> https upgrade is being attempted.
+			httpsFallback: null,
 			// URL whose detection is currently in flight (null when none is).
 			detectingURL: null,
 			generation: 0,
@@ -1246,6 +1340,31 @@ var Zotero_BrowseTab = new (function () {
 				let stopWindow = Ci.nsIWebProgressListener.STATE_STOP
 					| Ci.nsIWebProgressListener.STATE_IS_WINDOW;
 				if ((stateFlags & stopWindow) === stopWindow) {
+					let requestStatus = 0;
+					try {
+						requestStatus = request.status;
+					}
+					catch (e) {}
+					let tabState = self._states.get(id);
+					if (requestStatus && tabState && tabState.httpsFallback) {
+						// The upgrade failed: load the original http page and mark it.
+						let fallback = tabState.httpsFallback;
+						tabState.httpsFallback = null;
+						self._setInsecure(id, true);
+						try {
+							tabState.browser.loadURI(Services.io.newURI(fallback.from), {
+								triggeringPrincipal:
+									Services.scriptSecurityManager.getSystemPrincipal(),
+							});
+						}
+						catch (e) {
+							Zotero.logError(e);
+						}
+						return;
+					}
+					if (tabState && !tabState.httpsFallback) {
+						self._setInsecure(id, false);
+					}
 					// Once the document has committed, back/forward and the bar are final.
 					self._refresh(id);
 				}
@@ -1427,4 +1546,14 @@ var Zotero_BrowseTab = new (function () {
 		state.listeners = [];
 		this._dropPDFObserverIfIdle();
 	};
+
+	// Safety net: clear whatever a previous session or a crash left in the Browse context
+	// before the first tab can use it, and try again on shutdown.
+	try {
+		Zotero_BrowseTab.clearState();
+		window.addEventListener("unload", () => Zotero_BrowseTab.clearState());
+	}
+	catch (e) {
+		Zotero.logError(e);
+	}
 })();

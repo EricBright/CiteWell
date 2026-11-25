@@ -112,6 +112,16 @@ pref("extensions.zotero.search.quicksearch-mode", "fields");
 // Fulltext indexing
 pref("extensions.zotero.fulltext.textMaxLength", 500000);
 pref("extensions.zotero.fulltext.pdfMaxPages", 0);
+
+// Browse tabs are a general web surface: powerful permissions are default-deny. No
+// CiteWell feature asks for any of these, so blocking them globally is safe.
+pref("permissions.default.camera", 2);
+pref("permissions.default.microphone", 2);
+pref("permissions.default.geolocation", 2);
+pref("permissions.default.desktop-notification", 2);
+pref("permissions.default.midi", 2);
+pref("permissions.default.midi-sysex", 2);
+pref("permissions.default.xr", 2);
 pref("extensions.zotero.search.useLeftBound", true);
 
 // Notes

@@ -197,6 +197,45 @@ describe("Browse Tab", function () {
 		});
 	});
 
+	describe("Hardening (R36/D49)", function () {
+		it("should run every browse browser in the reserved context", function () {
+			let id = Zotero_BrowseTab.open();
+			let browser = Zotero_BrowseTab.getBrowser(id);
+			assert.equal(browser.getAttribute("usercontextid"), "20260");
+		});
+
+		it("should upgrade only non-loopback http URLs", function () {
+			assert.equal(
+				Zotero_BrowseTab.httpsURL("http://example.com/a?b=1"),
+				"https://example.com/a?b=1"
+			);
+			assert.isNull(Zotero_BrowseTab.httpsURL("https://example.com/"));
+			assert.isNull(Zotero_BrowseTab.httpsURL("http://127.0.0.1:8080/x"));
+			assert.isNull(Zotero_BrowseTab.httpsURL("http://localhost:8080/x"));
+		});
+
+		it("should mark a plain-http page and clear the mark", function () {
+			let id = Zotero_BrowseTab.open();
+			let urlbar = doc.getElementById(id).querySelector(".browse-urlbar");
+			Zotero_BrowseTab._setInsecure(id, true);
+			assert.equal(urlbar.getAttribute("data-insecure"), "true");
+			assert.ok(urlbar.getAttribute("tooltiptext"));
+			Zotero_BrowseTab._setInsecure(id, false);
+			assert.isNull(urlbar.getAttribute("data-insecure"));
+		});
+
+		it("should deny powerful permissions by default", function () {
+			for (let permission of ["camera", "microphone", "geolocation",
+				"desktop-notification", "midi", "midi-sysex", "xr"]) {
+				assert.equal(
+					Services.prefs.getIntPref("permissions.default." + permission),
+					2,
+					permission + " must default to block"
+				);
+			}
+		});
+	});
+
 	describe("Google Docs gate", function () {
 		const DOCS_URL = "https://docs.google.com/document/d/abc123/edit";
 
@@ -365,6 +404,13 @@ describe("Browse Tab", function () {
 				+ "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
 				+ "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 100 100]>>endobj\n"
 				+ "trailer<</Root 1 0 R>>\n%%EOF\n";
+			httpd.registerPathHandler("/cookie", {
+				handle(request, response) {
+					response.setHeader("Content-Type", "text/html; charset=utf-8");
+					response.setHeader("Set-Cookie", "probe=1; Path=/; SameSite=Lax");
+					response.write("<!DOCTYPE html><html><head><title>Cookie</title></head><body>x</body></html>");
+				}
+			});
 			httpd.registerPathHandler("/paper", {
 				handle(request, response) {
 					response.setHeader("Content-Type", "application/pdf");
@@ -563,6 +609,28 @@ describe("Browse Tab", function () {
 			assert.isTrue(items.some(
 				item => item.isAttachment() && item.attachmentContentType === "application/pdf"
 			));
+		});
+
+		it("should keep browse cookies out of the app context and clear them", async function () {
+			let id = Zotero_BrowseTab.open();
+			Zotero_BrowseTab.navigate(id, `http://127.0.0.1:${PORT}/cookie`);
+			await waitForCallback(
+				() => Services.cookies
+					.getCookiesFromHost("127.0.0.1", { userContextId: 20260 }).length > 0,
+				100, 10
+			);
+			assert.equal(
+				Services.cookies.getCookiesFromHost("127.0.0.1", {}).length,
+				0,
+				"the browse cookie must not land in the app's default context"
+			);
+
+			await Zotero_BrowseTab.clearState();
+			await waitForCallback(
+				() => Services.cookies
+					.getCookiesFromHost("127.0.0.1", { userContextId: 20260 }).length === 0,
+				100, 10
+			);
 		});
 
 		it("should drop the translator and disable Save when leaving the page", async function () {

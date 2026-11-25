@@ -1309,6 +1309,7 @@ browse-nav-go = Go
 
 browse-urlbar =
     .placeholder = Enter a web address
+browse-insecure = Not secure: this site uses plain HTTP
 
 # Browse tab save bridge (D47 Phase 2)
 browse-save-available = Save to CiteWell

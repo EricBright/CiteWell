@@ -1,0 +1,50 @@
+name: ESR tripwire
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare the pinned Firefox ESR with Mozilla's current release
+        id: esr
+        run: |
+          set -euo pipefail
+          pinned="$(ls app/xulrunner/firefox-*-esr-*.tar.xz | head -1 | xargs basename | sed -E 's/^firefox-([0-9.]+)esr.*$/\1/')"
+          latest="$(curl -fsS https://product-details.mozilla.org/1.0/firefox_versions.json \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["FIREFOX_ESR"])')"
+          newer="$(python3 -c '
+          import sys
+          def parts(v):
+              return tuple(int(x) for x in v.split("."))
+          print("yes" if parts(sys.argv[2]) > parts(sys.argv[1]) else "no")
+          ' "$pinned" "$latest")"
+          echo "pinned=$pinned" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "newer=$newer" >> "$GITHUB_OUTPUT"
+          echo "pinned=$pinned latest=$latest newer=$newer"
+
+      - name: Open or update the maintenance issue
+        if: steps.esr.outputs.newer == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="Firefox ESR ${{ steps.esr.outputs.latest }} available (pinned ${{ steps.esr.outputs.pinned }})"
+          body="Mozilla publishes Firefox ESR **${{ steps.esr.outputs.latest }}**; this repository pins **${{ steps.esr.outputs.pinned }}**. Update the xulrunner pin and follow the sync procedure in docs/sync.md before the next release. Maintainer-only check; nothing is shown in the app (D49)."
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search 'Firefox ESR in:title' --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi

@@ -128,6 +128,10 @@
 	border: 1px solid var(--fill-quinary);
 	border-radius: 4px;
 
+	&[data-insecure="true"] {
+		border-color: #c8a600;
+	}
+
 	&:focus {
 		outline: 2px solid -moz-accent-color;
 		outline-offset: -1px;
