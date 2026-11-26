@@ -1323,6 +1323,12 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 					+ "Download the new version from the releases page.");
 				return;
 			}
+			let directory = PathUtils.parent(appimagePath);
+			if (!Zotero.File.pathToFile(directory).isWritable()) {
+				fail(`CiteWell cannot write to ${directory}, so it cannot replace itself there.\n\n`
+					+ "Download the new version from the releases page instead.");
+				return;
+			}
 			let appimage = release.assets.find(asset => asset.name === "CiteWell-x86_64.AppImage");
 			if (!appimage) {
 				fail("The latest release has no application asset.");
@@ -1350,7 +1356,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				return;
 			}
 
-			let directory = PathUtils.parent(appimagePath);
 			let downloadPath = PathUtils.join(
 				directory,
 				`.citewell-update-${Date.now()}`
