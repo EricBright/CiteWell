@@ -727,6 +727,8 @@ describe("Library import", function () {
 			assert.ok(checkpoint, "a kill during the child pass must keep its checkpoint");
 			assert.lengthOf(checkpoint.notes, 1,
 				`checkpoint notes=${JSON.stringify(checkpoint.notes)}`);
+			assert.ok(checkpoint.items, "the cumulative checkpoint must keep the item map");
+			assert.lengthOf(Object.values(checkpoint.items), 1);
 
 			let result = await Zotero.LibraryImport.merge(source);
 			// The recorded note is skipped on resume, so this run reports the two it
@@ -736,6 +738,14 @@ describe("Library import", function () {
 				.filter(item => item.isAttachment && item.attachmentContentType === "text/html");
 			assert.lengthOf(htmlAttachments, 3,
 				"the resumed pass must not import a recorded note twice");
+			let mergedParent = (await Zotero.Items.getAll(1))
+				.find(item => item.isRegularItem()
+					&& item.getField("title") === "Kill parent");
+			assert.ok(mergedParent, "the parent must be present after the resume");
+			for (let attachment of htmlAttachments) {
+				assert.equal(attachment.parentID, mergedParent.id,
+					"a resumed note must still attach to its merged parent");
+			}
 			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash));
 			assert.equal(await Zotero.LibraryImport.hashFile(sourceDb), sourceHash);
 		}
