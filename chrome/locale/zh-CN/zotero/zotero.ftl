@@ -1103,3 +1103,7 @@ menu-edit-undo-action = 撤销 { $action }
 menu-edit-redo-action = 重做 { $action }
 local-api-authorize-title = 本地 API 授权
 local-api-authorize-text = 正在您计算机上运行的应用程序“{ $appName }”想要修改您的{ -app-name } 文库。
+
+report-problem-menuitem =
+    .label = 报告问题…
+    .accesskey = P

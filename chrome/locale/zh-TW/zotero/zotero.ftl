@@ -1137,3 +1137,7 @@ menu-edit-undo-action = Undo { $action }
 menu-edit-redo-action = Redo { $action }
 local-api-authorize-title = Local API Authorization
 local-api-authorize-text = “{ $appName }”, an application running on your computer, wants to modify your { -app-name } library.
+
+report-problem-menuitem =
+    .label = 回報問題…
+    .accesskey = P

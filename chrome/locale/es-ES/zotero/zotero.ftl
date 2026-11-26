@@ -1194,3 +1194,7 @@ menu-edit-undo-action = Deshacer { $action }
 menu-edit-redo-action = Rehacer { $action }
 local-api-authorize-title = Autorización de la API local
 local-api-authorize-text = «{ $appName }», una aplicación que se está ejecutando en tu equipo, quiere modificar tu biblioteca { -app-name }.
+
+report-problem-menuitem =
+    .label = Informar de un problema…
+    .accesskey = P

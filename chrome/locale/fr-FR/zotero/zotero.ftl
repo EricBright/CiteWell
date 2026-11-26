@@ -1194,3 +1194,7 @@ menu-edit-undo-action = Annuler { $action }
 menu-edit-redo-action = Répéter { $action }
 local-api-authorize-title = Autorisation de l'API locale
 local-api-authorize-text = “{ $appName }”, une application qui s'exécute sur votre ordinateur, veut modifier votre bibliothèque { -app-name }.
+
+report-problem-menuitem =
+    .label = Signaler un problème…
+    .accesskey = P

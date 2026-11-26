@@ -5,6 +5,9 @@
 // machine), so the scan reads the en-US source files, which are the copy this
 // project owns and the build copies. Preference panes are content, not locale,
 // and are read through chrome:// as shipped.
+const SUPPORTED_LOCALES = [
+	"en-US", "en-GB", "de", "fr-FR", "es-ES", "ja-JP", "zh-CN", "zh-TW",
+];
 const LOCALE_FILES = [
 	"chrome/locale/en-US/zotero/zotero.ftl",
 	"chrome/locale/en-US/zotero/zotero.properties",
@@ -129,6 +132,28 @@ describe("UI copy", function () {
 		// The inherited wizard posted the log to repo.zotero.org; no reachable path
 		// may still open it.
 		assert.notInclude(source, "errorReport.xhtml");
+	});
+
+	it("should translate the problem-report copy in every supported locale", async function () {
+		let keys = [
+			"reportProblem.copied",
+			"reportProblem.copiedHint",
+			"reportProblem.copyFailed",
+			"reportProblem.copyFailedHint",
+		];
+		for (let locale of SUPPORTED_LOCALES) {
+			let properties = await readLocale(
+				`chrome/locale/${locale}/zotero/zotero.properties`
+			);
+			for (let key of keys) {
+				assert.include(properties, key, `${locale} is missing ${key}`);
+			}
+			let fluent = await readLocale(`chrome/locale/${locale}/zotero/zotero.ftl`);
+			assert.include(
+				fluent, "report-problem-menuitem",
+				`${locale} is missing the Report a Problem label`
+			);
+		}
 	});
 
 	it("should offer a Browse action on an empty library", async function () {

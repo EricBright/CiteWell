@@ -1099,3 +1099,7 @@ menu-edit-undo-action = { $action } を元に戻す
 menu-edit-redo-action = { $action } をやり直す
 local-api-authorize-title = ローカル API の承認
 local-api-authorize-text = お使いのコンピュータで実行中のアプリケーション “{ $appName }” が、{ -app-name } ライブラリを変更しようとしています。
+
+report-problem-menuitem =
+    .label = 問題を報告…
+    .accesskey = P
