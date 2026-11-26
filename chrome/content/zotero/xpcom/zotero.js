@@ -1164,39 +1164,241 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	
 	
 	this.UPDATE_RELEASES_URL = 'https://github.com/EricBright/CiteWell/releases';
+	this.UPDATE_API_URL = 'https://api.github.com/repos/EricBright/CiteWell/releases/latest';
+
+	/**
+	 * The release version of this build, without the SOURCE.<sha> suffix
+	 */
+	this.getReleaseVersion = function () {
+		let match = Zotero.version.match(/^(\d{4}\.\d{2}\.\d{2}(?:\.\d{3})?)/);
+		return match ? match[1] : null;
+	};
+
+	/**
+	 * The citewell-update sidecar: hashes and header-checks the download, waits for this
+	 * process to exit, renames the file over the running AppImage and starts it (D60).
+	 */
+	this.getUpdateHelperPath = async function () {
+		let override = Services.env.get("CITEWELL_UPDATE_BIN");
+		if (override) {
+			if (await IOUtils.exists(override)) return override;
+			throw new Error(`CITEWELL_UPDATE_BIN does not exist: ${override}`);
+		}
+		let appDir = Services.dirsvc.get("XREExeF", Ci.nsIFile).parent.path;
+		let repoDir = appDir;
+		for (let i = 0; i < 3; i++) {
+			repoDir = PathUtils.parent(repoDir);
+		}
+		let candidates = [
+			PathUtils.join(appDir, "citewell-update"),
+			PathUtils.join(repoDir, "tools", "target", "release", "citewell-update"),
+			PathUtils.join(repoDir, "tools", "target", "debug", "citewell-update"),
+		];
+		for (let candidate of candidates) {
+			if (await IOUtils.exists(candidate)) return candidate;
+		}
+		throw new Error("The citewell-update helper was not found. Build it with "
+			+ "`cargo build -p citewell-update` or rebuild the AppImage.");
+	};
+
+	this._runUpdateSidecar = async function (args) {
+		let { Subprocess } = ChromeUtils.importESModule("resource://gre/modules/Subprocess.sys.mjs");
+		let command = await Zotero.getUpdateHelperPath();
+		Zotero.debug(`Running ${command} ${args.join(" ")}`);
+		let proc = await Subprocess.call({
+			command,
+			arguments: args,
+			stderr: "pipe",
+		});
+		let stdout = "";
+		let stderr = "";
+		let read = async (stream, append) => {
+			let chunk;
+			while ((chunk = await stream.readString())) {
+				append(chunk);
+			}
+		};
+		await Promise.all([
+			read(proc.stdout, (chunk) => { stdout += chunk; }),
+			read(proc.stderr, (chunk) => { stderr += chunk; }),
+		]);
+		let { exitCode } = await proc.wait();
+		if (exitCode !== 0) {
+			throw new Error(stderr.trim() || stdout.trim() || `citewell-update exited ${exitCode}`);
+		}
+		return stdout;
+	};
+
+	/**
+	 * Every digest the release publishes for its AppImage. All of them are checked; a
+	 * missing .sha256 asset does not excuse the others, and no digest at all refuses.
+	 */
+	this._getUpdateDigests = async function (release) {
+		let digests = new Set();
+		let appimage = release.assets.find(asset => asset.name === "CiteWell-x86_64.AppImage");
+		if (!appimage) {
+			throw new Error("The release has no CiteWell-x86_64.AppImage asset.");
+		}
+		if (appimage.digest && appimage.digest.startsWith("sha256:")) {
+			digests.add(appimage.digest.slice(7).toLowerCase());
+		}
+		let shaAsset = release.assets.find(asset => asset.name === "CiteWell-x86_64.AppImage.sha256");
+		if (shaAsset) {
+			let response = await Zotero.HTTP.request("GET", shaAsset.browser_download_url, {
+				responseType: "text",
+			});
+			let match = String(response.responseText).match(/\b[0-9a-fA-F]{64}\b/);
+			if (match) digests.add(match[0].toLowerCase());
+		}
+		let zsyncAsset = release.assets.find(asset => asset.name === "CiteWell-x86_64.AppImage.zsync");
+		if (zsyncAsset) {
+			let response = await Zotero.HTTP.request("GET", zsyncAsset.browser_download_url, {
+				responseType: "arraybuffer",
+			});
+			let bytes = new Uint8Array(response.response, 0, Math.min(4096, response.response.byteLength));
+			let text = new TextDecoder().decode(bytes);
+			let match = text.match(/File-Hash:\s*SHA-256:([0-9a-f]{64})/i);
+			if (match) digests.add(match[1].toLowerCase());
+		}
+		if (!digests.size) {
+			throw new Error("The release publishes no digest to verify the download against.");
+		}
+		return [...digests];
+	};
 
 	/**
 	 * The one place the UI asks about updates.
 	 *
-	 * CiteWell does not use Mozilla's updater: the app is an AppImage, and signed
-	 * MAR files cannot patch a squashfs image. The build carries no update URL,
-	 * so this must not open the inherited wizard, which would only report that a
-	 * check failed. It states the truth and offers the releases page.
+	 * CiteWell does not use Mozilla's updater: the app is an AppImage, and signed MAR
+	 * files cannot patch a squashfs image. This asks GitHub for the latest release, and
+	 * replaces the file this process is running from, so an install through Gear Lever
+	 * keeps pointing at one path.
 	 */
-	this.openCheckForUpdatesWindow = function () {
+	this.openCheckForUpdatesWindow = async function () {
 		let ps = Services.prompt;
-		let flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
-			+ ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING;
-		let text = "CiteWell does not use Zotero's update service, and this build has no "
-			+ "in-app update channel yet.\n\n"
-			+ "CiteWell is a single AppImage file: updating means replacing that file with "
-			+ "a newer one from the releases page.\n\n"
-			+ "Zotero's servers are not contacted.";
-		let index = ps.confirmEx(
-			null,
-			"Check for Updates",
-			text,
-			flags,
-			"Open releases page",
-			"Close",
-			null,
-			null,
-			{}
-		);
-		if (index === 0) {
-			Zotero.launchURL(Zotero.UPDATE_RELEASES_URL);
+		let progress = new Zotero.ProgressWindow({ closeOnClick: false });
+		let fail = (message) => {
+			try {
+				progress.close();
+			}
+			catch (e) {}
+			ps.alert(null, "Check for Updates", message);
+		};
+		let current = Zotero.getReleaseVersion();
+		let latest;
+		try {
+			progress.changeHeadline("Checking for Updates");
+			progress.show();
+			let response = await Zotero.HTTP.request("GET", Zotero.UPDATE_API_URL, {
+				responseType: "json",
+				headers: { Accept: "application/vnd.github+json" },
+			});
+			let release = response.response;
+			progress.close();
+			latest = String(release.tag_name || "").replace(/^v/, "");
+			if (!latest) {
+				fail("The latest release has no tag.");
+				return;
+			}
+			if (latest === current) {
+				fail(`CiteWell ${current} is the latest version.`);
+				return;
+			}
+			if (latest < current) {
+				fail(`This build is ${current}, newer than the latest published release `
+					+ `(${latest}).`);
+				return;
+			}
+
+			let appimagePath = Services.env.get("APPIMAGE");
+			if (!appimagePath) {
+				fail("This build is not running from an AppImage, so it cannot replace itself.\n\n"
+					+ "Download the new version from the releases page.");
+				return;
+			}
+			let appimage = release.assets.find(asset => asset.name === "CiteWell-x86_64.AppImage");
+			if (!appimage) {
+				fail("The latest release has no application asset.");
+				return;
+			}
+			let size = appimage.size
+				? `${(appimage.size / (1024 * 1024)).toFixed(0)} MB`
+				: "about 120 MB";
+			let flags = ps.BUTTON_POS_0 * ps.BUTTON_TITLE_IS_STRING
+				+ ps.BUTTON_POS_1 * ps.BUTTON_TITLE_IS_STRING;
+			let answer = ps.confirmEx(
+				null,
+				"Check for Updates",
+				`CiteWell ${latest} is available (this build is ${current}).\n\n`
+					+ `Download it now? It is ${size}, and CiteWell restarts when the file is `
+					+ `verified.`,
+				flags,
+				"Download and restart",
+				"Cancel",
+				null,
+				null,
+				{}
+			);
+			if (answer !== 0) {
+				return;
+			}
+
+			let directory = PathUtils.parent(appimagePath);
+			let downloadPath = PathUtils.join(
+				directory,
+				`.citewell-update-${Date.now()}`
+			);
+			progress = new Zotero.ProgressWindow({ closeOnClick: false });
+			progress.changeHeadline(`Downloading CiteWell ${latest}`);
+			progress.show();
+			try {
+				await Zotero.HTTP.download(appimage.browser_download_url, downloadPath);
+			}
+			catch (e) {
+				await IOUtils.remove(downloadPath, { ignoreAbsent: true });
+				throw e;
+			}
+
+			let digests = await this._getUpdateDigests(release);
+			let verifyArgs = ["verify", "--file", downloadPath];
+			for (let digest of digests) {
+				verifyArgs.push("--sha256", digest);
+			}
+			await Zotero._runUpdateSidecar(verifyArgs);
+
+			progress.changeHeadline("Restarting CiteWell");
+			let { Subprocess } = ChromeUtils.importESModule(
+				"resource://gre/modules/Subprocess.sys.mjs"
+			);
+			let helper = await Zotero.getUpdateHelperPath();
+			let args = [
+				"install",
+				"--file", downloadPath,
+				"--target", appimagePath,
+				"--wait-pid", String(Services.appinfo.processID),
+				"--timeout-ms", "60000",
+				"--launch",
+			];
+			let restartArgs = [
+				"-profile", Services.dirsvc.get("ProfD", Ci.nsIFile).path,
+				"-datadir", Zotero.DataDirectory.dir,
+				"-no-remote",
+			];
+			for (let arg of restartArgs) {
+				args.push("--arg", arg);
+			}
+			// Not awaited: the helper waits for this process to exit, then swaps the file
+			// and starts the new one. Awaiting here would deadlock the quit.
+			Subprocess.call({ command: helper, arguments: args }).catch(() => {});
+			await Zotero.Promise.delay(500);
+			Zotero.Utilities.Internal.quit();
+		}
+		catch (e) {
+			Zotero.logError(e);
+			fail(`The update failed: ${e.message || e}`);
 		}
 	};
+
 	
 	
 	/**

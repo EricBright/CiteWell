@@ -411,6 +411,13 @@ fn appimage_inner() -> Result<PathBuf, String> {
     copy(&importer, &importer_dest)?;
     make_executable(&importer_dest)?;
 
+    // The updater helper ships beside the app so a downloaded AppImage can verify and
+    // replace itself after this process exits (D60).
+    let updater = build_updater(&root)?;
+    let updater_dest = app_dest.join("citewell-update");
+    copy(&updater, &updater_dest)?;
+    make_executable(&updater_dest)?;
+
     // The CiteWell-owned OXT is built from extension source, never copied from
     // Zotero. A Python builder is used because the OXT format is a ZIP plus
     // Python UNO sources; no Python package dependencies are involved.
@@ -529,6 +536,28 @@ fn build_importer(root: &Path) -> Result<PathBuf, String> {
     if !binary.is_file() {
         return Err(format!(
             "import helper binary missing at {}",
+            binary.display()
+        ));
+    }
+    Ok(binary)
+}
+
+fn build_updater(root: &Path) -> Result<PathBuf, String> {
+    let status = Command::new(env::var("CARGO").unwrap_or_else(|_| "cargo".to_string()))
+        .current_dir(root.join("tools"))
+        .args(["build", "--release", "--quiet", "-p", "citewell-update"])
+        .status()
+        .map_err(|e| format!("building the update helper: {e}"))?;
+    if !status.success() {
+        return Err(format!(
+            "cargo build for the update helper failed ({status})"
+        ));
+    }
+
+    let binary = root.join("tools/target/release/citewell-update");
+    if !binary.is_file() {
+        return Err(format!(
+            "update helper binary missing at {}",
             binary.display()
         ));
     }

@@ -1352,6 +1352,38 @@ ordered. Rejected: a bare version for the published build via a release-channel 
 channel is the path every test and every prior artifact went through, so the shipped bytes keep the
 `.SOURCE.<sha>` that names their commit.
 
+## D60 — The app updates itself by replacing the file it is running from
+
+**Date:** 2026-11-26 · **Status:** accepted for the current release line · **Reversible:** yes until it ships in a release
+
+A release needs an update path that does not depend on Gear Lever, and that does not break Gear
+Lever for someone who chose it. The app therefore replaces the exact file it is running from, with
+the published bytes, after it has exited.
+
+- **Split:** the app does the network work (resolve `releases/latest`, download with
+  `Zotero.HTTP.download` so proxies and TLS keep working) and the UI. A Rust sidecar,
+  `citewell-update`, does the parts that must not race: hashing, header checks, waiting for this
+  process to exit, the rename, and starting the new file.
+- **Verification:** the download must equal every digest the release publishes — the `.sha256`
+  asset, GitHub's asset digest, the `.zsync` File-Hash — and must be a 64-bit x86-64 ELF AppImage
+  type 2. A missing digest is absent, not a pass; no digest at all refuses.
+- **The path:** `$APPIMAGE`, the file this process is running from. Never a hardcoded location:
+  Gear Lever keys its settings on `md5(file_path)` and its desktop entry points at that path, and a
+  second copy elsewhere would give it a permanent digest mismatch.
+- **The swap:** the download lives beside the target with a hidden name that does not end in
+  `.appimage`; the running mount keeps the old inode alive; the rename is atomic and leaves the old
+  file untouched on failure; a symlinked target is refused.
+- **The restart:** the sidecar waits for the app's pid to exit, then starts the new file with
+  `-profile`, `-datadir` and `-no-remote`, with the AppImage environment variables removed, so the
+  profile lock is free and the new instance uses the same library.
+- **Trigger:** `Cite > Check for Updates`, manual only. There is no background polling and no
+  update is installed without a confirmation dialog.
+- **Not running from an AppImage:** refuse and point at the releases page, because there is no
+  single file to replace.
+
+Limitation, stated rather than hidden: the restart preserves the profile and data directory but not
+other original command-line flags.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

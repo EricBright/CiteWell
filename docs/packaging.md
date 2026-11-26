@@ -127,12 +127,12 @@ image name, a valid AppImage header and no process using it.
 
 CiteWell's shape, now that R11 has a release host:
 
-1. **Self-update in the app** (primary channel): check the repository's `releases/latest` redirect,
-   download the new AppImage beside the installed one, verify a published SHA-256, swap it in while
-   the old process still runs, then restart. No zsync and no external tool. The installed path is
-   the stable `~/AppImages/citewell.appimage`, so either rename over that one name (the old inode
-   stays alive through the mount, and the desktop entry and the integration manifest keep pointing
-   at one path) or adopt versioned names and repoint the manifest as AppGlider does.
+1. **Self-update in the app** (primary channel, D60): Cite > Check for Updates resolves
+   `releases/latest`, downloads the AppImage beside the file this process runs from, checks every
+   published digest and the ELF/AppImage header, then a Rust sidecar waits for the app to exit,
+   renames the file over `$APPIMAGE` and starts it again with the same profile and data directory.
+   The running path is replaced rather than a fixed one, so an install through Gear Lever keeps its
+   path, desktop entry and per-app settings.
 2. **Update information for other tools** (R21): `appimagetool -u` with
    `zsync|<url>` or `gh-releases-zsync|EricBright|CiteWell|latest|CiteWell-*-x86_64.AppImage.zsync`,
    plus the `.zsync` and a SHA-256 file in the release. Gear Lever and AppImageUpdate can then verify

@@ -438,10 +438,13 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 1. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour
    change; the owner's UI rules are in [#owners-ui-rules](#owners-ui-rules-carry-these-into-r6).
-2. **R11/R21 — the first release is published; next the self-updater.** `v2026.11.26.000` is live
-   and the installed file is the published one, so Gear Lever should report it as current — confirm
-   that in Gear Lever, then implement the in-app updater to the shape in
-   [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
+2. **R11/R21 — the self-updater is implemented; it needs a real update run.** `v2026.11.26.000` is
+   live, the installed file is the published one, and Gear Lever reports it as current. Cite >
+   Check for Updates now resolves `releases/latest`, downloads beside `$APPIMAGE`, verifies every
+   published digest and the header, and hands the swap to the `citewell-update` sidecar (D60).
+   The helper is tested against the published bytes; what is missing is an end-to-end run from a
+   deliberately older build (build with a fake earlier version, update, confirm restart). Test
+   builds on the remote are authorized.
 3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
    across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.
