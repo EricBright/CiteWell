@@ -2391,14 +2391,28 @@ Zotero.LibraryImport = {
 		return removed;
 	},
 
+	/**
+	 * Checkpoints are cumulative. The item pass writes the item map and the collection
+	 * links; every note and attachment checkpoint then adds its own progress. Callers
+	 * pass only the fields they own, so replacing the file instead of merging it would
+	 * drop the item map and make a resumed child pass import orphans.
+	 */
 	_writeMergeCheckpoint: async function (id, data) {
 		await Zotero.File.createDirectoryIfMissingAsync(this.mergeSessionsDir);
+		var path = this._checkpointPath(id);
+		var previous = {};
+		try {
+			previous = JSON.parse(await Zotero.File.getContentsAsync(path));
+		}
+		catch (e) {
+			// No earlier checkpoint for this session yet.
+		}
 		// putContentsAsync writes through OS.File.writeAtomic, so a crash leaves either the
 		// previous checkpoint or the new one; a half-written file would be skipped by
 		// _findIncompleteMerge and silently start a second full merge.
 		await Zotero.File.putContentsAsync(
-			this._checkpointPath(id),
-			JSON.stringify({ version: 1, id, ...data }, null, 2)
+			path,
+			JSON.stringify({ ...previous, version: 1, id, ...data }, null, 2)
 		);
 	},
 

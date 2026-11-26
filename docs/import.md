@@ -258,6 +258,16 @@ pane points at that merge's restore point (see
 replaced database as a `database only` restore point, left `storage/` and the search index
 untouched, and removed the merge session.
 
+**Kill points covered (2026-11-26).** The test suite now aborts a real merge at three points and
+resumes it: inside the item transaction (the transaction rolls back and no checkpoint is written,
+so the retry merges from the start), after the first note checkpoint (the recorded note is
+skipped), and after the attachment checkpoint but before the annotations (the copied attachment
+is remapped and its annotation follows). Each run asserts the item, note and attachment counts,
+the source checksum and that the checkpoint is gone. They exposed a defect: every child checkpoint
+replaced the session file, and the note and attachment writers carry only their own fields, so a
+resumed child pass lost the item map and the note collection link and imported nothing.
+Checkpoints are cumulative now: the writer reads the session file and extends it.
+
 The source library itself carries 148 attachment rows with no path and two missing storage
 directories; those are inherited, reported, and never invented.
 

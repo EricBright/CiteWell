@@ -52,6 +52,11 @@ resolves the repository and reports "No updates available".
   `-no-remote`, kept the profile's data directory and created no integration files. A Strata pass
   caught that last case: the first version of the allowlist repeated `-datadir` unconditionally.
 
+- **Merge resume.** `importTest.js` kills a real merge during the item, note and attachment passes
+  and resumes it. The kill found that every child checkpoint replaced the session file, dropping
+  the item map and the note collection link, so a resumed note pass imported nothing; checkpoints
+  are cumulative now. 24/24.
+
 - **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
   an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`
   list is now read, so a saved `lastSelectedPrefPane` or a deep link to the old DNS id lands on
@@ -67,12 +72,13 @@ resolves the repository and reports "No updates available".
   opens this repository, not Zotero's support site.
 
 **Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 8/8, `dnsPrefsTest` 4/4,
-`selfUpdateTest` 4/4, the updater sidecar 7/7, importer 7/7 earlier. Four failures still sit in
+`selfUpdateTest` 4/4, `importTest` 24/24, the updater sidecar 7/7. Four failures still sit in
 `server_connectorTest` and `translateTest` (chai API gaps) plus one live-prompt timeout in
 `integrationTest`; none is caused by these changes.
 
-**Next.** (1) R6 residue: legacy Zotero-era strings and translations. (2) Kill-mid-merge test.
-(3) R32 optional follow-ups. Help points at the repository until a documentation section exists.
+**Next.** (1) R6 residue: legacy Zotero-era strings and translations. (2) R32 optional follow-ups.
+The next release's notes get the same claims pass as the first release before the draft is
+published. Help points at the repository until a documentation section exists.
 
 ## Handoff 2026-11-26 (D59 versioning, first release staged)
 

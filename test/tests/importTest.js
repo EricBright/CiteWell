@@ -606,6 +606,241 @@ describe("Library import", function () {
 		}
 	});
 
+	it("should retry cleanly after a kill during the item pass", async function () {
+		this.timeout(120000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "kill-item-source");
+		try {
+			await resetData();
+			await Zotero.File.createDirectoryIfMissingAsync(source);
+			for (let i = 0; i < 30; i++) {
+				let item = new Zotero.Item("book");
+				item.libraryID = 1;
+				item.setField("title", "Kill item " + i);
+				await item.saveTx();
+			}
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			let sourceDb = OS.Path.join(source, "zotero.sqlite");
+			let sourceHash = await Zotero.LibraryImport.hashFile(sourceDb);
+
+			await resetData();
+			let existing = new Zotero.Item("book");
+			existing.libraryID = 1;
+			existing.setField("title", "Kill destination fixture");
+			await existing.saveTx();
+
+			let killed = null;
+			try {
+				await Zotero.LibraryImport.merge(source, {
+					onProgress: line => {
+						if (/^Items: 25\//.test(line)) {
+							throw new Error("simulated kill during the item pass");
+						}
+					},
+				});
+			}
+			catch (e) {
+				killed = e;
+			}
+			assert.ok(killed, "the simulated kill should abort the merge");
+			// The item and collection pass is one transaction, so a kill there leaves
+			// nothing behind. A checkpoint at this point would describe rolled-back rows.
+			assert.isNull(
+				await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash),
+				"a kill inside the item transaction must not leave a checkpoint"
+			);
+			assert.lengthOf(await Zotero.Items.getAll(1), 1,
+				"the rolled-back transaction must not leave items");
+
+			let result = await Zotero.LibraryImport.merge(source);
+			assert.equal(result.items, 30);
+			let titles = (await Zotero.Items.getAll(1)).map(item => item.getField("title"));
+			for (let i = 0; i < 30; i++) {
+				assert.equal(
+					titles.filter(title => title === "Kill item " + i).length,
+					1,
+					"Kill item " + i + " should exist exactly once"
+				);
+			}
+			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash));
+			assert.equal(await Zotero.LibraryImport.hashFile(sourceDb), sourceHash);
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
+		}
+	});
+
+	it("should resume after a kill during the note pass without re-importing a note", async function () {
+		this.timeout(120000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "kill-note-source");
+		try {
+			await resetData();
+			await Zotero.File.createDirectoryIfMissingAsync(source);
+			let parent = new Zotero.Item("book");
+			parent.libraryID = 1;
+			parent.setField("title", "Kill parent");
+			await parent.saveTx();
+			for (let i = 0; i < 3; i++) {
+				let note = new Zotero.Item("note");
+				note.libraryID = 1;
+				note.parentID = parent.id;
+				note.setNote("<p>Kill note " + i + "</p>");
+				await note.saveTx();
+			}
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			let sourceDb = OS.Path.join(source, "zotero.sqlite");
+			let sourceHash = await Zotero.LibraryImport.hashFile(sourceDb);
+
+			await resetData();
+			let existing = new Zotero.Item("book");
+			existing.libraryID = 1;
+			existing.setField("title", "Kill destination fixture");
+			await existing.saveTx();
+
+			let killed = null;
+			try {
+				await Zotero.LibraryImport.merge(source, {
+					onProgress: line => {
+						// The progress line follows the note's awaited checkpoint, so this
+						// kill point has one note on disk and one note recorded.
+						if (/^Notes: 1\//.test(line)) {
+							throw new Error("simulated kill during the note pass");
+						}
+					},
+				});
+			}
+			catch (e) {
+				killed = e;
+			}
+			assert.ok(killed, "the simulated kill should abort the merge");
+			let checkpoint = await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash);
+			assert.ok(checkpoint, "a kill during the child pass must keep its checkpoint");
+			assert.lengthOf(checkpoint.notes, 1,
+				`checkpoint notes=${JSON.stringify(checkpoint.notes)}`);
+
+			let result = await Zotero.LibraryImport.merge(source);
+			// The recorded note is skipped on resume, so this run reports the two it
+			// imported; the library must hold all three exactly once.
+			assert.equal(result.notes, 2);
+			let htmlAttachments = (await Zotero.Items.getAll(1))
+				.filter(item => item.isAttachment && item.attachmentContentType === "text/html");
+			assert.lengthOf(htmlAttachments, 3,
+				"the resumed pass must not import a recorded note twice");
+			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash));
+			assert.equal(await Zotero.LibraryImport.hashFile(sourceDb), sourceHash);
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
+		}
+	});
+
+	it("should resume after a kill during the attachment pass with its annotations", async function () {
+		this.timeout(120000);
+		let source = OS.Path.join(Zotero.DataDirectory.dir, "kill-attachment-source");
+		try {
+			await resetData();
+			await Zotero.File.createDirectoryIfMissingAsync(source);
+			let parent = new Zotero.Item("book");
+			parent.libraryID = 1;
+			parent.setField("title", "Kill attachment parent");
+			await parent.saveTx();
+
+			let pdfPath = OS.Path.join(Zotero.DataDirectory.dir, "kill-source.pdf");
+			await Zotero.File.putContentsAsync(pdfPath, "%PDF-1.4\n%%EOF");
+			let pdf = await Zotero.Attachments.importFromFile({
+				file: pdfPath,
+				parentItemID: parent.id,
+				title: "Kill PDF",
+				contentType: "application/pdf",
+			});
+			await IOUtils.remove(pdfPath, { ignoreAbsent: true });
+			let annotation = new Zotero.Item("annotation");
+			annotation.libraryID = 1;
+			annotation.parentID = pdf.id;
+			annotation.annotationType = "highlight";
+			annotation.annotationText = "Kill annotation";
+			annotation.annotationPageLabel = "1";
+			annotation.annotationSortIndex = "00001|000001|00000";
+			annotation.annotationPosition = JSON.stringify({
+				pageIndex: 0,
+				rects: [[0, 0, 1, 1]],
+			});
+			await annotation.saveTx();
+
+			await Zotero.DB.queryAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+			await IOUtils.copy(
+				Zotero.DataDirectory.getDatabase(),
+				OS.Path.join(source, "zotero.sqlite")
+			);
+			await Zotero.File.copyDirectory(
+				OS.Path.join(Zotero.DataDirectory.dir, "storage"),
+				OS.Path.join(source, "storage")
+			);
+			let sourceDb = OS.Path.join(source, "zotero.sqlite");
+			let sourceHash = await Zotero.LibraryImport.hashFile(sourceDb);
+
+			await resetData();
+			let existing = new Zotero.Item("book");
+			existing.libraryID = 1;
+			existing.setField("title", "Kill destination fixture");
+			await existing.saveTx();
+
+			let killed = null;
+			try {
+				await Zotero.LibraryImport.merge(source, {
+					onProgress: line => {
+						// The progress line follows the attachment checkpoint and precedes
+						// the annotation pass.
+						if (/^Attachments: 1\/1/.test(line)) {
+							throw new Error("simulated kill during the attachment pass");
+						}
+					},
+				});
+			}
+			catch (e) {
+				killed = e;
+			}
+			assert.ok(killed, "the simulated kill should abort the merge");
+			let checkpoint = await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash);
+			assert.ok(checkpoint, "the attachment checkpoint must survive the kill");
+			assert.lengthOf(Object.keys(checkpoint.attachments || {}), 1);
+			assert.ok(checkpoint.items, "the cumulative checkpoint must keep the item map");
+
+			let result = await Zotero.LibraryImport.merge(source);
+			assert.equal(result.attachments, 0, "the recorded attachment is not copied twice");
+			assert.equal(result.skippedAttachments, 1);
+			assert.equal(result.annotations, 1);
+			let pdfs = (await Zotero.Items.getAll(1))
+				.filter(item => item.isAttachment && item.attachmentContentType === "application/pdf");
+			assert.lengthOf(pdfs, 1, "the library must hold one PDF");
+			let annotations = await Zotero.DB.valueQueryAsync(
+				"SELECT COUNT(*) FROM itemAnnotations"
+			);
+			assert.equal(annotations, 1);
+			assert.isNull(await Zotero.LibraryImport._findIncompleteMerge(source, sourceHash));
+			assert.equal(await Zotero.LibraryImport.hashFile(sourceDb), sourceHash);
+		}
+		finally {
+			await resetData();
+			await IOUtils.remove(source, { recursive: true, ignoreAbsent: true });
+			Zotero.LibraryImport._identityKeys = null;
+			Zotero.LibraryImport._identityGroups = null;
+		}
+	});
+
 	it("should merge items, collections and notes without touching the source", async function () {
 		this.timeout(120000);
 		let source = OS.Path.join(Zotero.DataDirectory.dir, "import-test-merge-source");
