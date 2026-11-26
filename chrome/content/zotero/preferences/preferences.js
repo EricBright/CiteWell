@@ -189,47 +189,58 @@ var Zotero_Preferences = {
 	},
 
 	async _handleNavigationSelect() {
+		// A fast click can fire `select` while the list still reports the previous
+		// pane as its value; reading it after the widget settles avoids showing the
+		// old pane and then leaving it there ("click Cite, view does not change").
+		await Zotero.Promise.delay();
 		let paneID = this.navigation.value;
-		if (paneID) {
-			let pane = this.panes.get(paneID);
-			this.searchField.value = '';
-			await this._search('');
+		try {
+			if (paneID) {
+				let pane = this.panes.get(paneID);
+				this.searchField.value = '';
+				await this._search('');
 			
-			await this._loadPane(paneID);
-			if (this.navigation.value !== paneID) {
-				// User navigated away from this pane while it was loading
-				return;
-			}
+				await this._loadPane(paneID);
+				if (this.navigation.value !== paneID) {
+					// User navigated away from this pane while it was loading
+					return;
+				}
 			
-			await this._showPane(paneID);
-			this.content.scrollTop = 0;
+				await this._showPane(paneID);
+				this.content.scrollTop = 0;
 
-			this._paneSelectDeferred.resolve(pane);
-			this._paneSelectDeferred = Zotero.Promise.defer();
+				this._paneSelectDeferred.resolve(pane);
+				this._paneSelectDeferred = Zotero.Promise.defer();
 
-			for (let child of this.content.children) {
-				if (child !== this.helpContainer && child !== pane.container) {
-					child.hidden = true;
+				for (let child of this.content.children) {
+					if (child !== this.helpContainer && child !== pane.container) {
+						child.hidden = true;
+					}
+				}
+				for (let navItem of this.navigation.children) {
+					navItem.setAttribute('data-parent-selected', pane.parent && navItem.value === pane.parent);
+				}
+
+				this.helpContainer.hidden = !pane.helpURL;
+				document.getElementById('prefs-subpane-back-button').hidden = !pane.parent;
+
+				if (!pane.parent) {
+					Zotero.Prefs.set('lastSelectedPrefPane', paneID);
 				}
 			}
-			for (let navItem of this.navigation.children) {
-				navItem.setAttribute('data-parent-selected', pane.parent && navItem.value === pane.parent);
-			}
-
-			this.helpContainer.hidden = !pane.helpURL;
-			document.getElementById('prefs-subpane-back-button').hidden = !pane.parent;
-
-			if (!pane.parent) {
-				Zotero.Prefs.set('lastSelectedPrefPane', paneID);
+			else {
+				for (let navItem of this.navigation.children) {
+					navItem.setAttribute('data-parent-selected', false);
+				}
+			
+				this.helpContainer.hidden = true;
+				document.getElementById('prefs-subpane-back-button').hidden = true;
 			}
 		}
-		else {
-			for (let navItem of this.navigation.children) {
-				navItem.setAttribute('data-parent-selected', false);
-			}
-			
-			this.helpContainer.hidden = true;
-			document.getElementById('prefs-subpane-back-button').hidden = true;
+		catch (e) {
+			// A pane that throws while being shown must not leave two panes visible
+			// with the selection on one of them.
+			Zotero.logError(e);
 		}
 	},
 
