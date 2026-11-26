@@ -124,6 +124,8 @@ describe("UI copy", function () {
 		assert.include(fluent, "report-problem-menuitem");
 		let source = await readLocale("chrome/content/zotero/zoteroPane.js");
 		assert.include(source, "Zotero.REPORT_PROBLEM_URL");
+		let copy = await readLocale("chrome/locale/en-US/zotero/zotero.properties");
+		assert.include(copy, "reportProblem.copyFailed");
 		// The inherited wizard posted the log to repo.zotero.org; no reachable path
 		// may still open it.
 		assert.notInclude(source, "errorReport.xhtml");

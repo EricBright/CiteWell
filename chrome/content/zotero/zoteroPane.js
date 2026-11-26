@@ -6728,18 +6728,27 @@ var ZoteroPane = new function () {
 		// relationship with that service, so the log stays here: copy it and let the
 		// person decide what to include in an issue (D62).
 		let errors = Zotero.getErrors(true);
+		let copied = false;
 		if (errors.length) {
 			try {
 				Zotero.Utilities.Internal.copyTextToClipboard(errors.join("\n"));
-				let progress = new Zotero.ProgressWindow();
-				progress.changeHeadline("Error log copied to the clipboard");
-				progress.addDescription("Paste it into the issue if it helps explain the problem.");
-				progress.show();
-				progress.startCloseTimer(8000);
+				copied = true;
 			}
 			catch (e) {
 				Zotero.logError(e);
 			}
+			let progress = new Zotero.ProgressWindow();
+			if (copied) {
+				progress.changeHeadline(Zotero.getString("reportProblem.copied"));
+				progress.addDescription(Zotero.getString("reportProblem.copiedHint"));
+			}
+			else {
+				// Never say the log was copied when it was not.
+				progress.changeHeadline(Zotero.getString("reportProblem.copyFailed"));
+				progress.addDescription(Zotero.getString("reportProblem.copyFailedHint"));
+			}
+			progress.show();
+			progress.startCloseTimer(8000);
 		}
 		Zotero.launchURL(Zotero.REPORT_PROBLEM_URL);
 	}
