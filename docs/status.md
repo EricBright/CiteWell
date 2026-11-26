@@ -59,6 +59,11 @@ resolves the repository and reports "No updates available".
   the item map and the note collection link, so a resumed note pass imported nothing; checkpoints
   are cumulative now. 24/24.
 
+- **R6 boundary (D63).** Help sends problems to GitHub Issues and questions to GitHub Discussions;
+  the Zotero troubleshooting and forum items, the Mendeley help link, the data-directory KB button
+  and the post-upgrade blog banner are gone. The Style Manager catalog and dictionary downloads
+  remain owner-approved exceptions. `uiCopyTest` 14/14.
+
 - **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
   an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`
   list is now read, so a saved `lastSelectedPrefPane` or a deep link to the old DNS id lands on
@@ -75,7 +80,7 @@ resolves the repository and reports "No updates available".
 - **Problem reports (D62).** Help > Report a Problem… opens CiteWell's issue tracker and copies the
   error log to the clipboard; nothing is posted to Zotero's error service any more.
 
-**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 9/9, `dnsPrefsTest` 4/4,
+**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 14/14, `dnsPrefsTest` 4/4,
 `selfUpdateTest` 4/4, `importTest` 24/24, the updater sidecar 7/7. Four failures still sit in
 `server_connectorTest` and `translateTest` (chai API gaps) plus one live-prompt timeout in
 `integrationTest`; none is caused by these changes.

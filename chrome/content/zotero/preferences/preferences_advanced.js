@@ -332,11 +332,7 @@ Zotero_Preferences.Advanced = {
 		
 		// This call shows a filepicker if needed, forces a restart if required, and does nothing if
 		// cancel was pressed or value hasn't changed
-		await Zotero.DataDirectory.choose(
-			true,
-			!isCustomSelection,
-			() => Zotero.launchURL('https://www.zotero.org/support/zotero_data')
-		);
+		await Zotero.DataDirectory.choose(true, !isCustomSelection);
 	},
 	
 	

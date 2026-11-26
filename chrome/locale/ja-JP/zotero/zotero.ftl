@@ -365,7 +365,7 @@ file-interface-items-were-relinked =
         [one] 1 個の項目が再リンクされました
        *[other] { $numRelinked } 個の項目が再リンクされました
     }
-import-mendeley-encrypted = 選択した Mendeleyデータベースは暗号化されているため、読み込めません。 詳しくは <a data-l10n-name="mendeley-import-kb">Mendeley ライブラリを Zotero にインポートするにはどうすればよいですか？</a> をご覧ください。
+import-mendeley-encrypted = 選択した Mendeley データベースを読み取れません。暗号化されている可能性があります。Mendeley から暗号化されていないコピーを書き出し、そのファイルをインポートしてください。
 file-interface-import-error-translator = “{ $translator }” で選択したファイルのインポート中にエラーが発生しました。ファイルが有効であることを確認して、もう一度試してください。
 import-online-intro = 次のステップでは、 { $targetAppOnline } にログインし、 { -app-name } にアクセスを許可するよう求められます。これは、 { $targetApp } ライブラリを { -app-name } にインポートするために必要です。
 import-online-intro2 = { -app-name } は { $targetApp } のパスワードを表示したり保存したりすることはありません。
@@ -1103,3 +1103,7 @@ local-api-authorize-text = お使いのコンピュータで実行中のアプ�
 report-problem-menuitem =
     .label = 問題を報告…
     .accesskey = P
+
+ask-question-menuitem =
+    .label = 質問する…
+    .accesskey = Q

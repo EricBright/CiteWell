@@ -369,7 +369,7 @@ file-interface-items-were-relinked =
         [one] 已重新链接 1 个条目
        *[other] 已重新链接 { $numRelinked } 个条目
     }
-import-mendeley-encrypted = 无法读取所选的 Mendeley 数据库，可能是因为它已加密。请参阅<a data-l10n-name="mendeley-import-kb">如何将 Mendeley 库导入 Zotero？</a>了解更多信息。
+import-mendeley-encrypted = 无法读取所选的 Mendeley 数据库，可能是因为它已加密。请从 Mendeley 导出一份未加密的副本，然后导入该文件。
 file-interface-import-error-translator = 使用“{ $translator }”导入所选文件时发生错误。请确保该文件有效，然后重试。
 import-online-intro = 在下一步中，您需要登录 { $targetAppOnline } 并授予 { -app-name } 访问权限。这是将您的 { $targetApp } 库导入到 { -app-name } 所必需的。
 import-online-intro2 = { -app-name } 永远不会知道或存储您的 { $targetApp } 密码。
@@ -1107,3 +1107,7 @@ local-api-authorize-text = 正在您计算机上运行的应用程序“{ $appNa
 report-problem-menuitem =
     .label = 报告问题…
     .accesskey = P
+
+ask-question-menuitem =
+    .label = 提问…
+    .accesskey = Q

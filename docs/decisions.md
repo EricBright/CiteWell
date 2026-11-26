@@ -1475,6 +1475,38 @@ support, and the Help menu offered no way to reach CiteWell's own tracker.
 The wizard file and its locale strings remain in the tree but are unreachable; removing them is a
 later cleanup, not a behaviour change.
 
+## D63 — No Zotero service is offered or promoted
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
+
+CiteWell is a fork. It has no Zotero account, sync, storage, cloud, forum, support site, or release
+blog, and user-facing copy must not imply that it does. The rule is absolute except for three
+catalog/data dependencies and the identifiers the data already carries.
+
+- **The three exceptions.** The official Zotero browser connector (the only browser-save client; the
+  app listens on 127.0.0.1:23119 and the extension follows Zotero's own policy), the Zotero style
+  catalog opened in the app's viewer (click-to-install would break with any other page), and Hunspell
+  dictionary downloads from download.zotero.org (no account, no telemetry). They are recorded here
+  so a later audit does not remove them by accident. Opening the catalog or fetching a dictionary
+  does contact zotero.org; the copy must not claim otherwise.
+- **Inherited identifiers stay.** `~/Zotero`, `zotero.sqlite`, `extensions.zotero.*`, `zotero://`,
+  item URIs and document field codes name existing data or documents. Renaming them is a migration,
+  not a copy edit.
+- **Legal attribution stays.** NOTICE, the trademark line, licensing and credits links.
+- **Removed under this decision.** Help > Troubleshooting Information and Discussion Forums (the
+  latter is now GitHub Discussions), the Mendeley error's Zotero help link and "into Zotero"
+  wording, the data-directory dialog's Zotero KB button, and the post-upgrade banner that linked to
+  the Zotero blog. The banner was already dead because the version contains SOURCE, but it would
+  wake up if release builds stop carrying that suffix.
+- **Enforcement.** `uiCopyTest.js` checks the Discussions URL, the absence of the two Zotero Help
+  items, the post-upgrade banner, the data-directory KB link and the Mendeley Zotero link; the
+  locale tests keep the app's own name CiteWell in the supported languages.
+
+Rejected: keeping the Zotero forums as a community channel. CiteWell has its own tracker and
+Discussions; sending people to another project's forum implies support that does not exist.
+Rejected: keeping the banner and pointing it at the CiteWell changelog. It is release-marketing UI
+for a version scheme the fork does not use.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

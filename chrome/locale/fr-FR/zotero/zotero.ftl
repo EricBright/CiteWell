@@ -403,7 +403,7 @@ file-interface-items-were-relinked =
         [one] Un lien rétabli
        *[other] { $numRelinked } liens rétablis
     }
-import-mendeley-encrypted = La base de données Mendeley sélectionnée n'est pas lisible, peut-être parce qu'elle est chiffrée. Voir <a data-l10n-name="mendeley-import-kb">Comment importer une bibliothèque Mendeley dans Zotero ?</a> pour plus d'informations.
+import-mendeley-encrypted = La base de données Mendeley sélectionnée ne peut pas être lue, probablement parce qu'elle est chiffrée. Exportez une copie non chiffrée depuis Mendeley et importez ce fichier.
 file-interface-import-error-translator = Une erreur s'est produite pendant l'importation du fichier sélectionné par  “{ $translator }”. Assurez-vous que le fichier est valide et réessayez.
 import-online-intro = A l'étape suivante, il vous sera demandé de vous connecter à { $targetAppOnline } et d'y donner accès à { -app-name }. Cette autorisation est nécessaire pour importer votre bibliothèque { $targetApp } dans { -app-name }.
 import-online-intro2 = { -app-name } ne verra ni n'enregistrera jamais votre mot de passe { $targetApp }.
@@ -1198,3 +1198,7 @@ local-api-authorize-text = “{ $appName }”, une application qui s'exécute su
 report-problem-menuitem =
     .label = Signaler un problème…
     .accesskey = P
+
+ask-question-menuitem =
+    .label = Poser une question…
+    .accesskey = Q

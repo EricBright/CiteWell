@@ -671,7 +671,6 @@ var ZoteroPane = new function () {
 		
 		setTimeout(function () {
 			ZoteroPane.setBannerZIndexes();
-			ZoteroPane.showPostUpgradeBanner();
 			ZoteroPane.showRetractionBanner();
 			ZoteroPane.showArchitectureWarning();
 			ZoteroPane.showFileRenamingBanner();
@@ -6979,53 +6978,6 @@ var ZoteroPane = new function () {
 	};
 
 	
-	this.showPostUpgradeBanner = function () {
-		// Don't show for non-release builds or if disabled
-		if (Zotero.isBetaBuild || Zotero.isDevBuild || Zotero.isSourceBuild
-				|| !Zotero.Prefs.get('showPostUpgradeBanner')) {
-			return;
-		}
-		// Don't show if we've already shown a banner for this or a higher major version
-		let versionShown = Zotero.Prefs.get('postUpgradeBannerVersionShown') || 0;
-		let majorVersion = parseInt(Zotero.version.split('.')[0]);
-		if (versionShown >= majorVersion) {
-			return;
-		}
-		
-		// Set message and link to current version
-		let div = document.getElementById('post-upgrade-message');
-		document.l10n.setArgs(div, { version: majorVersion });
-		let link = document.getElementById('post-upgrade-new-features-link');
-		link.href = ZOTERO_CONFIG.NEW_FEATURES_URL.replace('{version}', majorVersion);
-		document.getElementById('post-upgrade-container').removeAttribute('collapsed');
-
-		// Workaround for a Fluent issue (possibly triggered by plugin localizations) where
-		// $version isn't substituted, leaving "{$version}" visible in the banner. The same issue
-		// can cause other problems, and it would be good to figure out what's triggering it, but
-		// this one is visible enough that it's worth fixing manually.
-		document.l10n.translateElements([div]).then(() => {
-			let span = document.getElementById('post-upgrade-appver');
-			if (span.textContent.includes('$version')) {
-				span.textContent = span.textContent
-					.replace(/\{\s*\$version\s*\}/g, majorVersion);
-			}
-		});
-	};
-	
-	
-	this.hidePostUpgradeBanner = function (remindMeLater = false) {
-		document.getElementById('post-upgrade-container').setAttribute('collapsed', true);
-		if (remindMeLater) {
-			setTimeout(() => {
-				this.showPostUpgradeBanner();
-			}, 1000 * 60 * 60 * 24); // 24 hours
-		}
-		else {
-			let majorVersion = parseInt(Zotero.version.split('.')[0]);
-			Zotero.Prefs.set('postUpgradeBannerVersionShown', majorVersion);
-		}
-	};
-
 	this.showFileRenamingBanner = function () {
 		if (Zotero.Prefs.get('autoRenameFiles.bannerShown')) {
 			return;

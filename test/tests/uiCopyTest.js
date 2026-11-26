@@ -134,6 +134,36 @@ describe("UI copy", function () {
 		assert.notInclude(source, "errorReport.xhtml");
 	});
 
+	it("should send help to CiteWell's own community", async function () {
+		assert.equal(
+			Zotero.DISCUSSIONS_URL,
+			"https://github.com/EricBright/CiteWell/discussions"
+		);
+		let pane = await readLocale("chrome/content/zotero/zoteroPane.xhtml");
+		assert.include(pane, 'id="discussions"');
+		assert.notInclude(pane, "troubleShooting");
+		assert.notInclude(pane, "feedbackPage");
+		assert.notInclude(pane, "post-upgrade-container");
+		let advanced = await readLocale(
+			"chrome/content/zotero/preferences/preferences_advanced.js"
+		);
+		assert.notInclude(advanced, "zotero_data");
+		let wizard = await readLocale("chrome/content/zotero/import/importWizard.xhtml");
+		assert.notInclude(wizard, "mendeley_import");
+	});
+
+	it("should not link Mendeley import to Zotero help", async function () {
+		for (let locale of SUPPORTED_LOCALES) {
+			let fluent = await readLocale(`chrome/locale/${locale}/zotero/zotero.ftl`);
+			let line = fluent.split("\n").find(
+				candidate => candidate.trimStart().startsWith("import-mendeley-encrypted")
+			);
+			if (!line) continue;
+			assert.notInclude(line, "Zotero", `${locale}: Mendeley error`);
+			assert.include(fluent, "ask-question-menuitem", `${locale}: no question label`);
+		}
+	});
+
 	it("should not call the app Zotero in any supported locale", async function () {
 		// The strings name the application itself, not an upstream service or an
 		// inherited identifier. Zotero here is the previous product's name.

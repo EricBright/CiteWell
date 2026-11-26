@@ -826,14 +826,9 @@
 									  oncommand="ZoteroStandalone.openHelp();"
 									  label="&productHelp.label;"
 									  accesskey="&productHelp.accesskey;"/>
-							<menuitem id="troubleShooting"
-									  accesskey="&helpTroubleshootingInfo.accesskey;"
-									  label="&helpTroubleshootingInfo.label;"
-									  oncommand="ZoteroStandalone.openHelp('troubleshooting');"/>
-							<menuitem id="feedbackPage"
-									  accesskey="&helpFeedbackPage.accesskey;"
-									  label="&helpFeedbackPage.label;"
-									  oncommand="ZoteroStandalone.openHelp('feedback');"/>
+							<menuitem id="discussions"
+									  data-l10n-id="ask-question-menuitem"
+									  oncommand="Zotero.launchURL(Zotero.DISCUSSIONS_URL);"/>
 						<menuitem id="menu_agentSkill"
 								  label="Agents and SKILL.md"
 								  oncommand="Zotero.Utilities.Internal.openPreferences('zotero-prefpane-agent')"/>
@@ -1117,36 +1112,6 @@
 							onkeyup="ZoteroPane_Local.handleKeyUp(event, this.id)"
 							onkeypress="ZoteroPane_Local.handleKeyPress(event)">
 							
-							<vbox id="post-upgrade-container" class="banner-container" collapsed="true" role="status">
-								<html:div id="post-upgrade-banner" class="banner">
-									<html:div
-											id="post-upgrade-message"
-											data-l10n-id="post-upgrade-message">
-										<html:span
-											id="post-upgrade-appver"
-											data-l10n-name="post-upgrade-appver"/>
-										<html:a
-											id="post-upgrade-new-features-link"
-											data-l10n-name="new-features-link"
-											class="link"
-											onclick="Zotero.launchURL(this.href)"
-											tabindex="0"
-										/>
-									</html:div>
-									<html:div id="post-upgrade-buttons">
-										<button
-											data-l10n-id="post-upgrade-remind-me-later"
-											oncommand="ZoteroPane.hidePostUpgradeBanner(true)"
-										/>
-										<button
-											data-l10n-id="post-upgrade-done"
-											oncommand="ZoteroPane.hidePostUpgradeBanner(false)"
-											default="true"
-										/>
-									</html:div>
-								</html:div>
-							</vbox>
-
 							<vbox id="sync-reminder-container" class="banner-container"  collapsed="true" role="status">
 								<html:div id="sync-reminder-banner" class="banner">
 									<html:div id="sync-reminder-message" class="message"/>

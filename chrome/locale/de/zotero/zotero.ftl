@@ -386,7 +386,7 @@ file-interface-items-were-relinked =
         [one] Ein Eintrag wurde erneut verknüpft
        *[other] { $numRelinked } Einträge wurden erneut verknüpft
     }
-import-mendeley-encrypted = Die ausgewählte Mendeley-Datenbank kann nicht gelesen werden, wahrscheinlich weil sie verschlüsselt ist. Lesen Sie <a data-l10n-name="mendeley-import-kb">How do I import a Mendeley library into Zotero? (Englisch)</a> für mehr Informationen.
+import-mendeley-encrypted = Die ausgewählte Mendeley-Datenbank kann nicht gelesen werden, wahrscheinlich weil sie verschlüsselt ist. Exportieren Sie eine unverschlüsselte Kopie aus Mendeley und importieren Sie diese Datei.
 file-interface-import-error-translator = Beim Importieren der ausgewählten Datei mit „{ $translator }“ ist ein Fehler aufgetreten. Bitte überprüfen Sie, ob die Datei korrekt ist, und versuchen Sie es erneut.
 import-online-intro = Im nächsten Schritt werden Sie gebeten, sich in { $targetAppOnline } einzuloggen und { -app-name } Zugriff zu gewähren. Dies ist notwendig, um Ihre { $targetApp }-Bibliothek in { -app-name } zu importieren.
 import-online-intro2 = { -app-name } wird ihr { $targetApp }-Passwort niemals sehen oder speichern.
@@ -1155,3 +1155,7 @@ local-api-authorize-text = “{ $appName }”, an application running on your co
 report-problem-menuitem =
     .label = Problem melden…
     .accesskey = P
+
+ask-question-menuitem =
+    .label = Eine Frage stellen…
+    .accesskey = F
