@@ -84,7 +84,7 @@
     {
       "id": "zotero-prefpane-integrations",
       "rawLabel": "Integrations",
-      "icon": "chrome://zotero/skin/20/universal/magic-wand.svg",
+      "icon": "chrome://zotero/skin/20/universal/puzzle.svg",
       "order": 60,
       "status": "active",
       "content": {
@@ -99,7 +99,7 @@
     {
       "id": "zotero-prefpane-agent",
       "rawLabel": "Agent access",
-      "icon": "chrome://zotero/skin/20/universal/magic-wand.svg",
+      "icon": "chrome://zotero/skin/20/universal/robot.svg",
       "order": 70,
       "status": "active",
       "content": {
