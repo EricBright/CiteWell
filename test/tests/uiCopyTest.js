@@ -92,4 +92,16 @@ describe("UI copy", function () {
 			assert.notInclude(match[1], EM_DASH, `step ${n} uses an em dash`);
 		}
 	});
+
+	it("should keep the empty library to one welcome line", async function () {
+		// The removed instructions named a connector that no longer exists and
+		// linked to Zotero's Quick Start Guide. Guidance lives in the Help menu.
+		let copy = await readLocale("chrome/locale/en-US/zotero/zotero.properties");
+		assert.notInclude(copy, "pane.items.intro.text2");
+		assert.notInclude(copy, "pane.items.intro.text3");
+		let source = await readLocale("chrome/content/zotero/collectionViewItemTree.js");
+		assert.notInclude(source, "pane.items.intro.text2");
+		assert.notInclude(source, "pane.items.intro.text3");
+		assert.include(source, "pane.items.intro.text1");
+	});
 });

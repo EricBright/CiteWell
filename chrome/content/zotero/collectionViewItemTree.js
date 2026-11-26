@@ -2163,51 +2163,6 @@ class CollectionViewItemTree extends ItemTree {
 				html = `<b>${html}</b>`;
 				p.innerHTML = html;
 				div.appendChild(p);
-				p = doc.createElement("p");
-				html = Zotero.getString("pane.items.intro.text2", [
-					Zotero.getString("connector.name", Zotero.clientName),
-					Zotero.clientName,
-				]);
-				// Encode special chars, which shouldn't exist
-				html = Zotero.Utilities.htmlSpecialChars(html);
-				html = html.replace(
-					/\[([^\]]+)](.+)\[([^\]]+)]/,
-					`<span class="text-link" data-href="${ZOTERO_CONFIG.QUICK_START_URL}">$1</span>` + "$2"
-						+ `<span class="text-link" data-href="${ZOTERO_CONFIG.CONNECTORS_URL}">$3</span>`,
-				);
-				p.innerHTML = html;
-				div.appendChild(p);
-				if (ZOTERO_CONFIG.ONLINE_SYNC) {
-					p = doc.createElement("p");
-					html = Zotero.getString("pane.items.intro.text3", [Zotero.clientName]);
-					// Encode special chars, which shouldn't exist
-					html = Zotero.Utilities.htmlSpecialChars(html);
-					html = html.replace(
-						/\[([^\]]+)]/,
-						'<span class="text-link" data-action="open-sync-prefs">$1</span>',
-					);
-					p.innerHTML = html;
-					div.appendChild(p);
-				}
-
-				// Activate text links
-				for (let span of div.getElementsByTagName("span")) {
-					if (span.classList.contains("text-link")) {
-						span.setAttribute("role", "link");
-						if (span.hasAttribute("data-href")) {
-							span.onclick = function () {
-								doc.defaultView.ZoteroPane.loadURI(this.getAttribute("data-href"));
-							};
-						}
-						else if (span.hasAttribute("data-action")) {
-							if (span.getAttribute("data-action") == "open-sync-prefs") {
-								span.onclick = () => {
-									Zotero.Utilities.Internal.openPreferences("zotero-prefpane-account");
-								};
-							}
-						}
-					}
-				}
 				div.dataset.allowdrop = true;
 			} // My Publications
 			else if (this.viewMode == "publications") {
