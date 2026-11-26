@@ -1393,6 +1393,9 @@ var ItemTree = class ItemTree extends LibraryTree {
 				if (e.target.dataset.action == "open-sync-prefs") {
 					Zotero.Utilities.Internal.openPreferences("zotero-prefpane-account");
 				}
+				if (e.target.dataset.action == "open-browse") {
+					Zotero.getMainWindow().Zotero_BrowseTab?.open();
+				}
 			},
 			className: "items-tree-message",
 			style: {

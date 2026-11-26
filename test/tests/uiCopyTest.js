@@ -111,4 +111,12 @@ describe("UI copy", function () {
 		let source = await readLocale("chrome/content/zotero/standalone/standalone.js");
 		assert.include(source, "Zotero.HELP_URL");
 	});
+
+	it("should offer a Browse action on an empty library", async function () {
+		let tree = await readLocale("chrome/content/zotero/collectionViewItemTree.js");
+		assert.include(tree, "Browse the web");
+		assert.include(tree, '"open-browse"');
+		let itemTree = await readLocale("chrome/content/zotero/itemTree.js");
+		assert.include(itemTree, '"open-browse"');
+	});
 });

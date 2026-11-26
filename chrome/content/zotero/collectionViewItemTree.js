@@ -2163,6 +2163,19 @@ class CollectionViewItemTree extends ItemTree {
 				html = `<b>${html}</b>`;
 				p.innerHTML = html;
 				div.appendChild(p);
+				p = doc.createElement("p");
+				let browse = doc.createElement("span");
+				browse.className = "text-link";
+				browse.dataset.action = "open-browse";
+				browse.textContent = "Browse the web";
+				p.appendChild(browse);
+				div.appendChild(p);
+				// The middle pane starts below its toolbar; shift the message by the
+				// toolbar's height so its centre matches the item pane's message.
+				let toolbar = doc.getElementById("zotero-items-toolbar");
+				if (toolbar) {
+					div.style.paddingBottom = `${toolbar.getBoundingClientRect().height}px`;
+				}
 				div.dataset.allowdrop = true;
 			} // My Publications
 			else if (this.viewMode == "publications") {
