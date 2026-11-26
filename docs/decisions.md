@@ -1307,6 +1307,51 @@ and the update channel would have nothing to update. Rejected: signing with a se
 without a published key file and a documented verification command; a signature nobody can check is
 worse than an honest SHA-256.
 
+## D59 — CiteWell versions by calendar date, with a per-day publish counter
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes for future releases, no for tags already pushed
+
+Semantic versioning was considered and rejected. It asks a number to communicate the nature of a
+change, which needs agreement on what "breaking" means; CiteWell has no API consumers and its
+releases are driven by readiness, not by a compatibility contract. Its version also inherited
+Zotero's `10.0.9`, which reads as a Zotero claim it does not make. A date is a fact, and the
+project's first public artifact should carry its own number.
+
+- **Shape:** `YYYY.MM.DD.NNN` — UTC date of first publication, plus a three-digit publish counter
+  starting at `000`. Month, day and counter are zero-padded because the string is read as text in
+  tags and release lists.
+- **Allocated once:** the date and counter are captured at the start of the publish procedure and
+  used for the tag, the release and its assets. The clock is not read again.
+- **The tag is the ledger:** a number is spent when its `v<date>.<nnn>` tag exists on the remote.
+  Allocation is the highest existing tag for that date plus one, after `git fetch --tags`. Published
+  tags are never moved or deleted, and allocation is serial (one publish at a time).
+- **Publication is defined:** a tag exists on the remote. The procedure creates a **draft** release,
+  uploads the three assets, verifies after upload that every asset digest equals the local SHA-256
+  and that the `.zsync` File-Hash matches, then publishes the draft, which creates the tag and moves
+  `latest` for a stable release. A failed upload is retried against the same release; published
+  assets are immutable and a fix takes the next number.
+- **Test builds are prereleases** and still consume a number. GitHub's `latest` ignores prereleases,
+  so the update channel does not move, and a stable release later the same day always has a higher
+  number.
+- **The cap is 999 per UTC day.** Reaching it stops publication until the next UTC day; it does not
+  overflow into a fourth digit.
+- **Dev builds** carry `YYYY.MM.DD.SOURCE.<sha>` with no counter and never reserve a number. Between
+  releases the `version` file sits at the last release date without the counter.
+- **The number is CiteWell's only.** It is never sent to a consumer that expects a Zotero version:
+  the translator and style repository update check, the `X-Zotero-Version` header and LibreOffice
+  document metadata receive `Zotero.zoteroCompatVersion`, which names the upstream base (`10.0.9`)
+  and must be updated when the data layer or field encoding diverges from it. There is deliberately
+  no second copy of that value to drift. The translation framework is a submodule that runs in its
+  own sandbox, where `Zotero.version` is the framework's version (5.0.78); those call sites are left
+  alone, because that value is the one the repository expects from the framework.
+
+Rejected: `10.0.9-citewell.N`. It keeps the lineage visible but still presents 10.0.9 as the product
+version, which is exactly the confusion the change removes. Rejected: an unqualified `YYYY.MM.DD`
+without a counter, because two artifacts can ship on one day and the number must stay unique and
+ordered. Rejected: a bare version for the published build via a release-channel build; the source
+channel is the path every test and every prior artifact went through, so the shipped bytes keep the
+`.SOURCE.<sha>` that names their commit.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

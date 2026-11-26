@@ -304,7 +304,7 @@ Zotero.Server.RequestHandler.prototype._bodyData = function () {
  */
 Zotero.Server.RequestHandler.prototype._generateResponse = function (status, contentTypeOrHeaders, body) {
 	var response = "HTTP/1.0 "+status+" "+Zotero.Server.responseCodes[status]+"\r\n";
-	response += "X-Zotero-Version: "+Zotero.version+"\r\n";
+	response += "X-Zotero-Version: "+Zotero.zoteroCompatVersion+"\r\n";
 	response += "X-Zotero-Connector-API-Version: "+CONNECTOR_API_VERSION+"\r\n";
 		
 	if (this.origin === ZOTERO_CONFIG.BOOKMARKLET_ORIGIN) {

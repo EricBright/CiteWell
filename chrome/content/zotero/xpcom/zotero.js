@@ -240,6 +240,13 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 		this.isDevBuild = Zotero.version.includes('-dev');
 		this.isSourceBuild = Zotero.version.includes('SOURCE');
 		
+		// The version reported to services and documents that expect a Zotero-shaped
+		// version: the translator repo, the X-Zotero-Version header and LibreOffice
+		// document metadata. It names the upstream base this fork is compatible with,
+		// never the CiteWell release number (D59). Update it when the data layer or the
+		// field encoding diverges from that base.
+		this.zoteroCompatVersion = "10.0.9";
+		
 		// OS platform
 		var os = Services.appinfo.OS;
 		this.isMac = os == 'Darwin';
@@ -2494,7 +2501,7 @@ Zotero.VersionHeader = {
 			let isPrimaryDomain = domain == ZOTERO_CONFIG.DOMAIN_NAME
 				|| domain.endsWith('.' + ZOTERO_CONFIG.DOMAIN_NAME);
 			if (isPrimaryDomain) {
-				channel.setRequestHeader("X-Zotero-Version", Zotero.version, false);
+				channel.setRequestHeader("X-Zotero-Version", Zotero.zoteroCompatVersion, false);
 			}
 			else {
 				// Use "Firefox/[version]" in user agent if not a proxy check or file sync request

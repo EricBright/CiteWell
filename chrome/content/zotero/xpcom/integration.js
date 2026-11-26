@@ -588,7 +588,7 @@ Zotero.Integration = new function () {
 				// Don't throw for version 4(JSON) during the transition from 4.0 to 5.0
 				} else if ((data.dataVersion > DATA_VERSION) && data.dataVersion != 4) {
 					throw new Zotero.Exception.Alert("integration.error.newerDocumentVersion",
-							[data.zoteroVersion, Zotero.version], "integration.error.title");
+							[data.zoteroVersion, Zotero.zoteroCompatVersion], "integration.error.title");
 				}
 				
 				if (data.prefs.fieldType !== app.primaryFieldType
@@ -2838,7 +2838,7 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 			// Preserve the version of the application that created the
 			// document. A Zotero document reopened in CiteWell must not look
 			// like it came from a newer Zotero (D39).
-			zoteroVersion: this.zoteroVersion || Zotero.version,
+			zoteroVersion: this.zoteroVersion || Zotero.zoteroCompatVersion,
 			dataVersion: 4
 		});
 	}
@@ -2851,7 +2851,7 @@ Zotero.Integration.DocumentData.prototype.serialize = function () {
 	}
 	
 	return '<data data-version="'+Zotero.Utilities.htmlSpecialChars(`${DATA_VERSION}`)+'" '+
-		'zotero-version="'+Zotero.Utilities.htmlSpecialChars(this.zoteroVersion || Zotero.version)+'">'+
+		'zotero-version="'+Zotero.Utilities.htmlSpecialChars(this.zoteroVersion || Zotero.zoteroCompatVersion)+'">'+
 			'<session id="'+Zotero.Utilities.htmlSpecialChars(this.sessionID)+'"/>'+
 		'<style id="'+Zotero.Utilities.htmlSpecialChars(this.style.styleID)+'" '+
 			(this.style.locale ? 'locale="' + Zotero.Utilities.htmlSpecialChars(this.style.locale) + '" ': '') +

@@ -1315,8 +1315,9 @@ describe("Zotero.Integration", function () {
 			// Serialize and unserialize (above tests makes sure unserialize works properly).
 			var processedData = new Zotero.Integration.DocumentData(data.serialize());
 
-			// Added in serialization routine
-			data.zoteroVersion = Zotero.version;
+			// Added in serialization routine. The document records the Zotero-compatible
+			// version it writes in that field, not the CiteWell release number (D59).
+			data.zoteroVersion = Zotero.zoteroCompatVersion;
 			
 			// Convert to JSON to remove functions from DocumentData objects
 			assert.deepEqual(JSON.parse(JSON.stringify(processedData)), JSON.parse(JSON.stringify(data)));

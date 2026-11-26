@@ -228,7 +228,7 @@ Zotero.RecognizeDocument = new function () {
 			throw new Error("File not found when reporting metadata");
 		}
 		
-		var version = Zotero.version;
+		var version = Zotero.zoteroCompatVersion;
 		var json = await extractPDFJSON(attachment.id);
 		var metadata = item.toJSON();
 		

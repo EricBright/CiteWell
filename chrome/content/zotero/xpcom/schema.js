@@ -1769,7 +1769,7 @@ Zotero.Schema = new function () {
 		try {
 			var url = ZOTERO_CONFIG.REPOSITORY_URL + 'updated?'
 				+ (lastUpdated ? 'last=' + lastUpdated + '&' : '')
-				+ 'version=' + Zotero.version;
+				+ 'version=' + Zotero.zoteroCompatVersion;
 			
 			Zotero.debug('Checking repository for translator and style updates');
 			
