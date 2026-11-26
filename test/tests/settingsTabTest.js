@@ -249,4 +249,24 @@ describe("Settings tab (D48)", function () {
 			win.Zotero_Tabs.close(id);
 		}
 	});
+
+	it("sends a deep link to a retired pane to the pane that absorbed it", async function () {
+		this.timeout(45000);
+		let SettingsTab = win.Zotero_SettingsTab;
+		let id = SettingsTab.open("zotero-prefpane-dns");
+		assert.ok(id, "settings tab opened");
+		let frameWin = SettingsTab.getFrame(id).contentWindow;
+		await waitForCallback(
+			() => frameWin.Zotero_Preferences?.navigation?.value === "zotero-prefpane-advanced"
+				&& frameWin.document.getElementById("dns-resolver"),
+			30000,
+			100
+		);
+		assert.equal(
+			frameWin.Zotero_Preferences.navigation.value,
+			"zotero-prefpane-advanced",
+			"the retired DNS id must resolve to Advanced, where DNS now lives"
+		);
+		win.Zotero_Tabs.close(id);
+	});
 });

@@ -129,6 +129,11 @@ var Zotero_Preferences = {
 	 * @returns {Promise<void>}
 	 */
 	async navigateToPane(paneID, { scrollTo, action } = {}) {
+		let resolved = Zotero.PreferencePanes.resolvePaneID(paneID);
+		if (!resolved) {
+			throw new Error(`Unknown settings pane: ${paneID}`);
+		}
+		paneID = resolved;
 		let isNewPane = this.navigation.value !== paneID;
 		if (action) {
 			this._pendingAction = action;

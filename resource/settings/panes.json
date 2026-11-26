@@ -181,6 +181,12 @@
       "paneId": "zotero-prefpane-import-export",
       "status": "merged",
       "reason": "Quick Copy is now part of Import & Export; the old Export pane is no longer registered."
+    },
+    {
+      "id": "zotero-prefpane-dns",
+      "paneId": "zotero-prefpane-advanced",
+      "status": "merged",
+      "reason": "DNS is a section of Advanced now (D50 amendment)."
     }
   ],
   "simpleSections": [

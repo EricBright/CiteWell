@@ -1107,7 +1107,8 @@ profile is protected without a first-run prompt.
 justify a top-level entry; its `go-to` icon also collided with the Locate control elsewhere. The
 pane id `zotero-prefpane-dns` is gone, deep links use `zotero-prefpane-advanced`, and
 `preferences_dns.js` loads with the Advanced pane. The behaviour (defaults, startup re-apply, the
-two choices) is unchanged.
+two choices) is unchanged. The manifest's `retired` list now maps the old id to Advanced, and both a saved
+`lastSelectedPrefPane` and a deep link follow that mapping instead of failing.
 
 Rejected: writing system resolver configuration (`/etc/resolv.conf`, NetworkManager) — that is
 machine-wide state, outside what a citation app may touch (D19 scope). Rejected: presenting the

@@ -94,6 +94,27 @@ Zotero.PreferencePanes = {
 		return this.builtInPanesPromise;
 	},
 
+	/**
+	 * Map a pane id to a pane that exists, following a `retired` entry when the id
+	 * was merged into another pane (the DNS pane into Advanced, for example).
+	 *
+	 * @param {String} id
+	 * @return {String|null} a registered pane id, or null when nothing matches
+	 */
+	resolvePaneID(id) {
+		if (!id || !this.builtInPanes) {
+			return null;
+		}
+		if (this.builtInPanes.some(pane => pane.id === id)) {
+			return id;
+		}
+		let retired = this.retired.find(entry => entry.id === id && entry.paneId);
+		if (retired && this.builtInPanes.some(pane => pane.id === retired.paneId)) {
+			return retired.paneId;
+		}
+		return null;
+	},
+
 	pluginPanes: [],
 
 	/**
