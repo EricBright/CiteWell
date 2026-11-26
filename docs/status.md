@@ -13,6 +13,28 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-26 (D59 versioning, first release staged)
+
+Compaction anchor. Last code commit `2c521c9b6` (docs commits follow). Installed AppImage
+`2026.11.26.000.SOURCE.2c521c9b6`, sha256
+`6f290eee69fd02517f12bb4fda975e4726cb8e51b5109b1ce3ba2542b8fe7bb3`, 125,864,440 bytes, installed at
+`~/AppImages/citewell.appimage` and launched against a scratch profile with `--no-integration`:
+`/connector/ping` returned 200 on **both** `23119` and `23120`.
+
+**Shipped: D59, calendar versioning.** The app version is `YYYY.MM.DD.NNN` (UTC date of first
+publication plus a three-digit publish counter); the tag is the ledger; dev builds carry
+`YYYY.MM.DD.SOURCE.<sha>`. The value sent to Zotero-shaped consumers is
+`Zotero.zoteroCompatVersion = "10.0.9"` — the repository update check, the `X-Zotero-Version`
+header and LibreOffice document metadata — while About, Debug, the agent API and schema bookkeeping
+keep the CiteWell number. The translation framework is a submodule that runs in its own sandbox
+where `Zotero.version` is the framework's `5.0.78`; those call sites are deliberately untouched.
+`versionTest.js` 3/3 and the `DocumentData` slice of `integrationTest.js` 7/7; the wider related
+suite ran 165/169 with four failures that predate this change (two chai/API gaps in
+`server_connectorTest.js` and `translateTest.js`, one live-prompt timeout in `integrationTest.js`).
+
+**Staged, not published.** `dist/` holds the three assets and the release body is drafted. The
+first release needs the owner's go: draft release, upload, verify digests after upload, publish.
+
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
 Compaction anchor. Last code commit `cf3e2382a` (docs commits follow). Installed AppImage
@@ -165,7 +187,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`10.0.9.SOURCE.cf3e2382a`, sha256 `5eb91f3…`, 125,860,344 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information, though no release exists yet |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`2026.11.26.000.SOURCE.2c521c9b6`, sha256 `6f290eee…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information; the first release is staged but not published |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -191,7 +213,7 @@ connector talks to CiteWell on port 23119. CiteWell holds no Google session. Bro
 tabs are shipped (D47/D48), the DNS pane rides the settings tab (D50), and the app build and tests
 are Node-free. The [connector handoff](#handoff-2026-11-23-connector-build) below is superseded.
 
-Build note: the current AppImage is built from `cf3e2382a` and carries the Browse tab (D47)
+Build note: the current AppImage is built from `2c521c9b6` and carries the Browse tab (D47)
 with its save bridge (2a), multi-item picker (2b), PDF capture, proxies, the Docs gate with the
 23119 compatibility listener, and the reworked toolbar (Go beside the bar, Save behind a divider,
 measured contrast), the settings tab with Ctrl+, (D48), and the DNS defaults (D50). Earlier
@@ -200,14 +222,14 @@ the save bridge.
 
 Artifacts are local and gitignored:
 
-- `dist/CiteWell-x86_64.AppImage` (125,860,344 bytes; sha256
-  `5eb91f3c5079116b9211e9f716c4fd6e2e1fb6438b5f99ca37578f05ca686742`; also `.zsync` and
+- `dist/CiteWell-x86_64.AppImage` (125,864,440 bytes; sha256
+  `6f290eee69fd02517f12bb4fda975e4726cb8e51b5109b1ce3ba2542b8fe7bb3`; also `.zsync` and
   `.sha256`; Browse tab with the
   save bridge, picker, PDF capture, proxies, Docs gate with the 23119 listener, reworked toolbar,
   settings tab, DNS defaults, no connector tree, the merge-refusal and database-restore change,
   its restore hardening, the checkpoint-lifecycle fixes, startup recovery of a leftover swap, the
   R6 copy pass, settings loading and failure states, local pane failures, Gear Lever update
-  information, no Mozilla update channel, version `10.0.9.SOURCE.cf3e2382a`)
+  information, no Mozilla update channel, D59 calendar version `2026.11.26.000.SOURCE.2c521c9b6`)
 
 The obsolete R26 editor work was preserved before reverting at
 `~/.local/share/dsh-trash/2026-11-21/r26-markdown-editor-work.patch`
@@ -413,11 +435,11 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 1. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour
    change; the owner's UI rules are in [#owners-ui-rules](#owners-ui-rules-carry-these-into-r6).
-2. **R11/R21 — publish the first release, then the self-updater.** The build already writes the
-   three assets and the update information ([packaging.md](packaging.md#publishing-a-release)).
-   Next: tag and publish a release (or a prerelease test build) to `EricBright/CiteWell`, verify
-   Gear Lever resolves it, then implement the in-app updater to the shape in
-   [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
+2. **R11/R21 — publish the first release, then the self-updater.** D59 is implemented and the
+   first artifact is staged (three assets in `dist/`, release body drafted). Next: create the
+   draft release for `v2026.11.26.000`, upload, verify the digests after upload, publish, and check
+   that Gear Lever reports the installed build as current. Then implement the in-app updater to the
+   shape in [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
 3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
    across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.

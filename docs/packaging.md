@@ -125,7 +125,7 @@ path; the new instance deletes the old file once no process uses it. The running
 written. That deletion is the only thing that has to be careful: same folder, regular file, an
 image name, a valid AppImage header and no process using it.
 
-CiteWell's shape, once R11 provides a release host:
+CiteWell's shape, now that R11 has a release host:
 
 1. **Self-update in the app** (primary channel): check the repository's `releases/latest` redirect,
    download the new AppImage beside the installed one, verify a published SHA-256, swap it in while
@@ -143,6 +143,25 @@ CiteWell's shape, once R11 provides a release host:
    releases page, and Check for Updates reports that there is no in-app channel yet. A check
    resolves locally as "Update URL not available" and contacts no server.
 
+### Versioning and publication
+
+CiteWell versions by calendar date, not by a lineage number (D59):
+
+- **Shape:** `YYYY.MM.DD.NNN` — the UTC date of first publication plus a three-digit publish
+  counter, `000` for the first artifact that day.
+- **The tag carries the release number:** `v2026.11.26.000`. The shipped binary appends
+  `.SOURCE.<sha>` so the artifact names its commit; that suffix is provenance, not part of the
+  number, and About reads `2026.11.26.000.SOURCE.2c521c9b6`.
+- **The tag is the ledger:** a number is spent when its tag exists on the remote. Published tags
+  are never moved or deleted, and allocation is the highest existing tag for that date plus one.
+- **Test builds consume a number** and are published as prereleases, so GitHub's `latest` — and
+  therefore Gear Lever and the update information — never offers them.
+- **Cap:** 999 publishes in a UTC day stops publication until the next UTC day.
+- **Compatibility check:** before every release, confirm `Zotero.zoteroCompatVersion` in
+  `chrome/content/zotero/xpcom/zotero.js` still names the upstream base. It is the value sent to
+  the translator and style repository check, `X-Zotero-Version` and LibreOffice document metadata,
+  and it must change when the data layer or field encoding diverges.
+
 ### Publishing a release
 
 `xtask appimage` writes three assets and proves the update information landed:
@@ -153,19 +172,31 @@ CiteWell's shape, once R11 provides a release host:
 | `dist/CiteWell-x86_64.AppImage.zsync` | delta updates for Gear Lever and AppImageUpdate |
 | `dist/CiteWell-x86_64.AppImage.sha256` | what the in-app updater verifies before installing |
 
-1. Build from a clean tree and note the version in `app/staging/Zotero_linux-x86_64/app/application.ini`.
-2. Tag the commit and publish a GitHub release at `EricBright/CiteWell` with those three files under
-   exactly those names. The update information points at `releases/latest`, so the asset names and
-   the `latest` release must agree.
-3. Say in the notes that the repository at the tag is the corresponding source (AGPL), and that
-   verification is SHA-256 over TLS rather than a signature (D58).
-4. A test build is a **prerelease** and never reuses a real version number. GitHub's `latest`
-   ignores prereleases, so Gear Lever and the update information will not offer it.
+The sequence exists because a release that becomes visible before its assets are complete, or
+whose assets change after publication, leaves Gear Lever with a digest mismatch it cannot forgive.
 
-A release that renames the AppImage, publishes two matching AppImages, or omits the `.zsync` breaks
-the update path even though the app itself still runs. `appimagetool` also drops a `.zsync` in the
-working directory as a byproduct; the release assets are the three files under `dist/`, not that
-copy.
+1. Build from a clean tree with the release version in `version` (`2026.11.26.000.SOURCE`),
+   commit it, and note the commit. The tag must point at that commit, because the repository at
+   the tag is the corresponding source.
+2. Create a **draft** release at `EricBright/CiteWell`, tagged `v2026.11.26.000` against that
+   commit, and upload the three `dist/` files under exactly those names. A draft creates no tag
+   and does not move `latest`.
+3. Verify **after** upload: each asset's digest equals `sha256sum` of the local file, the
+   `.zsync` `File-Hash` equals the same value, and the sizes match.
+4. Publish the draft. This creates the tag and, for a stable release, moves `latest`. Test builds
+   are published with the prerelease flag and never take `latest`.
+5. Fetch tags, confirm the tag points at the commit, and confirm
+   `releases/latest/download/CiteWell-x86_64.AppImage.zsync` resolves.
+6. Say in the notes that the repository at the tag is the corresponding source (AGPL), and that
+   verification is SHA-256 over TLS rather than a signature (D58).
+7. Drop `version` back to `YYYY.MM.DD.SOURCE` (no counter) and commit, so dev builds read as
+   "source since the last release".
+
+A failed upload is retried against the same release and does not take a new number. Published
+assets are immutable; a fix takes the next number. A release that renames the AppImage, publishes
+two matching AppImages, or omits the `.zsync` breaks the update path even though the app itself
+still runs. `appimagetool` also drops a `.zsync` in the working directory as a byproduct; the
+release assets are the three files under `dist/`, not that copy.
 
 ### Gear Lever and AppImageUpdate compatibility
 
