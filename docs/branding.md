@@ -7,9 +7,9 @@ this tree at upstream `864b2d47e`; if one has moved, fix this table rather than 
 
 | Surface | File | Current value |
 |---|---|---|
-| Short name (window title, most UI) | [app/assets/branding/locale/brand.dtd](../app/assets/branding/locale/brand.dtd) | `brandShortName = "Zotero"` |
-| Short / full / shorter name | [app/assets/branding/locale/brand.properties](../app/assets/branding/locale/brand.properties) | all `Zotero` |
-| Fluent brand strings and trademark line | [app/assets/branding/locale/brand.ftl](../app/assets/branding/locale/brand.ftl) | `-brand-short-name`, `trademarkInfo`, and 6 more |
+| Short name (window title, most UI) | [app/assets/branding/locale/brand.dtd](../app/assets/branding/locale/brand.dtd) | `brandShortName = "CiteWell"` |
+| Short / full / shorter name | [app/assets/branding/locale/brand.properties](../app/assets/branding/locale/brand.properties) | all `CiteWell` |
+| Fluent brand strings and trademark line | [app/assets/branding/locale/brand.ftl](../app/assets/branding/locale/brand.ftl) | display names are `CiteWell`; `trademarkInfo` still names Zotero (legal notice) |
 | Package name and application id | [app/config.sh](../app/config.sh) | `APP_NAME="Zotero"`, `APP_ID="zotero@zotero.org"` |
 | Window class / Wayland app id | [app/assets/application.ini](../app/assets/application.ini) | `RemotingName=CiteWell` (the `[App] Name` stays `Zotero` so the profile path does not move) |
 | Linux desktop entry | [app/linux/zotero.desktop](../app/linux/zotero.desktop), [packaging/citewell.desktop](../packaging/citewell.desktop) | `Name=CiteWell`, `StartupWMClass=CiteWell` |

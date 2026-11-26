@@ -6724,16 +6724,24 @@ var ZoteroPane = new function () {
 	
 	
 	function reportErrors() {
-		var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-				   .getService(Components.interfaces.nsIWindowWatcher);
-		var data = {
-			msg: Zotero.getString('errorReport.followingReportWillBeSubmitted'),
-			errorData: Zotero.getErrors(true),
-			askForSteps: true
-		};
-		var io = { wrappedJSObject: { Zotero: Zotero, data:  data } };
-		var win = ww.openWindow(null, "chrome://zotero/content/errorReport.xhtml",
-					"zotero-error-report", "chrome,centerscreen,modal", io);
+		// The inherited wizard posted the log to repo.zotero.org. CiteWell has no
+		// relationship with that service, so the log stays here: copy it and let the
+		// person decide what to include in an issue (D62).
+		let errors = Zotero.getErrors(true);
+		if (errors.length) {
+			try {
+				Zotero.Utilities.Internal.copyTextToClipboard(errors.join("\n"));
+				let progress = new Zotero.ProgressWindow();
+				progress.changeHeadline("Error log copied to the clipboard");
+				progress.addDescription("Paste it into the issue if it helps explain the problem.");
+				progress.show();
+				progress.startCloseTimer(8000);
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		}
+		Zotero.launchURL(Zotero.REPORT_PROBLEM_URL);
 	}
 	
 	this.displayErrorMessage = function (popup) {

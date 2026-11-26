@@ -70,8 +70,10 @@ resolves the repository and reports "No updates available".
   the Browse tab. The block is centred against the item pane's message by the item toolbar height.
   The Quick Start/connector paragraph and its strings are gone. Help > Support and Documentation
   opens this repository, not Zotero's support site.
+- **Problem reports (D62).** Help > Report a Problem… opens CiteWell's issue tracker and copies the
+  error log to the clipboard; nothing is posted to Zotero's error service any more.
 
-**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 8/8, `dnsPrefsTest` 4/4,
+**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 9/9, `dnsPrefsTest` 4/4,
 `selfUpdateTest` 4/4, `importTest` 24/24, the updater sidecar 7/7. Four failures still sit in
 `server_connectorTest` and `translateTest` (chai API gaps) plus one live-prompt timeout in
 `integrationTest`; none is caused by these changes.

@@ -620,6 +620,9 @@ debug-output-logging-restart-in-troubleshooting-mode-checkbox = { general-restar
 restart-in-troubleshooting-mode-menuitem =
     .label = Restart in Troubleshooting Mode…
     .accesskey = T
+report-problem-menuitem =
+    .label = Report a Problem…
+    .accesskey = P
 restart-in-troubleshooting-mode-dialog-title = { general-restartInTroubleshootingMode }
 restart-in-troubleshooting-mode-dialog-description = { -app-name } will restart with all plugins disabled. Some features may not function correctly while Troubleshooting Mode is enabled.
 

@@ -1452,6 +1452,29 @@ the app is for the work, not for tutorials.
 Rejected: keeping a short tutorial in the empty view. It would duplicate Help, and the only specific
 instruction worth giving (browse something) is now a button.
 
+## D62 — Problem reports go to CiteWell's tracker, not Zotero's error service
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
+
+Help > Report Errors opened Zotero's error wizard, which POSTs the log to
+`https://repo.zotero.org/repo/report`. That service belongs to another project. A CiteWell user's
+diagnostic log would arrive at a server they have no relationship with, for a product it does not
+support, and the Help menu offered no way to reach CiteWell's own tracker.
+
+- **What replaces it.** Help > Report a Problem… opens
+  `https://github.com/EricBright/CiteWell/issues/new`. The app copies the error log to the
+  clipboard first and says so in a progress window, so the person can paste what is relevant and
+  remove what is not. Nothing is submitted automatically.
+- **No inherited path.** `ZoteroPane.reportErrors()` no longer opens the wizard. Import and sync
+  failures that offered "Report Error…" reach the same tracker instead of Zotero's service.
+- **Trade-off:** without an error service, CiteWell cannot collect reports automatically. That is
+  the honest price of not owning one; the tracker is public and the log stays with the user.
+- **Enforcement:** `uiCopyTest.js` checks the URL, the menu label, and that `reportErrors()` no
+  longer opens `errorReport.xhtml`.
+
+The wizard file and its locale strings remain in the tree but are unreachable; removing them is a
+later cleanup, not a behaviour change.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

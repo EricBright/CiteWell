@@ -112,6 +112,23 @@ describe("UI copy", function () {
 		assert.include(source, "Zotero.HELP_URL");
 	});
 
+	it("should send problem reports to CiteWell's tracker", async function () {
+		assert.equal(
+			Zotero.REPORT_PROBLEM_URL,
+			"https://github.com/EricBright/CiteWell/issues/new"
+		);
+		let pane = await readLocale("chrome/content/zotero/zoteroPane.xhtml");
+		assert.include(pane, 'data-l10n-id="report-problem-menuitem"');
+		assert.notInclude(pane, "&helpReportErrors.label;");
+		let fluent = await readLocale(LOCALE_FILES[0]);
+		assert.include(fluent, "report-problem-menuitem");
+		let source = await readLocale("chrome/content/zotero/zoteroPane.js");
+		assert.include(source, "Zotero.REPORT_PROBLEM_URL");
+		// The inherited wizard posted the log to repo.zotero.org; no reachable path
+		// may still open it.
+		assert.notInclude(source, "errorReport.xhtml");
+	});
+
 	it("should offer a Browse action on an empty library", async function () {
 		let tree = await readLocale("chrome/content/zotero/collectionViewItemTree.js");
 		assert.include(tree, "Browse the web");
