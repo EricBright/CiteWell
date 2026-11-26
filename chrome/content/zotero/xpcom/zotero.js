@@ -1164,6 +1164,9 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	
 	
 	this.UPDATE_RELEASES_URL = 'https://github.com/EricBright/CiteWell/releases';
+	// Help points at the repository for now. A documentation section of its own is a
+	// later decision; sending readers to Zotero's support site is not an option.
+	this.HELP_URL = 'https://github.com/EricBright/CiteWell';
 	this.UPDATE_API_URL = 'https://api.github.com/repos/EricBright/CiteWell/releases/latest';
 
 	/**

@@ -892,7 +892,7 @@ const ZoteroStandalone = new function () {
 			break;
 		
 		default:
-			ZoteroPane.loadURI(ZOTERO_CONFIG.SUPPORT_URL);
+			ZoteroPane.loadURI(Zotero.HELP_URL);
 		}
 	}
 

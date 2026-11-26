@@ -104,4 +104,11 @@ describe("UI copy", function () {
 		assert.notInclude(source, "pane.items.intro.text3");
 		assert.include(source, "pane.items.intro.text1");
 	});
+
+	it("should send Help to CiteWell's own page", async function () {
+		// Zotero's support site would answer for a different product.
+		assert.equal(Zotero.HELP_URL, "https://github.com/EricBright/CiteWell");
+		let source = await readLocale("chrome/content/zotero/standalone/standalone.js");
+		assert.include(source, "Zotero.HELP_URL");
+	});
 });
