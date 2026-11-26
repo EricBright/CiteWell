@@ -15,12 +15,14 @@ push target. The product branch may diverge without limit.
 
 ## Handoff 2026-11-26 (late: release live, self-updater, settings UI)
 
-Compaction anchor. Last code commit `add9cb8b6` (docs commits follow). Installed
+Compaction anchor. Last code commit `21757e94a` (docs commits follow). Installed
 `~/AppImages/citewell.appimage` is the published release `2026.11.26.000`, sha256
 `6f290eee69fd02517f12bb4fda975e4726cb8e51b5109b1ce3ba2542b8fe7bb3`, 125,864,440 bytes.
 `~/AppImages/release-2026.11.26.000/` holds a copy of the three release assets. During the session
-a preview had been copied over the stable path; it was restored from that folder. Do not copy a
-preview over `~/AppImages/citewell.appimage`.
+a preview had been copied over the stable path; it was restored from that folder. Later on
+2026-11-26 the stable path was found missing and was restored byte-for-byte from that folder; the
+cause was not established, so check the path after any update test. Do not copy a preview over
+`~/AppImages/citewell.appimage`.
 
 Previews are separate files and dev versions, never published. Newest:
 `~/AppImages/citewell-preview-add9cb8b6.appimage` (`2026.11.26.SOURCE.add9cb8b6`, sha256
