@@ -1015,6 +1015,12 @@ persist across switching.
 
 Transient moments stay dialogs on purpose: confirmations, pickers, small name entries, progress
 windows, and the LibreOffice/Word citation dialogs — those must float over the user's document,
+
+**Amendment 2026-11-26:** because the pane is not a `zotero:pref` window, Zotero's own post-install
+refresh missed it. Installing a style from the style page closed the viewer but left the open Style
+Manager on the old list until the pane reloaded. `Zotero_SettingsTab.getFrameWindows()` now exposes
+the tab's document, and `style.js` refreshes it alongside the pref windows; a settings-tab test
+installs a style and fails if the open list does not show it.
 not inside CiteWell. Modality is a feature while a decision is being made; repopull's own Clone
 dialog is the same carve-out.
 

@@ -199,4 +199,54 @@ describe("Settings tab (D48)", function () {
 			Zotero_Tabs.close(id);
 		}
 	});
+
+	// The Style Manager is inside this tab, and Zotero's own post-install refresh
+	// walks `zotero:pref` windows, which this tab is not. Without the fix the style
+	// installs but the open list never shows it.
+	it("refreshes an open Style Manager after a style install", async function () {
+		this.timeout(60000);
+		let SettingsTab = win.Zotero_SettingsTab;
+		let id = SettingsTab.open("zotero-prefpane-cite");
+		assert.ok(id, "settings tab opened");
+		let frameWin = SettingsTab.getFrame(id).contentWindow;
+		await waitForCallback(
+			() => frameWin.Zotero_Preferences?.Cite?.styles,
+			30000,
+			100
+		);
+		let pane = frameWin.Zotero_Preferences.Cite;
+		let before = pane.styles.length;
+		let styleID = "http://www.zotero.org/styles/citewell-settings-refresh-test";
+		let title = "CiteWell Settings Refresh Test";
+		let csl = `<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0">
+	<info>
+		<title>${title}</title>
+		<id>${styleID}</id>
+		<updated>2026-01-01T00:00:00+00:00</updated>
+	</info>
+	<citation><layout><text variable="title"/></layout></citation>
+	<bibliography><layout><text variable="title"/></layout></bibliography>
+</style>`;
+		try {
+			await Zotero.Styles.install(csl, styleID, true);
+			await waitForCallback(
+				() => pane.styles.some(style => style.title === title),
+				20000,
+				100
+			);
+			assert.isAbove(
+				pane.styles.length,
+				before,
+				"the open Style Manager must show the installed style"
+			);
+		}
+		finally {
+			let style = Zotero.Styles.get(styleID);
+			if (style) {
+				await style.remove();
+			}
+			win.Zotero_Tabs.close(id);
+		}
+	});
 });

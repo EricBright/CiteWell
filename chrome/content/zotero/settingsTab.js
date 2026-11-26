@@ -142,6 +142,27 @@ var Zotero_SettingsTab = new (function () {
 		return this._states.has(id);
 	};
 
+	/**
+	 * The document inside every open settings tab.
+	 *
+	 * Settings code that refreshes a pane (styles, for example) has to reach the
+	 * frame: Zotero's own refresh walks `zotero:pref` windows, and this tab is not
+	 * one (D48).
+	 */
+	this.getFrameWindows = function () {
+		let windows = [];
+		for (let state of this._states.values()) {
+			try {
+				let win = state.iframe?.contentWindow;
+				if (win) windows.push(win);
+			}
+			catch (e) {
+				// A frame that is mid-teardown has no usable window.
+			}
+		}
+		return windows;
+	};
+
 	this._build = function (container, id) {
 		let doc = container.ownerDocument;
 		let vbox = doc.createXULElement("vbox");

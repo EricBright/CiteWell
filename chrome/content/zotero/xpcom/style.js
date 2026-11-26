@@ -526,6 +526,17 @@ Zotero.Styles = new function () {
 				await win.Zotero_Preferences.Cite.refreshStylesList(styleID);
 			}
 		}
+		// CiteWell's settings are a tab, not a zotero:pref window (D48), so the
+		// enumeration above cannot see an open Style Manager. Without this the style
+		// installs but the list keeps showing the old set until the pane reloads.
+		var settings = Zotero.getMainWindow()?.Zotero_SettingsTab;
+		if (settings?.getFrameWindows) {
+			for (var frameWin of settings.getFrameWindows()) {
+				if (frameWin.Zotero_Preferences?.Cite) {
+					await frameWin.Zotero_Preferences.Cite.refreshStylesList(styleID);
+				}
+			}
+		}
 		return {
 			styleTitle: existingTitle || title,
 			styleID: styleID
