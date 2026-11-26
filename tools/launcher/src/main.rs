@@ -321,6 +321,17 @@ fn main() {
     let mut command = Command::new(&app);
     command.args(&args);
 
+    // --no-integration is removed above, so record the decision for the app: a
+    // self-update restart must pass the flag on, or it would install the integration
+    // the user declined. Always overwrite, so a stale value from the shell cannot
+    // claim an opt-out that was not requested.
+    if no_integration {
+        command.env("CITEWELL_NO_INTEGRATION", "1");
+    }
+    else {
+        command.env_remove("CITEWELL_NO_INTEGRATION");
+    }
+
     // exec() replaces this process; it only returns on failure.
     let error = command.exec();
     eprintln!(

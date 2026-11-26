@@ -1391,15 +1391,43 @@ the published bytes, after it has exited.
   target; this is a cheap integrity check, not a privilege boundary, since both files belong to the
   same user.
 - **The restart:** the sidecar waits for the app's pid to exit, then starts the new file with
-  `-profile`, `-datadir` and `-no-remote`, with the AppImage environment variables removed, so the
-  profile lock is free and the new instance uses the same library.
+  `-profile` and `-no-remote`, plus `-datadir` when the launch had one and `--no-integration` when
+  the launcher recorded that opt-out (see the amendment), with the AppImage environment variables
+  removed, so the profile lock is free and the new instance uses the same library.
 - **Trigger:** `Cite > Check for Updates`, manual only. There is no background polling and no
   update is installed without a confirmation dialog.
 - **Not running from an AppImage:** refuse and point at the releases page, because there is no
   single file to replace.
 
-Limitation, stated rather than hidden: the restart preserves the profile and data directory but not
-other original command-line flags.
+The restart's arguments are a fixed allowlist, not a copy of the original command line; the
+amendment below records what it carries and why.
+
+**Amendment 2026-11-26 (validated end to end):** the restart carries exactly `-profile <ProfD>` and
+`-no-remote`, plus `-datadir <library>` only when the original launch had an explicit data directory,
+plus `--no-integration` when the launcher recorded that the user declined integration
+(`CITEWELL_NO_INTEGRATION=1`). Repeating `-datadir` unconditionally would be wrong because the
+launcher treats an explicit data directory as the request to install attention integration; without
+the flag the same profile's prefs or the default resolve the same library, so the launch mode is
+preserved. Development flags such as `-ZoteroDebugText` or `-jsconsole` are deliberately not carried
+over: the update is a fresh launch against the same library, not a resume of a debug session, and
+forwarding unknown flags could change the new instance's behaviour. The launcher strips
+`--no-integration` before starting the app, so it records the decision in the environment; restarting
+without it would install the systemd and D-Bus files the user explicitly declined. The marker exists
+only in builds from this amendment onward, so updating into such a build from an earlier release
+still drops the flag once.
+
+Validation: a build labelled `2026.11.25.999.SOURCE.6f88c6c9c` (an earlier UTC date, with a
+three-digit counter so it is not treated as a development build) checked for updates against the
+published `v2026.11.26.000`. The dialog named both versions and the 120 MB size; the download reached
+exactly 125,864,440 bytes; `.sha256` and `.zsync` were fetched and every published digest that could
+be read (one value from three sources) was verified by the sidecar; the file was swapped in place to
+`6f290eee…`; the restarted process ran `2026.11.26.000.SOURCE.2c521c9b6` against the same profile and
+library and answered `/connector/ping` with 200; no temporary download remained. A first run without
+the marker change showed the restarted instance installing integration into its sandbox despite
+`--no-integration`; a second run after the change restarted with the flag and created none. A third
+run launched with neither `-datadir` nor `--no-integration`: the restart carried only `-profile` and
+`-no-remote`, kept using the profile's data directory, created no integration files, and left the
+default `~/Zotero` untouched. The current handoff in [status.md](status.md) records the runs.
 
 ## D61 — An empty view says what it is, and help lives under Help
 

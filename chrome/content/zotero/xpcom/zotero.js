@@ -1270,6 +1270,32 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	};
 
 	/**
+	 * The arguments the restarted instance gets. A fixed list, not a copy of this
+	 * process's command line: the update is a fresh launch against the same profile and
+	 * library, so an unknown or development-only flag cannot destabilise it.
+	 *
+	 * The exception is --no-integration. The launcher removes that flag before starting
+	 * the app but records it in CITEWELL_NO_INTEGRATION, because restarting without it
+	 * would install the systemd integration the user explicitly declined. For the same
+	 * reason, -datadir is repeated only when the original launch had one: the launcher
+	 * treats an explicit data directory as the request to install integration.
+	 */
+	this.getUpdateRestartArgs = function () {
+		let args = ["-profile", Services.dirsvc.get("ProfD", Ci.nsIFile).path];
+		// Only repeat -datadir if this launch had one. Without it the profile's pref or
+		// the default resolves the same library, and inventing the flag would make the
+		// launcher install attention integration for a user who never asked for it.
+		if (Zotero.forceDataDir) {
+			args.push("-datadir", Zotero.DataDirectory.dir);
+		}
+		args.push("-no-remote");
+		if (Services.env.get("CITEWELL_NO_INTEGRATION") === "1") {
+			args.push("--no-integration");
+		}
+		return args;
+	};
+
+	/**
 	 * The one place the UI asks about updates.
 	 *
 	 * CiteWell does not use Mozilla's updater: the app is an AppImage, and signed MAR
@@ -1394,11 +1420,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				"--timeout-ms", "60000",
 				"--launch",
 			];
-			let restartArgs = [
-				"-profile", Services.dirsvc.get("ProfD", Ci.nsIFile).path,
-				"-datadir", Zotero.DataDirectory.dir,
-				"-no-remote",
-			];
+			let restartArgs = Zotero.getUpdateRestartArgs();
 			for (let digest of digests) {
 				args.push("--sha256", digest);
 			}

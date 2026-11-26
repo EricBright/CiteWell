@@ -38,7 +38,20 @@ resolves the repository and reports "No updates available".
   new file with `-profile`, `-datadir`, `-no-remote` and the AppImage environment removed. Cite >
   Check for Updates resolves `releases/latest`, downloads beside `$APPIMAGE`, verifies, then quits
   into the sidecar. A dev build (no publish counter) refuses to update; a read-only directory fails
-  before the 125 MB download. Limitation: restart arguments preserve profile and datadir only.
+  before the 125 MB download. The restart's arguments are a fixed allowlist: `-profile`,
+  `-no-remote`, `-datadir` only when the launch had one, and `--no-integration` when the
+  launcher recorded that opt-out (D60 amendment).
+
+  *Validated 2026-11-26.* A build labelled `2026.11.25.999.SOURCE.6f88c6c9c` updated to the
+  published release: the dialog named both versions and 120 MB, the download reached 125,864,440
+  bytes, the published digests verified, the file was swapped to `6f290eee…`, the restarted process
+  ran `2026.11.26.000.SOURCE.2c521c9b6` against the same profile and library, and `/connector/ping`
+  answered 200 with no temporary file left. The run also showed the restarted instance ignoring
+  `--no-integration`; the launcher now records that opt-out and the restart passes it on. A third
+  run, launched with neither `-datadir` nor `--no-integration`, restarted with only `-profile` and
+  `-no-remote`, kept the profile's data directory and created no integration files. A Strata pass
+  caught that last case: the first version of the allowlist repeated `-datadir` unconditionally.
+
 - **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
   an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`
   list is now read, so a saved `lastSelectedPrefPane` or a deep link to the old DNS id lands on
@@ -53,14 +66,13 @@ resolves the repository and reports "No updates available".
   The Quick Start/connector paragraph and its strings are gone. Help > Support and Documentation
   opens this repository, not Zotero's support site.
 
-**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 8/8, `dnsPrefsTest` 4/4, the
-updater sidecar 7/7, importer 7/7 earlier. Four failures still sit in `server_connectorTest` and
-`translateTest` (chai API gaps) plus one live-prompt timeout in `integrationTest`; none is caused
-by these changes.
+**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 8/8, `dnsPrefsTest` 4/4,
+`selfUpdateTest` 4/4, the updater sidecar 7/7, importer 7/7 earlier. Four failures still sit in
+`server_connectorTest` and `translateTest` (chai API gaps) plus one live-prompt timeout in
+`integrationTest`; none is caused by these changes.
 
-**Next.** (1) End-to-end updater run from a deliberately older build, then decide the restart-arg
-allowlist. (2) R6 residue: legacy Zotero-era strings and translations. (3) Kill-mid-merge test.
-(4) R32 optional follow-ups. Help points at the repository until a documentation section exists.
+**Next.** (1) R6 residue: legacy Zotero-era strings and translations. (2) Kill-mid-merge test.
+(3) R32 optional follow-ups. Help points at the repository until a documentation section exists.
 
 ## Handoff 2026-11-26 (D59 versioning, first release staged)
 

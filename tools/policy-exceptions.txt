@@ -36,3 +36,4 @@ D54 test/tests/uiCopyTest.js
 D54 test/tests/uiContrastTest.js
 D55 test/tests/browsePickerTest.js
 D59 test/tests/versionTest.js
+D60 test/tests/selfUpdateTest.js
