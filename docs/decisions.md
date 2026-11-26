@@ -1096,6 +1096,13 @@ Implementation notes: the exact TRR mode (preferred-with-fallback vs. required) 
 against the platform when the pane is built, and the default is applied at startup so a fresh
 profile is protected without a first-run prompt.
 
+**Amendment 2026-11-26:** DNS is no longer a settings pane of its own. It is a section
+(`zotero-prefpane-advanced-network`) inside Advanced, because it is one resolver choice and did not
+justify a top-level entry; its `go-to` icon also collided with the Locate control elsewhere. The
+pane id `zotero-prefpane-dns` is gone, deep links use `zotero-prefpane-advanced`, and
+`preferences_dns.js` loads with the Advanced pane. The behaviour (defaults, startup re-apply, the
+two choices) is unchanged.
+
 Rejected: writing system resolver configuration (`/etc/resolv.conf`, NetworkManager) — that is
 machine-wide state, outside what a citation app may touch (D19 scope). Rejected: presenting the
 choice as anonymity — it changes who answers lookups and blocks malware domains; it is not a VPN.

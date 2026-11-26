@@ -74,7 +74,7 @@ describe("Settings tab (D48)", function () {
 		let Zotero_Tabs = win.Zotero_Tabs;
 
 		// Open straight to the DNS pane we shipped in D50.
-		let id = SettingsTab.open("zotero-prefpane-dns");
+		let id = SettingsTab.open("zotero-prefpane-advanced");
 		assert.ok(id, "open() returns a tab id");
 		assert.equal(Zotero_Tabs.selectedID, id, "settings tab is selected");
 		assert.isTrue(SettingsTab.isOpen(id));
@@ -179,7 +179,7 @@ describe("Settings tab (D48)", function () {
 			frameWin.Zotero_Preferences.navigateToPane = () => {
 				throw new Error("pane fixture");
 			};
-			SettingsTab.open("zotero-prefpane-dns");
+			SettingsTab.open("zotero-prefpane-advanced");
 			await waitForCallback(
 				() => doc.querySelector(".settings-status.error"),
 				10000,

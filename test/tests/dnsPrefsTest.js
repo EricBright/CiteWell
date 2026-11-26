@@ -81,7 +81,7 @@ describe("DNS settings (D50)", function () {
 		let mainWin = await loadZoteroPane();
 		Zotero.DNS.apply("cloudflare");
 
-		let id = mainWin.Zotero_SettingsTab.open("zotero-prefpane-dns");
+		let id = mainWin.Zotero_SettingsTab.open("zotero-prefpane-advanced");
 		let iframe = mainWin.Zotero_SettingsTab.getFrame(id);
 		assert.isNotNull(iframe, "settings tab frame exists");
 		let frameWin = iframe.contentWindow;

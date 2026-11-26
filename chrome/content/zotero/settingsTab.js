@@ -64,7 +64,7 @@ var Zotero_SettingsTab = new (function () {
 	/**
 	 * Open (or focus) the settings tab, optionally deep-linking to a pane.
 	 *
-	 * @param {String} [paneID] - e.g. "zotero-prefpane-dns"; omit for the default pane
+	 * @param {String} [paneID] - e.g. "zotero-prefpane-advanced"; omit for the default pane
 	 * @return {String|null} The tab id
 	 */
 	this.open = function (paneID) {

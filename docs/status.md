@@ -36,7 +36,7 @@ suite ran 165/169 with four failures that predate this change (two chai/API gaps
 three assets; the tag points at `2c521c9b6`, the published AppImage is byte-identical to the
 installed file (sha256 above), and `releases/latest/download/CiteWell-x86_64.AppImage.zsync`
 resolves. The release body is the corrected draft (picker wording, glibc 2.34, no untested
-browser-save claim). `version` is back to `2026.11.26.SOURCE` for dev builds.
+browser-save claim). `version` is back to `2026.11.26.SOURCE` for dev builds. DNS is now a section of Advanced rather than a pane of its own (D50 amendment), which also removes the icon it shared with the Locate control.
 
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
