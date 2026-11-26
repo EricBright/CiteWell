@@ -85,11 +85,11 @@ var Zotero_Preferences = {
 		}
 
 		if (!this.navigation.value) {
-			this.navigation.value = Zotero.Prefs.get('lastSelectedPrefPane');
-			// If no last selected pane or ID is invalid, select General
-			if (!this.navigation.value) {
-				this.navigation.value = 'zotero-prefpane-general';
-			}
+			// A saved pane can be one that was merged into another (DNS into Advanced),
+			// so resolve it through the manifest instead of trusting the id.
+			let last = Zotero.Prefs.get('lastSelectedPrefPane');
+			this.navigation.value = Zotero.PreferencePanes.resolvePaneID(last)
+				|| 'zotero-prefpane-general';
 		}
 	},
 	

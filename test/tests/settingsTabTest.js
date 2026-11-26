@@ -299,4 +299,38 @@ describe("Settings tab (D48)", function () {
 		);
 		win.Zotero_Tabs.closeAll();
 	});
+
+	// The saved pane is read on load, not through a deep link; both paths have to
+	// map an id that was merged away (DNS into Advanced).
+	it("maps a saved pane that no longer exists", async function () {
+		this.timeout(45000);
+		let previous = Zotero.Prefs.get("lastSelectedPrefPane");
+		win.Zotero_Tabs.closeAll();
+		await Zotero.Promise.delay(200);
+		try {
+			Zotero.Prefs.set("lastSelectedPrefPane", "zotero-prefpane-dns");
+			let id = win.Zotero_SettingsTab.open();
+			assert.ok(id, "settings tab opened");
+			let frameWin = win.Zotero_SettingsTab.getFrame(id).contentWindow;
+			await waitForCallback(
+				() => frameWin.Zotero_Preferences?.navigation?.value === "zotero-prefpane-advanced",
+				30000,
+				100
+			);
+			assert.equal(
+				frameWin.Zotero_Preferences.navigation.value,
+				"zotero-prefpane-advanced",
+				"a saved retired id must land on the pane that absorbed it"
+			);
+		}
+		finally {
+			if (previous) {
+				Zotero.Prefs.set("lastSelectedPrefPane", previous);
+			}
+			else {
+				Zotero.Prefs.clear("lastSelectedPrefPane");
+			}
+			win.Zotero_Tabs.closeAll();
+		}
+	});
 });

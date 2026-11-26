@@ -133,7 +133,8 @@
 }
 
 #prefs-navigation {
-	width: 180px;
+	// "Notes & Annotations" clipped at the previous 180px and painted past the edge.
+	width: 240px;
 	flex-shrink: 0;
 	appearance: none;
 	background: transparent;
@@ -175,6 +176,12 @@
 
 #prefs-navigation > richlistitem image {
 	width: 24px;
+}
+
+#prefs-navigation > richlistitem label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 #prefs-subpane-back-button {
