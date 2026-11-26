@@ -134,6 +134,57 @@ describe("UI copy", function () {
 		assert.notInclude(source, "errorReport.xhtml");
 	});
 
+	it("should not call the app Zotero in any supported locale", async function () {
+		// The strings name the application itself, not an upstream service or an
+		// inherited identifier. Zotero here is the previous product's name.
+		let keys = [
+			"general.operationInProgress",
+			"pane.items.attach.link.uri.unrecognized",
+			"startupError.databaseInUse",
+			"startupError.zoteroVersionIsOlder",
+			"db.integrityCheck.failed",
+			"db.integrityCheck.repairAttempt",
+			"db.integrityCheck.errorsFixed",
+			"db.integrityCheck.errorsNotFixed",
+			"db.integrityCheck.reportInForums",
+			"report.title.default",
+			"lookup.failure.description",
+			"lookup.failureToID.description",
+			"styles.editor.warning.noItems",
+			"styles.preview.instructions",
+			"styles.validationWarning",
+			"standalone.rootWarning",
+			"proxies.recognized.message",
+			"standalone.addonInstallationFailed.body",
+		];
+		let entities = [
+			["csledit.dtd", "styles.editor"],
+			["cslpreview.dtd", "styles.preview"],
+			["preferences.dtd", "zotero.preferences.title"],
+		];
+		for (let locale of SUPPORTED_LOCALES) {
+			let properties = await readLocale(
+				`chrome/locale/${locale}/zotero/zotero.properties`
+			);
+			for (let key of keys) {
+				let line = properties.split("\n").find(
+					candidate => candidate.trimStart().startsWith(key + " ")
+						|| candidate.trimStart().startsWith(key + "=")
+				);
+				if (!line) continue;
+				assert.notInclude(line, "Zotero", `${locale}: ${key}`);
+			}
+			for (let [file, entity] of entities) {
+				let text = await readLocale(`chrome/locale/${locale}/zotero/${file}`);
+				let match = text.match(
+					new RegExp(`<!ENTITY\\s+${entity}\\s+"([^"]*)"`)
+				);
+				if (!match) continue;
+				assert.notInclude(match[1], "Zotero", `${locale}: ${file}:${entity}`);
+			}
+		}
+	});
+
 	it("should translate the problem-report copy in every supported locale", async function () {
 		let keys = [
 			"reportProblem.copied",
