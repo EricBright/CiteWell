@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	let fileQuitItemWin = document.getElementById('menu_fileQuitItemWin');
 	let fileQuitItemUnix = document.getElementById('menu_fileQuitItemUnix');
 
-	let editPreferencesSeparator = document.getElementById('menu_EditPreferencesSeparator');
-	let editPreferencesItem = document.getElementById('menu_EditPreferencesItem');
-
 	let applicationMenu = document.getElementById('mac_application_menu');
 	let windowMenu = document.getElementById('windowMenu');
 	let macKeyset = document.getElementById('macKeyset');
@@ -49,9 +46,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		if (fileQuitSeparator) fileQuitSeparator.hidden = true;
 		if (fileQuitItemWin) fileQuitItemWin.hidden = true;
 		if (fileQuitItemUnix) fileQuitItemUnix.hidden = true;
-		if (editPreferencesSeparator) editPreferencesSeparator.hidden = true;
-		if (editPreferencesItem) editPreferencesItem.hidden = true;
-		
 		// Non-main windows: Add Window → Zotero to focus/reopen main window
 		if (windowMenu && window.location.href !== AppConstants.BROWSER_CHROME_URL) {
 			MozXULElement.insertFTLIfNeeded('branding/brand.ftl');

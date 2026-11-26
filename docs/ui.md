@@ -28,6 +28,9 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
    control promises a capability that is not there.
 6. **Docs links to the Connector.** The Docs explainer points at Zotero's connectors page, not the
    main download page.
+7. **Settings is one click.** Settings is a top-level menubar command between Tools and Help, not
+   a submenu and not an Edit item. Clicking the label opens the Settings tab directly; the keyboard
+   shortcut stays `Ctrl+,`. There is one affordance, so there is no "which Settings menu" question.
 
 ## Where each rule is enforced
 
@@ -39,6 +42,7 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 | 4 | `test/tests/browseTabTest.js` covers the toolbar order, the `key_focusBrowseURL` accelerator declaration and `focusOrOpen`/`focusURLBar`. A synthetic key press is not supported by the harness, so the declaration plus the tested command stands in for it |
 | 5 | `test/tests/uiCopyTest.js` pins the Docs handoff shape: the button says browser, the reason names Firefox because it is specific. Legacy locale strings elsewhere are not scanned; a blanket scan would flag upstream data |
 | 6 | `test/tests/uiCopyTest.js` asserts the gate's one launch URL is the connectors page |
+| 7 | `test/tests/settingsTabTest.js` asserts the item exists between Tools and Help, that the Edit menu no longer carries a second entry, and that a click opens the Settings tab |
 
 A rule without a check is a rule waiting to rot. When a change cannot be tested, say so in its
 decision record instead of adding a test that cannot fail.

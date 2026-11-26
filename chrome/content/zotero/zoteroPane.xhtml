@@ -454,9 +454,6 @@
 									command="cmd_switchTextDirection"
 									key="key_switchTextDirection"
 									hidden="true" data-l10n-id="menu-edit-bidi-switch-text-direction"/>
-							<menuseparator id="menu_EditPreferencesSeparator"/>
-							<menuitem id="menu_EditPreferencesItem"
-								oncommand="Zotero.Utilities.Internal.openPreferences()" data-l10n-id="menu-settings"/>
 						</menupopup>
 					</menu>
 					
@@ -814,6 +811,13 @@
 						</menupopup>
 					</menu>
 					
+					<!-- Settings is a view in a tab (D48), and is used often enough that it
+					     does not belong inside an Edit menu. This menubar item is a command:
+					     one click opens the tab, with no drop-down. -->
+					<toolbarbutton id="menubar-settings"
+							class="menubar-settings"
+							data-l10n-id="menu-settings"
+							oncommand="Zotero.Utilities.Internal.openPreferences()"/>
 					<menu id="helpMenu"
 							label="&helpMenu.label;"
 							accesskey="&helpMenu.accesskey;">

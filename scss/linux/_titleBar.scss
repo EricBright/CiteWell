@@ -68,6 +68,29 @@
 	height: var(--tab-min-height);
 }
 
+// The Settings item is a command in the menubar, not a menu: it needs to look like
+// its neighbours while staying a clickable button.
+#menubar-settings {
+	appearance: none;
+	margin: 0;
+	padding: 0 10px;
+	min-height: var(--tab-min-height);
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	color: inherit;
+	font: inherit;
+	-moz-window-dragging: no-drag;
+
+	&:hover {
+		background-color: color-mix(in srgb, currentColor 10%, transparent);
+	}
+
+	&:active {
+		background-color: color-mix(in srgb, currentColor 18%, transparent);
+	}
+}
+
 .titlebar-buttonbox {
 	pointer-events: all;
 	margin: 0 10px;

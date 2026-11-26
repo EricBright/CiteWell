@@ -269,4 +269,34 @@ describe("Settings tab (D48)", function () {
 		);
 		win.Zotero_Tabs.close(id);
 	});
+
+	// Settings is a view, not a document option, and it is used often: it is a
+	// top-level menubar command between Tools and Help, with no drop-down.
+	it("opens Settings from a top-level menubar item, not from Edit", async function () {
+		this.timeout(30000);
+		let item = doc.getElementById("menubar-settings");
+		assert.ok(item, "the top-level Settings item exists");
+		assert.isNull(
+			doc.getElementById("menu_EditPreferencesItem"),
+			"Edit must not carry a second Settings entry"
+		);
+		let menubar = doc.getElementById("main-menubar");
+		let visible = [...menubar.children].filter(child => !child.hidden);
+		let index = visible.indexOf(item);
+		assert.isTrue(index > 0, "Settings is a menubar child");
+		assert.equal(visible[index - 1].id, "toolsMenu", "Settings sits after Tools");
+		assert.equal(visible[index + 1].id, "helpMenu", "Settings sits before Help");
+
+		item.click();
+		await waitForCallback(
+			() => doc.querySelector("iframe.settings-frame"),
+			15000,
+			100
+		);
+		assert.ok(
+			doc.querySelector("iframe.settings-frame"),
+			"one click opens the Settings tab"
+		);
+		win.Zotero_Tabs.closeAll();
+	});
 });
