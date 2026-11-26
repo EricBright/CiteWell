@@ -13,6 +13,55 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-26 (late: release live, self-updater, settings UI)
+
+Compaction anchor. Last code commit `add9cb8b6` (docs commits follow). Installed
+`~/AppImages/citewell.appimage` is the published release `2026.11.26.000`, sha256
+`6f290eee69fd02517f12bb4fda975e4726cb8e51b5109b1ce3ba2542b8fe7bb3`, 125,864,440 bytes.
+`~/AppImages/release-2026.11.26.000/` holds a copy of the three release assets. During the session
+a preview had been copied over the stable path; it was restored from that folder. Do not copy a
+preview over `~/AppImages/citewell.appimage`.
+
+Previews are separate files and dev versions, never published. Newest:
+`~/AppImages/citewell-preview-add9cb8b6.appimage` (`2026.11.26.SOURCE.add9cb8b6`, sha256
+`6aa9a12de973aeddc744024a035d1617dfb3a41c16a96894e10be8462fde9c96`). Older previews are stale.
+
+**Release.** `v2026.11.26.000` is live (latest, not prerelease), tag on `2c521c9b6`, three assets,
+published bytes identical to the installed file. Gear Lever parses the embedded update information,
+resolves the repository and reports "No updates available".
+
+**Shipped since the versioning handoff.**
+
+- **D60 self-updater.** `tools/updater` (`citewell-update`, Rust + sha2): `verify` compares every
+  published digest and checks ELF 64-bit, AppImage type 2 and x86-64; `install` waits for the app
+  pid, re-hashes immediately before the atomic rename, refuses symlinks, sets 0755 and starts the
+  new file with `-profile`, `-datadir`, `-no-remote` and the AppImage environment removed. Cite >
+  Check for Updates resolves `releases/latest`, downloads beside `$APPIMAGE`, verifies, then quits
+  into the sidecar. A dev build (no publish counter) refuses to update; a read-only directory fails
+  before the 125 MB download. Limitation: restart arguments preserve profile and datadir only.
+- **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
+  an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`
+  list is now read, so a saved `lastSelectedPrefPane` or a deep link to the old DNS id lands on
+  Advanced. The sidebar sizes to its longest label (200-280px). Installing a style from the style
+  page refreshes an open Style Manager (Zotero refreshed only `zotero:pref` windows). The pane
+  select handler settles before reading the value and logs exceptions.
+- **Icons.** Integrations and Agent access now use outlined puzzle and robot glyphs at the owner's
+  final geometry instead of a shared magic wand. Editing copies in `~/Desktop/citewell-*.svg` use
+  black paint; shipped files use `context-fill`.
+- **Empty library (D61).** One line, "Welcome to CiteWell!", plus **Browse the web**, which opens
+  the Browse tab. The block is centred against the item pane's message by the item toolbar height.
+  The Quick Start/connector paragraph and its strings are gone. Help > Support and Documentation
+  opens this repository, not Zotero's support site.
+
+**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 8/8, `dnsPrefsTest` 4/4, the
+updater sidecar 7/7, importer 7/7 earlier. Four failures still sit in `server_connectorTest` and
+`translateTest` (chai API gaps) plus one live-prompt timeout in `integrationTest`; none is caused
+by these changes.
+
+**Next.** (1) End-to-end updater run from a deliberately older build, then decide the restart-arg
+allowlist. (2) R6 residue: legacy Zotero-era strings and translations. (3) Kill-mid-merge test.
+(4) R32 optional follow-ups. Help points at the repository until a documentation section exists.
+
 ## Handoff 2026-11-26 (D59 versioning, first release staged)
 
 Compaction anchor. Last code commit `2c521c9b6` (docs commits follow). Installed AppImage
@@ -190,7 +239,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`2026.11.26.000.SOURCE.2c521c9b6`, sha256 `6f290eee…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information; the first release is published (`v2026.11.26.000`) |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`2026.11.26.000.SOURCE.2c521c9b6`, sha256 `6f290eee…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information; the first release is published (`v2026.11.26.000`); the self-updater is implemented and waits for an end-to-end run |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -438,13 +487,11 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 1. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour
    change; the owner's UI rules are in [#owners-ui-rules](#owners-ui-rules-carry-these-into-r6).
-2. **R11/R21 — the self-updater is implemented; it needs a real update run.** `v2026.11.26.000` is
-   live, the installed file is the published one, and Gear Lever reports it as current. Cite >
-   Check for Updates now resolves `releases/latest`, downloads beside `$APPIMAGE`, verifies every
-   published digest and the header, and hands the swap to the `citewell-update` sidecar (D60).
-   The helper is tested against the published bytes; what is missing is an end-to-end run from a
-   deliberately older build (build with a fake earlier version, update, confirm restart). Test
-   builds on the remote are authorized.
+2. **R11/R21 — the self-updater needs its end-to-end run.** `v2026.11.26.000` is live and the
+   installed file is the published one. Build with a deliberately earlier version, point `APPIMAGE`
+   at a copy, run Check for Updates, and confirm download, swap and restart; then decide the
+   restart-argument allowlist (profile and datadir are preserved, other flags are not). The helper
+   itself is tested against the published bytes. Test builds on the remote are authorized.
 3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
    across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.

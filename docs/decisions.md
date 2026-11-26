@@ -1401,6 +1401,29 @@ the published bytes, after it has exited.
 Limitation, stated rather than hidden: the restart preserves the profile and data directory but not
 other original command-line flags.
 
+## D61 — An empty view says what it is, and help lives under Help
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
+
+The empty library used to explain how to start and to install a connector. The connector no longer
+exists since R34, and the guide it linked to was Zotero's. The owner's rule is that the middle of
+the app is for the work, not for tutorials.
+
+- **One line, one action.** An empty library shows "Welcome to CiteWell!" and a single **Browse the
+  web** link that opens the Browse tab. No paragraph of instructions, no links to another product's
+  documentation.
+- **Help has one home.** Instructions and documentation live under Help. The product help entry
+  points at `https://github.com/EricBright/CiteWell` for now; a documentation section of its own is
+  a later decision, deliberately deferred until the app stabilises.
+- **Vertical alignment.** The message is shifted up by the item toolbar's height so that the
+  heading-plus-action block is centred on the same line as the item pane's "No items in this view",
+  which lives in a taller column. The offset is read at render time, not hard-coded.
+- **Enforcement:** `uiCopyTest.js` fails if the welcome strings or their references return, and if
+  the Browse action or its handler disappears.
+
+Rejected: keeping a short tutorial in the empty view. It would duplicate Help, and the only specific
+instruction worth giving (browse something) is now a button.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
