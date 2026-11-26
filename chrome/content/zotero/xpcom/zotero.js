@@ -1384,6 +1384,9 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				"-datadir", Zotero.DataDirectory.dir,
 				"-no-remote",
 			];
+			for (let digest of digests) {
+				args.push("--sha256", digest);
+			}
 			for (let arg of restartArgs) {
 				args.push("--arg", arg);
 			}

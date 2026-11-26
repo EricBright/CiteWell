@@ -19,6 +19,7 @@ const USAGE: &str = "\
 Usage:
   citewell-update verify --file PATH --sha256 HEX [--sha256 HEX ...]
   citewell-update install --file PATH --target PATH --wait-pid PID
+                         --sha256 HEX [--sha256 HEX ...]
                          [--arg VALUE ...] [--timeout-ms N] [--launch]
 
 verify hashes the file, compares it with every expected SHA-256, and checks the ELF and
@@ -120,15 +121,7 @@ fn verify(opts: &Opts) -> Result<(), String> {
 	if expected.is_empty() {
 		return Err("usage: at least one --sha256 is required".into());
 	}
-	let actual = hash_file(Path::new(file)).map_err(|e| format!("hashing {file}: {e}"))?;
-	for digest in &expected {
-		if !digest.eq_ignore_ascii_case(&actual) {
-			return Err(format!(
-				"sha256 mismatch: published {}, downloaded {actual}",
-				digest.to_lowercase()
-			));
-		}
-	}
+	let actual = check_digests(Path::new(file), &expected)?;
 	let size = check_appimage(Path::new(file))?;
 	let mut out = std::io::stdout();
 	let _ = writeln!(out, r#"{{"ok":true,"sha256":"{actual}","size":{size}}}"#);
@@ -143,6 +136,10 @@ fn install(opts: &Opts) -> Result<(), String> {
 		.require("wait-pid")?
 		.parse()
 		.map_err(|_| "--wait-pid must be a process id".to_string())?;
+	let expected = opts.all("sha256");
+	if expected.is_empty() {
+		return Err("usage: at least one --sha256 is required".into());
+	}
 	let timeout = opts
 		.get("timeout-ms")
 		.map(|v| v.parse::<u64>())
@@ -164,6 +161,12 @@ fn install(opts: &Opts) -> Result<(), String> {
 	}
 
 	wait_for_exit(pid, timeout)?;
+
+	// Re-check immediately before the rename. The app verified the same file in a separate
+	// process, and this shrinks the window in which a corrupt or swapped file could reach
+	// the target. It is a cheap integrity check, not a privilege boundary.
+	check_digests(file, &expected)?;
+	check_appimage(file)?;
 
 	let mut perms = metadata.permissions();
 	perms.set_mode(0o755);
@@ -189,6 +192,19 @@ fn install(opts: &Opts) -> Result<(), String> {
 	let mut out = std::io::stdout();
 	let _ = writeln!(out, r#"{{"ok":true,"installed":"{}"}}"#, target.display());
 	Ok(())
+}
+
+fn check_digests(path: &Path, expected: &[&str]) -> Result<String, String> {
+	let actual = hash_file(path).map_err(|e| format!("hashing {}: {e}", path.display()))?;
+	for digest in expected {
+		if !digest.eq_ignore_ascii_case(&actual) {
+			return Err(format!(
+				"sha256 mismatch: published {}, downloaded {actual}",
+				digest.to_lowercase()
+			));
+		}
+	}
+	Ok(actual)
 }
 
 fn hash_file(path: &Path) -> std::io::Result<String> {
@@ -364,6 +380,7 @@ mod tests {
 		fs::write(&download, appimage_bytes()).unwrap();
 
 		let dead_pid = std::process::id() + 100_000;
+		let digest = hash_file(&download).unwrap();
 		let opts = Opts::new(&[
 			"--file".into(),
 			download.display().to_string(),
@@ -371,6 +388,8 @@ mod tests {
 			target.display().to_string(),
 			"--wait-pid".into(),
 			dead_pid.to_string(),
+			"--sha256".into(),
+			digest,
 		])
 		.unwrap();
 		install(&opts).unwrap();
@@ -379,6 +398,30 @@ mod tests {
 		assert!(!download.exists());
 		let mode = fs::metadata(&target).unwrap().permissions().mode() & 0o777;
 		assert_eq!(mode, 0o755);
+	}
+
+	#[test]
+	fn install_refuses_a_wrong_digest_and_leaves_the_target() {
+		let dir = temp_dir("install-bad");
+		let target = dir.join("citewell.appimage");
+		fs::write(&target, b"old").unwrap();
+		let download = dir.join(".citewell-update-3");
+		fs::write(&download, appimage_bytes()).unwrap();
+
+		let opts = Opts::new(&[
+			"--file".into(),
+			download.display().to_string(),
+			"--target".into(),
+			target.display().to_string(),
+			"--wait-pid".into(),
+			"999999999".into(),
+			"--sha256".into(),
+			"00".repeat(32),
+		])
+		.unwrap();
+		assert!(install(&opts).unwrap_err().contains("sha256 mismatch"));
+		assert_eq!(fs::read(&target).unwrap(), b"old");
+		assert!(download.exists());
 	}
 
 	#[test]
@@ -391,6 +434,7 @@ mod tests {
 		let download = dir.join(".citewell-update-2");
 		fs::write(&download, appimage_bytes()).unwrap();
 
+		let digest = hash_file(&download).unwrap();
 		let opts = Opts::new(&[
 			"--file".into(),
 			download.display().to_string(),
@@ -398,6 +442,8 @@ mod tests {
 			link.display().to_string(),
 			"--wait-pid".into(),
 			"999999999".into(),
+			"--sha256".into(),
+			digest,
 		])
 		.unwrap();
 		assert!(install(&opts).unwrap_err().contains("symlink"));

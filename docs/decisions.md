@@ -1379,7 +1379,10 @@ the published bytes, after it has exited.
   second copy elsewhere would give it a permanent digest mismatch.
 - **The swap:** the download lives beside the target with a hidden name that does not end in
   `.appimage`; the running mount keeps the old inode alive; the rename is atomic and leaves the old
-  file untouched on failure; a symlinked target is refused.
+  file untouched on failure; a symlinked target is refused. The sidecar re-hashes the file and
+  re-checks the header immediately before the rename, so a corrupt or swapped file cannot reach the
+  target; this is a cheap integrity check, not a privilege boundary, since both files belong to the
+  same user.
 - **The restart:** the sidecar waits for the app's pid to exit, then starts the new file with
   `-profile`, `-datadir` and `-no-remote`, with the AppImage environment variables removed, so the
   profile lock is free and the new instance uses the same library.
