@@ -185,6 +185,22 @@ describe("UI copy", function () {
 		}
 	});
 
+	it("should not call the word-processor format Zotero", async function () {
+		for (let locale of SUPPORTED_LOCALES) {
+			let properties = await readLocale(
+				`chrome/locale/${locale}/zotero/zotero.properties`
+			);
+			let leftovers = properties.split("\n").filter(
+				line => line.trimStart().startsWith("integration.") && line.includes("Zotero")
+			);
+			assert.lengthOf(leftovers, 0, `${locale}: ${leftovers.join(" | ")}`);
+			let fluent = await readLocale(
+				`chrome/locale/${locale}/zotero/integration.ftl`
+			);
+			assert.notInclude(fluent, "Zotero", `${locale}: integration.ftl`);
+		}
+	});
+
 	it("should translate the problem-report copy in every supported locale", async function () {
 		let keys = [
 			"reportProblem.copied",
