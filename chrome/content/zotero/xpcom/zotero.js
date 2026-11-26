@@ -1300,6 +1300,13 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				fail("The latest release has no tag.");
 				return;
 			}
+			// A development build carries no publish counter. Offering it the published
+			// release would move it backwards, so say what it is and stop.
+			if (!/\.\d{3}$/.test(current || "")) {
+				fail(`This is a development build (${Zotero.version}). The latest release is `
+					+ `${latest}; download it from the releases page.`);
+				return;
+			}
 			if (latest === current) {
 				fail(`CiteWell ${current} is the latest version.`);
 				return;
