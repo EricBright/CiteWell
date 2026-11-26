@@ -1,11 +1,13 @@
-<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g stroke="context-fill" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-<rect x="3.8" y="4.8" width="12.4" height="11" rx="2.3"/>
-<path d="M10 4.8V2.4"/>
-<circle cx="10" cy="1.4" r="1.15" fill="context-fill" stroke="none"/>
-<path d="M2.2 8.2v5.2M17.8 8.2v5.2"/>
-<circle cx="7.5" cy="9.8" r="0.85" fill="context-fill" stroke="none"/>
-<circle cx="12.5" cy="9.8" r="0.85" fill="context-fill" stroke="none"/>
-<path d="M8 13.2h4"/>
-</g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <title>citewell-robot.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M5.675 3.6 L14.325 3.6 C16.032 3.6 17.415 5.113 17.415 6.979 L17.415 15.541 C17.415 17.407 16.032 18.92 14.325 18.92 L5.675 18.92 C3.968 18.92 2.585 17.407 2.585 15.541 L2.585 6.979 C2.585 5.113 3.968 3.6 5.675 3.6 Z" fill="none" stroke="context-fill" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="10" y1="3.6" x2="10" y2="2.3" fill="none" stroke="context-fill" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="10" cy="1.2" r="1.05" fill="context-fill"/>
+    <path d="M0.959 7.75 L0.959 13.95 M19.041 7.75 L19.041 13.95" fill="none" stroke="context-fill" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="7" cy="9.8" r="1.05" fill="context-fill"/>
+    <circle cx="13" cy="9.8" r="1.05" fill="context-fill"/>
+    <line x1="7.2" y1="13.9" x2="12.8" y2="13.9" fill="none" stroke="context-fill" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
