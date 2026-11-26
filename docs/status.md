@@ -32,8 +32,11 @@ where `Zotero.version` is the framework's `5.0.78`; those call sites are deliber
 suite ran 165/169 with four failures that predate this change (two chai/API gaps in
 `server_connectorTest.js` and `translateTest.js`, one live-prompt timeout in `integrationTest.js`).
 
-**Staged, not published.** `dist/` holds the three assets and the release body is drafted. The
-first release needs the owner's go: draft release, upload, verify digests after upload, publish.
+**Published 2026-11-26.** GitHub release `v2026.11.26.000` (latest, not a prerelease) carries the
+three assets; the tag points at `2c521c9b6`, the published AppImage is byte-identical to the
+installed file (sha256 above), and `releases/latest/download/CiteWell-x86_64.AppImage.zsync`
+resolves. The release body is the corrected draft (picker wording, glibc 2.34, no untested
+browser-save claim). `version` is back to `2026.11.26.SOURCE` for dev builds.
 
 ## Handoff 2026-11-25 (R34, R24, its hazard and R8 closed)
 
@@ -187,7 +190,7 @@ Xray-wrapped functions; use `typeof`.
 
 | Area | State |
 |---|---|
-| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`2026.11.26.000.SOURCE.2c521c9b6`, sha256 `6f290eee…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information; the first release is staged but not published |
+| App | Linux AppImage on Firefox **153.7.0esr**; CiteWell OXT packaged and the app hosts the LibreOffice bridge; Cite preferences has a Flatpak-aware install action (`2026.11.26.000.SOURCE.2c521c9b6`, sha256 `6f290eee…`, 125,864,440 bytes), installed at `~/AppImages/citewell.appimage`; R8 removed the Mozilla update URL, so the app contacts no update server, and R21 embedded the Gear Lever update information; the first release is published (`v2026.11.26.000`) |
 | Isolation | Own profile `~/.config/citewell/profile`, data `~/CiteWell`, port 23120; Zotero is never opened (D19) |
 | Icons | The app uses the book-section mark; the LibreOffice toolbar uses the original `citewell` set (six actions, 16/26 px, dark variants) from `src/icons/citewell/`, selected by `build.py --icon-set` |
 | Connector | **Retired 2026-11-25 (D47/R34).** No add-on is built or shipped; `connectors/` and `tools/rsvg-shim` are in Trash and `xtask connectors` no longer exists. Capture is the Browse tab's job: save bridge (2a), picker (2b), PDF capture; Google Docs citations come from Zotero's official connector in Firefox. Because that connector only asks `127.0.0.1:23119`, the app also serves the same handlers there when the port is free (`Zotero.Server.connectorPort`), and the Docs gate tells the truth when it is not |
@@ -435,11 +438,10 @@ cleanup are in place. Remaining conversion of complex custom sections is optiona
 
 1. **R6 — UI behaviour spec and implementation:** one written intent and one test per behaviour
    change; the owner's UI rules are in [#owners-ui-rules](#owners-ui-rules-carry-these-into-r6).
-2. **R11/R21 — publish the first release, then the self-updater.** D59 is implemented and the
-   first artifact is staged (three assets in `dist/`, release body drafted). Next: create the
-   draft release for `v2026.11.26.000`, upload, verify the digests after upload, publish, and check
-   that Gear Lever reports the installed build as current. Then implement the in-app updater to the
-   shape in [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
+2. **R11/R21 — the first release is published; next the self-updater.** `v2026.11.26.000` is live
+   and the installed file is the published one, so Gear Lever should report it as current — confirm
+   that in Gear Lever, then implement the in-app updater to the shape in
+   [packaging.md](packaging.md#updates). Test releases on the remote are authorized.
 3. **Kill-mid-merge test** for the resume path (still missing; the refusal has a test, the resume
    across an unchanged source only an acceptance run).
 4. **R32 optional follow-ups** — citation explorer and undo/save listener.
