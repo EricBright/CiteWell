@@ -747,7 +747,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 - Linux uses Firefox **153.7.0esr** (D15); Mac/Windows pins stay at 140.17 because they are not
   built (D13).
 - `ONLINE_SYNC: false` in [resource/config.mjs](../resource/config.mjs); `ONLINE_LIBRARY: false`
-  in the connector. Code still exists (R19).
+  in the connector. The Account/Sync settings pane was removed on 2026-11-27; its code paths no
+  longer open preferences. Code still exists (R19).
 - SQLite stays: `zotero.sqlite` plus `fulltext.sqlite`, 59 tables, 853 query call sites. A
   file-based store is *not doing*; export is the portability answer. PDF text leaves the index
   under D30; Markdown notes and annotation sidecars stay in it.

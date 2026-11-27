@@ -104,8 +104,6 @@ preferences-advanced-default-data-dir =
     .value = (Default: { $directory })
     .aria-label = Default location
 
-preferences-pane-account = Account
-
 -preferences-sync-data-syncing = Data Syncing
 preferences-sync-data-syncing-groupbox =
     .aria-label = { -preferences-sync-data-syncing }
@@ -119,43 +117,6 @@ preferences-sync-fileSyncing-groups =
 preferences-sync-fileSyncing-tos = By using { -app-name } Storage, you agree to become bound by its <label data-l10n-name="terms-link">terms and conditions</label>.
 preferences-account-log-out =
     .label = Log Out…
-
-preferences-sync-reset-restore-to-server-body = { -app-name } will replace “{ $libraryName }” on { $domain } with data from this computer.
-preferences-sync-reset-restore-to-server-deleted-items-text = { $remoteItemsDeletedCount } { $remoteItemsDeletedCount ->
-        [one] item
-        *[other] items
-    } in the online library will be permanently deleted.
-preferences-sync-reset-restore-to-server-remaining-items-text = { general-sentence-separator }{ $localItemsCount ->
-        [0] The library on this computer and the online library will be empty.
-        [one] 1 item will remain on this computer and in the online library.
-        *[other] { $localItemsCount } items will remain on this computer and in the online library.
-    }
-preferences-sync-reset-restore-to-server-checkbox-label = { $remoteItemsDeletedCount ->
-        [one] Delete 1 item
-        *[other] Delete { $remoteItemsDeletedCount } items
-    }
-preferences-sync-reset-restore-to-server-confirmation-text = delete online library
-preferences-sync-reset-restore-to-server-yes = Replace Data in Online Library
-
-preferences-account-log-in =
-    .label = Log In
-preferences-account-waiting-for-login =
-    .value = Waiting for login…
-preferences-account-cancel-button =
-    .label = { general-cancel }
-
-preferences-account-logged-out-status =
-    .value = (logged out)
-
-preferences-account-email-label =
-    .value = Email:
-
-preferences-account-switch-accounts =
-    .label = Switch Accounts…
-preferences-account-switch-text =
-    Switching to a different account will remove all { -app-name } data on this computer. Before continuing, make sure all data and files you wish to keep have been synced with the “{ $username }” account or you have a backup of your { -app-name } data directory.
-preferences-account-switch-confirmation-text = remove local data
-preferences-account-switch-accept = Remove Data and Restart
 
 fulltext-index-status-indexing = Indexing { $indexed } of { $total }…
 fulltext-index-status-complete = Search index is up to date

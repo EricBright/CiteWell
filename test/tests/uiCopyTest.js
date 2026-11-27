@@ -359,10 +359,8 @@ describe("Support links", function () {
 	const REPO = "https://github.com/EricBright/CiteWell";
 	const HELP_PANES = [
 		"zotero-prefpane-general",
-		"zotero-prefpane-account",
 		"zotero-prefpane-cite",
 		"zotero-prefpane-advanced",
-		"zotero-subpane-reset-sync",
 	];
 
 	it("should keep every settings help link on CiteWell's pages", async function () {

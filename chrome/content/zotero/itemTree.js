@@ -1390,9 +1390,6 @@ var ItemTree = class ItemTree extends LibraryTree {
 				if (e.target.dataset.href) {
 					window.ZoteroPane.loadURI(e.target.dataset.href);
 				}
-				if (e.target.dataset.action == "open-sync-prefs") {
-					Zotero.Utilities.Internal.openPreferences("zotero-prefpane-account");
-				}
 				if (e.target.dataset.action == "open-browse") {
 					Zotero.getMainWindow().Zotero_BrowseTab?.open();
 				}

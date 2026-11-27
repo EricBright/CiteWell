@@ -1173,13 +1173,6 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 				case Zotero.Error.ERROR_API_KEY_NOT_SET:
 				case Zotero.Error.ERROR_API_KEY_INVALID:
 					e.message = Zotero.ftl.formatValueSync('account-not-logged-in-text');
-					e.dialogButtonText = Zotero.ftl.formatValueSync('account-log-in');
-					e.dialogButtonCallback = function () {
-						Zotero.Utilities.Internal.openPreferences(
-							"zotero-prefpane-account",
-							{ action: 'logIn' }
-						);
-					};
 					e.showOnSyncButton = true;
 					break;
 			}

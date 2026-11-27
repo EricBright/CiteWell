@@ -110,13 +110,6 @@ Zotero.Sync.Storage.Engine.prototype.start = async function () {
 					Zotero.getString('sync.storage.error.verificationFailed', this.controller.name),
 					0,
 					{
-						dialogButtonText: Zotero.getString('sync.openSyncPreferences'),
-						dialogButtonCallback: function () {
-							let wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-									   .getService(Components.interfaces.nsIWindowMediator);
-							let lastWin = wm.getMostRecentWindow("navigator:browser");
-							lastWin.ZoteroPane.openPreferences('zotero-prefpane-account');
-						}
 					}
 				);
 			}

@@ -50,7 +50,6 @@ documented.
 | Pane ID | Label |
 |---|---|
 | `zotero-prefpane-general` | zotero.preferences.prefpane.general |
-| `zotero-prefpane-account` | preferences-pane-account |
 | `zotero-prefpane-notes` | Notes & Annotations |
 | `zotero-prefpane-import-export` | Import & Export |
 | `zotero-prefpane-cite` | zotero.preferences.prefpane.cite |
@@ -58,7 +57,6 @@ documented.
 | `zotero-prefpane-agent` | Agent access |
 | `zotero-prefpane-library` | Library & Files |
 | `zotero-prefpane-advanced` | zotero.preferences.prefpane.advanced |
-| `zotero-subpane-reset-sync` | zotero.preferences.subpane.resetSync |
 
 ## Current inventory
 
@@ -142,12 +140,6 @@ Script: `preferences_advanced.js`.
 | Search | Full-text cache, index statistics | Advanced → Search subpane |
 | DNS | Resolver choice: Cloudflare malware blocking (`1.1.1.2` / `1.0.0.2`, DoH via `MODE_TRRONLY` to `https://1.1.1.2/dns-query`) or system DNS (`MODE_NATIVEONLY`); mirror pref `extensions.zotero.dns.resolver`, re-applied at startup (D50). Section `zotero-prefpane-advanced-network`, script `preferences_dns.js` | Advanced |
 
-### Account
-
-Source: [preferences_account.xhtml](../chrome/content/zotero/preferences/preferences_account.xhtml).
-Hidden while `ONLINE_SYNC` is false. Keep the pane and its reset subpane conditional; it is not part
-of the visible eight.
-
 ## Deep links and tests
 
 | Entry point | Current target | Must update when |
@@ -161,11 +153,10 @@ of the visible eight.
 | [importTest.js](../test/tests/importTest.js) | Library pane registration/open | Library splits |
 | [agentTest.js](../test/tests/agentTest.js) | Agent pane | Agent moves |
 | [bibliographyTest.js](../test/tests/bibliographyTest.js) | Cite pane selection | Cite splits |
-| [preferences_accountTest.js](../test/tests/preferences_accountTest.js) | Account pane | Sync remains conditional |
 
 ## Target layout
 
-Eight visible panes, plus Account/Sync when online:
+Eight visible panes:
 
 | Tab | Sections |
 |---|---|
@@ -306,5 +297,4 @@ Do not build a general-purpose form builder or a mini-language for custom workfl
 - Search aliases and help URLs belong in the registry, not in per-pane special cases.
 - The settings search must remain able to find moved controls; test by searching for a moved label
   and its old alias if one exists.
-- Account remains hidden unless `ONLINE_SYNC`; do not make the eight-tab canvas depend on it.
 - No preference key, data-directory path or stored value changes as part of the reorg.

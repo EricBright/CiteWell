@@ -265,10 +265,11 @@ question. With it, the Library pane document is empty and the whole pane is cata
 
 All pane labels are Fluent now. What remains is not labels but three pools:
 
-- **The hidden Account/Sync pane** still uses about sixty DTD entities from `preferences_account`
-  and `preferences_sync_reset`, plus its reset subpane. Online sync is not offered in this build
-  (D63), so this is a product decision first: remove the pane and its strings, or keep it hidden and
-  translate it. Translating a pane nobody can open is the worst of the three.
+- **The hidden Account/Sync pane is gone** (2026-11-27). The pane, its reset subpane, the
+  libraries-to-sync dialog, its script and its test were removed, along with every code path that
+  opened it. Unreferenced DTD entities were pruned from all eight locales; the pruning counts a
+  reference in JavaScript and `panes.json` as a use, because `Zotero.getString()` reads the DTD as a
+  string bundle.
 - **About seventy `.properties` keys used by preferences JavaScript** for dialogs and status text:
   `general.error`, `general.warning`, `general.restartRequired`, `db.integrityCheck.*`,
   `zotero.preferences.advanced.reset*`, `zotero.preferences.export.quickCopy.*`, the data-directory

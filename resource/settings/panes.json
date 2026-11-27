@@ -18,23 +18,6 @@
       "helpURL": "https://github.com/EricBright/CiteWell"
     },
     {
-      "id": "zotero-prefpane-account",
-      "label": "preferences-pane-account",
-      "icon": "chrome://zotero/skin/20/universal/account.svg",
-      "order": 30,
-      "status": "active",
-      "requiresOnlineSync": true,
-      "content": {
-        "type": "custom",
-        "src": "chrome://zotero/content/preferences/preferences_account.xhtml",
-        "scripts": [
-          "chrome://zotero/content/preferences/preferences_account.js"
-        ],
-        "defaultXUL": true
-      },
-      "helpURL": "https://github.com/EricBright/CiteWell"
-    },
-    {
       "id": "zotero-prefpane-notes",
       "rawLabel": "Notes & Annotations",
       "icon": "chrome://zotero/skin/20/universal/note.svg",
@@ -139,23 +122,6 @@
         "src": "chrome://zotero/content/preferences/preferences_advanced.xhtml",
         "scripts": [
           "chrome://zotero/content/preferences/preferences_advanced.js"
-        ],
-        "defaultXUL": true
-      },
-      "helpURL": "https://github.com/EricBright/CiteWell"
-    },
-    {
-      "id": "zotero-subpane-reset-sync",
-      "parent": "zotero-prefpane-account",
-      "label": "zotero.preferences.subpane.resetSync",
-      "order": 100,
-      "status": "active",
-      "requiresOnlineSync": true,
-      "content": {
-        "type": "custom",
-        "src": "chrome://zotero/content/preferences/preferences_sync_reset.xhtml",
-        "scripts": [
-          "chrome://zotero/content/preferences/preferences_account.js"
         ],
         "defaultXUL": true
       },
