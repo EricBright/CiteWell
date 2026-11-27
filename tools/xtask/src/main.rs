@@ -472,7 +472,16 @@ fn validate_catalog_sections(
                             }
                         }
                     }
-                    if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
+                    if control == "number" {
+                        for key in ["beforeKey", "afterKey"] {
+                            if item.get(key).and_then(|v| v.as_str()).is_none() {
+                                return Err(format!(
+                                    "catalog number {item_id} is missing {key}"
+                                ));
+                            }
+                        }
+                    }
+                    else if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
                         return Err(format!("catalog setting {item_id} is missing labelKey"));
                     }
                 }

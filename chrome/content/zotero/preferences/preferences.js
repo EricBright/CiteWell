@@ -999,7 +999,6 @@ var Zotero_Preferences = {
 			let heading = document.createElement('h1');
 			heading.textContent = pane.rawLabel;
 			pane.container.append(contentFragment);
-			this._renderSimpleSections(pane.id, pane.container);
 			let paneRoot = pane.container.querySelector('#' + pane.id);
 			if (pane.container.querySelector('.main-section')) {
 				pane.container.querySelector('.main-section').prepend(heading);
@@ -1122,6 +1121,13 @@ var Zotero_Preferences = {
 			heading.append(h2);
 			groupbox.append(heading);
 			groupbox.setAttribute('aria-labelledby', h2.id);
+			let aliases = [
+				...(section.searchAliases || []),
+				...(section.items || []).flatMap(item => item.searchAliases || []),
+			];
+			if (aliases.length) {
+				groupbox.setAttribute('data-search-strings-raw', aliases.join(','));
+			}
 			if (section.descriptionKey) {
 				let description = document.createXULElement('description');
 				this._applyText(description, section.descriptionKey);
@@ -1174,6 +1180,22 @@ var Zotero_Preferences = {
 						element.setAttribute('data-disabled-when', item.disabledWhen);
 					}
 				}
+				else if (item.kind === 'setting' && item.control === 'number') {
+					element = document.createXULElement('hbox');
+					element.setAttribute('align', 'center');
+					let before = document.createXULElement('label');
+					this._applyLabel(before, item.beforeKey, 'value');
+					let input = document.createElementNS(
+						'http://www.w3.org/1999/xhtml', 'input'
+					);
+					input.type = 'text';
+					input.id = item.id;
+					input.size = String(item.size || 4);
+					input.setAttribute('preference', item.pref);
+					let after = document.createXULElement('label');
+					this._applyLabel(after, item.afterKey, 'value');
+					element.append(before, input, after);
+				}
 				else if (item.kind === 'setting' && item.control === 'radio') {
 					element = document.createXULElement('radiogroup');
 					element.id = item.id;
@@ -1200,7 +1222,7 @@ var Zotero_Preferences = {
 						`Unsupported catalog item ${item.id}: ${item.kind}/${item.control}`
 					);
 				}
-				if (!element.id) {
+				if (!element.id && !(item.kind === 'setting' && item.control === 'number')) {
 					element.id = item.id;
 				}
 				if (item.condition) {
@@ -1250,112 +1272,6 @@ var Zotero_Preferences = {
 		}
 	},
 
-	_renderSimpleSections(paneId, container) {
-		let applyLabel = this._applyLabel.bind(this);
-		let sections = Zotero.PreferencePanes.simpleSections
-			.filter(section => section.paneId === paneId)
-			.sort((a, b) => (a.order || 0) - (b.order || 0));
-		for (let section of sections) {
-			let groupbox = document.createXULElement('groupbox');
-			groupbox.id = 'simple-section-' + section.id;
-			let heading = document.createXULElement('label');
-			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
-			h2.id = section.id + '-title';
-			h2.textContent = Zotero.getString(section.titleKey);
-			heading.append(h2);
-			groupbox.append(heading);
-			groupbox.setAttribute('aria-labelledby', h2.id);
-			let aliases = [
-				...(section.searchAliases || []),
-				...(section.settings || []).flatMap(setting => setting.searchAliases || [])
-			];
-			if (aliases.length) {
-				groupbox.setAttribute('data-search-strings-raw', aliases.join(','));
-			}
-			if (section.descriptionKey) {
-				let description = document.createXULElement('description');
-				description.textContent = Zotero.getString(section.descriptionKey);
-				groupbox.append(description);
-			}
-
-			for (let setting of section.settings || []) {
-				if (setting.type === 'checkbox') {
-					let checkbox = document.createXULElement('checkbox');
-					checkbox.id = setting.id;
-					checkbox.setAttribute('preference', setting.preference);
-					checkbox.setAttribute('native', 'true');
-					applyLabel(checkbox, setting.labelKey);
-					groupbox.append(checkbox);
-				}
-				else if (setting.type === 'button') {
-					let button = document.createXULElement('button');
-					button.id = setting.id;
-					applyLabel(button, setting.labelKey);
-					let actions = {
-						'update-translators': () => Zotero_Preferences.Advanced.updateTranslators()
-					};
-					if (!actions[setting.action]) {
-						throw new Error('Unknown simple setting action: ' + setting.action);
-					}
-					button.addEventListener('command', actions[setting.action]);
-					groupbox.append(button);
-				}
-				else if (setting.type === 'number') {
-					let hbox = document.createXULElement('hbox');
-					hbox.setAttribute('align', 'center');
-					let before = document.createXULElement('label');
-					applyLabel(before, setting.beforeKey, 'value');
-					let input = document.createElementNS('http://www.w3.org/1999/xhtml', 'input');
-					input.id = setting.id;
-					input.setAttribute('type', 'text');
-					input.setAttribute('size', String(setting.size || 4));
-					input.setAttribute('preference', setting.preference);
-					let after = document.createXULElement('label');
-					applyLabel(after, setting.afterKey, 'value');
-					hbox.append(before, input, after);
-					groupbox.append(hbox);
-				}
-				else if (setting.type === 'radio') {
-					let hbox = document.createXULElement('hbox');
-					hbox.setAttribute('align', 'center');
-					let label = document.createXULElement('label');
-					applyLabel(label, setting.labelKey, 'value');
-					label.setAttribute('control', setting.id);
-					let radioGroup = document.createXULElement('radiogroup');
-					radioGroup.id = setting.id;
-					radioGroup.setAttribute('orient', 'horizontal');
-					radioGroup.setAttribute('preference', setting.preference);
-					for (let option of setting.options || []) {
-						let radio = document.createXULElement('radio');
-						radio.setAttribute('value', option.value);
-						applyLabel(radio, option.labelKey);
-						radioGroup.append(radio);
-					}
-					hbox.append(label, radioGroup);
-					groupbox.append(hbox);
-				}
-				else {
-					throw new Error('Unsupported simple setting type: ' + setting.type);
-				}
-			}
-			let before = section.before && container.querySelector(section.before);
-			while (before && before.parentNode && before.parentNode !== container) {
-				before = before.parentNode;
-			}
-			if (before && before.parentNode === container) {
-				container.insertBefore(groupbox, before);
-			}
-			else {
-				container.append(groupbox);
-			}
-		}
-	},
-
-	/**
-	 * Display a pane's content, alongside any other panes already showing.
-	 * Pane must be loaded (#_loadPane()).
-	 * @param {String} id
-	 */
 	_showPane(id) {
 		let pane = this.panes.get(id);
 		if (!pane.loaded) {

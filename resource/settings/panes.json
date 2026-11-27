@@ -188,221 +188,6 @@
       "reason": "DNS is a section of Advanced now (D50 amendment)."
     }
   ],
-  "simpleSections": [
-    {
-      "id": "language-region",
-      "paneId": "zotero-prefpane-general",
-      "titleKey": "preferences-advanced-language-and-region-title",
-      "order": 10,
-      "settings": [
-        {
-          "id": "bidi-ui",
-          "type": "checkbox",
-          "preference": "bidi.browser.ui",
-          "labelKey": "preferences-advanced-enable-bidi-ui"
-        }
-      ],
-      "searchAliases": [
-        "bidirectional",
-        "bidi",
-        "language",
-        "locale"
-      ]
-    },
-    {
-      "id": "note-behaviour",
-      "paneId": "zotero-prefpane-notes",
-      "titleKey": "preferences-note-title",
-      "order": 10,
-      "settings": [
-        {
-          "id": "open-note-in-new-window",
-          "type": "checkbox",
-          "preference": "extensions.zotero.openNoteInNewWindow",
-          "labelKey": "preferences-note-open-in-new-window"
-        }
-      ],
-      "searchAliases": [
-        "new window",
-        "notes"
-      ]
-    },
-    {
-      "id": "groups",
-      "paneId": "zotero-prefpane-general",
-      "titleKey": "zotero.preferences.groups",
-      "descriptionKey": "zotero.preferences.groups.whenCopyingInclude",
-      "order": 20,
-      "settings": [
-        {
-          "id": "groups-copy-childNotes",
-          "type": "checkbox",
-          "preference": "extensions.zotero.groups.copyChildNotes",
-          "labelKey": "zotero.preferences.groups.childNotes"
-        },
-        {
-          "id": "groups-copy-childFiles",
-          "type": "checkbox",
-          "preference": "extensions.zotero.groups.copyChildFileAttachments",
-          "labelKey": "zotero.preferences.groups.childFiles"
-        },
-        {
-          "id": "groups-copy-annotations",
-          "type": "checkbox",
-          "preference": "extensions.zotero.groups.copyAnnotations",
-          "labelKey": "zotero.preferences.groups.annotations"
-        },
-        {
-          "id": "groups-copy-childLinks",
-          "type": "checkbox",
-          "preference": "extensions.zotero.groups.copyChildLinks",
-          "labelKey": "zotero.preferences.groups.childLinks"
-        },
-        {
-          "id": "groups-copy-tags",
-          "type": "checkbox",
-          "preference": "extensions.zotero.groups.copyTags",
-          "labelKey": "zotero.preferences.groups.tags"
-        }
-      ],
-      "searchAliases": [
-        "copy",
-        "annotations",
-        "files",
-        "tags"
-      ]
-    },
-    {
-      "id": "citation-options",
-      "paneId": "zotero-prefpane-cite",
-      "titleKey": "zotero.preferences.citationOptions.caption",
-      "descriptionKey": "zotero.preferences.export.citePaperJournalArticleURL.description",
-      "order": 20,
-      "settings": [
-        {
-          "id": "citation-paper-url",
-          "type": "checkbox",
-          "preference": "extensions.zotero.export.citePaperJournalArticleURL",
-          "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
-        }
-      ],
-      "searchAliases": [
-        "citation url",
-        "journal article"
-      ]
-    },
-    {
-      "id": "file-handling",
-      "paneId": "zotero-prefpane-library",
-      "titleKey": "zotero.preferences.fileHandling",
-      "before": "#zotero-prefpane-file-renaming-groupbox",
-      "order": 10,
-      "settings": [
-        {
-          "id": "file-download-associated",
-          "type": "checkbox",
-          "preference": "extensions.zotero.downloadAssociatedFiles",
-          "labelKey": "zotero.preferences.downloadAssociatedFiles"
-        },
-        {
-          "id": "file-auto-recognize",
-          "type": "checkbox",
-          "preference": "extensions.zotero.autoRecognizeFiles",
-          "labelKey": "preferences-auto-recognize-files"
-        },
-        {
-          "id": "file-automatic-snapshots",
-          "type": "checkbox",
-          "preference": "extensions.zotero.automaticSnapshots",
-          "labelKey": "zotero.preferences.automaticSnapshots"
-        }
-      ],
-      "searchAliases": [
-        "snapshots",
-        "recognize files",
-        "download files"
-      ]
-    },
-    {
-      "id": "attachment-titles",
-      "paneId": "zotero-prefpane-library",
-      "titleKey": "preferences-attachment-titles-title",
-      "descriptionKey": "preferences-attachment-titles-intro",
-      "before": "#baseAttachmentPath",
-      "order": 20,
-      "settings": [
-        {
-          "id": "attachment-show-filenames",
-          "type": "checkbox",
-          "preference": "extensions.zotero.showAttachmentFilenames",
-          "labelKey": "preferences-attachment-titles-show-filenames"
-        }
-      ],
-      "searchAliases": [
-        "filename",
-        "attachment title"
-      ]
-    },
-    {
-      "id": "citation-dialog",
-      "paneId": "zotero-prefpane-cite",
-      "titleKey": "preferences-citation-dialog",
-      "order": 15,
-      "settings": [
-        {
-          "id": "citation-dialog-mode",
-          "type": "radio",
-          "preference": "extensions.zotero.integration.citationDialogMode",
-          "labelKey": "preferences-citation-dialog-mode",
-          "options": [
-            {
-              "value": "last-used",
-              "labelKey": "preferences-citation-dialog-mode-last-used"
-            },
-            {
-              "value": "library",
-              "labelKey": "preferences-citation-dialog-mode-library"
-            },
-            {
-              "value": "list",
-              "labelKey": "preferences-citation-dialog-mode-list"
-            }
-          ]
-        }
-      ],
-      "searchAliases": [
-        "citation picker",
-        "dialog mode"
-      ]
-    },
-    {
-      "id": "behaviour",
-      "paneId": "zotero-prefpane-general",
-      "titleKey": "zotero.preferences.miscellaneous",
-      "order": 30,
-      "settings": [
-        {
-          "id": "automatic-tags",
-          "type": "checkbox",
-          "preference": "extensions.zotero.automaticTags",
-          "labelKey": "zotero.preferences.automaticTags"
-        },
-        {
-          "id": "trash-auto-empty",
-          "type": "number",
-          "preference": "extensions.zotero.trashAutoEmptyDays",
-          "beforeKey": "zotero.preferences.trashAutoEmptyDaysPre",
-          "afterKey": "zotero.preferences.trashAutoEmptyDaysPost",
-          "size": 2
-        }
-      ],
-      "searchAliases": [
-        "automatic tags",
-        "trash",
-        "retention"
-      ]
-    }
-  ],
   "sections": [
     {
       "id": "browser-connector",
@@ -670,6 +455,242 @@
       "order": 10,
       "titleKey": "preferences-appearance-title",
       "before": "#simple-section-language-region"
+    },
+    {
+      "id": "language-region",
+      "kind": "group",
+      "paneId": "zotero-prefpane-general",
+      "order": 10,
+      "titleKey": "preferences-advanced-language-and-region-title",
+      "searchAliases": [
+        "bidirectional",
+        "bidi",
+        "language",
+        "locale"
+      ],
+      "items": [
+        {
+          "id": "bidi-ui",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "bidi.browser.ui",
+          "labelKey": "preferences-advanced-enable-bidi-ui"
+        }
+      ]
+    },
+    {
+      "id": "note-behaviour",
+      "kind": "group",
+      "paneId": "zotero-prefpane-notes",
+      "order": 10,
+      "titleKey": "preferences-note-title",
+      "searchAliases": [
+        "new window",
+        "notes"
+      ],
+      "items": [
+        {
+          "id": "open-note-in-new-window",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.openNoteInNewWindow",
+          "labelKey": "preferences-note-open-in-new-window"
+        }
+      ]
+    },
+    {
+      "id": "groups",
+      "kind": "group",
+      "paneId": "zotero-prefpane-general",
+      "order": 20,
+      "titleKey": "zotero.preferences.groups",
+      "descriptionKey": "zotero.preferences.groups.whenCopyingInclude",
+      "searchAliases": [
+        "copy",
+        "annotations",
+        "files",
+        "tags"
+      ],
+      "items": [
+        {
+          "id": "groups-copy-childNotes",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.groups.copyChildNotes",
+          "labelKey": "zotero.preferences.groups.childNotes"
+        },
+        {
+          "id": "groups-copy-childFiles",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.groups.copyChildFileAttachments",
+          "labelKey": "zotero.preferences.groups.childFiles"
+        },
+        {
+          "id": "groups-copy-annotations",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.groups.copyAnnotations",
+          "labelKey": "zotero.preferences.groups.annotations"
+        },
+        {
+          "id": "groups-copy-childLinks",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.groups.copyChildLinks",
+          "labelKey": "zotero.preferences.groups.childLinks"
+        },
+        {
+          "id": "groups-copy-tags",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.groups.copyTags",
+          "labelKey": "zotero.preferences.groups.tags"
+        }
+      ]
+    },
+    {
+      "id": "citation-options",
+      "kind": "group",
+      "paneId": "zotero-prefpane-cite",
+      "order": 20,
+      "titleKey": "zotero.preferences.citationOptions.caption",
+      "descriptionKey": "zotero.preferences.export.citePaperJournalArticleURL.description",
+      "searchAliases": [
+        "citation url",
+        "journal article"
+      ],
+      "items": [
+        {
+          "id": "citation-paper-url",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.export.citePaperJournalArticleURL",
+          "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
+        }
+      ]
+    },
+    {
+      "id": "file-handling",
+      "kind": "group",
+      "paneId": "zotero-prefpane-library",
+      "order": 10,
+      "titleKey": "zotero.preferences.fileHandling",
+      "before": "#zotero-prefpane-file-renaming-groupbox",
+      "searchAliases": [
+        "snapshots",
+        "recognize files",
+        "download files"
+      ],
+      "items": [
+        {
+          "id": "file-download-associated",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.downloadAssociatedFiles",
+          "labelKey": "zotero.preferences.downloadAssociatedFiles"
+        },
+        {
+          "id": "file-auto-recognize",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.autoRecognizeFiles",
+          "labelKey": "preferences-auto-recognize-files"
+        },
+        {
+          "id": "file-automatic-snapshots",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.automaticSnapshots",
+          "labelKey": "zotero.preferences.automaticSnapshots"
+        }
+      ]
+    },
+    {
+      "id": "attachment-titles",
+      "kind": "group",
+      "paneId": "zotero-prefpane-library",
+      "order": 20,
+      "titleKey": "preferences-attachment-titles-title",
+      "descriptionKey": "preferences-attachment-titles-intro",
+      "before": "#baseAttachmentPath",
+      "searchAliases": [
+        "filename",
+        "attachment title"
+      ],
+      "items": [
+        {
+          "id": "attachment-show-filenames",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.showAttachmentFilenames",
+          "labelKey": "preferences-attachment-titles-show-filenames"
+        }
+      ]
+    },
+    {
+      "id": "citation-dialog",
+      "kind": "group",
+      "paneId": "zotero-prefpane-cite",
+      "order": 15,
+      "titleKey": "preferences-citation-dialog",
+      "searchAliases": [
+        "citation picker",
+        "dialog mode"
+      ],
+      "items": [
+        {
+          "id": "citation-dialog-mode",
+          "kind": "setting",
+          "control": "radio",
+          "pref": "extensions.zotero.integration.citationDialogMode",
+          "labelKey": "preferences-citation-dialog-mode",
+          "options": [
+            {
+              "value": "last-used",
+              "labelKey": "preferences-citation-dialog-mode-last-used"
+            },
+            {
+              "value": "library",
+              "labelKey": "preferences-citation-dialog-mode-library"
+            },
+            {
+              "value": "list",
+              "labelKey": "preferences-citation-dialog-mode-list"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "behaviour",
+      "kind": "group",
+      "paneId": "zotero-prefpane-general",
+      "order": 30,
+      "titleKey": "zotero.preferences.miscellaneous",
+      "searchAliases": [
+        "automatic tags",
+        "trash",
+        "retention"
+      ],
+      "items": [
+        {
+          "id": "automatic-tags",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.automaticTags",
+          "labelKey": "zotero.preferences.automaticTags"
+        },
+        {
+          "id": "trash-auto-empty",
+          "kind": "setting",
+          "control": "number",
+          "pref": "extensions.zotero.trashAutoEmptyDays",
+          "beforeKey": "zotero.preferences.trashAutoEmptyDaysPre",
+          "afterKey": "zotero.preferences.trashAutoEmptyDaysPost",
+          "size": 2
+        }
+      ]
     }
   ]
 }

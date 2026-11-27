@@ -241,6 +241,18 @@ verb names in English for the same reason; the sentence around them is translate
 Its labels are Fluent drafts in eight locales, and the token and audit paths use Fluent messages with
 the path as an argument instead of hardcoded prefixes.
 
+### One list (done 2026-11-27)
+
+The generated-section list (`simpleSections`) is retired. Its eight sections — Language & Region,
+Groups, Behaviour, the citation-dialog mode, file handling, attachment titles and Note behaviour —
+are ordinary catalog sections now, with the number control added for the trash-retention field.
+`panes.json` no longer contains a second structure list, and the generated-section renderer is
+gone.
+
+A duplicate copy of the catalog renderer, found while doing this, was removed; both copies were
+identical, so no behavior changed, but the duplication would have hidden a future edit to the dead
+copy.
+
 ### General pane (in progress)
 
 The Appearance section is a catalog component: the colour scheme radios, the bibliography locale

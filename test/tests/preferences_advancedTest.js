@@ -163,17 +163,18 @@ describe("Settings manifest navigation", function () {
 		});
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.ok(win.document.getElementById("simple-section-language-region"));
+			assert.ok(win.document.getElementById("language-region"));
 			assert.ok(win.document.getElementById("bidi-ui"));
-			assert.ok(win.document.getElementById("simple-section-groups"));
+			assert.ok(win.document.getElementById("groups"));
 			assert.ok(win.document.getElementById("groups-copy-tags"));
 			assert.isAbove(win.document.getElementById("groups-copy-tags").label.length, 0);
 			assert.include(
-				win.document.getElementById("simple-section-language-region")
+				win.document.getElementById("language-region")
 					.getAttribute("data-search-strings-raw"),
 				"bidirectional"
 			);
-			assert.ok(win.document.getElementById("simple-section-behaviour"));
+			assert.ok(win.document.getElementById("behaviour"));
+			assert.ok(win.document.getElementById("trash-auto-empty"));
 			assert.ok(win.document.getElementById("automatic-tags"));
 			assert.ok(win.document.getElementById("trash-auto-empty"));
 		}
@@ -211,9 +212,9 @@ describe("Settings manifest navigation", function () {
 		});
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.ok(win.document.getElementById("simple-section-citation-options"));
+			assert.ok(win.document.getElementById("citation-options"));
 			assert.ok(win.document.getElementById("citation-paper-url"));
-			assert.ok(win.document.getElementById("simple-section-citation-dialog"));
+			assert.ok(win.document.getElementById("citation-dialog"));
 			assert.ok(win.document.getElementById("citation-dialog-mode"));
 		}
 		finally {
@@ -510,9 +511,9 @@ describe("Settings manifest navigation", function () {
 		});
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.ok(win.document.getElementById("simple-section-file-handling"));
+			assert.ok(win.document.getElementById("file-handling"));
 			assert.ok(win.document.getElementById("file-auto-recognize"));
-			assert.ok(win.document.getElementById("simple-section-attachment-titles"));
+			assert.ok(win.document.getElementById("attachment-titles"));
 			assert.ok(win.document.getElementById("attachment-show-filenames"));
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
 			assert.ok(win.document.getElementById("baseAttachmentPath"));
