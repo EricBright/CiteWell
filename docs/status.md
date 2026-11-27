@@ -13,17 +13,16 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-27 (release 2026.11.27.005, program closed)
+## Handoff 2026-11-27 (release 2026.11.27.006, program closed)
 
-Compaction anchor. Code commit `61398d3d2`; docs commits follow. Release `v2026.11.27.005` is
-latest, tag on `61398d3d2`, three assets. Installed `~/AppImages/citewell.appimage` is the published
-file, sha256 `1f672a414b94dc0e22b16b5c7facebbed3220247ceedf393e258ac006ee5fbc3`, 121,981,432 bytes;
-`~/AppImages/release-2026.11.27.005/` holds the three assets. The `version` file is back to
+Compaction anchor. Code commit `c6d60b8c`; docs commits follow. Release `v2026.11.27.006` is latest,
+tag on `c6d60b8c`, three assets. Installed `~/AppImages/citewell.appimage` is the published file,
+sha256 `0e70fceb3bf972c512b1ce86fee7487f3e1aedbc1030aa41b9bb0d2f9cf931bb`, 121,993,720 bytes;
+`~/AppImages/release-2026.11.27.006/` holds the three assets. The `version` file is back to
 `2026.11.27.SOURCE`.
 
-`.005` is the closing release of the settings catalog program: it removes the last retired
-scaffolding and records the translation policy. `.004` fixed the two `.003` regressions (pane titles
-pushed to the bottom, Agent setup wiped by an element id equal to its section id).
+`.006` is the closing release: `.005` removed the retired manifest scaffolding, `.004` fixed the two
+`.003` regressions, and `.006` retires the aliases and moves the shared messages.
 
 **What the program shipped.**
 
@@ -31,25 +30,23 @@ pushed to the bottom, Agent setup wiped by an element id equal to its section id
   `paneId` change, proven by a test. Pane documents are empty roots.
 - **Account/Sync removed**, with its dialog, script, test and every code path that opened it; dead
   DTD strings were pruned.
-- **Text.** Settings labels and Settings-owned runtime messages are Fluent in eight locales;
-  `Zotero.getString()` resolves Fluent first, parameters included, then the legacy bundle.
-- **Aliases and generated docs.** Old element ids resolve in deep links; `settings.md` is generated
-  from the catalog and checked by `validate-settings`.
+- **Text.** Settings labels, Settings-owned messages and 66 shared `general.*` messages are Fluent
+  in eight locales; `Zotero.getString()` resolves Fluent first, parameters included, then the legacy
+  bundle. One plural message (`general.dontShowAgainFor`) remains legacy because the Fluent path
+  does not carry its plural selector.
+- **Aliases retired.** The alias data, resolver and test are gone; old pre-move deep links no longer
+  resolve, current ids do. Nothing in the app used them.
+- **Generated docs.** `settings.md` is generated from the catalog and checked by
+  `validate-settings`.
 - **Data-directory logic** is `Zotero_Preferences.DataDirectory`.
 - **Retired scaffolding gone:** no manifest, validator or renderer path for `simpleSections`; no
   `requiresOnlineSync` filter.
 - **Lesson:** no element id may repeat its section id; pane headings carry `data-pane-heading`.
 
-**Tests.** 86/86 across preferences, agent, import, copy, settings-tab and bibliography.
+**Tests.** 85/85 across preferences, agent, import, copy, settings-tab and bibliography.
 
-**Not done, each for a different reason.** They are not one bucket.
+**Still open, each for a different reason.**
 
-- **App-wide `general.*` text pass — done 2026-11-27**, after the program closed: 66 shared messages
-  moved to Fluent in eight locales with their existing translations. `general.dontShowAgainFor`
-  stays in the legacy bundle because it is a plural message and `getString`'s Fluent path does not
-  carry the plural selector yet.
-- **Alias retirement — done 2026-11-27.** The manifest alias data, the resolver and its test are
-  gone. Old pre-move deep links no longer resolve; ids in the current catalog do.
 - **Accessibility pass — priority-deferred.** One user, no present need. Pick it up if a need
   appears or there is nothing more valuable to do.
 - **Native review — opportunistic (D68).** Depends on a volunteer, so it is not scheduled; drafts
