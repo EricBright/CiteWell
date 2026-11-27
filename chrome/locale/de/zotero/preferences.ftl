@@ -199,3 +199,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     Änderungen werden nach Neustart wirksam
+
+feeds-title =
+    Feeds
+
+feeds-sort-label =
+    Sortierung:
+
+feeds-sort-newest =
+    Neue Einträge zuerst
+
+feeds-sort-oldest =
+    Alte Einträge zuerst
+
+feeds-defaults-title =
+    Standardeinstellungen für Feeds
+
+search-title =
+    Suche
+
+search-fulltext-cache =
+    Volltext-Cache
+
+search-max-length =
+    Maximal indizierte Zeichenanzahl pro Datei:
+
+search-default =
+    Standardeinstellung:
+
+search-index-stats =
+    Index-Statistik
+
+feeds-refresh-before =
+    Feed aktualisieren alle
+
+feeds-refresh-after =
+    Stunde(n)
+
+feeds-read-before =
+    Lösche gelesene Feed-Einträge nach
+
+feeds-read-after =
+    Tag(en)
+
+feeds-unread-before =
+    Lösche ungelesene Feed-Einträge nach
+
+feeds-unread-after =
+    Tag(en)
+
+search-default-note =
+    (Standardeinstellung: 500000)

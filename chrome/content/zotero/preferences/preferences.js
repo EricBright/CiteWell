@@ -127,6 +127,138 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'feeds': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let sortBox = document.createXULElement('groupbox');
+		let sortRow = document.createXULElement('hbox');
+		let sortLabel = document.createXULElement('label');
+		Zotero_Preferences._applyLabel(sortLabel, 'feeds-sort-label', 'value');
+		sortLabel.setAttribute('control', 'feed-sort');
+		let menulist = document.createXULElement('menulist');
+		menulist.id = 'feed-sort';
+		menulist.setAttribute('preference', 'extensions.zotero.feeds.sortAscending');
+		menulist.setAttribute('native', 'true');
+		let popup = document.createXULElement('menupopup');
+		for (let [value, key] of [['false', 'feeds-sort-newest'], ['true', 'feeds-sort-oldest']]) {
+			let item = document.createXULElement('menuitem');
+			item.setAttribute('value', value);
+			Zotero_Preferences._applyLabel(item, key);
+			popup.append(item);
+		}
+		menulist.append(popup);
+		sortRow.append(sortLabel, menulist);
+		sortBox.append(sortRow);
+		groupbox.append(sortBox);
+
+		let defaults = document.createXULElement('groupbox');
+		defaults.id = 'zotero-prefpane-advanced-feeds-feedDefaults';
+		let heading = document.createXULElement('label');
+		let h2 = document.createElementNS(HTML, 'h2');
+		Zotero_Preferences._applyText(h2, 'feeds-defaults-title');
+		heading.append(h2);
+		defaults.append(heading);
+		const rows = [
+			['zotero-prefpane-feeds-refresh-label1', 'feeds-refresh-before', 'feeds.defaultTTL',
+				'zotero-prefpane-feeds-refresh-label2', 'feeds-refresh-after', '3'],
+			['zotero-prefpane-feeds-readAfter-label1', 'feeds-read-before', 'feeds.defaultCleanupReadAfter',
+				'zotero-prefpane-feeds-readAfter-label2', 'feeds-read-after', '2'],
+			['zotero-prefpane-feeds-unreadAfter-label1', 'feeds-unread-before', 'feeds.defaultCleanupUnreadAfter',
+				'zotero-prefpane-feeds-unreadAfter-label2', 'feeds-unread-after', '2'],
+		];
+		for (let [beforeID, beforeKey, pref, afterID, afterKey, size] of rows) {
+			let outer = document.createXULElement('hbox');
+			let inner = document.createXULElement('hbox');
+			inner.setAttribute('align', 'center');
+			let before = document.createXULElement('label');
+			before.id = beforeID;
+			Zotero_Preferences._applyLabel(before, beforeKey, 'value');
+			let input = document.createElementNS(HTML, 'input');
+			input.type = 'number';
+			input.min = '1';
+			input.step = '1';
+			input.size = size;
+			input.classList.add('html-input');
+			input.setAttribute('data-preference', pref);
+			input.setAttribute('aria-labelledby', beforeID + ' ' + afterID);
+			let after = document.createElementNS(HTML, 'label');
+			after.id = afterID;
+			Zotero_Preferences._applyText(after, afterKey);
+			inner.append(before, input, after);
+			outer.append(inner);
+			defaults.append(outer);
+		}
+		groupbox.append(defaults);
+	},
+
+	'search-index': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let cache = document.createXULElement('groupbox');
+		let heading = document.createXULElement('label');
+		let h2 = document.createElementNS(HTML, 'h2');
+		Zotero_Preferences._applyText(h2, 'search-fulltext-cache');
+		heading.append(h2);
+		cache.append(heading);
+		let row = document.createXULElement('hbox');
+		row.setAttribute('align', 'center');
+		let label = document.createElementNS(HTML, 'label');
+		label.setAttribute('for', 'fulltext-maxLength');
+		Zotero_Preferences._applyText(label, 'search-max-length');
+		let input = document.createElementNS(HTML, 'input');
+		input.type = 'text';
+		input.id = 'fulltext-maxLength';
+		input.size = 10;
+		input.setAttribute('preference', 'extensions.zotero.fulltext.textMaxLength');
+		let note = document.createElementNS(HTML, 'label');
+		Zotero_Preferences._applyText(note, 'search-default-note');
+		row.append(label, input, note);
+		cache.append(row);
+		groupbox.append(cache);
+
+		let stats = document.createXULElement('groupbox');
+		stats.id = 'fulltext-stats';
+		stats.setAttribute('tabindex', '0');
+		let statsHeading = document.createXULElement('label');
+		let statsH2 = document.createElementNS(HTML, 'h2');
+		Zotero_Preferences._applyText(statsH2, 'search-index-stats');
+		statsHeading.append(statsH2);
+		let status = document.createXULElement('vbox');
+		status.id = 'fulltext-stats-status';
+		let progressBox = document.createXULElement('hbox');
+		progressBox.id = 'fulltext-stats-progress-box';
+		progressBox.setAttribute('align', 'center');
+		progressBox.hidden = true;
+		let progress = document.createElementNS(HTML, 'progress');
+		progress.id = 'fulltext-stats-progress';
+		progress.setAttribute('value', '0');
+		progress.setAttribute('max', '1');
+		let progressLabel = document.createXULElement('label');
+		progressLabel.id = 'fulltext-stats-progress-label';
+		progressBox.append(progress, progressLabel);
+		let complete = document.createXULElement('label');
+		complete.id = 'fulltext-stats-complete';
+		complete.hidden = true;
+		Zotero_Preferences._applyText(complete, 'fulltext-index-status-complete');
+		status.append(progressBox, complete);
+		let grid = document.createXULElement('vbox');
+		grid.id = 'fulltext-stats-grid';
+		const statRows = [
+			['fulltext-stats-attachments-indexed', 'fulltext-stats-indexed'],
+			['fulltext-stats-partially-indexed', 'fulltext-stats-partial'],
+			['fulltext-stats-not-available', 'fulltext-stats-not-available'],
+			['fulltext-stats-notes-indexed', 'fulltext-stats-notes'],
+		];
+		for (let [key, id] of statRows) {
+			let statRow = document.createXULElement('hbox');
+			let name = document.createXULElement('label');
+			Zotero_Preferences._applyText(name, key);
+			let value = document.createXULElement('label');
+			value.id = id;
+			statRow.append(name, value);
+			grid.append(statRow);
+		}
+		stats.append(statsHeading, status, grid);
+		groupbox.append(stats);
+	},
 	'keyboard-shortcuts': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		const rows = [
@@ -665,6 +797,7 @@ var Zotero_Preferences = {
 			let groupbox = document.createXULElement('groupbox');
 			groupbox.id = section.id;
 			groupbox.classList.add('main-section');
+			groupbox.setAttribute('data-catalog-section', 'true');
 			if (section.aliases && section.aliases.length) {
 				groupbox.setAttribute('data-aliases', section.aliases.join(','));
 			}
@@ -786,7 +919,17 @@ var Zotero_Preferences = {
 				}
 			}
 			else {
-				root.append(groupbox);
+				// No transition anchor: keep catalog sections ahead of whatever
+				// hand-written content remains, in catalog order.
+				let handWritten = [...root.children].find(
+					child => !child.hasAttribute('data-catalog-section')
+				);
+				if (handWritten) {
+					root.insertBefore(groupbox, handWritten);
+				}
+				else {
+					root.append(groupbox);
+				}
 			}
 		}
 	},

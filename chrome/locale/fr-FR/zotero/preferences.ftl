@@ -200,3 +200,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     Les modifications prennent effet au prochain démarrage de Zotero
+
+feeds-title =
+    Flux
+
+feeds-sort-label =
+    Classement :
+
+feeds-sort-newest =
+    Les documents les plus récents en premier
+
+feeds-sort-oldest =
+    Les plus anciens documents en premier
+
+feeds-defaults-title =
+    Paramètres par défaut des flux
+
+search-title =
+    Recherche
+
+search-fulltext-cache =
+    Index du texte intégral
+
+search-max-length =
+    Nombre maximum de caractères à indexer par fichier :
+
+search-default =
+    Par défaut :
+
+search-index-stats =
+    Statistiques d'indexation
+
+feeds-refresh-before =
+    Mettre à jour le flux toutes les
+
+feeds-refresh-after =
+    heure(s)
+
+feeds-read-before =
+    Retirer les documents lus après
+
+feeds-read-after =
+    jour(s)
+
+feeds-unread-before =
+    Retirer les documents non lus après
+
+feeds-unread-after =
+    jour(s)
+
+search-default-note =
+    (Par défaut : 500000)

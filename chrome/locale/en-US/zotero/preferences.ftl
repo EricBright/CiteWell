@@ -222,3 +222,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     Changes take effect after restart
+
+feeds-title =
+    Feeds
+
+feeds-sort-label =
+    Sorting:
+
+feeds-sort-newest =
+    Newest items first
+
+feeds-sort-oldest =
+    Oldest items first
+
+feeds-defaults-title =
+    Feed Defaults
+
+search-title =
+    Search
+
+search-fulltext-cache =
+    Full-Text Cache
+
+search-max-length =
+    Maximum characters to index per file:
+
+search-default =
+    Default:
+
+search-index-stats =
+    Index Statistics
+
+feeds-refresh-before =
+    Update feed every
+
+feeds-refresh-after =
+    hour(s)
+
+feeds-read-before =
+    Remove read feed items after
+
+feeds-read-after =
+    day(s)
+
+feeds-unread-before =
+    Remove unread feed items after
+
+feeds-unread-after =
+    day(s)
+
+search-default-note =
+    (Default: 500000)

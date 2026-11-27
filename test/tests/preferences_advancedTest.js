@@ -280,6 +280,37 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders feeds and the index panel from components", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.isAbove(
+				win.document.getElementById("feeds-title").textContent.trim().length, 0
+			);
+			assert.ok(win.document.getElementById("feed-sort"), "the feed sort menu is missing");
+			assert.ok(
+				win.document.getElementById("zotero-prefpane-advanced-feeds-feedDefaults"),
+				"the feed defaults group is missing"
+			);
+			assert.isAbove(
+				win.document.getElementById("search-index-title").textContent.trim().length, 0
+			);
+			assert.ok(
+				win.document.getElementById("fulltext-maxLength"),
+				"the cache-size input is missing"
+			);
+			assert.ok(
+				win.document.getElementById("fulltext-stats"),
+				"the index panel is missing"
+			);
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("renders keyboard shortcuts from the catalog component", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-advanced"

@@ -198,3 +198,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     所做更改会在重启后生效
+
+feeds-title =
+    订阅
+
+feeds-sort-label =
+    排序:
+
+feeds-sort-newest =
+    最新条目在先
+
+feeds-sort-oldest =
+    最早条目在先
+
+feeds-defaults-title =
+    订阅默认
+
+search-title =
+    搜索
+
+search-fulltext-cache =
+    全文缓存
+
+search-max-length =
+    单个文件最多索引字符数:
+
+search-default =
+    默认:
+
+search-index-stats =
+    索引统计
+
+feeds-refresh-before =
+    更新订阅 每
+
+feeds-refresh-after =
+    小时
+
+feeds-read-before =
+    删除已读提要条目于之后
+
+feeds-read-after =
+    天
+
+feeds-unread-before =
+    删除未读提要条目于之后
+
+feeds-unread-after =
+    天
+
+search-default-note =
+    (默认: 500000)

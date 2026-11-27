@@ -211,8 +211,10 @@ The Advanced pane is the forced case because it contains one of each remaining s
   are therefore temporary, not a second map.
 - **Translator updates moved too.** The generated section became a catalog group, so the last
   manifest-generated section in Advanced is now catalog data.
-- **Still hand-written in Advanced:** Feeds and the full-text index panel. Both become components;
-  they are the last two sections in the pane.
+- **Feeds and the full-text index panel are components too.** With them, every section in Advanced
+  is catalog data: DNS, database maintenance, keyboard shortcuts, translator updates, feeds and the
+  index panel. The transition anchors were removed, so catalog order alone places them; only the
+  Config Editor row remains hand-written at the end of the pane, outside the section list.
 
 ### P6 — Bulk text migration
 

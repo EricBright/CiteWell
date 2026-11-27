@@ -198,3 +198,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     変更は再起動後に有効になります
+
+feeds-title =
+    フィード
+
+feeds-sort-label =
+    並べ替え :
+
+feeds-sort-newest =
+    最新の項目を最初に表示
+
+feeds-sort-oldest =
+    最古の項目を最初に表示
+
+feeds-defaults-title =
+    既定のフィード
+
+search-title =
+    検索
+
+search-fulltext-cache =
+    フルテキストのキャッシュ
+
+search-max-length =
+    ファイルごとの索引作成の最大文字数 :
+
+search-default =
+    既定値 :
+
+search-index-stats =
+    索引統計
+
+feeds-refresh-before =
+    フィードを
+
+feeds-refresh-after =
+    時間おきに更新する
+
+feeds-read-before =
+    既読フィード項目を
+
+feeds-read-after =
+    日後に消去する
+
+feeds-unread-before =
+    未読フィード項目を
+
+feeds-unread-after =
+    日後に消去する
+
+search-default-note =
+    (既定値 : 500000)

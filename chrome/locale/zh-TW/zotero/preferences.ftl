@@ -199,3 +199,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     重新啟動後改變才會生效
+
+feeds-title =
+    新聞來源
+
+feeds-sort-label =
+    排序：
+
+feeds-sort-newest =
+    新的項目在前
+
+feeds-sort-oldest =
+    舊的項目在前
+
+feeds-defaults-title =
+    預設新聞來源
+
+search-title =
+    搜尋
+
+search-fulltext-cache =
+    全文快取
+
+search-max-length =
+    每個檔案的索引最大字元數：
+
+search-default =
+    預設：
+
+search-index-stats =
+    索引量統計
+
+feeds-refresh-before =
+    更新新聞來源內容，每
+
+feeds-refresh-after =
+    小時(可能為複數)
+
+feeds-read-before =
+    移除已讀的新聞來源項目，當超過
+
+feeds-read-after =
+    日(可能為複數)
+
+feeds-unread-before =
+    移除未讀的新聞來源項目，當超過
+
+feeds-unread-after =
+    日(可能為複數)
+
+search-default-note =
+    (預設： 500000)

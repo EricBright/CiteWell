@@ -498,8 +498,7 @@
           "command": "reset-translators",
           "labelKey": "database-maintenance-reset-translators"
         }
-      ],
-      "before": "#zotero-prefpane-advanced-keys-tab"
+      ]
     },
     {
       "id": "dns",
@@ -509,7 +508,6 @@
       "titleKey": "dns-title",
       "descriptionKey": "dns-description",
       "init": "dns",
-      "before": "#zotero-prefpane-advanced-keys-tab",
       "items": [
         {
           "id": "dns-resolver",
@@ -546,8 +544,7 @@
       "component": "keyboard-shortcuts",
       "paneId": "zotero-prefpane-advanced",
       "order": 20,
-      "titleKey": "keyboard-shortcuts-title",
-      "before": "#zotero-prefpane-advanced-feeds-tab"
+      "titleKey": "keyboard-shortcuts-title"
     },
     {
       "id": "translator-updates",
@@ -555,7 +552,6 @@
       "paneId": "zotero-prefpane-advanced",
       "order": 30,
       "titleKey": "preferences-translator-updates",
-      "before": "#zotero-prefpane-advanced-feeds-tab",
       "items": [
         {
           "id": "translator-auto-update",
@@ -578,6 +574,22 @@
           "labelKey": "zotero.preferences.reportTranslationFailure"
         }
       ]
+    },
+    {
+      "id": "feeds",
+      "kind": "component",
+      "component": "feeds",
+      "paneId": "zotero-prefpane-advanced",
+      "order": 40,
+      "titleKey": "feeds-title"
+    },
+    {
+      "id": "search-index",
+      "kind": "component",
+      "component": "search-index",
+      "paneId": "zotero-prefpane-advanced",
+      "order": 50,
+      "titleKey": "search-title"
     }
   ]
 }

@@ -200,3 +200,54 @@ keyboard-shortcuts-toggle-all-read =
 
 keyboard-shortcuts-changes-take-effect =
     Los cambios tendrán efecto después de reiniciar
+
+feeds-title =
+    Canales
+
+feeds-sort-label =
+    Ordenación:
+
+feeds-sort-newest =
+    Elementos más nuevos primero
+
+feeds-sort-oldest =
+    Elementos más antiguos primero
+
+feeds-defaults-title =
+    Valores predeterminados del canal
+
+search-title =
+    Buscar
+
+search-fulltext-cache =
+    Caché de texto completo
+
+search-max-length =
+    Máximo de caracteres a indexar por archivo:
+
+search-default =
+    Predeterminado:
+
+search-index-stats =
+    Estadísticas de indexación
+
+feeds-refresh-before =
+    Actualizar canal cada
+
+feeds-refresh-after =
+    hora(s)
+
+feeds-read-before =
+    Eliminar elementos del canal leídos después de
+
+feeds-read-after =
+    día(s)
+
+feeds-unread-before =
+    Eliminar elementos del canal no leídos después de
+
+feeds-unread-after =
+    día(s)
+
+search-default-note =
+    (Predeterminado: 500000)
