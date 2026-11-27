@@ -127,6 +127,106 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'general-appearance': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let schemeBox = document.createXULElement('groupbox');
+		let schemeRow = document.createXULElement('hbox');
+		schemeRow.setAttribute('align', 'center');
+		let schemeLabel = document.createXULElement('label');
+		Zotero_Preferences._applyLabel(schemeLabel, 'preferences-color-scheme', 'value');
+		schemeLabel.id = 'color-scheme-label';
+		let scheme = document.createXULElement('radiogroup');
+		scheme.id = 'color-scheme';
+		scheme.setAttribute('orient', 'horizontal');
+		scheme.setAttribute('preference', 'browser.theme.toolbar-theme');
+		for (let [key, value] of [
+			['preferences-color-scheme-auto', '2'],
+			['preferences-color-scheme-light', '1'],
+			['preferences-color-scheme-dark', '0'],
+		]) {
+			let radio = document.createXULElement('radio');
+			radio.setAttribute('value', value);
+			Zotero_Preferences._applyLabel(radio, key);
+			scheme.append(radio);
+		}
+		schemeRow.append(schemeLabel, scheme);
+		schemeBox.append(schemeRow);
+		groupbox.append(schemeBox);
+
+		let localeRow = document.createXULElement('hbox');
+		localeRow.setAttribute('align', 'center');
+		let localeLabel = document.createXULElement('label');
+		localeLabel.setAttribute('control', 'locale-menu');
+		Zotero_Preferences._applyLabel(localeLabel, 'bibliography-locale-label', 'value');
+		let localeMenu = document.createXULElement('menulist');
+		localeMenu.id = 'locale-menu';
+		localeMenu.setAttribute('native', 'true');
+		let localePopup = document.createXULElement('menupopup');
+		localePopup.addEventListener('popuphidden', () => {
+			Zotero_Preferences.General.onLocaleChange();
+		});
+		localeMenu.append(localePopup);
+		localeMenu.addEventListener('blur', () => {
+			if (!Zotero.isMac) {
+				Zotero_Preferences.General.onLocaleChange();
+			}
+		});
+		localeRow.append(localeLabel, localeMenu);
+		groupbox.append(localeRow);
+
+		let headerRow = document.createXULElement('hbox');
+		headerRow.setAttribute('align', 'center');
+		let headerLabel = document.createXULElement('label');
+		headerLabel.setAttribute('control', 'item-pane-header-menulist');
+		Zotero_Preferences._applyLabel(headerLabel, 'preferences-item-pane-header', 'value');
+		let headerMenu = document.createXULElement('menulist');
+		headerMenu.id = 'item-pane-header-menulist';
+		headerMenu.setAttribute('preference', 'extensions.zotero.itemPaneHeader');
+		headerMenu.setAttribute('native', 'true');
+		let headerPopup = document.createXULElement('menupopup');
+		for (let [key, value] of [
+			['item-pane-header-none', 'none'],
+			['item-pane-header-title', 'title'],
+			['item-pane-header-titleCreatorYear', 'titleCreatorYear'],
+			['item-pane-header-bibEntry', 'bibEntry'],
+		]) {
+			let item = document.createXULElement('menuitem');
+			item.setAttribute('value', value);
+			Zotero_Preferences._applyLabel(item, key);
+			headerPopup.append(item);
+		}
+		headerMenu.append(headerPopup);
+		headerRow.append(headerLabel, headerMenu);
+		groupbox.append(headerRow);
+
+		let options = document.createXULElement('vbox');
+		options.id = 'item-pane-header-bib-entry-options';
+		options.classList.add('indented-pref');
+		for (let [labelKey, menuID, pref, flex] of [
+			['preferences-item-pane-header-style', 'item-pane-header-style-menu',
+				'extensions.zotero.itemPaneHeader.bibEntry.style', '1'],
+			['preferences-item-pane-header-locale', 'item-pane-header-locale-menu',
+				'extensions.zotero.itemPaneHeader.bibEntry.locale', null],
+		]) {
+			let row = document.createXULElement('hbox');
+			row.setAttribute('align', 'center');
+			let label = document.createXULElement('label');
+			label.setAttribute('control', menuID);
+			Zotero_Preferences._applyLabel(label, labelKey, 'value');
+			let menu = document.createXULElement('menulist');
+			menu.id = menuID;
+			menu.setAttribute('preference', pref);
+			menu.setAttribute('native', 'true');
+			if (flex) {
+				menu.setAttribute('flex', flex);
+			}
+			menu.append(document.createXULElement('menupopup'));
+			row.append(label, menu);
+			options.append(row);
+		}
+		groupbox.append(options);
+	},
+
 	'agent-skill': groupbox => {
 		let description = document.createXULElement('description');
 		Zotero_Preferences._applyText(description, 'agent-skill-description');

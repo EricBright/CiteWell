@@ -334,3 +334,6 @@ agent-audit-title =
     監査
 agent-audit-description =
     エージェントの呼び出しごとに監査パスへ 1 行追加され、メソッド、オブジェクトキー、結果が記録されます。ノートの本文やフィールド値は記録されません。
+
+bibliography-locale-label =
+    .value = 言語 :

@@ -661,6 +661,15 @@
       "paneId": "zotero-prefpane-agent",
       "order": 60,
       "titleKey": "agent-audit-title"
+    },
+    {
+      "id": "general-appearance",
+      "kind": "component",
+      "component": "general-appearance",
+      "paneId": "zotero-prefpane-general",
+      "order": 10,
+      "titleKey": "preferences-appearance-title",
+      "before": "#simple-section-language-region"
     }
   ]
 }

@@ -358,3 +358,6 @@ agent-audit-title =
     Audit
 agent-audit-description =
     Every agent call appends one line to the audit path, recording the method, object keys and outcome, not note text or field values.
+
+bibliography-locale-label =
+    .value = Language:

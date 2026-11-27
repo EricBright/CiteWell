@@ -241,6 +241,17 @@ verb names in English for the same reason; the sentence around them is translate
 Its labels are Fluent drafts in eight locales, and the token and audit paths use Fluent messages with
 the path as an argument instead of hardcoded prefixes.
 
+### General pane (in progress)
+
+The Appearance section is a catalog component: the colour scheme radios, the bibliography locale
+menu, the item-pane header menu and its dependent style and locale menus. The menu ids and their
+handlers are unchanged, so the General module still initializes them. The locale label moved from
+DTD to Fluent.
+
+The rest of General is still the generated-section mechanism (`simpleSections`): Language & Region,
+Groups and Behaviour. Those are already data, but in a second list. Converting them to the same
+catalog is the next step, and it needs the number control the Behaviour section uses.
+
 ### Notes pane (done)
 
 Both sections are catalog components: note migration and the legacy PDF-annotation export. Their six

@@ -335,3 +335,6 @@ agent-audit-title =
     Audit
 agent-audit-description =
     Jeder Agentenaufruf hängt eine Zeile an den Audit-Pfad an und protokolliert Methode, Objektschlüssel und Ergebnis, nicht Notiztext oder Feldwerte.
+
+bibliography-locale-label =
+    .value = Sprache:

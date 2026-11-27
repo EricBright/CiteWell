@@ -335,3 +335,6 @@ agent-audit-title =
     稽核
 agent-audit-description =
     每次代理程式呼叫都會在稽核路徑中附加一行，記錄方法、物件鍵與結果，不記錄筆記內文或欄位值。
+
+bibliography-locale-label =
+    .value = 語言：

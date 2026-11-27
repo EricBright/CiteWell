@@ -336,3 +336,6 @@ agent-audit-title =
     Audit
 agent-audit-description =
     Chaque appel d’agent ajoute une ligne au chemin d’audit, enregistrant la méthode, les clés d’objet et le résultat, pas le texte des notes ni les valeurs des champs.
+
+bibliography-locale-label =
+    .value = Langue :

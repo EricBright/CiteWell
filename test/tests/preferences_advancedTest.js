@@ -182,6 +182,29 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders the General appearance section from the catalog", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-general"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			for (let id of ["color-scheme", "locale-menu", "item-pane-header-menulist",
+				"item-pane-header-style-menu", "item-pane-header-locale-menu"]) {
+				assert.ok(win.document.getElementById(id), `${id} did not render`);
+			}
+			assert.isAbove(
+				win.document.getElementById("general-appearance-title").textContent.trim().length,
+				0
+			);
+			assert.isAbove(
+				win.document.querySelectorAll("#color-scheme radio").length, 2
+			);
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("renders Citation Options in the Cite pane", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-cite"

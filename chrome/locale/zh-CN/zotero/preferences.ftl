@@ -334,3 +334,6 @@ agent-audit-title =
     审计
 agent-audit-description =
     每次智能体调用都会在审计路径中追加一行，记录方法、对象键和结果，不记录笔记正文或字段值。
+
+bibliography-locale-label =
+    .value = 语言：

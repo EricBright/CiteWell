@@ -336,3 +336,6 @@ agent-audit-title =
     Auditoría
 agent-audit-description =
     Cada llamada de un agente añade una línea a la ruta de auditoría, registrando el método, las claves del objeto y el resultado, no el texto de las notas ni los valores de los campos.
+
+bibliography-locale-label =
+    .value = Idioma:
