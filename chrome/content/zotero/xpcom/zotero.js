@@ -1168,6 +1168,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 	// later decision; sending readers to Zotero's support site is not an option.
 	this.HELP_URL = 'https://github.com/EricBright/CiteWell';
 	this.DISCUSSIONS_URL = 'https://github.com/EricBright/CiteWell/discussions';
+	this.CONNECTORS_URL = 'https://www.zotero.org/download/connectors';
 	// Problems are reported at CiteWell's tracker. The inherited error wizard posted
 	// the log to repo.zotero.org, which belongs to another project (D62).
 	this.REPORT_PROBLEM_URL = 'https://github.com/EricBright/CiteWell/issues/new';

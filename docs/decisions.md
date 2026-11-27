@@ -1507,6 +1507,28 @@ Discussions; sending people to another project's forum implies support that does
 Rejected: keeping the banner and pointing it at the CiteWell changelog. It is release-marketing UI
 for a version scheme the fork does not use.
 
+## D65 — The browser connector lives in Settings > Advanced, with its exception stated
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
+
+The Tools menu had an **Install Browser Connector…** item that opened Zotero's download page with no
+explanation. It was the only Zotero product in a menu, in an app that otherwise avoids Zotero, and
+it hid the reason the link exists.
+
+- **One place.** Settings > Advanced has a Browser Connector section. It says CiteWell ships no
+  connector; browser saving and Google Docs citations use Zotero's official extension, a separate
+  project; the app listens only on `127.0.0.1:23119`; there is no Zotero account, sync or cloud
+  storage; the extension follows Zotero's own policy; and there is no CiteWell connector yet, so one
+  link remains. The section holds the download button.
+- **The menu item is gone.** The Docs gate keeps its contextual install link because it already
+  explains the requirement at the point of use.
+- **The outdated-connector prompt** opens the Advanced section instead of the download page, so the
+  explanation is visible before the link.
+- **Enforcement:** `uiCopyTest.js` checks that the section exists, that the Tools item is gone, that
+  the prompt opens the pane, and that the four strings exist in every supported locale.
+- **Rejected:** deleting the link. Without a CiteWell connector, browser saving and Docs citations
+  would stop working; the exception is stated where users meet it.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

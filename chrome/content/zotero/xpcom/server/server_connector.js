@@ -179,7 +179,7 @@ Zotero.Server.Connector = {
 				Zotero.Prefs.set('nextConnectorVersionWarning', Math.round(Date.now() / 1000) + 24*60*60 * nextShowDays);
 				
 				if (index == 0) {
-					Zotero.launchURL(ZOTERO_CONFIG.CONNECTORS_URL);
+					Zotero.Utilities.Internal.openPreferences('zotero-prefpane-advanced');
 				}
 			}.bind(this), 0);
 

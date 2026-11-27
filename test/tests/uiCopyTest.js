@@ -134,6 +134,38 @@ describe("UI copy", function () {
 		assert.notInclude(source, "errorReport.xhtml");
 	});
 
+	it("should keep the connector explanation in Settings", async function () {
+		assert.equal(
+			Zotero.CONNECTORS_URL,
+			"https://www.zotero.org/download/connectors"
+		);
+		let pane = await readLocale(
+			"chrome/content/zotero/preferences/preferences_advanced.xhtml"
+		);
+		assert.include(pane, 'id="zotero-prefpane-advanced-connector"');
+		assert.include(pane, 'id="connector-download"');
+		let menu = await readLocale("chrome/content/zotero/zoteroPane.xhtml");
+		assert.notInclude(menu, "installConnector");
+		let prompt = await readLocale(
+			"chrome/content/zotero/xpcom/server/server_connector.js"
+		);
+		assert.notInclude(prompt, "CONNECTORS_URL");
+		assert.include(prompt, "zotero-prefpane-advanced");
+		for (let locale of SUPPORTED_LOCALES) {
+			let properties = await readLocale(
+				`chrome/locale/${locale}/zotero/zotero.properties`
+			);
+			for (let key of [
+				"connector.section.title",
+				"connector.section.body1",
+				"connector.section.body2",
+				"connector.section.download",
+			]) {
+				assert.include(properties, key, `${locale} is missing ${key}`);
+			}
+		}
+	});
+
 	it("should send help to CiteWell's own community", async function () {
 		assert.equal(
 			Zotero.DISCUSSIONS_URL,

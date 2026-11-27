@@ -327,6 +327,23 @@ Zotero_Preferences.Advanced = {
 	},
 	
 	
+	initConnector: function () {
+		let set = (id, key) => {
+			let value = Zotero.getString(key);
+			let element = document.getElementById(id);
+			if (element.tagName.toLowerCase() === "button") {
+				element.setAttribute("label", value);
+			}
+			else {
+				element.textContent = value;
+			}
+		};
+		set("connector-heading", "connector.section.title");
+		set("connector-body1", "connector.section.body1");
+		set("connector-body2", "connector.section.body2");
+		set("connector-download", "connector.section.download");
+	},
+
 	dataDirUpdate: async function (isCustomSelection) {
 		if (!isCustomSelection && this._usingDefaultDataDir()) return;
 		
