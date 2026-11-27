@@ -42,14 +42,17 @@ pushed to the bottom, Agent setup wiped by an element id equal to its section id
 
 **Tests.** 86/86 across preferences, agent, import, copy, settings-tab and bibliography.
 
-**Parked by decision, not pending.**
+**Not done, each for a different reason.** They are not one bucket.
 
-- **Accessibility pass.** One user, no present need; do it if a need appears or nothing better is
-  left.
-- **App-wide `general.*` text pass.** 68 shared keys, some plural, outside the agreed scope; the
-  lookup mechanism is ready.
-- **Alias retirement.** After a release or two with no consumer.
-- **Native review.** Opportunistic (D68); drafts ship labelled as drafts.
+- **App-wide `general.*` text pass — out of scope, ready to start.** 68 shared keys, some with
+  plurals, outside the Settings scope agreed for this program. Nothing blocks it; it is the natural
+  next program if wanted.
+- **Alias retirement — time-deferred maintenance.** Remove aliases only after a release or two in
+  which no link uses an old id. Doing it now would break the compatibility the aliases exist for.
+- **Accessibility pass — priority-deferred.** One user, no present need. Pick it up if a need
+  appears or there is nothing more valuable to do.
+- **Native review — opportunistic (D68).** Depends on a volunteer, so it is not scheduled; drafts
+  ship labelled as drafts.
 
 ## Handoff 2026-11-27 (settings catalog program)
 
