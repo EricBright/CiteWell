@@ -36,9 +36,11 @@ file, sha256 `7287b7b604a59df50305c421b9c6de5cbf273443ef96c98ed02f8a995f15834d`,
 **Tests.** `uiCopyTest` 19/19, `settingsTabTest` 8/8, `preferences_advancedTest` and `agentTest`
 22/22.
 
-**Next.** The HIG audit's second settings pass: keyboard shortcuts out of Advanced, full-text
-indexing, translator updates, and a decision on Feeds. Also open: native review of the eight
-translations, R32's optional follow-ups, and the next release's notes need the same claims pass.
+**Next.** Sweep the remaining `zotero.org/support` links outside Settings (file renaming, citation
+dialog, data directory, HTTP errors, translator issues) and guard them with a test. Then the HIG
+audit's second settings pass: keyboard shortcuts out of Advanced, full-text indexing, translator
+updates, and a decision on Feeds. Also open: native review of the eight translations, R32's optional
+follow-ups, and the next release's notes need the same claims pass.
 
 ## Handoff 2026-11-27 (release 2026.11.27.000)
 

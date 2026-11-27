@@ -1579,6 +1579,12 @@ app's "Ask a Question" target was a 404 because GitHub Discussions was disabled 
 - **Rejected:** an interim help page inside the repository. The wiki is the intended home and a
   second landing page would need its own upkeep for a few weeks.
 
+**Amended 2026-11-27 (after release):** the sweep was narrower than this decision claimed. Settings
+help links were fixed, but the file-renaming dialog, the citation dialog, the cloud-storage warning,
+HTTP and certificate errors, and the translator-failure message still open `zotero.org/support`.
+They are user-facing and must move to the repository; the next release carries the sweep and its
+guard test.
+
 ## D67 — The connector and the local API leave the Advanced pane
 
 **Date:** 2026-11-27 · **Status:** accepted · **Reversible:** yes

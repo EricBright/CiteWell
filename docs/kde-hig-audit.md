@@ -41,6 +41,12 @@ change; repointing keeps help useful.
 **Resolved 2026-11-27 (D66):** the five links point at `https://github.com/EricBright/CiteWell`,
 and the repository's Discussions and Issues were enabled so the app's support links resolve.
 
+**Incomplete, found after the release:** the same sweep shows more support links outside Settings.
+The file-renaming dialog, the citation dialog, the cloud-storage warning, HTTP and certificate
+errors, and the translator-failure message still open `zotero.org/support`. They are user-facing, so
+the "no support link remains" claim was too broad; the release note was corrected and the remaining
+links are queued.
+
 ## Where the app conforms
 
 These are the checks the app passes, with the evidence that made me say so.
@@ -56,7 +62,7 @@ These are the checks the app passes, with the evidence that made me say so.
 | The selected view is restored | Same | Open tabs and their state are persisted in `session.json` (`session.js`), and the last settings pane is remembered |
 | No system tray icon | Simple by default, background | No tray code |
 | Tasks over a second show progress | Simple by default, responsiveness | `Zotero.ProgressWindow` in eight modules, determinate where a count exists |
-| Errors point at CiteWell's own support | Status changes, errors | Help > Discussions and Report a Problem route to GitHub (D62, D63); the Zotero error service is not called |
+| The Help menu routes problems and questions to CiteWell | Status changes, errors | Help > Discussions and Report a Problem open GitHub (D62, D63); the Zotero error service is not called |
 | No negative technical language | Inclusiveness | No `Abort`, `Kill`, `Fatal`, `Force` in en-US strings |
 | Search fields use the plain placeholder "Search" | Text and labels, placeholders | `zotero.dtd:144` |
 | Renaming collections and items happens inline | Simple by default, common workflows | `collectionTree.js:250`, `.startEditing` |
@@ -86,6 +92,7 @@ behaviour change; **C** is a project.
 | Icons are bundled rather than taken from the system theme | Icons | `chrome/skin/` ships the icon set | C, structural |
 | Shortcuts are assignable, but the editor sits under Advanced | Powerful when needed, accelerators | Keyboard-shortcut grid in `preferences_advanced.xhtml`; seven keys only | A, once it moves |
 | Several toolbar buttons set `tabindex="-1"` | Accessibility, keyboard | `zoteroPane.xhtml` toolbar | Unknown until a keyboard pass |
+| Error and help dialogs still open Zotero's support pages: file renaming, the citation dialog, the cloud-storage warning, HTTP and certificate errors, translator issues | Status changes, errors; D63 | `fileRenamingSettings.js`, `citationDialog.xhtml`, `dataDirectory.js`, `http.js`, `progressWindow.js` | A, a link sweep |
 
 ## Decisions the audit raises
 
