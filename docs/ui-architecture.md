@@ -257,9 +257,10 @@ lets an initializer use `document.getElementById()` like a pane module does; bef
 directory initializer ran against a detached tree and silently found nothing.
 
 The data directory is the last Library component: current path, Change, the command-line override
-note, Reveal, custom/reset/default states and the migration button. Its logic still delegates to the
-Advanced module for now; extracting it into a data-directory module is a follow-up, not a placement
-question. With it, the Library pane document is empty and the whole pane is catalog-owned.
+note, Reveal, custom/reset/default states and the migration button. Its logic lives in
+`Zotero_Preferences.DataDirectory`, extracted from the Advanced module on 2026-11-27; no Settings
+behaviour is owned by a pane-named module any more. With it, the Library pane document is empty and
+the whole pane is catalog-owned.
 
 ### Settings text audit (2026-11-27)
 
