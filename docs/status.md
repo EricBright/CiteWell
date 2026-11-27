@@ -1,6 +1,6 @@
 # Status and resumption
 
-Last updated 2026-11-25 · branch `citewell` · companion to
+Last updated 2026-11-27 · branch `citewell` · companion to
 [roadmap.md](../roadmap.md) and [decisions.md](decisions.md), which hold the plan and the *why*.
 This page holds only what a fresh session needs to start without re-deriving it.
 
@@ -12,6 +12,41 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
+
+## Handoff 2026-11-27 (release 2026.11.27.000)
+
+Compaction anchor. Code commit `6f5f19f9a`; docs commits follow. Release `v2026.11.27.000` is latest,
+tag on `6f5f19f9a`, three assets. Installed `~/AppImages/citewell.appimage` is the published file,
+sha256 `97a0b762c8d974cadbf34b92449c984a5140e760181b5e86e72e1544ce99d4ae`, 128,027,128 bytes;
+`~/AppImages/release-2026.11.27.000/` holds the three assets.
+
+**Shipped since 2026.11.26.000.**
+
+- **R6 boundary (D63).** Help sends questions to GitHub Discussions and problems to the issue
+  tracker, copying the error log locally; Zotero's forums, support site and error-report service are
+  gone. The Mendeley error, data-directory warning and post-upgrade banner no longer link to Zotero.
+  The connector, Style Manager catalog and dictionary downloads are the three named exceptions.
+- **Connector (D65).** Tools > Install Browser Connector is gone. Settings > Advanced > Browser
+  Connector explains the one remaining Zotero dependency; the outdated-connector prompt opens it.
+- **Locales (D64).** Only en-US, en-GB, de, fr-FR, es-ES, ja-JP, zh-CN and zh-TW ship. The other
+  forty directories are in `locale-archive/`; the build, manifest, runtime and picker all carry the
+  eight, and an unsupported requested locale falls back to English.
+- **Naming and translations.** App-self and word-processor messages say CiteWell; citation fields
+  are not called Zotero fields. The eight locales carry the new copy. Translations are drafts and
+  still need native review; Strata was used as a second opinion and was rejected when it produced
+  mixed-script output.
+- **Merge resume.** Checkpoints extend the session instead of replacing it. The kill-mid-merge tests
+  cover the item transaction, a note checkpoint and an attachment checkpoint; the old code lost the
+  item map on a resumed child pass.
+- **Self-updater.** A restart preserves `--no-integration` and passes `-datadir` only when the
+  original launch had one. The end-to-end run from an old build is recorded in D60's amendment.
+
+**Tests.** `uiCopyTest` 16/16, `settingsTabTest` 8/8, `importTest` 24/24, `selfUpdateTest` 4/4,
+`versionTest` 3/3. The old unrelated failures in `server_connectorTest`/`translateTest` remain.
+
+**Next.** Native review of the eight translations when someone steps up; R32's optional follow-ups;
+the next release's notes need the same claims pass before publishing. The connector is still the
+only Zotero product users are asked to install.
 
 ## Handoff 2026-11-26 (late: release live, self-updater, settings UI)
 
