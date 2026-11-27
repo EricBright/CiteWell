@@ -1271,7 +1271,7 @@ Zotero.HTTP = new function () {
 						if (!e.dialogButtonText) {
 							e.dialogButtonText = Zotero.getString('general.moreInformation');
 							e.dialogButtonCallback = () => {
-								Zotero.launchURL('https://www.zotero.org/support/kb/connection_error');
+								Zotero.launchURL('https://github.com/EricBright/CiteWell');
 							};
 						}
 						Zotero.proxyFailure = e;
@@ -1496,7 +1496,7 @@ Zotero.HTTP = new function () {
 		if (xmlhttp.status === 0) {
 			msg = Zotero.getString('sync.error.checkConnection');
 			dialogButtonText = Zotero.getString('general.moreInformation');
-			let supportURL = 'https://www.zotero.org/support/kb/connection_error';
+			let supportURL = 'https://github.com/EricBright/CiteWell';
 			dialogButtonCallback = () => Zotero.launchURL(supportURL);
 		}
 		throw new Zotero.HTTP.UnexpectedStatusException(
@@ -1538,7 +1538,7 @@ Zotero.HTTP = new function () {
 		msg = msg.trim();
 		dialogButtonText = Zotero.getString('general.moreInformation');
 		dialogButtonCallback = function () {
-			Zotero.launchURL('https://www.zotero.org/support/kb/ssl_certificate_error');
+			Zotero.launchURL('https://github.com/EricBright/CiteWell');
 		};
 		throw new Zotero.HTTP.SecurityException(
 			msg,

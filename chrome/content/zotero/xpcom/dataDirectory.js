@@ -383,7 +383,7 @@ Zotero.DataDirectory = {
 							+ file.path + "\n\n"
 							+ Zotero.getString('dataDir.unsafeLocation.selected.areYouSure');
 						moreInfoCallback = () => {
-							Zotero.launchURL('https://www.zotero.org/support/kb/data_directory_in_cloud_storage_folder');
+							Zotero.launchURL('https://github.com/EricBright/CiteWell');
 						};
 					}
 					else if (file.directoryEntries.hasMoreElements()) {
@@ -522,7 +522,7 @@ Zotero.DataDirectory = {
 				await this.choose(true);
 			}
 			else if (index == 2) {
-				Zotero.launchURL('https://www.zotero.org/support/kb/data_directory_in_cloud_storage_folder');
+				Zotero.launchURL('https://github.com/EricBright/CiteWell');
 			}
 			if (check.value) {
 				Zotero.Prefs.set('warnOnUnsafeDataDir', false);

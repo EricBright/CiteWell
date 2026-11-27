@@ -371,4 +371,45 @@ describe("Support links", function () {
 			src, "this.CONNECTORS_URL = 'https://www.zotero.org/download/connectors';"
 		);
 	});
+
+	// The settings links were easy to miss because they live in data, and the
+	// first sweep missed every link outside Settings. Scan the source, not the
+	// rendered UI, so a new link fails here even if no test opens its dialog.
+	const ALLOWLIST = new Map([
+		["utilities_internal.js", "the OpenURL resolver list is fetched data, not documentation"],
+		["server_localAPI.js", "matches are comments that mirror the upstream API reference"],
+		["runJS.js", "developer console, not a user surface"],
+	]);
+
+	it("should not send anyone from the app to Zotero's support site", async function () {
+		let files = [];
+		let stack = [`${repoRoot()}/chrome/content`];
+		while (stack.length) {
+			let dir = stack.pop();
+			for (let path of await IOUtils.getChildren(dir)) {
+				let stat = await IOUtils.stat(path);
+				if (stat.type === "directory") stack.push(path);
+				else if (/\.(js|xhtml)$/.test(path)) files.push(path);
+			}
+		}
+		assert.isAbove(files.length, 100, "the source scan found too few files");
+
+		let offenders = [];
+		for (let path of files) {
+			let name = PathUtils.filename(path);
+			if (ALLOWLIST.has(name)) continue;
+			let lines = (await Zotero.File.getContentsAsync(path)).split("\n");
+			for (let i = 0; i < lines.length; i++) {
+				let text = lines[i].trim();
+				if (text.startsWith("//") || text.startsWith("*")
+						|| text.startsWith("/*") || text.startsWith("<!--")) {
+					continue;
+				}
+				if (lines[i].includes("zotero.org/support")) {
+					offenders.push(`${name}:${i + 1}`);
+				}
+			}
+		}
+		assert.lengthOf(offenders, 0, `support links remain in ${offenders.join(", ")}`);
+	});
 });

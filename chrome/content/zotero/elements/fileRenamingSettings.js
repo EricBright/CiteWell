@@ -84,7 +84,7 @@
 					<label data-l10n-id="file-renaming-format-instructions-more">
 						<label
 							is="zotero-text-link"
-							href="https://www.zotero.org/support/file_renaming"
+							href="https://github.com/EricBright/CiteWell"
 							data-l10n-name="file-renaming-format-help-link"
 						/>
 					</label>	

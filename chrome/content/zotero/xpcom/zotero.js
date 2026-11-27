@@ -656,7 +656,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 				Zotero.logError(e);
 				
 				if (e instanceof Zotero.DB.IncompatibleVersionException) {
-					let kbURL = "https://www.zotero.org/support/kb/newer_db_version";
+					let kbURL = "https://github.com/EricBright/CiteWell";
 					let msg = (e.dbClientVersion
 						? Zotero.getString('startupError.incompatibleDBVersion',
 							[Zotero.clientName, e.dbClientVersion])

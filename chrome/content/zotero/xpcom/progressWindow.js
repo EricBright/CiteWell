@@ -421,7 +421,7 @@ Zotero.ProgressWindow = function (options = {}) {
 	this.Translation.doneHandler = function (obj, returnValue) {		
 		if(!returnValue) {
 			// Include link to translator troubleshooting page
-			var url = "https://www.zotero.org/support/troubleshooting_translator_issues";
+			var url = "https://github.com/EricBright/CiteWell";
 			var linkText = '<a href="' + url + '" tooltiptext="' + url + '">'
 				+ Zotero.getString('ingester.scrapeErrorDescription.linkText') + '</a>';
 			var desc = Zotero.getString("ingester.scrapeErrorDescription", linkText)

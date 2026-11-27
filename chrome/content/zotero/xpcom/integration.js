@@ -409,7 +409,7 @@ Zotero.Integration = new function () {
 	
 	this._handleCommandError = async function (document, session, e) {
 		try {
-			let supportURL = "https://www.zotero.org/support/kb/debugging_broken_documents";
+			let supportURL = "https://github.com/EricBright/CiteWell";
 			var displayError;
 			if (e instanceof Zotero.Exception.Alert) {
 				displayError = e.message;
@@ -418,7 +418,7 @@ Zotero.Integration = new function () {
 				if (e.toString().includes("Could not find a running Word instance.")) {
 					displayError = Zotero.getString('integration-error-unable-to-find-winword')
 						+ "\n\n" + Zotero.getString("integration.error.viewTroubleshootingInfo");
-					supportURL = "https://www.zotero.org/support/kb/could_not_find_a_running_word_instance";
+					supportURL = "https://github.com/EricBright/CiteWell";
 				}
 				else if (e.toString().indexOf("ExceptionAlreadyDisplayed") === -1) {
 					displayError = Zotero.getString("integration.error.generic")
@@ -685,7 +685,7 @@ Zotero.Integration = new function () {
 }
 
 Zotero.Integration.confirmExportDocument = function () {
-	const documentationURL = "https://www.zotero.org/support/kb/moving_documents_between_word_processors";
+	const documentationURL = "https://github.com/EricBright/CiteWell";
 	
 	var ps = Services.prompt;
 	var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
@@ -2243,7 +2243,7 @@ Zotero.Integration.Session.prototype.exportDocument = async function () {
 
 
 Zotero.Integration.Session.prototype.importDocument = async function () {
-	const documentationURL = "https://www.zotero.org/support/kb/moving_documents_between_word_processors";
+	const documentationURL = "https://github.com/EricBright/CiteWell";
 	
 	var ps = Services.prompt;
 

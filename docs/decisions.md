@@ -1579,11 +1579,13 @@ app's "Ask a Question" target was a 404 because GitHub Discussions was disabled 
 - **Rejected:** an interim help page inside the repository. The wiki is the intended home and a
   second landing page would need its own upkeep for a few weeks.
 
-**Amended 2026-11-27 (after release):** the sweep was narrower than this decision claimed. Settings
-help links were fixed, but the file-renaming dialog, the citation dialog, the cloud-storage warning,
-HTTP and certificate errors, and the translator-failure message still open `zotero.org/support`.
-They are user-facing and must move to the repository; the next release carries the sweep and its
-guard test.
+**Amended 2026-11-27 (sweep completed):** the first pass fixed Settings only. A second pass
+replaced 32 links in 18 files (file renaming, citation dialog, data directory, HTTP and certificate
+errors, translator issues, database and sync messages, word-processor documentation) and the sync
+storage string in all eight locales. `uiCopyTest.js` now scans every `.js` and `.xhtml` under
+`chrome/content` and fails on `zotero.org/support` outside three named exceptions: the OpenURL
+resolver list (fetched data, not documentation), comments in `server_localAPI.js`, and the
+developer console in `runJS.js`.
 
 ## D67 — The connector and the local API leave the Advanced pane
 

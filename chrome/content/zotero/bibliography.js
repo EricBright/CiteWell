@@ -233,7 +233,7 @@ window.Zotero_File_Interface_Bibliography = new function () {
 	};
 	
 	this.openHelpLink = function () {
-		Zotero.launchURL("https://www.zotero.org/support/word_processor_integration");
+		Zotero.launchURL("https://github.com/EricBright/CiteWell");
 	};
 
 	/*

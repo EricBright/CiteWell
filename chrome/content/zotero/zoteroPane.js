@@ -565,7 +565,7 @@ var ZoteroPane = new function () {
 				let msg = '';
 				if (isDevBuild) {
 					label.onclick = function () {
-						Zotero.launchURL('https://www.zotero.org/support/kb/test_builds');
+						Zotero.launchURL('https://github.com/EricBright/CiteWell');
 					};
 					msg = 'TEST BUILD — DO NOT USE';
 				}
@@ -6117,8 +6117,8 @@ var ZoteroPane = new function () {
 				[ZOTERO_CONFIG.CLIENT_NAME, ZOTERO_CONFIG.DOMAIN_NAME]
 			);
 		var supportURL = linkedFile
-			? 'https://www.zotero.org/support/kb/missing_linked_file'
-			: 'https://www.zotero.org/support/kb/files_not_syncing';
+			? 'https://github.com/EricBright/CiteWell'
+			: 'https://github.com/EricBright/CiteWell';
 		
 		var ps = Services.prompt;
 		
@@ -6663,7 +6663,7 @@ var ZoteroPane = new function () {
 			return;
 		}
 		if (result == 2) {
-			Zotero.launchURL('https://www.zotero.org/support/kb/attachment_title_vs_filename');
+			Zotero.launchURL('https://github.com/EricBright/CiteWell');
 			return;
 		}
 		let attachments = new Set(this.getSelectedItems().flatMap((item) => {
@@ -6959,7 +6959,7 @@ var ZoteroPane = new function () {
 			panel.removeAttribute('collapsed');
 			action.onclick = function () {
 				let url = Zotero.isBetaBuild
-					? 'https://www.zotero.org/support/beta_builds'
+					? 'https://github.com/EricBright/CiteWell'
 					: 'https://www.zotero.org/download/';
 				Zotero.launchURL(url);
 			};
@@ -6995,7 +6995,7 @@ var ZoteroPane = new function () {
 		}
 		
 		document.getElementById('file-renaming-documentation-link').onclick = () => {
-			Zotero.launchURL("https://www.zotero.org/support/file_renaming");
+			Zotero.launchURL("https://github.com/EricBright/CiteWell");
 			// Do this in the next loop to avoid a visual glitch in Fx140.3 where the background
 			// color of the banner remains in part of the item pane header until switching to a
 			// different tab and back

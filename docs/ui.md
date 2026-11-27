@@ -37,8 +37,8 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 9. **Help points at CiteWell.** A Help or support control opens a page this project controls: the
    GitHub repository today, a wiki page when one exists (D66). No control opens Zotero's support
    site. The connector download, the Style Manager catalog and dictionary downloads are the named
-   exceptions (D63). The settings links were swept first; the file-renaming, citation-dialog,
-   data-directory, HTTP-error and translator-issue links predate the rule and are being swept.
+   exceptions (D63). The sweep covers Settings, dialogs, error messages and the sync strings; the
+   OpenURL resolver list is fetched data, not a help link, and is recorded in D66.
 
 ## Where each rule is enforced
 

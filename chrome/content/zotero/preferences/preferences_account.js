@@ -493,7 +493,7 @@ Zotero_Preferences.Sync = {
 			io,
 		);
 		if (io.extra2) {
-			Zotero.launchURL("https://www.zotero.org/support/kb/switching_accounts");
+			Zotero.launchURL("https://github.com/EricBright/CiteWell");
 			return;
 		}
 		if (!io.accept) {

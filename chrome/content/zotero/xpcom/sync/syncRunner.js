@@ -419,7 +419,7 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 					return false;
 				}
 				else if (index == 2) {
-					Zotero.launchURL('https://www.zotero.org/support/zotero_data#locating_missing_zotero_data');
+					Zotero.launchURL('https://github.com/EricBright/CiteWell');
 					return false;
 				}
 			}
@@ -1332,7 +1332,7 @@ Zotero.Sync.Runner_Module = function (options = {}) {
 				};
 				e.dialogButton2Text = Zotero.getString('general.moreInformation');
 				e.dialogButton2Callback = () => {
-					Zotero.launchURL('https://www.zotero.org/support/kb/unknown_data_error');
+					Zotero.launchURL('https://github.com/EricBright/CiteWell');
 				};
 			}
 			// Otherwise just show in sync button tooltip

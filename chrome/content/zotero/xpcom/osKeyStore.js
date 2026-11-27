@@ -29,7 +29,7 @@
 // can distinguish them from legacy plaintext values previously written to
 // nsILoginManager.
 
-const KEYRING_KB_URL = 'https://www.zotero.org/support/kb/linux_keyring';
+const KEYRING_KB_URL = 'https://github.com/EricBright/CiteWell';
 const MIGRATE_ALERT_HIDE_DAYS = 30;
 
 Zotero.OSKeyStore = {

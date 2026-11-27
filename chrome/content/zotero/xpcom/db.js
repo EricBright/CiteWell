@@ -2077,7 +2077,7 @@ Zotero.DBConnection.prototype._checkException = async function (e, { mainConfirm
 		Zotero.logError(e2);
 	}
 	
-	const supportURL = 'https://zotero.org/support/kb/corrupted_database';
+	const supportURL = 'https://github.com/EricBright/CiteWell';
 	
 	var filename = PathUtils.filename(this._dbPath);
 	

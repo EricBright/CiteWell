@@ -41,11 +41,10 @@ change; repointing keeps help useful.
 **Resolved 2026-11-27 (D66):** the five links point at `https://github.com/EricBright/CiteWell`,
 and the repository's Discussions and Issues were enabled so the app's support links resolve.
 
-**Incomplete, found after the release:** the same sweep shows more support links outside Settings.
-The file-renaming dialog, the citation dialog, the cloud-storage warning, HTTP and certificate
-errors, and the translator-failure message still open `zotero.org/support`. They are user-facing, so
-the "no support link remains" claim was too broad; the release note was corrected and the remaining
-links are queued.
+**Incomplete at first, then swept:** the first pass fixed Settings only, and the published note was
+too broad until corrected. The follow-up replaced every remaining help link in the app (32 links in
+18 files) and added a source scan to `uiCopyTest`, so a new `zotero.org/support` link fails the
+suite.
 
 ## Where the app conforms
 
@@ -92,7 +91,7 @@ behaviour change; **C** is a project.
 | Icons are bundled rather than taken from the system theme | Icons | `chrome/skin/` ships the icon set | C, structural |
 | Shortcuts are assignable, but the editor sits under Advanced | Powerful when needed, accelerators | Keyboard-shortcut grid in `preferences_advanced.xhtml`; seven keys only | A, once it moves |
 | Several toolbar buttons set `tabindex="-1"` | Accessibility, keyboard | `zoteroPane.xhtml` toolbar | Unknown until a keyboard pass |
-| Error and help dialogs still open Zotero's support pages: file renaming, the citation dialog, the cloud-storage warning, HTTP and certificate errors, translator issues | Status changes, errors; D63 | `fileRenamingSettings.js`, `citationDialog.xhtml`, `dataDirectory.js`, `http.js`, `progressWindow.js` | A, a link sweep |
+| Error and help dialogs opened Zotero's support pages: file renaming, the citation dialog, the cloud-storage warning, HTTP and certificate errors, translator issues | Status changes, errors; D63 | Swept 2026-11-27: 32 links in 18 files now open the CiteWell repository, and `uiCopyTest` scans the source for regressions | Done |
 
 ## Decisions the audit raises
 

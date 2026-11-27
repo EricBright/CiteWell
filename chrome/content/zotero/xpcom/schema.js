@@ -349,7 +349,7 @@ Zotero.Schema = new function () {
 						return;
 					}
 					
-					let kbURL = 'https://www.zotero.org/support/kb/unable_to_load_translators_and_styles';
+					let kbURL = 'https://github.com/EricBright/CiteWell';
 					let msg = Zotero.getString('startupError.bundledFileUpdateError', Zotero.clientName);
 					
 					let ps = Services.prompt;

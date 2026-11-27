@@ -579,7 +579,7 @@ var Zotero_File_Interface = new function () {
 				{},
 			);
 			if (index == 1) {
-				Zotero.launchURL("https://www.zotero.org/support/kb/importing_standardized_formats");
+				Zotero.launchURL("https://github.com/EricBright/CiteWell");
 			}
 			return false;
 		}
