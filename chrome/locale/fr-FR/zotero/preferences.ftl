@@ -446,3 +446,10 @@ duplicate-review-description =
     Trouve les groupes d’éléments que le détecteur de doublons de Zotero considère comme la même œuvre. Cela écrit seulement un rapport ; la fusion se fait à la main dans Doublons.
 last-import-title =
     Dernier import
+
+quick-copy-site-domain =
+    .value = Domaine/Chemin (par ex. wikipedia.org)
+quick-copy-site-format =
+    .value = Format
+quick-copy-site-locale =
+    .value = Langue

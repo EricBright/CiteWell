@@ -444,3 +444,10 @@ duplicate-review-description =
     Zotero の重複検出が同じ作品とみなすアイテムのグループを検索します。書き出すのは確認レポートのみで、結合は「重複アイテム」で手動で行います。
 last-import-title =
     最後のインポート
+
+quick-copy-site-domain =
+    .value = ドメイン / パス (例 : wikipedia.org)
+quick-copy-site-format =
+    .value = フォーマット
+quick-copy-site-locale =
+    .value = 言語

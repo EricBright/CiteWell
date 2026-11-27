@@ -261,7 +261,28 @@ note, Reveal, custom/reset/default states and the migration button. Its logic st
 Advanced module for now; extracting it into a data-directory module is a follow-up, not a placement
 question. With it, the Library pane document is empty and the whole pane is catalog-owned.
 
-### Import & Export (not started)
+### Settings text audit (2026-11-27)
+
+All pane labels are Fluent now. What remains is not labels but three pools:
+
+- **The hidden Account/Sync pane** still uses about sixty DTD entities from `preferences_account`
+  and `preferences_sync_reset`, plus its reset subpane. Online sync is not offered in this build
+  (D63), so this is a product decision first: remove the pane and its strings, or keep it hidden and
+  translate it. Translating a pane nobody can open is the worst of the three.
+- **About seventy `.properties` keys used by preferences JavaScript** for dialogs and status text:
+  `general.error`, `general.warning`, `general.restartRequired`, `db.integrityCheck.*`,
+  `zotero.preferences.advanced.reset*`, `zotero.preferences.export.quickCopy.*`, the data-directory
+  migration messages and the style-reset prompts. These are runtime messages, not pane labels, and
+  moving them needs an asynchronous Fluent helper because `Zotero.getString()` is synchronous.
+- **Dialogs opened from Settings.** The Quick Copy site editor is Fluent now; the file-renaming
+  dialog already was; the confirmation dialog takes its labels from callers; the libraries-to-sync
+  dialog belongs to the hidden sync pane.
+
+Recommended order: decide the sync pane's fate, then migrate the visible message keys with a small
+`formatMessage` helper, then re-run this audit. The audit is a count and a classification, not a
+bulk rewrite.
+
+### Import & Export (done)
 
 **Quick Copy (done).** It is a catalog component now: instructions, the two format menus, the
 locale menu, Copy as HTML, the note-format options, the site-specific table, Edit/Remove/Add and the

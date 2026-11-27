@@ -39,6 +39,9 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	title=""
 	onload="Zotero_QuickCopySiteEditor.onLoad(); Zotero_Preferences.Export.updateQuickCopyUI(); sizeToContent()">
+<linkset>
+	<html:link rel="localization" href="preferences.ftl"/>
+</linkset>
 <dialog 
 	buttons="cancel,accept"
 	id="zotero-quickCopySiteEditor">
@@ -48,24 +51,24 @@
 	<script src="preferences_export.js"/>
 	
 	<vbox id="zotero-preferences-quickCopySiteEditor">
-		<label value="&zotero.preferences.quickCopy.siteEditor.domainPath; &zotero.preferences.quickCopy.siteEditor.domainPath.example;" control="zotero-quickCopy-domain"/>
+		<label data-l10n-id="quick-copy-site-domain" data-l10n-attrs="value" control="zotero-quickCopy-domain"/>
 		<html:input type="text" id="zotero-quickCopy-domain" oninput="Zotero_QuickCopySiteEditor.onDomainInput(event)"/>
 		
 		<separator class="thin"/>
 		
-		<label value="&zotero.preferences.quickCopy.siteEditor.format;" control="zotero-quickCopy-menu"/>
+		<label data-l10n-id="quick-copy-site-format" data-l10n-attrs="value" control="zotero-quickCopy-menu"/>
 		<menulist id="zotero-quickCopy-menu" native="true"/>
 		
 		<separator class="thin"/>
 		
-		<label id="zotero-quickCopy-locale-menu-label" value="&zotero.preferences.quickCopy.siteEditor.locale;" control="zotero-quickCopy-locale-menu"/>
+		<label id="zotero-quickCopy-locale-menu-label" data-l10n-id="quick-copy-site-locale" data-l10n-attrs="value" control="zotero-quickCopy-locale-menu"/>
 		<hbox align="center">
 			<menulist id="zotero-quickCopy-locale-menu" oncommand="Zotero_Preferences.Export._lastSelectedLocale = this.value" native="true"/>
 		</hbox>
 		
 		<separator class="thin"/>
 		
-		<checkbox id="zotero-quickCopy-copyAsHTML" label="&zotero.preferences.quickCopy.copyAsHTML;"
+		<checkbox id="zotero-quickCopy-copyAsHTML" data-l10n-id="quick-copy-copy-as-html" data-l10n-attrs="label"
 			oncommand="Zotero_Preferences.Export.buildQuickCopyFormatDropDown(
 				document.getElementById('zotero-quickCopy-menu'),
 				this.checked ? 'html' : '',

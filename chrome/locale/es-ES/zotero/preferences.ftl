@@ -446,3 +446,10 @@ duplicate-review-description =
     Encuentra grupos de elementos que el detector de duplicados de Zotero considera la misma obra. Solo escribe un informe; la combinación se hace a mano en Duplicados.
 last-import-title =
     Última importación
+
+quick-copy-site-domain =
+    .value = Dominio/ruta (p. ej., wikipedia.org)
+quick-copy-site-format =
+    .value = Formato
+quick-copy-site-locale =
+    .value = Idioma

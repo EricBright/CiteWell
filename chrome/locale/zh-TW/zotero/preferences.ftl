@@ -445,3 +445,10 @@ duplicate-review-description =
     尋找 Zotero 重複偵測器視為同一作品的分組項目。此操作只會寫出審查報告；合併需在「重複項目」中手動完成。
 last-import-title =
     上次匯入
+
+quick-copy-site-domain =
+    .value = 網域/路徑 (例如 wikipedia.org)
+quick-copy-site-format =
+    .value = 格式
+quick-copy-site-locale =
+    .value = 語言

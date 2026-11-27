@@ -445,3 +445,10 @@ duplicate-review-description =
     Finds groups of items that Zotero's duplicate detector considers the same work. This only writes a review report; merging is done by hand in Duplicate Items.
 last-import-title =
     Last import
+
+quick-copy-site-domain =
+    .value = Domain/Path (e.g., wikipedia.org)
+quick-copy-site-format =
+    .value = Format
+quick-copy-site-locale =
+    .value = Language

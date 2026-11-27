@@ -444,3 +444,10 @@ duplicate-review-description =
     查找 Zotero 重复检测器视为同一作品的分组条目。此操作只写出审查报告；合并在“重复条目”中手动完成。
 last-import-title =
     上次导入
+
+quick-copy-site-domain =
+    .value = 域/路径 (例如 wikipedia.org)
+quick-copy-site-format =
+    .value = 格式
+quick-copy-site-locale =
+    .value = 语言

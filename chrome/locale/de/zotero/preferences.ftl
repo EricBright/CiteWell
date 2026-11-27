@@ -445,3 +445,10 @@ duplicate-review-description =
     Findet Gruppen von Elementen, die Zoteros Duplikaterkennung als dasselbe Werk betrachtet. Dies schreibt nur einen Prüfbericht; zusammengeführt wird manuell in Duplikate.
 last-import-title =
     Letzter Import
+
+quick-copy-site-domain =
+    .value = Domain/Pfad (z. B. wikipedia.org)
+quick-copy-site-format =
+    .value = Format
+quick-copy-site-locale =
+    .value = Sprache
