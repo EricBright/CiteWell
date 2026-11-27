@@ -13,47 +13,43 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-27 (release 2026.11.27.004)
+## Handoff 2026-11-27 (release 2026.11.27.005, program closed)
 
-Compaction anchor. Code commit `c461ed93c`; docs commits follow. Release `v2026.11.27.004` is
-latest, tag on `c461ed93c`, three assets. Installed `~/AppImages/citewell.appimage` is the published
-file, sha256 `983ab03f2f1700d8b983aea9d127b9c56df84298a5e77426a3732222917b31db`, 121,981,432 bytes;
-`~/AppImages/release-2026.11.27.004/` holds the three assets. The `version` file is back to
+Compaction anchor. Code commit `61398d3d2`; docs commits follow. Release `v2026.11.27.005` is
+latest, tag on `61398d3d2`, three assets. Installed `~/AppImages/citewell.appimage` is the published
+file, sha256 `1f672a414b94dc0e22b16b5c7facebbed3220247ceedf393e258ac006ee5fbc3`, 121,981,432 bytes;
+`~/AppImages/release-2026.11.27.005/` holds the three assets. The `version` file is back to
 `2026.11.27.SOURCE`.
 
-`v2026.11.27.003` shipped two regressions, both fixed here: catalog sections were inserted above the
-pane heading, and the Agent setup block had an element id equal to its section id, so initialization
-wrote into the section container and removed its own buttons.
+`.005` is the closing release of the settings catalog program: it removes the last retired
+scaffolding and records the translation policy. `.004` fixed the two `.003` regressions (pane titles
+pushed to the bottom, Agent setup wiped by an element id equal to its section id).
 
-**Shipped in the program.**
+**What the program shipped.**
 
 - **One settings catalog.** All eight panes are `sections` in `panes.json`; moving a section is a
   `paneId` change, proven by a test. Pane documents are empty roots.
-- **Account/Sync removed.** The pane, reset subpane, libraries-to-sync dialog, script and test are
-  gone, as are the four code paths that opened them; dead DTD strings were pruned.
+- **Account/Sync removed**, with its dialog, script, test and every code path that opened it; dead
+  DTD strings were pruned.
 - **Text.** Settings labels and Settings-owned runtime messages are Fluent in eight locales;
   `Zotero.getString()` resolves Fluent first, parameters included, then the legacy bundle.
 - **Aliases and generated docs.** Old element ids resolve in deep links; `settings.md` is generated
   from the catalog and checked by `validate-settings`.
 - **Data-directory logic** is `Zotero_Preferences.DataDirectory`.
-- **No element id may repeat its section id.** The Agent setup bug came from exactly that; the
-  factory now uses `agent-setup-code`, and the pane title carries `data-pane-heading` so placement
-  never inserts sections above it.
+- **Retired scaffolding gone:** no manifest, validator or renderer path for `simpleSections`; no
+  `requiresOnlineSync` filter.
+- **Lesson:** no element id may repeat its section id; pane headings carry `data-pane-heading`.
 
-**Tests.** 86/86 across preferences, agent, import, copy, settings-tab and bibliography, including a
-layout assertion that the Agent setup buttons sit below the snippet.
+**Tests.** 86/86 across preferences, agent, import, copy, settings-tab and bibliography.
 
-**Program closed.** The settings catalog work is finished and `.005` is the closing release. What
-remains is parked by decision, not pending:
+**Parked by decision, not pending.**
 
-- **Accessibility pass, parked.** The app has one user, who does not need it now. Do it if a real
-  need appears or there is nothing more valuable to do.
-- **App-wide `general.*` text pass, parked.** It covers 68 shared keys, some plural, outside the
-  agreed Settings scope; the Fluent-first lookup already makes it possible without call-site churn.
-- **Alias retirement, deferred.** Remove aliases only after a release or two in which no link uses
-  an old id.
-- **Native review, opportunistic (D68).** New strings ship as drafts and are reviewed only if a
-  native speaker volunteers.
+- **Accessibility pass.** One user, no present need; do it if a need appears or nothing better is
+  left.
+- **App-wide `general.*` text pass.** 68 shared keys, some plural, outside the agreed scope; the
+  lookup mechanism is ready.
+- **Alias retirement.** After a release or two with no consumer.
+- **Native review.** Opportunistic (D68); drafts ship labelled as drafts.
 
 ## Handoff 2026-11-27 (settings catalog program)
 
