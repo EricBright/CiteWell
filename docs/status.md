@@ -25,27 +25,36 @@ binding, and a renderer mounts it. The plan, decisions and open questions are in
 
 **Done.**
 
-- **One list.** `resource/settings/panes.json` holds `sections` only; `simpleSections` is retired
-  and its renderer deleted. The validator checks unique ids, known panes, one binding per item,
-  unique preferences, labels, radio options and number label pairs, with unit tests.
+- **One list.** `resource/settings/panes.json` holds `sections` only; `simpleSections` is retired and
+  its renderer deleted. The validator checks unique ids, known panes, one binding per item, unique
+  preferences, labels, radio options and number label pairs, with unit tests.
 - **Renderer capabilities:** content sections, groups, components (registered factories), checkbox,
-  radio and number settings, display and text items, actions, named conditions, section
-  initializers, search aliases, `before`/`after` transition anchors, and order.
-- **All eight settings panes are catalog-owned.** General keeps an Appearance component and its
-  other sections came from the retired generated list; the rest are sections and components..
-- **Deep links kept:** section ids `styles` and `wordProcessors` were preserved for the Cite pane,
-  and the Manage Styles test now asserts the routing instead of an obsolete preferences window.
+  radio and number settings, display and text items, actions, named conditions, section initializers,
+  search aliases, `before`/`after` transition anchors, and order.
+- **All eight settings panes are catalog-owned.** Every pane document is an empty root; General's
+  Appearance is a component and its other sections are catalog data.
+- **Text.** Settings labels and Settings-owned runtime messages are Fluent in all eight locales.
+  `Zotero.getString()` resolves Fluent first, including positional parameters, then the legacy
+  bundle, so migrating a message needs no call-site change. Shared `general.*` messages stay in the
+  old bundle until a deliberate app-wide pass.
+- **Aliases are consumed.** Old element ids are registered by the renderer and resolved by
+  `navigateToPane`, so a deep link written before a move still lands.
+- **Docs are generated.** `xtask settings-docs` writes the pane/section inventory in
+  [settings.md](settings.md); `validate-settings` fails on drift.
+- **No pane-named behaviour modules.** The data-directory logic is
+  `Zotero_Preferences.DataDirectory`.
+- **Account/Sync removed.** The pane, its reset subpane, the libraries-to-sync dialog, their script
+  and tests are gone, as are the four code paths that opened them; unreferenced DTD strings were
+  pruned from all eight locales.
 - **Move proof:** a test changes only `paneId` and asserts the section renders in the other pane.
 
-**Tests.** `uiCopyTest` 20/20, `preferences_advancedTest` plus `agentTest`/`dnsPrefsTest` 43/43 in
-the runs used. `validate-settings` and `docs-check` pass.
+**Tests.** `preferences_advancedTest` 25/25, `importTest` 24/24, `uiCopyTest` 20/20,
+`settingsTabTest` 8/8 in the latest runs. `validate-settings` and `docs-check` pass.
 
-**Next.** Import & Export is the last hand-written pane. Its Quick Copy half has translated DTD
-strings and is mechanical; its CiteWell import/restore/duplicate half has roughly twenty-five
-hardcoded English strings that need drafting in eight locales, so it is a deliberate pass rather
-than a mechanical move. After it: the Settings-wide text pass (P6), extracting the data-directory
-logic from the Advanced module, alias/deep-link cleanup, generating `settings.md`, and the runtime
-accessibility pass.
+**Next.** The runtime accessibility pass (keyboard-only operation, focus visibility, screen-reader
+names and duplicate labels) needs the app open and a person. The app-wide text pass covers the 68
+shared `general.*` keys, some with plural forms. Native review of the translations added over this
+program is still deferred. Dead `sync.*`/`account.*` properties can be pruned in the same text pass.
 
 ## Handoff 2026-11-27 (release 2026.11.27.002)
 
