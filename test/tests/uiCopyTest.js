@@ -263,6 +263,18 @@ describe("UI copy", function () {
 		}
 	});
 
+	it("should ship only the maintained locales", function () {
+		assert.sameMembers(
+			Services.locale.availableLocales,
+			SUPPORTED_LOCALES
+		);
+		assert.sameMembers(
+			Object.keys(Zotero.Locale.availableLocales),
+			SUPPORTED_LOCALES
+		);
+		assert.include(SUPPORTED_LOCALES, Zotero.locale);
+	});
+
 	it("should translate the problem-report copy in every supported locale", async function () {
 		let keys = [
 			"reportProblem.copied",

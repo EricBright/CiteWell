@@ -1529,6 +1529,30 @@ it hid the reason the link exists.
 - **Rejected:** deleting the link. Without a CiteWell connector, browser saving and Docs citations
   would stop working; the exception is stated where users meet it.
 
+## D64 — The maintained locale set is eight, and the build ships only those
+
+**Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
+
+The owner's set is `en-US`, `en-GB`, `de`, `fr-FR`, `es-ES`, `ja-JP`, `zh-CN` and `zh-TW`. Other
+translations are not shipped; adding one requires a GitHub issue that names a native reviewer.
+
+- **The other forty directories moved to `locale-archive/`.** They stay in history and can be
+  restored if a reviewer appears, but they are not copied into the build.
+- **Every list is reduced to the same eight:** `chrome.manifest`, `app/assets/multilocale.txt`,
+  `Zotero.Locale.availableLocales`, and the language picker that reads it. The requested locale is
+  resolved against the maintained set, so an unsupported preference falls back instead of loading a
+  half-present translation.
+- **The runtime is rebuilt with eight locale packs.** A spike proved the list in
+  `Services.locale.availableLocales` comes from `res/multilocale.txt` inside the runtime
+  `omni.ja`, not from `chrome.manifest`; rebuilding the runtime changed the reported list from 46
+  to the eight.
+- **Enforcement:** `uiCopyTest.js` asserts that both `Services.locale.availableLocales` and
+  `Object.keys(Zotero.Locale.availableLocales)` equal the supported set, and that the running locale
+  is one of them.
+- **Trade-off:** speakers of the removed languages get English instead of a Zotero-era translation.
+  That is the honest state until a native reviewer is available; a partial old translation would
+  still carry the other product's name.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

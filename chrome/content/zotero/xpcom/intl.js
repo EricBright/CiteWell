@@ -63,9 +63,14 @@ Zotero.Intl = new function () {
 		[pluralFormGet, pluralFormNumForms] = PluralForm.makeGetter(parseInt(getIntlProp('pluralRule', 1)));
 		setOrClearIntlPref('intl.accept_languages', 'string');
 
+		// Only the maintained set is shipped (D64). A requested locale outside it
+		// falls back instead of loading a half-present translation.
+		let available = Zotero.Locale && Zotero.Locale.availableLocales
+			? Object.keys(Zotero.Locale.availableLocales)
+			: Services.locale.availableLocales;
 		Zotero.locale = Zotero.Utilities.Internal.resolveLocale(
 			Services.locale.requestedLocale,
-			Services.locale.availableLocales
+			available
 		);
 
 		// Also load the brand as appName

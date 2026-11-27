@@ -63,7 +63,8 @@ resolves the repository and reports "No updates available".
   the Zotero troubleshooting and forum items, the Mendeley help link, the data-directory KB button
   and the post-upgrade blog banner are gone. The Style Manager catalog and dictionary downloads
   remain owner-approved exceptions. The browser connector moved from Tools to Settings > Advanced
-  with the exception stated there (D65). `uiCopyTest` 15/15.
+  with the exception stated there (D65). The maintained locale set is eight; the build and the
+  picker ship only those (D64). `uiCopyTest` 16/16.
 
 - **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
   an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`
@@ -81,7 +82,7 @@ resolves the repository and reports "No updates available".
 - **Problem reports (D62).** Help > Report a Problem… opens CiteWell's issue tracker and copies the
   error log to the clipboard; nothing is posted to Zotero's error service any more.
 
-**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 15/15, `dnsPrefsTest` 4/4,
+**Tests.** `versionTest` 3/3, `settingsTabTest` 8/8, `uiCopyTest` 16/16, `dnsPrefsTest` 4/4,
 `selfUpdateTest` 4/4, `importTest` 24/24, the updater sidecar 7/7. Four failures still sit in
 `server_connectorTest` and `translateTest` (chai API gaps) plus one live-prompt timeout in
 `integrationTest`; none is caused by these changes.
