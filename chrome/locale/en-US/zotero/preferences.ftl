@@ -323,3 +323,38 @@ agent-regenerate =
 agent-token-note =
     Any local process that can read this file can drive the app. Keep it private; regenerate it if it may have been exposed, then update the agent's copy.
 agent-token-path = Token file: { $path }
+
+agent-setup-title =
+    Set up an agent
+agent-setup-description =
+    The CLI is a thin client for this bridge. Install it from a CiteWell source checkout, then point it at this data directory:
+agent-copy-setup =
+    .label = Copy setup
+agent-open-audit =
+    .label = Open audit log
+agent-mcp-note =
+    MCP clients can start citewell mcp with this data directory; it exposes the same verbs as tools over stdio. The CLI and the HTTP form above remain available for everything else.
+agent-capabilities-title =
+    What agents can do
+agent-capabilities-description =
+    In this build: ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save for DOI/ISBN/PMID/URL, annotation.list/create and export.note for Markdown, collection.list/create/addItems, and ui.status/select/open/notify.
+agent-protocol-note =
+    The full verb list and protocol are in docs/agent.md.
+agent-setup-step1 = Install the CLI from a CiteWell source checkout
+agent-setup-step2 = Point it at this library's data directory
+agent-setup-step3 = Check the bridge
+agent-setup-step4 = For an MCP client, use this command
+agent-setup-http = HTTP equivalent (the CLI reads the token for you)
+
+agent-skill-title =
+    Agent skill
+agent-skill-description =
+    Give an agent a ready-made SKILL.md that explains the app, the MCP tools and the safety rules. Save it as citewell/SKILL.md in the agent's skill directory.
+agent-skill-copy =
+    .label = Copy download link
+agent-skill-open =
+    .label = Open in browser
+agent-audit-title =
+    Audit
+agent-audit-description =
+    Every agent call appends one line to the audit path, recording the method, object keys and outcome, not note text or field values.

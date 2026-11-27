@@ -127,6 +127,68 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'agent-skill': groupbox => {
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'agent-skill-description');
+		let row = document.createXULElement('hbox');
+		let copy = document.createXULElement('button');
+		copy.id = 'agent-skill-copy';
+		Zotero_Preferences._applyLabel(copy, 'agent-skill-copy');
+		copy.addEventListener('command', () => CATALOG_ACTIONS['copy-skill-link']());
+		let open = document.createXULElement('button');
+		open.id = 'agent-skill-open';
+		Zotero_Preferences._applyLabel(open, 'agent-skill-open');
+		open.addEventListener('command', () => CATALOG_ACTIONS['open-skill-link']());
+		row.append(copy, open);
+		let url = document.createXULElement('description');
+		url.id = 'agent-skill-url';
+		url.classList.add('agent-path');
+		groupbox.append(description, row, url);
+	},
+
+	'agent-audit': groupbox => {
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'agent-audit-description');
+		let path = document.createXULElement('description');
+		path.id = 'agent-audit-path';
+		path.classList.add('agent-path');
+		groupbox.append(description, path);
+	},
+
+	'agent-setup': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'agent-setup-description');
+		let textarea = document.createElementNS(HTML, 'textarea');
+		textarea.id = 'agent-setup';
+		textarea.readOnly = true;
+		textarea.classList.add('agent-snippet');
+		let row = document.createXULElement('hbox');
+		let copy = document.createXULElement('button');
+		copy.id = 'agent-setup-copy';
+		Zotero_Preferences._applyLabel(copy, 'agent-copy-setup');
+		copy.addEventListener('command', () => CATALOG_ACTIONS['copy-setup']());
+		let audit = document.createXULElement('button');
+		audit.id = 'agent-audit-open';
+		Zotero_Preferences._applyLabel(audit, 'agent-open-audit');
+		audit.addEventListener('command', () => CATALOG_ACTIONS['open-audit-log']());
+		row.append(copy, audit);
+		let note = document.createXULElement('description');
+		note.classList.add('agent-muted');
+		Zotero_Preferences._applyText(note, 'agent-mcp-note');
+		groupbox.append(description, textarea, row, note);
+	},
+
+	'agent-capabilities': groupbox => {
+		let description = document.createXULElement('description');
+		description.id = 'agent-capabilities-description';
+		Zotero_Preferences._applyText(description, 'agent-capabilities-description');
+		let note = document.createXULElement('description');
+		note.classList.add('agent-muted');
+		Zotero_Preferences._applyText(note, 'agent-protocol-note');
+		groupbox.append(description, note);
+	},
+
 	'agent-access': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let description = document.createXULElement('description');
@@ -446,6 +508,10 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'copy-skill-link': () => Zotero_Preferences.Agent.copySkillLink(),
+	'open-skill-link': () => Zotero_Preferences.Agent.openSkill(),
+	'copy-setup': () => Zotero_Preferences.Agent.copySetup(),
+	'open-audit-log': () => Zotero_Preferences.Agent.openAuditLog(),
 	'copy-token': () => Zotero_Preferences.Agent.copyToken(),
 	'rotate-token': () => Zotero_Preferences.Agent.rotateToken(),
 	'migrate-notes': () => Zotero_Preferences.Notes.migrateNotes(),

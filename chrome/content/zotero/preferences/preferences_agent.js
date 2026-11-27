@@ -53,26 +53,33 @@ Zotero_Preferences.Agent = {
 		await document.l10n.translateElements([tokenPath]);
 		document.getElementById('agent-audit-path').textContent
 			= Zotero.Server.Agent.auditPath;
-		document.getElementById('agent-setup').value = this._setupText();
+		document.getElementById('agent-setup').value = await this._setupText();
 		document.getElementById('agent-skill-url').textContent = this.SKILL_URL;
 	},
 
-	_setupText: function () {
+	_setupText: async function () {
 		let dataDir = Zotero.DataDirectory.dir;
+		let [step1, step2, step3, step4, http] = await document.l10n.formatValues([
+			{ id: "agent-setup-step1" },
+			{ id: "agent-setup-step2" },
+			{ id: "agent-setup-step3" },
+			{ id: "agent-setup-step4" },
+			{ id: "agent-setup-http" },
+		]);
 		return [
-			"# 1. Install the CLI from a CiteWell source checkout",
+			`# ${step1}`,
 			"cargo install --path tools/cli",
 			"",
-			"# 2. Point it at this library's data directory",
+			`# ${step2}`,
 			`export CITEWELL_DATA_DIR="${dataDir}"`,
 			"",
-			"# 3. Check the bridge",
+			`# ${step3}`,
 			"citewell agent ping",
 			"",
-			"# 4. For an MCP client, use this command",
+			`# ${step4}`,
 			"citewell mcp",
 			"",
-			"# HTTP equivalent (the CLI reads the token for you)",
+			`# ${http}`,
 			"curl -s http://127.0.0.1:23120/agent/v1 \\",
 			'  -H "Authorization: Bearer <token>" \\',
 			'  -H "X-CiteWell-Agent: 1" \\',

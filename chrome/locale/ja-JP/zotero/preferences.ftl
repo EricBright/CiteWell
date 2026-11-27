@@ -299,3 +299,38 @@ agent-regenerate =
 agent-token-note =
     このファイルを読めるローカルプロセスはアプリを操作できます。非公開に保ち、漏えいした可能性がある場合は再生成してからエージェント側のコピーを更新してください。
 agent-token-path = トークンファイル: { $path }
+
+agent-setup-title =
+    エージェントの設定
+agent-setup-description =
+    CLI はこのブリッジの薄いクライアントです。CiteWell のソースチェックアウトからインストールし、このデータディレクトリを指定してください:
+agent-copy-setup =
+    .label = 設定をコピー
+agent-open-audit =
+    .label = 監査ログを開く
+agent-mcp-note =
+    MCP クライアントはこのデータディレクトリで citewell mcp を起動できます。stdio 経由で同じ verb をツールとして公開します。上記の CLI と HTTP 形式はその他すべてに引き続き利用できます。
+agent-capabilities-title =
+    エージェントにできること
+agent-capabilities-description =
+    このビルドでは: ping、search、item.get/create/update/addNote、item.attachFile/attachURL、DOI/ISBN/PMID/URL の translate.save、Markdown の annotation.list/create と export.note、collection.list/create/addItems、ui.status/select/open/notify。
+agent-protocol-note =
+    verb の完全な一覧とプロトコルは docs/agent.md にあります。
+agent-setup-step1 = CiteWell のソースチェックアウトから CLI をインストール
+agent-setup-step2 = このライブラリのデータディレクトリを指定
+agent-setup-step3 = ブリッジを確認
+agent-setup-step4 = MCP クライアントの場合はこのコマンドを使用
+agent-setup-http = HTTP の場合（CLI がトークンを読み取ります）
+
+agent-skill-title =
+    エージェントスキル
+agent-skill-description =
+    アプリ、MCP ツール、安全規則を説明する既製の SKILL.md をエージェントに渡します。エージェントのスキルディレクトリに citewell/SKILL.md として保存してください。
+agent-skill-copy =
+    .label = ダウンロードリンクをコピー
+agent-skill-open =
+    .label = ブラウザで開く
+agent-audit-title =
+    監査
+agent-audit-description =
+    エージェントの呼び出しごとに監査パスへ 1 行追加され、メソッド、オブジェクトキー、結果が記録されます。ノートの本文やフィールド値は記録されません。

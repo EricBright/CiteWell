@@ -300,3 +300,38 @@ agent-regenerate =
 agent-token-note =
     任何能讀取此檔案的本機程序都可以操控本應用程式。請保持私密；若可能已外洩，請重新產生，然後更新代理程式的副本。
 agent-token-path = 權杖檔案：{ $path }
+
+agent-setup-title =
+    設定代理程式
+agent-setup-description =
+    CLI 是此橋接的輕量用戶端。從 CiteWell 原始碼檢出安裝它，然後將其指向此資料目錄：
+agent-copy-setup =
+    .label = 複製設定
+agent-open-audit =
+    .label = 開啟稽核記錄
+agent-mcp-note =
+    MCP 用戶端可以使用此資料目錄啟動 citewell mcp；它透過 stdio 以工具形式提供相同的 verb。上方的 CLI 與 HTTP 形式仍可用於其他所有操作。
+agent-capabilities-title =
+    代理程式可以做什麼
+agent-capabilities-description =
+    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用於 DOI/ISBN/PMID/URL 的 translate.save、用於 Markdown 的 annotation.list/create 與 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
+agent-protocol-note =
+    完整的 verb 清單與協定位於 docs/agent.md。
+agent-setup-step1 = 從 CiteWell 原始碼檢出安裝 CLI
+agent-setup-step2 = 將其指向此文獻庫的資料目錄
+agent-setup-step3 = 檢查橋接
+agent-setup-step4 = 使用 MCP 用戶端時使用此命令
+agent-setup-http = HTTP 等效方式（CLI 會為您讀取權杖）
+
+agent-skill-title =
+    代理程式技能
+agent-skill-description =
+    為代理程式提供現成的 SKILL.md，說明本應用程式、MCP 工具與安全規則。將其儲存為代理程式技能目錄中的 citewell/SKILL.md。
+agent-skill-copy =
+    .label = 複製下載連結
+agent-skill-open =
+    .label = 在瀏覽器中開啟
+agent-audit-title =
+    稽核
+agent-audit-description =
+    每次代理程式呼叫都會在稽核路徑中附加一行，記錄方法、物件鍵與結果，不記錄筆記內文或欄位值。

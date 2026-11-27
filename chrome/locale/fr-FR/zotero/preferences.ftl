@@ -301,3 +301,38 @@ agent-regenerate =
 agent-token-note =
     Tout processus local pouvant lire ce fichier peut piloter l’application. Gardez-le privé ; régénérez-le s’il a pu être exposé, puis mettez à jour la copie de l’agent.
 agent-token-path = Fichier du jeton : { $path }
+
+agent-setup-title =
+    Configurer un agent
+agent-setup-description =
+    La CLI est un client léger pour ce pont. Installez-la depuis une copie des sources de CiteWell, puis pointez-la vers ce répertoire de données :
+agent-copy-setup =
+    .label = Copier la configuration
+agent-open-audit =
+    .label = Ouvrir le journal d’audit
+agent-mcp-note =
+    Les clients MCP peuvent lancer citewell mcp avec ce répertoire de données ; il expose les mêmes verbes sous forme d’outils via stdio. La CLI et la forme HTTP ci-dessus restent disponibles pour le reste.
+agent-capabilities-title =
+    Ce que les agents peuvent faire
+agent-capabilities-description =
+    Dans cette version : ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save pour DOI/ISBN/PMID/URL, annotation.list/create et export.note pour Markdown, collection.list/create/addItems, et ui.status/select/open/notify.
+agent-protocol-note =
+    La liste complète des verbes et le protocole se trouvent dans docs/agent.md.
+agent-setup-step1 = Installer la CLI depuis une copie des sources de CiteWell
+agent-setup-step2 = La pointer vers le répertoire de données de cette bibliothèque
+agent-setup-step3 = Vérifier le pont
+agent-setup-step4 = Pour un client MCP, utiliser cette commande
+agent-setup-http = Équivalent HTTP (la CLI lit le jeton pour vous)
+
+agent-skill-title =
+    Compétence d’agent
+agent-skill-description =
+    Donnez à un agent un SKILL.md prêt à l’emploi qui explique l’application, les outils MCP et les règles de sécurité. Enregistrez-le sous citewell/SKILL.md dans le répertoire de compétences de l’agent.
+agent-skill-copy =
+    .label = Copier le lien de téléchargement
+agent-skill-open =
+    .label = Ouvrir dans le navigateur
+agent-audit-title =
+    Audit
+agent-audit-description =
+    Chaque appel d’agent ajoute une ligne au chemin d’audit, enregistrant la méthode, les clés d’objet et le résultat, pas le texte des notes ni les valeurs des champs.

@@ -299,3 +299,38 @@ agent-regenerate =
 agent-token-note =
     任何能读取此文件的本地进程都可以操控本应用。请保持私密；如果可能已泄露，请重新生成，然后更新智能体的副本。
 agent-token-path = 令牌文件：{ $path }
+
+agent-setup-title =
+    设置智能体
+agent-setup-description =
+    CLI 是此桥接的轻量客户端。从 CiteWell 源代码检出安装它，然后将其指向此数据目录：
+agent-copy-setup =
+    .label = 复制设置
+agent-open-audit =
+    .label = 打开审计日志
+agent-mcp-note =
+    MCP 客户端可以使用此数据目录启动 citewell mcp；它通过 stdio 以工具形式提供相同的 verb。上方的 CLI 和 HTTP 形式仍可用于其他所有操作。
+agent-capabilities-title =
+    智能体可以做什么
+agent-capabilities-description =
+    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用于 DOI/ISBN/PMID/URL 的 translate.save、用于 Markdown 的 annotation.list/create 和 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
+agent-protocol-note =
+    完整的 verb 列表和协议位于 docs/agent.md。
+agent-setup-step1 = 从 CiteWell 源代码检出安装 CLI
+agent-setup-step2 = 将其指向此文献库的数据目录
+agent-setup-step3 = 检查桥接
+agent-setup-step4 = 使用 MCP 客户端时使用此命令
+agent-setup-http = HTTP 等效方式（CLI 会为您读取令牌）
+
+agent-skill-title =
+    智能体技能
+agent-skill-description =
+    为智能体提供一个现成的 SKILL.md，说明本应用、MCP 工具和安全规则。将其保存为智能体技能目录中的 citewell/SKILL.md。
+agent-skill-copy =
+    .label = 复制下载链接
+agent-skill-open =
+    .label = 在浏览器中打开
+agent-audit-title =
+    审计
+agent-audit-description =
+    每次智能体调用都会在审计路径中追加一行，记录方法、对象键和结果，不记录笔记正文或字段值。

@@ -629,6 +629,38 @@
       "paneId": "zotero-prefpane-agent",
       "order": 10,
       "titleKey": "agent-access-title"
+    },
+    {
+      "id": "agent-setup",
+      "kind": "component",
+      "component": "agent-setup",
+      "paneId": "zotero-prefpane-agent",
+      "order": 20,
+      "titleKey": "agent-setup-title"
+    },
+    {
+      "id": "agent-capabilities",
+      "kind": "component",
+      "component": "agent-capabilities",
+      "paneId": "zotero-prefpane-agent",
+      "order": 40,
+      "titleKey": "agent-capabilities-title"
+    },
+    {
+      "id": "agent-skill",
+      "kind": "component",
+      "component": "agent-skill",
+      "paneId": "zotero-prefpane-agent",
+      "order": 50,
+      "titleKey": "agent-skill-title"
+    },
+    {
+      "id": "agent-audit",
+      "kind": "component",
+      "component": "agent-audit",
+      "paneId": "zotero-prefpane-agent",
+      "order": 60,
+      "titleKey": "agent-audit-title"
     }
   ]
 }

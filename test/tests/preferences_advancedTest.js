@@ -386,6 +386,28 @@ describe("Settings manifest navigation", function () {
 				win.document.getElementById("agent-token-path").textContent.trim().length, 0,
 				"the token path was not localized"
 			);
+			for (let id of ["agent-setup", "agent-setup-copy", "agent-audit-open"]) {
+				assert.ok(win.document.getElementById(id), `${id} did not render`);
+			}
+			assert.include(
+				win.document.getElementById("agent-setup").value,
+				"citewell agent ping"
+			);
+			assert.isAbove(
+				win.document.getElementById("agent-capabilities-description")
+					.textContent.trim().length,
+				0
+			);
+			for (let id of ["agent-skill-copy", "agent-skill-open", "agent-skill-url",
+				"agent-audit-path"]) {
+				assert.ok(win.document.getElementById(id), `${id} did not render`);
+			}
+			assert.isAbove(
+				win.document.getElementById("agent-skill-url").textContent.trim().length, 0
+			);
+			assert.isAbove(
+				win.document.getElementById("agent-audit-path").textContent.trim().length, 0
+			);
 		}
 		finally {
 			win.close();

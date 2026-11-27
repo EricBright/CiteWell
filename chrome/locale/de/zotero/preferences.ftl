@@ -300,3 +300,38 @@ agent-regenerate =
 agent-token-note =
     Jeder lokale Prozess, der diese Datei lesen kann, kann die App steuern. Halten Sie sie geheim; erzeugen Sie sie neu, wenn sie offengelegt worden sein könnte, und aktualisieren Sie dann die Kopie des Agenten.
 agent-token-path = Token-Datei: { $path }
+
+agent-setup-title =
+    Agenten einrichten
+agent-setup-description =
+    Die CLI ist ein schlanker Client für diese Brücke. Installieren Sie sie aus einem CiteWell-Quellcode-Checkout und verweisen Sie sie dann auf dieses Datenverzeichnis:
+agent-copy-setup =
+    .label = Einrichtung kopieren
+agent-open-audit =
+    .label = Audit-Protokoll öffnen
+agent-mcp-note =
+    MCP-Clients können citewell mcp mit diesem Datenverzeichnis starten; es bietet dieselben Verben als Werkzeuge über stdio. CLI und HTTP-Form oben bleiben für alles andere verfügbar.
+agent-capabilities-title =
+    Was Agenten tun können
+agent-capabilities-description =
+    In diesem Build: ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save für DOI/ISBN/PMID/URL, annotation.list/create und export.note für Markdown, collection.list/create/addItems sowie ui.status/select/open/notify.
+agent-protocol-note =
+    Die vollständige Verbliste und das Protokoll stehen in docs/agent.md.
+agent-setup-step1 = CLI aus einem CiteWell-Quellcode-Checkout installieren
+agent-setup-step2 = Auf das Datenverzeichnis dieser Bibliothek zeigen
+agent-setup-step3 = Die Brücke prüfen
+agent-setup-step4 = Für einen MCP-Client diesen Befehl verwenden
+agent-setup-http = HTTP-Entsprechung (die CLI liest das Token für Sie)
+
+agent-skill-title =
+    Agenten-Skill
+agent-skill-description =
+    Geben Sie einem Agenten eine fertige SKILL.md, die die App, die MCP-Werkzeuge und die Sicherheitsregeln erklärt. Speichern Sie sie als citewell/SKILL.md im Skill-Verzeichnis des Agenten.
+agent-skill-copy =
+    .label = Download-Link kopieren
+agent-skill-open =
+    .label = Im Browser öffnen
+agent-audit-title =
+    Audit
+agent-audit-description =
+    Jeder Agentenaufruf hängt eine Zeile an den Audit-Pfad an und protokolliert Methode, Objektschlüssel und Ergebnis, nicht Notiztext oder Feldwerte.

@@ -230,16 +230,16 @@ It also fixed mounting for an empty pane: a pane with no hand-written section us
 beside the pane document, which sent catalog sections outside it. The title and the sections now go
 inside the pane root.
 
-### Agent access (in progress)
+### Agent access (done)
 
-- **Agent access and Connection** are one catalog component: the description, the enable checkbox,
-  the bridge note, the token row, the token-file path and the token note. Their nine strings are
-  Fluent drafts in eight locales, and the token path uses a Fluent message with the path passed as
-  an argument instead of the old hardcoded prefix.
-- **Still markup:** Set up an agent, What agents can do, Agent skill and Audit. They come next. The
-  setup block also raises the one copy question in this pane: its shell snippet has instruction
-  comments. The commands stay as code; the comments will be translated only if they can be separated
-  cleanly from the snippet.
+Every block in the pane is catalog data: Agent access and Connection, the local API, Set up an
+agent, What agents can do, Agent skill and Audit. The shell snippet keeps its commands in English
+because they are code, while its five step comments are Fluent messages assembled around those
+commands, so the snippet stays valid shell in every language. The capability list keeps the protocol
+verb names in English for the same reason; the sentence around them is translated.
+
+Its labels are Fluent drafts in eight locales, and the token and audit paths use Fluent messages with
+the path as an argument instead of hardcoded prefixes.
 
 ### Notes pane (done)
 

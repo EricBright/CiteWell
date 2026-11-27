@@ -301,3 +301,38 @@ agent-regenerate =
 agent-token-note =
     Cualquier proceso local que pueda leer este archivo puede controlar la aplicación. Manténgalo privado; regenérelo si pudo haberse expuesto y actualice después la copia del agente.
 agent-token-path = Archivo de token: { $path }
+
+agent-setup-title =
+    Configurar un agente
+agent-setup-description =
+    La CLI es un cliente ligero para este puente. Instálela desde una copia del código fuente de CiteWell y apúntela a este directorio de datos:
+agent-copy-setup =
+    .label = Copiar configuración
+agent-open-audit =
+    .label = Abrir registro de auditoría
+agent-mcp-note =
+    Los clientes MCP pueden iniciar citewell mcp con este directorio de datos; expone los mismos verbos como herramientas por stdio. La CLI y la forma HTTP de arriba siguen disponibles para todo lo demás.
+agent-capabilities-title =
+    Qué pueden hacer los agentes
+agent-capabilities-description =
+    En esta compilación: ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save para DOI/ISBN/PMID/URL, annotation.list/create y export.note para Markdown, collection.list/create/addItems, y ui.status/select/open/notify.
+agent-protocol-note =
+    La lista completa de verbos y el protocolo están en docs/agent.md.
+agent-setup-step1 = Instalar la CLI desde una copia del código fuente de CiteWell
+agent-setup-step2 = Apuntarla al directorio de datos de esta biblioteca
+agent-setup-step3 = Comprobar el puente
+agent-setup-step4 = Para un cliente MCP, use este comando
+agent-setup-http = Equivalente HTTP (la CLI lee el token por usted)
+
+agent-skill-title =
+    Habilidad del agente
+agent-skill-description =
+    Dé al agente un SKILL.md listo que explique la aplicación, las herramientas MCP y las reglas de seguridad. Guárdelo como citewell/SKILL.md en el directorio de habilidades del agente.
+agent-skill-copy =
+    .label = Copiar enlace de descarga
+agent-skill-open =
+    .label = Abrir en el navegador
+agent-audit-title =
+    Auditoría
+agent-audit-description =
+    Cada llamada de un agente añade una línea a la ruta de auditoría, registrando el método, las claves del objeto y el resultado, no el texto de las notas ni los valores de los campos.
