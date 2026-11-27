@@ -301,7 +301,7 @@
       "id": "translator-updates",
       "kind": "group",
       "paneId": "zotero-prefpane-advanced",
-      "order": 30,
+      "order": 60,
       "titleKey": "preferences-translator-updates",
       "items": [
         {
@@ -412,16 +412,16 @@
       "component": "agent-audit",
       "paneId": "zotero-prefpane-agent",
       "order": 60,
-      "titleKey": "agent-audit-title"
+      "titleKey": "agent-audit-title",
+      "init": "agent-init"
     },
     {
       "id": "general-appearance",
       "kind": "component",
       "component": "general-appearance",
       "paneId": "zotero-prefpane-general",
-      "order": 10,
-      "titleKey": "preferences-appearance-title",
-      "before": "#simple-section-language-region"
+      "order": 5,
+      "titleKey": "preferences-appearance-title"
     },
     {
       "id": "language-region",
@@ -452,7 +452,7 @@
       "id": "note-behaviour",
       "kind": "group",
       "paneId": "zotero-prefpane-notes",
-      "order": 10,
+      "order": 30,
       "titleKey": "preferences-note-title",
       "searchAliases": [
         "new window",
@@ -529,7 +529,7 @@
       "id": "citation-options",
       "kind": "group",
       "paneId": "zotero-prefpane-cite",
-      "order": 20,
+      "order": 25,
       "titleKey": "zotero.preferences.citationOptions.caption",
       "descriptionKey": "zotero.preferences.export.citePaperJournalArticleURL.description",
       "searchAliases": [
@@ -553,9 +553,8 @@
       "id": "file-handling",
       "kind": "group",
       "paneId": "zotero-prefpane-library",
-      "order": 10,
+      "order": 15,
       "titleKey": "zotero.preferences.fileHandling",
-      "before": "#zotero-prefpane-file-renaming-groupbox",
       "searchAliases": [
         "snapshots",
         "recognize files",
@@ -592,10 +591,9 @@
       "id": "attachment-titles",
       "kind": "group",
       "paneId": "zotero-prefpane-library",
-      "order": 20,
+      "order": 25,
       "titleKey": "preferences-attachment-titles-title",
       "descriptionKey": "preferences-attachment-titles-intro",
-      "before": "#baseAttachmentPath",
       "searchAliases": [
         "filename",
         "attachment title"
@@ -617,7 +615,7 @@
       "id": "citation-dialog",
       "kind": "group",
       "paneId": "zotero-prefpane-cite",
-      "order": 15,
+      "order": 20,
       "titleKey": "preferences-citation-dialog",
       "searchAliases": [
         "citation picker",
@@ -747,7 +745,7 @@
       "kind": "component",
       "component": "cite-tools",
       "paneId": "zotero-prefpane-cite",
-      "order": 20,
+      "order": 15,
       "titleKey": "cite-tools-title"
     },
     {

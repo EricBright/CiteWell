@@ -297,6 +297,11 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("citewell-lo-install"));
 			assert.ok(win.document.getElementById("citewell-integration-repair"));
 			assert.ok(win.document.getElementById("browser-connector"));
+			assert.isTrue(
+				win.document.getElementById("zotero-prefpane-integrations")
+					.firstElementChild.hasAttribute("data-pane-heading"),
+				"the pane title must be the first element"
+			);
 			assert.ok(win.document.getElementById("browser-connector-download"));
 			let paneRoot = win.document.getElementById("zotero-prefpane-integrations");
 			let mains = win.document.querySelectorAll(
@@ -454,12 +459,19 @@ describe("Settings manifest navigation", function () {
 				win.document.getElementById("agent-token-path").textContent.trim().length, 0,
 				"the token path was not localized"
 			);
-			for (let id of ["agent-setup", "agent-setup-copy", "agent-audit-open"]) {
+			for (let id of ["agent-setup-code", "agent-setup-copy", "agent-audit-open"]) {
 				assert.ok(win.document.getElementById(id), `${id} did not render`);
 			}
 			assert.include(
-				win.document.getElementById("agent-setup").value,
+				win.document.getElementById("agent-setup-code").textContent,
 				"citewell agent ping"
+			);
+			let setup = win.document.getElementById("agent-setup-code");
+			let copy = win.document.getElementById("agent-setup-copy");
+			assert.isAtLeast(
+				copy.getBoundingClientRect().top,
+				setup.getBoundingClientRect().bottom - 1,
+				"the setup buttons must sit below the snippet, not over it"
 			);
 			assert.isAbove(
 				win.document.getElementById("agent-capabilities-description")

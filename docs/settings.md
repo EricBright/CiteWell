@@ -52,13 +52,13 @@ documented.
 | Pane | Order | Sections |
 |---|---|---|
 | `zotero-prefpane-general` | 10 | `general-appearance` (component, 0 items); `language-region` (group, 1 item); `groups` (group, 5 items); `behaviour` (group, 2 items) |
-| `zotero-prefpane-cite` | 20 | `styles` (component, 0 items); `citation-dialog` (group, 1 item); `citation-options` (group, 1 item); `cite-tools` (component, 0 items); `wordProcessors` (component, 0 items) |
-| `zotero-prefpane-notes` | 40 | `notes-migration` (component, 0 items); `note-behaviour` (group, 1 item); `annotations-export` (component, 0 items) |
+| `zotero-prefpane-cite` | 20 | `styles` (component, 0 items); `cite-tools` (component, 0 items); `citation-dialog` (group, 1 item); `citation-options` (group, 1 item); `wordProcessors` (component, 0 items) |
+| `zotero-prefpane-notes` | 40 | `notes-migration` (component, 0 items); `annotations-export` (component, 0 items); `note-behaviour` (group, 1 item) |
 | `zotero-prefpane-import-export` | 50 | `import-library` (component, 0 items); `restore-points` (component, 0 items); `duplicate-review` (component, 0 items); `last-import` (component, 0 items); `quick-copy` (component, 0 items) |
 | `zotero-prefpane-integrations` | 60 | `browser-connector` (content, 3 items); `libreoffice` (component, 0 items); `system-integration` (component, 0 items) |
 | `zotero-prefpane-agent` | 70 | `agent-access` (component, 0 items); `agent-setup` (component, 0 items); `local-api` (group, 5 items); `agent-capabilities` (component, 0 items); `agent-skill` (component, 0 items); `agent-audit` (component, 0 items) |
-| `zotero-prefpane-library` | 80 | `file-handling` (group, 3 items); `library-current` (component, 0 items); `attachment-titles` (group, 1 item); `library-file-renaming` (component, 0 items); `library-base-dir` (component, 0 items); `library-data-dir` (component, 0 items); `library-locate` (component, 0 items) |
-| `zotero-prefpane-advanced` | 90 | `dns` (group, 3 items); `database-maintenance` (group, 2 items); `keyboard-shortcuts` (component, 0 items); `translator-updates` (group, 3 items); `feeds` (component, 0 items); `search-index` (component, 0 items) |
+| `zotero-prefpane-library` | 80 | `library-current` (component, 0 items); `file-handling` (group, 3 items); `library-file-renaming` (component, 0 items); `attachment-titles` (group, 1 item); `library-base-dir` (component, 0 items); `library-data-dir` (component, 0 items); `library-locate` (component, 0 items) |
+| `zotero-prefpane-advanced` | 90 | `dns` (group, 3 items); `database-maintenance` (group, 2 items); `keyboard-shortcuts` (component, 0 items); `feeds` (component, 0 items); `search-index` (component, 0 items); `translator-updates` (group, 3 items) |
 <!-- END SETTINGS CATALOG -->
 
 ## Current inventory

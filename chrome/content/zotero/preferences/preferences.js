@@ -784,10 +784,12 @@ const CATALOG_COMPONENTS = {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let description = document.createXULElement('description');
 		Zotero_Preferences._applyText(description, 'agent-setup-description');
-		let textarea = document.createElementNS(HTML, 'textarea');
-		textarea.id = 'agent-setup';
-		textarea.readOnly = true;
+		// A XUL description participates in box layout. A raw HTML textarea
+		// painted beyond its allocated height and the buttons overlapped it.
+		let textarea = document.createXULElement('description');
+		textarea.id = 'agent-setup-code';
 		textarea.classList.add('agent-snippet');
+		textarea.style.whiteSpace = 'pre-wrap';
 		let row = document.createXULElement('hbox');
 		let copy = document.createXULElement('button');
 		copy.id = 'agent-setup-copy';
@@ -1191,6 +1193,11 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'agent-init': () => {
+		Zotero.Promise.delay().then(() => Zotero_Preferences.Agent.init()).catch(
+			e => Zotero.logError(e)
+		);
+	},
 	'import-library': () => {
 		Zotero.Promise.delay().then(
 			() => Zotero_Preferences.ImportExport.init()
@@ -1582,6 +1589,7 @@ var Zotero_Preferences = {
 			
 			let heading = document.createElement('h1');
 			heading.textContent = pane.rawLabel;
+			heading.setAttribute('data-pane-heading', 'true');
 			pane.container.append(contentFragment);
 			let paneRoot = pane.container.querySelector('#' + pane.id);
 			if (pane.container.querySelector('.main-section')) {
@@ -1827,7 +1835,11 @@ var Zotero_Preferences = {
 			if (!anchor && section.after) {
 				anchor = root.querySelector(section.after);
 			}
-			if (anchor && anchor.parentNode) {
+			// An anchor may be nested; place relative to its top-level ancestor.
+			while (anchor && anchor.parentNode && anchor.parentNode !== root) {
+				anchor = anchor.parentNode;
+			}
+			if (anchor && anchor.parentNode === root) {
 				if (section.before) {
 					anchor.parentNode.insertBefore(groupbox, anchor);
 				}
@@ -1840,6 +1852,7 @@ var Zotero_Preferences = {
 				// hand-written content remains, in catalog order.
 				let handWritten = [...root.children].find(
 					child => !child.hasAttribute('data-catalog-section')
+						&& !child.hasAttribute('data-pane-heading')
 				);
 				if (handWritten) {
 					root.insertBefore(groupbox, handWritten);

@@ -53,7 +53,7 @@ Zotero_Preferences.Agent = {
 		await document.l10n.translateElements([tokenPath]);
 		document.getElementById('agent-audit-path').textContent
 			= Zotero.Server.Agent.auditPath;
-		document.getElementById('agent-setup').value = await this._setupText();
+		document.getElementById('agent-setup-code').textContent = await this._setupText();
 		document.getElementById('agent-skill-url').textContent = this.SKILL_URL;
 	},
 
@@ -96,7 +96,7 @@ Zotero_Preferences.Agent = {
 	},
 
 	copySetup: function () {
-		Zotero.Utilities.Internal.copyTextToClipboard(document.getElementById('agent-setup').value);
+		Zotero.Utilities.Internal.copyTextToClipboard(document.getElementById('agent-setup-code').textContent);
 	},
 
 	copySkillLink: function () {
