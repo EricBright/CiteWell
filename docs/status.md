@@ -44,7 +44,8 @@ wrote into the section container and removed its own buttons.
 layout assertion that the Agent setup buttons sit below the snippet.
 
 **Next.** The runtime accessibility pass needs the app and a person. The app-wide text pass covers
-the 68 shared `general.*` keys, some plural. Native review of the translations is still deferred.
+the 68 shared `general.*` keys, some plural. Native review is opportunistic, not a pending task
+(D68): the new strings ship as drafts and will be reviewed only if a native speaker volunteers.
 
 ## Handoff 2026-11-27 (settings catalog program)
 

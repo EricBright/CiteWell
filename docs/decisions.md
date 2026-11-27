@@ -1610,6 +1610,27 @@ tuning knob.
 - **Rejected:** putting both under Integrations. The local API is what scripts and agents call; the
   connector is what a browser calls. Splitting by task keeps each next to the thing it serves.
 
+## D68 — New settings strings ship as drafts, and native review is opportunistic
+
+**Date:** 2026-11-27 · **Status:** accepted · **Reversible:** yes
+
+The settings catalog program added strings in all eight locales. They were written by the assistant,
+not by native speakers, and the owner has no native speaker available to review them.
+
+- **They ship as drafts.** Every release note and document that mentions them calls them drafts. A
+  string is never mixed-language or half-translated; a missing key falls back through the normal
+  locale path rather than showing a broken sentence.
+- **Native review is not a to-do item.** It cannot be scheduled, so it does not block a release or
+  sit in the handoff as pending work. If a native speaker volunteers, their review is acted on then;
+  otherwise the drafts stand.
+- **This narrows D64.** D64 required a native reviewer to *add* a language. It does not require one
+  to fix or extend strings in the eight languages already maintained; requiring that would freeze
+  every new string indefinitely.
+- **Rejected:** holding new strings back as English-only inside a translated pane, which produces
+  exactly the mixed-language output the owner rejects; and shipping drafts without saying so.
+- **Enforcement:** the release notes and `docs/status.md` describe the translations as drafts.
+  `uiCopyTest` keeps checking locale completeness.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
