@@ -186,9 +186,6 @@
 <!ENTITY zotero.preferences.attachmentBaseDir.selectBasePath "Choose…">
 <!ENTITY zotero.preferences.attachmentBaseDir.resetBasePath  "Revert to Absolute Paths…">
 
-<!ENTITY zotero.preferences.dbMaintenance							"Database Maintenance">
-<!ENTITY zotero.preferences.dbMaintenance.integrityCheck			"Check Database Integrity">
 <!ENTITY zotero.preferences.dbMaintenance.resetTranslatorsAndStyles	"Reset Translators and Styles…">
-<!ENTITY zotero.preferences.dbMaintenance.resetTranslators				"Reset Translators…">
 
 <!ENTITY zotero.preferences.configEditor                 "Config Editor">

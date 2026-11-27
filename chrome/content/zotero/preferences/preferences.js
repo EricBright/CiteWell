@@ -25,8 +25,111 @@
 
 "use strict";
 
+async function checkDatabaseIntegrity() {
+	let button = document.getElementById('check-integrity');
+	if (button) button.disabled = true;
+		
+		try {
+			let ps = Services.prompt;
+			
+			var ok = await Zotero.DB.integrityCheck();
+			if (ok) {
+				ok = await Zotero.Schema.integrityCheck();
+				if (!ok) {
+					var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
+						+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
+					var index = ps.confirmEx(window,
+						Zotero.getString('general.failed'),
+						Zotero.getString('db.integrityCheck.failed') + "\n\n" +
+							Zotero.getString('db.integrityCheck.repairAttempt') + " " +
+							Zotero.getString('db.integrityCheck.appRestartNeeded', Zotero.appName),
+						buttonFlags,
+						Zotero.getString('db.integrityCheck.fixAndRestart', Zotero.appName),
+						null, null, null, {}
+					);
+					
+					if (index == 0) {
+						// Safety first
+						await Zotero.DB.backUpDatabase({ force: true });
+						
+						// Fix the errors
+						await Zotero.Schema.integrityCheck(true);
+						
+						// And run the check again
+						ok = await Zotero.Schema.integrityCheck();
+						var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING);
+						if (ok) {
+							var str = 'success';
+							var msg = Zotero.getString('db.integrityCheck.errorsFixed');
+						}
+						else {
+							var str = 'failed';
+							var msg = Zotero.getString('db.integrityCheck.errorsNotFixed')
+										+ "\n\n" + Zotero.getString('db.integrityCheck.reportInForums');
+						}
+						
+						ps.confirmEx(window,
+							Zotero.getString('general.' + str),
+							msg,
+							buttonFlags,
+							Zotero.getString('general.restartApp', Zotero.appName),
+							null, null, null, {}
+						);
+						
+						var appStartup = Components.classes["@mozilla.org/toolkit/app-startup;1"]
+								.getService(Components.interfaces.nsIAppStartup);
+						appStartup.quit(Components.interfaces.nsIAppStartup.eAttemptQuit
+							| Components.interfaces.nsIAppStartup.eRestart);
+					}
+					
+					return;
+				}
+				
+			}
+			var str = ok ? 'passed' : 'failed';
+			
+			ps.alert(window,
+				Zotero.getString('general.' + str),
+				Zotero.getString('db.integrityCheck.' + str)
+				+ (!ok ? "\n\n" + Zotero.getString('db.integrityCheck.reportInForums') : ''));
+		}
+		finally {
+			if (button) button.disabled = false;
+		}
+}
+
+async function resetTranslators() {
+		var ps = Services.prompt;
+		
+		var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
+			+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
+		
+		var index = ps.confirmEx(null,
+			Zotero.getString('general.warning'),
+			Zotero.getString('zotero.preferences.advanced.resetTranslators.changesLost'),
+			buttonFlags,
+			Zotero.getString('zotero.preferences.advanced.resetTranslators'),
+			null, null, null, {});
+		
+		if (index == 0) {
+			let button = document.getElementById('reset-translators');
+			button.disabled = true;
+			try {
+				await Zotero.Schema.resetTranslators();
+				if (Zotero_Preferences.Export) {
+					Zotero_Preferences.Export.populateQuickCopyList();
+				}
+			}
+			finally {
+				if (button) button.disabled = false;
+			}
+		}
+}
+
 const CATALOG_ACTIONS = {
 	'open-connector-page': () => Zotero.launchURL(Zotero.CONNECTORS_URL),
+	'check-database-integrity': checkDatabaseIntegrity,
+	'reset-translators': resetTranslators,
 	'clear-local-api-authorizations': async () => {
 		await Zotero.Server.LocalAPI.clearAuthorizations();
 		Zotero_Preferences._refreshLocalAPI(

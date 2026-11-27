@@ -153,3 +153,9 @@ local-api-title =
     本地 API
 local-api-description =
     允许本地脚本通过 HTTP 读取和写入文献库。只有这台计算机可以连接，写入需要授权，可在此清除。
+
+database-maintenance-title = 数据库维护
+database-maintenance-check-integrity =
+    .label = 检查数据库完整性
+database-maintenance-reset-translators =
+    .label = 重置转换器…

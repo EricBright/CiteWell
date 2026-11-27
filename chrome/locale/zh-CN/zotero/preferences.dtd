@@ -186,9 +186,6 @@
 <!ENTITY zotero.preferences.attachmentBaseDir.selectBasePath "选择…">
 <!ENTITY zotero.preferences.attachmentBaseDir.resetBasePath "改为使用绝对路径…">
 
-<!ENTITY zotero.preferences.dbMaintenance "数据库维护">
-<!ENTITY zotero.preferences.dbMaintenance.integrityCheck "检查数据库完整性">
 <!ENTITY zotero.preferences.dbMaintenance.resetTranslatorsAndStyles "重置转换器和样式…">
-<!ENTITY zotero.preferences.dbMaintenance.resetTranslators "重置转换器…">
 
 <!ENTITY zotero.preferences.configEditor "设置编辑器">

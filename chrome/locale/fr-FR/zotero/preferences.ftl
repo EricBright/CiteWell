@@ -155,3 +155,9 @@ local-api-title =
     API locale
 local-api-description =
     Permet à des scripts locaux de lire et d’écrire la bibliothèque via HTTP. Seul cet ordinateur peut se connecter, et l’écriture nécessite une autorisation que vous pouvez révoquer ici.
+
+database-maintenance-title = Maintenance de la base de données
+database-maintenance-check-integrity =
+    .label = Vérifier l'intégrité de la base de données
+database-maintenance-reset-translators =
+    .label = Réinitialiser les convertisseurs…

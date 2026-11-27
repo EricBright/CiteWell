@@ -153,3 +153,9 @@ local-api-title =
     ローカル API
 local-api-description =
     ローカルのスクリプトが HTTP 経由でライブラリを読み書きできるようにします。接続できるのはこのコンピューターだけです。書き込みには、ここで解除できる承認が必要です。
+
+database-maintenance-title = データベースの管理
+database-maintenance-check-integrity =
+    .label = データベースの整合性をチェック
+database-maintenance-reset-translators =
+    .label = トランスレータをリセット...

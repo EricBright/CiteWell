@@ -154,3 +154,9 @@ local-api-title =
     本機 API
 local-api-description =
     允許本機指令碼透過 HTTP 讀取和寫入文獻庫。只有這台電腦可以連線，寫入需要授權，可在此清除。
+
+database-maintenance-title = 資料庫維護
+database-maintenance-check-integrity =
+    .label = 檢查資料庫完整性
+database-maintenance-reset-translators =
+    .label = 重設轉譯器……

@@ -154,3 +154,9 @@ local-api-title =
     Local API
 local-api-description =
     Lets local scripts read and write the library over HTTP. Only this computer can connect, and write access needs an authorization you can clear here.
+
+database-maintenance-title = Database Maintenance
+database-maintenance-check-integrity =
+    .label = Check Database Integrity
+database-maintenance-reset-translators =
+    .label = Reset Translators…

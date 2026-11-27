@@ -246,6 +246,28 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders database maintenance from the catalog", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.equal(
+				win.document.getElementById("database-maintenance-title").textContent,
+				"Database Maintenance",
+				"the Fluent title was not translated"
+			);
+			let check = win.document.getElementById("check-integrity");
+			let reset = win.document.getElementById("reset-translators");
+			assert.ok(check && reset, "the catalog actions did not render");
+			assert.include(check.getAttribute("label"), "Check Database Integrity");
+			assert.include(reset.getAttribute("label"), "Reset Translators");
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("renders the local API group from the catalog", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-agent"

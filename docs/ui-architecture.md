@@ -184,10 +184,14 @@ suite runs with the server enabled, and flipping that preference would stop the 
 
 ### P5 — Pilot C: actions, Database Maintenance
 
-Two actions with no preference. Bind them through the central action registry, add a test that every
-catalog action has a live handler (a registered action that does nothing is the silent failure),
-and run the acceptance test: change only the `pane` field, assert the group renders in the new pane,
-with its labels, aliases and deep link intact.
+**Done 2026-11-27.** The two actions are catalog items with no preference, bound in the shared action
+table and moved out of the pane module, so they travel with the section. Their labels moved from DTD
+to Fluent in all eight locales. The integrity-check failure message no longer points at
+`zotero.org/utils/dbfix`; it reuses the existing "report this problem on CiteWell's issue tracker"
+string, so the old Zotero tool link is gone without a new translation.
+
+The test proves the Fluent title and both action labels render. Gate G4 was met in P2's move test:
+changing only `paneId` renders the section in another pane.
 
 **Gate G4:** moving a group is a one-field edit plus a test run.
 

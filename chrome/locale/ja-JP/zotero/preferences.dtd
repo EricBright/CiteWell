@@ -186,9 +186,6 @@
 <!ENTITY zotero.preferences.attachmentBaseDir.selectBasePath "選択...">
 <!ENTITY zotero.preferences.attachmentBaseDir.resetBasePath "絶対パスに戻す...">
 
-<!ENTITY zotero.preferences.dbMaintenance "データベースの管理">
-<!ENTITY zotero.preferences.dbMaintenance.integrityCheck "データベースの整合性をチェック">
 <!ENTITY zotero.preferences.dbMaintenance.resetTranslatorsAndStyles "トランスレータと引用スタイルをリセット...">
-<!ENTITY zotero.preferences.dbMaintenance.resetTranslators "トランスレータをリセット...">
 
 <!ENTITY zotero.preferences.configEditor "設定エディタ">

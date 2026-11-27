@@ -154,3 +154,9 @@ local-api-title =
     Lokale API
 local-api-description =
     Ermöglicht lokalen Skripten, die Bibliothek über HTTP zu lesen und zu schreiben. Nur dieser Computer kann sich verbinden; Schreibzugriff erfordert eine Autorisierung, die Sie hier löschen können.
+
+database-maintenance-title = Datenbankwartung
+database-maintenance-check-integrity =
+    .label = Integrität der Datenbank überprüfen
+database-maintenance-reset-translators =
+    .label = Übersetzer zurücksetzen...

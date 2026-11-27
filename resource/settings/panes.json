@@ -510,6 +510,28 @@
           "condition": "server-disabled"
         }
       ]
+    },
+    {
+      "id": "database-maintenance",
+      "kind": "group",
+      "paneId": "zotero-prefpane-advanced",
+      "order": 10,
+      "titleKey": "database-maintenance-title",
+      "after": "#zotero-prefpane-advanced-network",
+      "items": [
+        {
+          "id": "check-integrity",
+          "kind": "action",
+          "command": "check-database-integrity",
+          "labelKey": "database-maintenance-check-integrity"
+        },
+        {
+          "id": "reset-translators",
+          "kind": "action",
+          "command": "reset-translators",
+          "labelKey": "database-maintenance-reset-translators"
+        }
+      ]
     }
   ]
 }

@@ -186,9 +186,6 @@
 <!ENTITY zotero.preferences.attachmentBaseDir.selectBasePath "選擇……">
 <!ENTITY zotero.preferences.attachmentBaseDir.resetBasePath "還原成絕對路徑……">
 
-<!ENTITY zotero.preferences.dbMaintenance "資料庫維護">
-<!ENTITY zotero.preferences.dbMaintenance.integrityCheck "檢查資料庫完整性">
 <!ENTITY zotero.preferences.dbMaintenance.resetTranslatorsAndStyles "重設轉譯器與樣式……">
-<!ENTITY zotero.preferences.dbMaintenance.resetTranslators "重設轉譯器……">
 
 <!ENTITY zotero.preferences.configEditor "設定編輯器">
