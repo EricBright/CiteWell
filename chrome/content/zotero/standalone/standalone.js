@@ -877,23 +877,8 @@ const ZoteroStandalone = new function () {
 	/**
 	 * Handles help menu requests
 	 */
-	this.openHelp = function (type) {
-		switch (type) {
-		case "troubleshooting":
-			ZoteroPane.loadURI(ZOTERO_CONFIG.TROUBLESHOOTING_URL);
-			break;
-		
-		case "feedback":
-			ZoteroPane.loadURI(ZOTERO_CONFIG.FEEDBACK_URL);
-			break;
-		
-		case "connectors":
-			ZoteroPane.loadURI(ZOTERO_CONFIG.CONNECTORS_URL);
-			break;
-		
-		default:
-			ZoteroPane.loadURI(Zotero.HELP_URL);
-		}
+	this.openHelp = function () {
+		ZoteroPane.loadURI(Zotero.HELP_URL);
 	}
 
 	/**

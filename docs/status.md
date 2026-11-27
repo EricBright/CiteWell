@@ -64,7 +64,8 @@ resolves the repository and reports "No updates available".
   and the post-upgrade blog banner are gone. The Style Manager catalog and dictionary downloads
   remain owner-approved exceptions. The browser connector moved from Tools to Settings > Advanced
   with the exception stated there (D65). The maintained locale set is eight; the build and the
-  picker ship only those (D64). `uiCopyTest` 16/16.
+  picker ship only those (D64). The unreachable error-report and upgrade wizards, the banner's
+  pref and styles, and the Help switch's Zotero cases are removed. `uiCopyTest` 16/16.
 
 - **Settings UX.** Settings is a one-click menubar command between Tools and Help (ui rule 7), not
   an Edit item. DNS is a section of Advanced, not a pane (D50 amendment); the manifest `retired`

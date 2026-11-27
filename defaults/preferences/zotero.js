@@ -52,7 +52,6 @@ pref("extensions.zotero.trashAutoEmptyDays", 30);
 pref("extensions.zotero.viewOnDoubleClick", true);
 pref("extensions.zotero.firstRunGuidance", true);
 pref("extensions.zotero.firstRunGuidanceShown.readAloud", true);
-pref("extensions.zotero.showPostUpgradeBanner", true);
 pref("extensions.zotero.showConnectorVersionWarning", true);
 
 pref("extensions.zotero.groups.copyChildLinks", true);
