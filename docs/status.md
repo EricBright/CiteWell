@@ -13,6 +13,33 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-27 (release 2026.11.27.001)
+
+Compaction anchor. Code commit `5fcd3281b`; docs commits follow. Release `v2026.11.27.001` is
+latest, tag on `5fcd3281b`, three assets. Installed `~/AppImages/citewell.appimage` is the published
+file, sha256 `7287b7b604a59df50305c421b9c6de5cbf273443ef96c98ed02f8a995f15834d`, 121,936,376 bytes;
+`~/AppImages/release-2026.11.27.001/` holds the three assets.
+
+**Shipped since 2026.11.27.000.**
+
+- **Support links (D66).** The five Settings pane Help links that still pointed at
+  `zotero.org/support` now open the CiteWell repository. Discussions and Issues are enabled on the
+  repository, so Ask a Question and Report a Problem resolve. `uiCopyTest` guards the pane links and
+  the two URL constants.
+- **Settings split (D67).** The Browser Connector moved from Advanced to Integrations, the local API
+  moved to Agent access beside the agent token, and the "Miscellaneous" group is gone. The
+  outdated-connector prompt opens Integrations.
+- **HIG audit.** [kde-hig-audit.md](kde-hig-audit.md) records the KDE Human Interface Guidelines
+  pass: where the app conforms, where it diverges, which divergences are deliberate, and which
+  checks still need a runtime pass. It found the support-links bug and the Advanced leftovers.
+
+**Tests.** `uiCopyTest` 19/19, `settingsTabTest` 8/8, `preferences_advancedTest` and `agentTest`
+22/22.
+
+**Next.** The HIG audit's second settings pass: keyboard shortcuts out of Advanced, full-text
+indexing, translator updates, and a decision on Feeds. Also open: native review of the eight
+translations, R32's optional follow-ups, and the next release's notes need the same claims pass.
+
 ## Handoff 2026-11-27 (release 2026.11.27.000)
 
 Compaction anchor. Code commit `6f5f19f9a`; docs commits follow. Release `v2026.11.27.000` is latest,
