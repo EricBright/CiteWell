@@ -361,3 +361,6 @@ attachment-base-choose =
     .label = 选择…
 attachment-base-revert =
     .label = 改为使用绝对路径…
+
+locate-title =
+    检索

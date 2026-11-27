@@ -363,3 +363,6 @@ attachment-base-choose =
     .label = Elegir...
 attachment-base-revert =
     .label = Revertir a rutas absolutas...
+
+locate-title =
+    Buscar

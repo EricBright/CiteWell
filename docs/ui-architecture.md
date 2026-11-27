@@ -249,7 +249,14 @@ preference listener moved from the Advanced module's init into the section initi
 updates in the pane that owns it; its message also said "Zotero will use relative paths" in every
 locale and now says CiteWell.
 
-Still hand-written: the data directory and its migration states, and Locate/OpenURL.
+Locate/OpenURL is a component too: the resolver menu and the server field keep their ids and the
+General handlers that populate them, and its title moved from DTD to Fluent.
+
+Section initializers now run after the section is inserted into the document. That order is what
+lets an initializer use `document.getElementById()` like a pane module does; before this, the base
+directory initializer ran against a detached tree and silently found nothing.
+
+Still hand-written: the data directory and its migration states.
 
 ### One list (done 2026-11-27)
 

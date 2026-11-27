@@ -385,3 +385,6 @@ attachment-base-choose =
     .label = Choose…
 attachment-base-revert =
     .label = Revert to Absolute Paths…
+
+locate-title =
+    Locate

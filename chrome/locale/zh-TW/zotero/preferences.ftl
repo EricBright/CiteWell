@@ -362,3 +362,6 @@ attachment-base-choose =
     .label = 選擇……
 attachment-base-revert =
     .label = 還原成絕對路徑……
+
+locate-title =
+    查詢

@@ -724,6 +724,14 @@
       "searchAliases": [
         "attachmentBasePath.clearBasePath.message"
       ]
+    },
+    {
+      "id": "library-locate",
+      "kind": "component",
+      "component": "library-locate",
+      "paneId": "zotero-prefpane-library",
+      "order": 40,
+      "titleKey": "locate-title"
     }
   ]
 }

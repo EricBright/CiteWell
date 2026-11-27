@@ -361,3 +361,6 @@ attachment-base-choose =
     .label = 選択...
 attachment-base-revert =
     .label = 絶対パスに戻す...
+
+locate-title =
+    出典の確認

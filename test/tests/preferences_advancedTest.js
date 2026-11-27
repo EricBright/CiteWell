@@ -515,6 +515,9 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("library-current-title"));
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
 			assert.ok(win.document.getElementById("baseAttachmentPath"));
+			assert.ok(win.document.getElementById("openurl-menu"));
+			assert.ok(win.document.getElementById("openURLServerField"));
+			assert.ok(win.document.getElementById("library-locate-title"));
 			assert.ok(win.document.getElementById("baseAttachmentPathButton"));
 			assert.ok(win.document.getElementById("resetBasePath"));
 			assert.ok(win.document.getElementById("library-base-dir-title"));
@@ -527,7 +530,7 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
 			assert.ok(win.document.getElementById("baseAttachmentPath"));
 			assert.ok(win.document.getElementById("data-dir-path"));
-			assert.ok(win.document.getElementById("zotero-prefpane-locate-groupbox"));
+			assert.ok(win.document.getElementById("openurl-menu"));
 			assert.ok(win.document.getElementById("library-current-path"));
 		}
 		finally {

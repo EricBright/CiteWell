@@ -127,6 +127,55 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'library-locate': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let intro = document.createElementNS(HTML, 'label');
+		intro.setAttribute('data-l10n-id', 'preferences-locate-library-lookup-intro');
+		let separator = document.createXULElement('separator');
+		separator.classList.add('thin');
+
+		let resolverRow = document.createXULElement('hbox');
+		resolverRow.setAttribute('align', 'center');
+		let resolverLabel = document.createXULElement('label');
+		resolverLabel.setAttribute('control', 'openurl-menu');
+		resolverLabel.setAttribute('data-l10n-id', 'preferences-locate-resolver');
+		let menu = document.createXULElement('menulist');
+		menu.id = 'openurl-menu';
+		menu.setAttribute('native', 'true');
+		let popup = document.createXULElement('menupopup');
+		popup.id = 'openurl-primary-popup';
+		popup.addEventListener('popupshowing', event => {
+			Zotero_Preferences.General.handleOpenURLPopupShowing(event);
+		});
+		popup.addEventListener('popuphidden', event => {
+			Zotero_Preferences.General.handleOpenURLPopupHidden(event);
+		});
+		popup.addEventListener('command', event => {
+			Zotero_Preferences.General.handleOpenURLSelected(event);
+		});
+		popup.append(document.createXULElement('menuitem'));
+		menu.append(popup);
+		resolverRow.append(resolverLabel, menu);
+
+		let serverRow = document.createXULElement('hbox');
+		serverRow.setAttribute('style', 'display: flex; align-items: center;');
+		let serverLabel = document.createXULElement('label');
+		serverLabel.setAttribute('control', 'openURLServerField');
+		serverLabel.setAttribute('data-l10n-id', 'preferences-locate-base-url');
+		let server = document.createElementNS(HTML, 'input');
+		server.type = 'text';
+		server.id = 'openURLServerField';
+		server.setAttribute('style', 'flex: 1;');
+		server.setAttribute('dir', 'ltr');
+		server.setAttribute('preference', 'extensions.zotero.openURL.resolver');
+		server.addEventListener('input', () => {
+			Zotero_Preferences.General.onOpenURLCustomized();
+		});
+		serverRow.append(serverLabel, server);
+
+		groupbox.append(intro, separator, resolverRow, serverRow);
+	},
+
 	'library-base-dir': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let description = document.createXULElement('description');
@@ -1335,14 +1384,6 @@ var Zotero_Preferences = {
 				}
 				groupbox.append(element);
 			}
-			if (section.init) {
-				let init = CATALOG_INITIALIZERS[section.init];
-				if (!init) {
-					throw new Error('Unknown catalog initializer: ' + section.init);
-				}
-				init(groupbox);
-			}
-
 			// Place inside the pane document, not beside it. `before`/`after`
 			// are transition anchors to hand-written content; they disappear
 			// once a pane is fully catalog-owned.
@@ -1373,6 +1414,16 @@ var Zotero_Preferences = {
 				else {
 					root.append(groupbox);
 				}
+			}
+
+			// Run the initializer after the section is in the document, so it can
+			// use document.getElementById() as pane modules do.
+			if (section.init) {
+				let init = CATALOG_INITIALIZERS[section.init];
+				if (!init) {
+					throw new Error('Unknown catalog initializer: ' + section.init);
+				}
+				init(groupbox);
 			}
 		}
 	},

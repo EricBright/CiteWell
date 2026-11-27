@@ -362,3 +362,6 @@ attachment-base-choose =
     .label = Auswählen...
 attachment-base-revert =
     .label = Auf absolute Pfade zurücksetzen
+
+locate-title =
+    Finden
