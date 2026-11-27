@@ -127,6 +127,41 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'library-base-dir': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'attachment-base-message');
+		let row = document.createXULElement('hbox');
+		row.setAttribute('align', 'center');
+		let label = document.createXULElement('label');
+		label.id = 'baseAttachmentPathLabel';
+		label.setAttribute('control', 'baseAttachmentPath');
+		Zotero_Preferences._applyLabel(label, 'attachment-base-path-label', 'value');
+		let input = document.createElementNS(HTML, 'input');
+		input.type = 'text';
+		input.id = 'baseAttachmentPath';
+		input.readOnly = true;
+		input.setAttribute('preference', 'extensions.zotero.baseAttachmentPath');
+		input.setAttribute('flex', '1');
+		input.setAttribute('tabindex', '0');
+		input.setAttribute('aria-labelledby', 'baseAttachmentPathLabel');
+		input.classList.add('directory-path');
+		let choose = document.createXULElement('button');
+		choose.id = 'baseAttachmentPathButton';
+		choose.setAttribute('aria-describedby', 'baseAttachmentPathLabel');
+		Zotero_Preferences._applyLabel(choose, 'attachment-base-choose');
+		choose.addEventListener('command', () => CATALOG_ACTIONS['choose-base-path']());
+		row.append(label, input, choose);
+		let row2 = document.createXULElement('hbox');
+		row2.classList.add('preferences-button-group');
+		let reset = document.createXULElement('button');
+		reset.id = 'resetBasePath';
+		Zotero_Preferences._applyLabel(reset, 'attachment-base-revert');
+		reset.addEventListener('command', () => CATALOG_ACTIONS['clear-base-path']());
+		row2.append(reset);
+		groupbox.append(description, row, row2);
+	},
+
 	'library-file-renaming': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let intro = document.createElementNS(HTML, 'label');
@@ -664,6 +699,8 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'choose-base-path': () => Zotero_Preferences.Attachment_Base_Directory.choosePath(),
+	'clear-base-path': () => Zotero_Preferences.Attachment_Base_Directory.clearPath(),
 	'open-file-renaming': () => Zotero_Preferences.General.openFileRenamingDialog(),
 	'open-library': () => Zotero_Preferences.Library.openLibrary(),
 	'move-library': () => Zotero_Preferences.Library.moveLibrary(),
@@ -700,6 +737,15 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'library-base-dir': groupbox => {
+		let field = groupbox.querySelector('#baseAttachmentPath');
+		if (field) {
+			field.addEventListener('syncfrompreference', () => {
+				Zotero_Preferences.Attachment_Base_Directory.updateUI();
+			});
+		}
+		Zotero_Preferences.Attachment_Base_Directory.updateUI();
+	},
 	'local-api': groupbox => {
 		let url = groupbox.querySelector('#local-api-url');
 		if (url) {

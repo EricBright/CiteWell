@@ -351,3 +351,14 @@ library-locations-title =
     Speicherorte
 library-locations-description =
     Weitere Ordner, die CiteWell auf diesem Computer verwendet. Jeder Pfad wird mit seinem Zweck angezeigt.
+
+attachment-base-title =
+    Basisverzeichnis für verlinkte Dateianhänge
+attachment-base-message =
+    CiteWell wird relative Pfade für verlinkte Dateianhänge innerhalb des Basisverzeichnisses verwenden, sodass Sie auf verschiedenen Computern auf die Dateien zugreifen können, solange die Ordnerstruktur im Basisverzeichnis die gleiche ist.
+attachment-base-path-label =
+    .value = Basisverzeichnis:
+attachment-base-choose =
+    .label = Auswählen...
+attachment-base-revert =
+    .label = Auf absolute Pfade zurücksetzen

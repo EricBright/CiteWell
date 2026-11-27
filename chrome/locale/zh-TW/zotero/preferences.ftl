@@ -351,3 +351,14 @@ library-locations-title =
     位置
 library-locations-description =
     CiteWell 在這台電腦上使用的其他資料夾。每個路徑都會顯示其用途。
+
+attachment-base-title =
+    連結的附加檔來源目錄
+attachment-base-message =
+    CiteWell 會使用連到的附加檔來源目錄內的相對路徑，讓您可在不同電腦存取檔案，只要來源目錄內的檔案結構保持不變即可。
+attachment-base-path-label =
+    .value = 來源目錄：
+attachment-base-choose =
+    .label = 選擇……
+attachment-base-revert =
+    .label = 還原成絕對路徑……

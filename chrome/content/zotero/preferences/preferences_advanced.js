@@ -47,11 +47,6 @@ Zotero_Preferences.Advanced = {
 			input.value = Zotero.Prefs.get(preferenceName);
 		}
 		
-		var baseAttachmentPath = document.getElementById('baseAttachmentPath');
-		if (baseAttachmentPath) {
-			baseAttachmentPath.addEventListener('syncfrompreference',
-				() => Zotero_Preferences.Attachment_Base_Directory.updateUI());
-		}
 		if (document.getElementById('data-dir-path')) {
 			this.onDataDirLoad();
 		}

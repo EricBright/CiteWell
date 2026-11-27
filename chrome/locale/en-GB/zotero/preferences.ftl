@@ -351,3 +351,14 @@ library-locations-title =
     Locations
 library-locations-description =
     Other folders CiteWell uses on this computer. Each path is shown with what it is for.
+
+attachment-base-title =
+    Linked Attachment Base Directory
+attachment-base-message =
+    CiteWell will use relative paths for linked file attachments within the base directory, allowing you to access files on different computers as long as the file structure within the base directory remains the same.
+attachment-base-path-label =
+    .value = Base directory:
+attachment-base-choose =
+    .label = Choose…
+attachment-base-revert =
+    .label = Revert to Absolute Paths…

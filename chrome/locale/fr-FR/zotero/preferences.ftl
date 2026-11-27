@@ -352,3 +352,14 @@ library-locations-title =
     Emplacements
 library-locations-description =
     Autres dossiers utilisés par CiteWell sur cet ordinateur. Chaque chemin est affiché avec sa fonction.
+
+attachment-base-title =
+    Répertoire de base pour les pièces jointes liées
+attachment-base-message =
+    CiteWell utilisera un chemin relatif pour l'emplacement des pièces jointes liées - uniquement celles-ci - à l'intérieur du répertoire de base. Cela vous permet d'accéder à ces fichiers depuis différents ordinateurs dès lors que la structure des dossiers et fichiers dans ce répertoire de base reste la même.
+attachment-base-path-label =
+    .value = Répertoire de base :
+attachment-base-choose =
+    .label = Choisir…
+attachment-base-revert =
+    .label = Revenir à des chemins absolus…

@@ -243,9 +243,13 @@ the path as an argument instead of hardcoded prefixes.
 
 ### Library & Files (in progress)
 
-Current library, Locations and File renaming are catalog components. The file-renaming button keeps
-its Fluent labels and its search aliases. Still hand-written: the attachment base directory, the
-data directory and its migration states, and Locate/OpenURL.
+Current library, Locations, File renaming and the attachment base directory are catalog components.
+The file-renaming button keeps its Fluent labels and its search aliases. The base directory's
+preference listener moved from the Advanced module's init into the section initializer, so the field
+updates in the pane that owns it; its message also said "Zotero will use relative paths" in every
+locale and now says CiteWell.
+
+Still hand-written: the data directory and its migration states, and Locate/OpenURL.
 
 ### One list (done 2026-11-27)
 

@@ -712,6 +712,18 @@
         "file-renaming-format-template",
         "file-renaming-auto-rename-files"
       ]
+    },
+    {
+      "id": "library-base-dir",
+      "kind": "component",
+      "component": "library-base-dir",
+      "paneId": "zotero-prefpane-library",
+      "order": 30,
+      "titleKey": "attachment-base-title",
+      "init": "library-base-dir",
+      "searchAliases": [
+        "attachmentBasePath.clearBasePath.message"
+      ]
     }
   ]
 }

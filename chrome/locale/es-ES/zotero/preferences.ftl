@@ -352,3 +352,14 @@ library-locations-title =
     Ubicaciones
 library-locations-description =
     Otras carpetas que CiteWell usa en este equipo. Cada ruta se muestra con su finalidad.
+
+attachment-base-title =
+    Directorio base de adjuntos enlazados
+attachment-base-message =
+    CiteWell usará rutas relativas para los archivos adjuntos enlazados dentro del directorio base, permitiéndole acceder a los archivos desde diferentes ordenadores, siempre que la estructura de archivos dentro del directorio base se mantenga igual.
+attachment-base-path-label =
+    .value = Directorio base:
+attachment-base-choose =
+    .label = Elegir...
+attachment-base-revert =
+    .label = Revertir a rutas absolutas...

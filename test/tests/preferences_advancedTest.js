@@ -514,6 +514,10 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("file-handling"));
 			assert.ok(win.document.getElementById("library-current-title"));
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
+			assert.ok(win.document.getElementById("baseAttachmentPath"));
+			assert.ok(win.document.getElementById("baseAttachmentPathButton"));
+			assert.ok(win.document.getElementById("resetBasePath"));
+			assert.ok(win.document.getElementById("library-base-dir-title"));
 			assert.ok(win.document.getElementById("library-file-renaming-title"));
 			assert.ok(win.document.getElementById("library-open"));
 			assert.ok(win.document.getElementById("library-locations"));

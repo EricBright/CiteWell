@@ -350,3 +350,14 @@ library-locations-title =
     位置
 library-locations-description =
     CiteWell 在此计算机上使用的其他文件夹。每个路径都会显示其用途。
+
+attachment-base-title =
+    已链接附件的根目录
+attachment-base-message =
+    CiteWell 会为位于根目录（及其子目录）内的已链接附件使用相对路径，因此只要目录结构相同，您可以在不同电脑上照常访问这些附件。
+attachment-base-path-label =
+    .value = 根目录:
+attachment-base-choose =
+    .label = 选择…
+attachment-base-revert =
+    .label = 改为使用绝对路径…

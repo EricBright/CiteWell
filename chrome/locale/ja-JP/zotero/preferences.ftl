@@ -350,3 +350,14 @@ library-locations-title =
     保存場所
 library-locations-description =
     CiteWell がこのコンピューターで使用するその他のフォルダーです。各パスには用途が表示されます。
+
+attachment-base-title =
+    リンク付き添付ファイルの基本ディレクトリ
+attachment-base-message =
+    CiteWell は、基本ディレクトリの中のリンク付き添付ファイルについて相対パスを使用します。これにより、基本ディレクトリのファイル構造が同じである限り、異なるコンピューター上のファイルへのアクセスが可能になります。
+attachment-base-path-label =
+    .value = ベースディレクトリ
+attachment-base-choose =
+    .label = 選択...
+attachment-base-revert =
+    .label = 絶対パスに戻す...
