@@ -45,6 +45,24 @@ sha256 `0e70fceb3bf972c512b1ce86fee7487f3e1aedbc1030aa41b9bb0d2f9cf931bb`, 121,9
 
 **Tests.** 85/85 across preferences, agent, import, copy, settings-tab and bibliography.
 
+**Documentation split (after `.006`).** The README is now the human front page (823/1,600 words):
+story, features, install, limits, links; no branch/version table and no documentation index. Agent
+context moved to [AGENTS.md](../AGENTS.md) (contract, 255/350), [agent-context.md](agent-context.md)
+(commands, map, state, 291/600) and [index.md](index.md) (public index, 510/800). `docs-check` parses
+the registry from the index, enforces the four budgets, and every back-reference was retargeted;
+D5 was amended. Commits `b6d15f3b5`, `6b2294c61`.
+
+**Next session — start here.**
+
+1. Read [README.md](../README.md), then [AGENTS.md](../AGENTS.md), then
+   [agent-context.md](agent-context.md), then [index.md](index.md).
+2. Add the screenshots: `.webp`, under `docs/images/readme/`, referenced from the README with alt
+   text. This was deferred to the next session by decision.
+3. Consider a release once the screenshots and any README polish are in; there is no code change
+   pending, so releasing is optional.
+4. A fresh-session dry run should confirm the README top redirect leads to the agent context without
+   being told the path.
+
 **Still open, each for a different reason.**
 
 - **Accessibility pass — priority-deferred.** One user, no present need. Pick it up if a need
