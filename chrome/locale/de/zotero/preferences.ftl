@@ -385,3 +385,22 @@ cite-style-preview =
     .label = Zitierstil-Vorschau
 cite-word-processors-title =
     Textverarbeitungsprogramme
+
+quick-copy-title =
+    Schnelles Kopieren
+quick-copy-item-format =
+    .value = Format für Einträge:
+quick-copy-note-format =
+    .value = Format für Notizen:
+quick-copy-copy-as-html =
+    .label = Als HTML kopieren
+quick-copy-site-settings =
+    .value = Website-spezifische Einstellungen:
+quick-copy-drag-limit =
+    .value = Schnelles Kopieren via Drag-and-Drop ist zeitgleich möglich für max.
+quick-copy-edit =
+    .label = Bearbeiten
+quick-copy-loading =
+    .label = Lade...
+quick-copy-items =
+    .value = Einträge

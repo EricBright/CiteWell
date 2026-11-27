@@ -766,6 +766,16 @@
       "paneId": "zotero-prefpane-cite",
       "order": 30,
       "titleKey": "cite-word-processors-title"
+    },
+    {
+      "id": "quick-copy",
+      "kind": "component",
+      "component": "quick-copy",
+      "paneId": "zotero-prefpane-import-export",
+      "order": 20,
+      "titleKey": "quick-copy-title",
+      "init": "quick-copy",
+      "after": "#import-export-library"
     }
   ]
 }

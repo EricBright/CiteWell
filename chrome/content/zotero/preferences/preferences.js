@@ -127,6 +127,158 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'quick-copy': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let instructions = document.createXULElement('label');
+		instructions.id = 'quickCopy-instructions';
+		let sep1 = document.createXULElement('separator');
+		sep1.classList.add('thin');
+		let citationInstructions = document.createXULElement('label');
+		citationInstructions.id = 'quickCopy-citationInstructions';
+		let sep2 = document.createXULElement('separator');
+
+		let itemLabel = document.createXULElement('label');
+		itemLabel.setAttribute('control', 'zotero-quickCopy-menu');
+		Zotero_Preferences._applyLabel(itemLabel, 'quick-copy-item-format', 'value');
+		let itemMenu = document.createXULElement('menulist');
+		itemMenu.id = 'zotero-quickCopy-menu';
+		itemMenu.setAttribute('native', 'true');
+		Zotero_Preferences._applyLabel(itemMenu, 'quick-copy-loading');
+
+		let localeRow = document.createXULElement('hbox');
+		localeRow.setAttribute('align', 'center');
+		let localeLabel = document.createXULElement('label');
+		localeLabel.id = 'zotero-quickCopy-locale-menu-label';
+		localeLabel.setAttribute('control', 'zotero-quickCopy-locale-menu');
+		Zotero_Preferences._applyLabel(localeLabel, 'bibliography-locale-label', 'value');
+		let localeMenu = document.createXULElement('menulist');
+		localeMenu.id = 'zotero-quickCopy-locale-menu';
+		localeMenu.setAttribute('native', 'true');
+		localeMenu.addEventListener('command', () => {
+			Zotero_Preferences.Export._lastSelectedLocale = localeMenu.value;
+		});
+		let vsep = document.createXULElement('separator');
+		vsep.setAttribute('orient', 'vertical');
+		vsep.setAttribute('width', '15px');
+		let copyHTML = document.createXULElement('checkbox');
+		copyHTML.id = 'zotero-quickCopy-copyAsHTML';
+		copyHTML.setAttribute('native', 'true');
+		Zotero_Preferences._applyLabel(copyHTML, 'quick-copy-copy-as-html');
+		copyHTML.addEventListener('command', () => {
+			Zotero_Preferences.Export.onCopyAsHTMLChange(copyHTML.checked);
+		});
+		localeRow.append(localeLabel, localeMenu, vsep, copyHTML);
+
+		let sep3 = document.createXULElement('separator');
+		let noteLabel = document.createXULElement('label');
+		noteLabel.setAttribute('control', 'zotero-noteQuickCopy-menu');
+		Zotero_Preferences._applyLabel(noteLabel, 'quick-copy-note-format', 'value');
+		let noteMenu = document.createXULElement('menulist');
+		noteMenu.id = 'zotero-noteQuickCopy-menu';
+		noteMenu.setAttribute('native', 'true');
+		Zotero_Preferences._applyLabel(noteMenu, 'quick-copy-loading');
+
+		let wrapper = document.createXULElement('box');
+		wrapper.id = 'noteQuickCopy-wrapper';
+		let options = document.createXULElement('vbox');
+		options.id = 'noteQuickCopy-format-options';
+		options.hidden = true;
+		options.setAttribute('align', 'center');
+		for (let [boxID, labelID, checkboxID, describedBy] of [
+			['noteQuickCopy-markdown-options', 'noteQuickCopy-markdown-includeAppLinks-label',
+				'noteQuickCopy-markdown-includeAppLinks', 'noteQuickCopy-markdown-includeAppLinks-label'],
+			['noteQuickCopy-html-options', 'noteQuickCopy-html-includeAppLinks-label',
+				'noteQuickCopy-html-includeAppLinks', 'noteQuickCopy-html-includeAppLinks-label'],
+		]) {
+			let row = document.createXULElement('hbox');
+			row.id = boxID;
+			row.setAttribute('align', 'center');
+			let label = document.createXULElement('label');
+			label.id = labelID;
+			let checkbox = document.createXULElement('checkbox');
+			checkbox.id = checkboxID;
+			checkbox.setAttribute('native', 'true');
+			checkbox.setAttribute('aria-describedby', describedBy);
+			checkbox.addEventListener('command', () => {
+				Zotero_Preferences.Export.onUpdateNoteExportOptions();
+			});
+			row.append(label, checkbox);
+			options.append(row);
+		}
+		wrapper.append(options);
+
+		let sep4 = document.createXULElement('separator');
+		let siteLabel = document.createXULElement('label');
+		siteLabel.setAttribute('control', 'quickCopy-siteSettings-table');
+		Zotero_Preferences._applyLabel(siteLabel, 'quick-copy-site-settings', 'value');
+		let tableContainer = document.createXULElement('hbox');
+		tableContainer.classList.add('virtualized-table-container');
+		tableContainer.setAttribute('flex', '1');
+		let table = document.createElementNS(HTML, 'div');
+		table.id = 'quickCopy-siteSettings';
+		tableContainer.append(table);
+		let sep5 = document.createXULElement('separator');
+		sep5.classList.add('thin');
+
+		let buttonRow = document.createXULElement('hbox');
+		let edit = document.createXULElement('button');
+		edit.id = 'quickCopy-edit';
+		edit.disabled = true;
+		Zotero_Preferences._applyLabel(edit, 'quick-copy-edit');
+		edit.addEventListener('click', () => {
+			if (!edit.disabled) {
+				Zotero_Preferences.Export.showQuickCopySiteEditor(true);
+			}
+		});
+		let spacer = document.createXULElement('spacer');
+		spacer.setAttribute('flex', '1');
+		let remove = document.createXULElement('button');
+		remove.id = 'quickCopy-delete';
+		remove.disabled = true;
+		remove.setAttribute('data-l10n-id', 'preferences-quickCopy-minus');
+		remove.setAttribute('data-l10n-args', '{"label":"-"}');
+		remove.addEventListener('click', () => {
+			if (!remove.disabled) {
+				Zotero_Preferences.Export.deleteSelectedQuickCopySite();
+			}
+		});
+		let add = document.createXULElement('button');
+		add.id = 'quickCopy-add';
+		add.setAttribute('data-l10n-id', 'preferences-quickCopy-plus');
+		add.setAttribute('data-l10n-args', '{"label":"+"}');
+		add.addEventListener('click', () => {
+			Zotero_Preferences.Export.showQuickCopySiteEditor();
+		});
+		buttonRow.append(edit, spacer, remove, add);
+
+		let limitRow = document.createXULElement('hbox');
+		limitRow.setAttribute('align', 'center');
+		let limitLabel1 = document.createXULElement('label');
+		limitLabel1.id = 'zotero-prefpane-quickcopy-draglimit-label1';
+		Zotero_Preferences._applyLabel(limitLabel1, 'quick-copy-drag-limit', 'value');
+		let limitInput = document.createElementNS(HTML, 'input');
+		limitInput.type = 'text';
+		limitInput.setAttribute('size', '3');
+		limitInput.setAttribute('preference', 'extensions.zotero.export.quickCopy.dragLimit');
+		limitInput.setAttribute(
+			'aria-labelledby',
+			'zotero-prefpane-quickcopy-draglimit-label1 zotero-prefpane-quickcopy-draglimit-label2'
+		);
+		let limitLabel2 = document.createXULElement('label');
+		limitLabel2.id = 'zotero-prefpane-quickcopy-draglimit-label2';
+		limitLabel2.setAttribute('flex', '1');
+		Zotero_Preferences._applyLabel(limitLabel2, 'quick-copy-items', 'value');
+		limitRow.append(limitLabel1, limitInput, limitLabel2);
+
+		groupbox.append(
+			instructions, sep1, citationInstructions, sep2,
+			itemLabel, itemMenu, localeRow,
+			sep3, noteLabel, noteMenu, wrapper,
+			sep4, siteLabel, tableContainer, sep5,
+			buttonRow, limitRow
+		);
+	},
+
 	'cite-styles': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		groupbox.setAttribute('flex', '1');
@@ -910,6 +1062,11 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'quick-copy': () => {
+		Zotero.Promise.delay().then(() => Zotero_Preferences.Export.init()).catch(
+			e => Zotero.logError(e)
+		);
+	},
 	'cite-styles': () => {
 		// Defer until the pane's load completes; a slow style list must not
 		// block selecting the pane, and an init failure must stay local.

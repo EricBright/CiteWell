@@ -263,10 +263,14 @@ question. With it, the Library pane document is empty and the whole pane is cata
 
 ### Import & Export (not started)
 
-The last hand-written pane. Quick Copy is mostly existing translated DTD strings and a live table
-populated by the Export module; the import/restore/duplicate half is CiteWell-specific copy with
-about twenty-five hardcoded English strings. It is therefore one deliberate translation-and-move
-pass rather than a mechanical conversion.
+**Quick Copy (done).** It is a catalog component now: instructions, the two format menus, the
+locale menu, Copy as HTML, the note-format options, the site-specific table, Edit/Remove/Add and the
+drag limit. Its labels moved from DTD to Fluent, and the Export module initializes after mounting,
+deferred and error-guarded.
+
+**Still hand-written:** Import from Zotero, Restore points, Duplicate review and Last import. That
+half is CiteWell-specific copy with about twenty-five hardcoded English strings, so it is one
+deliberate translation-and-move pass rather than a mechanical conversion.
 
 ### Cite pane (done 2026-11-27)
 

@@ -385,3 +385,22 @@ cite-style-preview =
     .label = Style Preview
 cite-word-processors-title =
     Word Processors
+
+quick-copy-title =
+    Quick Copy
+quick-copy-item-format =
+    .value = Item Format:
+quick-copy-note-format =
+    .value = Note Format:
+quick-copy-copy-as-html =
+    .label = Copy as HTML
+quick-copy-site-settings =
+    .value = Site-Specific Settings:
+quick-copy-drag-limit =
+    .value = Disable Quick Copy when dragging more than
+quick-copy-edit =
+    .label = Edit
+quick-copy-loading =
+    .label = Loading…
+quick-copy-items =
+    .value = items

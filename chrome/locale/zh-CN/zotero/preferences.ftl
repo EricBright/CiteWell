@@ -384,3 +384,22 @@ cite-style-preview =
     .label = 样式预览
 cite-word-processors-title =
     文档编辑软件
+
+quick-copy-title =
+    快速复制
+quick-copy-item-format =
+    .value = 条目格式：
+quick-copy-note-format =
+    .value = 笔记格式：
+quick-copy-copy-as-html =
+    .label = 复制为 HTML
+quick-copy-site-settings =
+    .value = 网站专属设置:
+quick-copy-drag-limit =
+    .value = 禁用快速复制，当拖动超过
+quick-copy-edit =
+    .label = 编辑
+quick-copy-loading =
+    .label = 加载…
+quick-copy-items =
+    .value = 条目

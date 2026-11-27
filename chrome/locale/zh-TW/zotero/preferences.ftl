@@ -385,3 +385,22 @@ cite-style-preview =
     .label = 樣式預覽
 cite-word-processors-title =
     文件編輯器
+
+quick-copy-title =
+    快速複製
+quick-copy-item-format =
+    .value = 項目格式
+quick-copy-note-format =
+    .value = 筆記格式：
+quick-copy-copy-as-html =
+    .label = 複製成 HTML
+quick-copy-site-settings =
+    .value = 針對特定網站的設定：
+quick-copy-drag-limit =
+    .value = 拖放超過多少項目時，停用快速複製：
+quick-copy-edit =
+    .label = 編輯
+quick-copy-loading =
+    .label = 載入中……
+quick-copy-items =
+    .value = 項目

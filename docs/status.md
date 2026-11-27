@@ -34,7 +34,7 @@ binding, and a renderer mounts it. The plan, decisions and open questions are in
 - **Panes fully catalog-owned:** Advanced, Integrations, Notes & Annotations, Agent access,
   Library & Files, Cite.
 - **Partly catalog-owned:** General (Appearance; its other sections came from the retired generated
-  list and are catalog data), Import & Export (untouched, the last pane).
+  list and are catalog data), Import & Export (Quick Copy owned; the import/restore/duplicate half is the last hand-written block).
 - **Deep links kept:** section ids `styles` and `wordProcessors` were preserved for the Cite pane,
   and the Manage Styles test now asserts the routing instead of an obsolete preferences window.
 - **Move proof:** a test changes only `paneId` and asserts the section renders in the other pane.

@@ -384,3 +384,22 @@ cite-style-preview =
     .label = スタイルのプレビュー
 cite-word-processors-title =
     ワードプロセッサ
+
+quick-copy-title =
+    クィックコピー
+quick-copy-item-format =
+    .value = 項目のフォーマット
+quick-copy-note-format =
+    .value = メモのフォーマット
+quick-copy-copy-as-html =
+    .label = HTMLとしてコピー
+quick-copy-site-settings =
+    .value = サイト固有の設定 :
+quick-copy-drag-limit =
+    .value = 項目数が右の値より大きい時はドラッグ時のクイックコピーを無効化する :
+quick-copy-edit =
+    .label = 編集
+quick-copy-loading =
+    .label = 読み込み中...
+quick-copy-items =
+    .value = 項目
