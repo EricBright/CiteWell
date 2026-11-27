@@ -374,3 +374,14 @@ data-dir-reveal =
     .label = Datenverzeichnis anzeigen
 data-dir-migrate =
     .label = Nach neuem Standardverzeichnis migrieren...
+
+cite-styles-title =
+    Zitierstile verwalten
+cite-tools-title =
+    Werkzeuge
+cite-style-editor =
+    .label = Zitierstil-Editor
+cite-style-preview =
+    .label = Zitierstil-Vorschau
+cite-word-processors-title =
+    Textverarbeitungsprogramme

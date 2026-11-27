@@ -373,3 +373,14 @@ data-dir-reveal =
     .label = データディレクトリを表示
 data-dir-migrate =
     .label = 新しい既定の場所へ移動...
+
+cite-styles-title =
+    スタイル管理
+cite-tools-title =
+    ツール
+cite-style-editor =
+    .label = スタイルエディタ
+cite-style-preview =
+    .label = スタイルのプレビュー
+cite-word-processors-title =
+    ワードプロセッサ

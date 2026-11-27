@@ -741,6 +741,31 @@
       "order": 40,
       "titleKey": "data-dir-title",
       "init": "library-data-dir"
+    },
+    {
+      "id": "styles",
+      "kind": "component",
+      "component": "cite-styles",
+      "paneId": "zotero-prefpane-cite",
+      "order": 10,
+      "titleKey": "cite-styles-title",
+      "init": "cite-styles"
+    },
+    {
+      "id": "cite-tools",
+      "kind": "component",
+      "component": "cite-tools",
+      "paneId": "zotero-prefpane-cite",
+      "order": 20,
+      "titleKey": "cite-tools-title"
+    },
+    {
+      "id": "wordProcessors",
+      "kind": "component",
+      "component": "cite-word-processors",
+      "paneId": "zotero-prefpane-cite",
+      "order": 30,
+      "titleKey": "cite-word-processors-title"
     }
   ]
 }

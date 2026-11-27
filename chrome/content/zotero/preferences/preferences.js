@@ -127,6 +127,62 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'cite-styles': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		groupbox.setAttribute('flex', '1');
+		let intro = document.createXULElement('description');
+		intro.id = 'styleManager-intro';
+		intro.setAttribute('data-l10n-id', 'preferences-styleManager-intro');
+		let sep1 = document.createXULElement('separator');
+		sep1.classList.add('thin');
+		let container = document.createXULElement('hbox');
+		container.classList.add('virtualized-table-container');
+		container.setAttribute('flex', '1');
+		let table = document.createElementNS(HTML, 'div');
+		table.id = 'styleManager';
+		container.append(table);
+		let sep2 = document.createXULElement('separator');
+		sep2.classList.add('thin');
+		let buttons = document.createXULElement('hbox');
+		buttons.id = 'styleManager-buttons';
+		buttons.setAttribute('align', 'center');
+		for (let [id, key, command] of [
+			['reset-styles-button', 'preferences-styleManager-restore-default', 'reset-styles'],
+			['add-from-file-button', 'preferences-styleManager-add-from-file', 'add-style'],
+			['get-additional-styles-button', 'preferences-styleManager-get-additional-styles',
+				'open-styles-page'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			button.setAttribute('data-l10n-id', key);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			buttons.append(button);
+		}
+		groupbox.append(intro, sep1, container, sep2, buttons);
+	},
+
+	'cite-tools': groupbox => {
+		let row = document.createXULElement('hbox');
+		for (let [id, key, command] of [
+			['openCSLEdit', 'cite-style-editor', 'open-style-editor'],
+			['openCSLPreview', 'cite-style-preview', 'open-style-preview'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, key);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row.append(button);
+		}
+		groupbox.append(row);
+	},
+
+	'cite-word-processors': groupbox => {
+		groupbox.hidden = true;
+		let list = document.createXULElement('vbox');
+		list.id = 'wordProcessorInstallers';
+		groupbox.append(list);
+	},
+
 	'library-data-dir': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let row = document.createXULElement('hbox');
@@ -807,6 +863,11 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'reset-styles': () => Zotero_Preferences.Cite.resetStyles(),
+	'add-style': () => Zotero_Preferences.Cite.addStyle(),
+	'open-styles-page': () => Zotero_Preferences.Cite.openStylesPage(),
+	'open-style-editor': () => window.open('chrome://zotero/content/tools/csledit.xhtml', '_blank', 'chrome,width=950,height=700,resizable'),
+	'open-style-preview': () => window.open('chrome://zotero/content/tools/cslpreview.xhtml', '_blank', 'chrome,width=950,height=700,resizable'),
 	'change-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(true),
 	'reset-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(false),
 	'migrate-data-dir': () => Zotero_Preferences.Advanced.migrateDataDirectory(),
@@ -849,6 +910,13 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'cite-styles': () => {
+		// Defer until the pane's load completes; a slow style list must not
+		// block selecting the pane, and an init failure must stay local.
+		Zotero.Promise.delay().then(() => Zotero_Preferences.Cite.init()).catch(
+			e => Zotero.logError(e)
+		);
+	},
 	'library-data-dir': () => Zotero_Preferences.Advanced.onDataDirLoad(),
 	'library-base-dir': groupbox => {
 		let field = groupbox.querySelector('#baseAttachmentPath');

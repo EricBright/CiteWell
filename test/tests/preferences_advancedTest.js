@@ -213,6 +213,9 @@ describe("Settings manifest navigation", function () {
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
 			assert.ok(win.document.getElementById("citation-options"));
+			assert.ok(win.document.getElementById("styleManager"));
+			assert.ok(win.document.getElementById("reset-styles-button"));
+			assert.ok(win.document.getElementById("openCSLEdit"));
 			assert.ok(win.document.getElementById("citation-paper-url"));
 			assert.ok(win.document.getElementById("citation-dialog"));
 			assert.ok(win.document.getElementById("citation-dialog-mode"));

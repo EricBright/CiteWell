@@ -397,3 +397,14 @@ data-dir-reveal =
     .label = Show Data Directory
 data-dir-migrate =
     .label = Migrate To New Default Location…
+
+cite-styles-title =
+    Style Manager
+cite-tools-title =
+    Tools
+cite-style-editor =
+    .label = Style Editor
+cite-style-preview =
+    .label = Style Preview
+cite-word-processors-title =
+    Word Processors

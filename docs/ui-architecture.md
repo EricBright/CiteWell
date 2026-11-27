@@ -261,6 +261,18 @@ note, Reveal, custom/reset/default states and the migration button. Its logic st
 Advanced module for now; extracting it into a data-directory module is a follow-up, not a placement
 question. With it, the Library pane document is empty and the whole pane is catalog-owned.
 
+### Cite pane (done 2026-11-27)
+
+The style manager, its three buttons, the style editor and preview tools, and the hidden
+word-processor block are catalog components. The section ids `styles` and `wordProcessors` were
+kept because deep links target them. The pane's init now runs from the styles section initializer
+after mounting, deferred and error-guarded, instead of from a pane load hook that ran before the
+catalog existed.
+
+The Manage Styles test expected a separate preferences window; since D48 routes settings into a main
+window tab, the test now stubs `openPreferences` and asserts that the button targets the Cite pane
+with `#styles`. The real routing is covered by `settingsTabTest`.
+
 ### One list (done 2026-11-27)
 
 The generated-section list (`simpleSections`) is retired. Its eight sections — Language & Region,

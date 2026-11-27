@@ -375,3 +375,14 @@ data-dir-reveal =
     .label = Mostrar el directorio de datos
 data-dir-migrate =
     .label = Migrar a una nueva ubicación predeterminada...
+
+cite-styles-title =
+    Gestor de estilos
+cite-tools-title =
+    Herramientas
+cite-style-editor =
+    .label = Editor de estilos
+cite-style-preview =
+    .label = Vista previa de estilos
+cite-word-processors-title =
+    Procesadores de texto

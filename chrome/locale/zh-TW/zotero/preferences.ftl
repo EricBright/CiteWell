@@ -374,3 +374,14 @@ data-dir-reveal =
     .label = 顯示資料目錄
 data-dir-migrate =
     .label = 轉移到新的預設位置……
+
+cite-styles-title =
+    樣式管理器
+cite-tools-title =
+    工具
+cite-style-editor =
+    .label = 樣式編輯器
+cite-style-preview =
+    .label = 樣式預覽
+cite-word-processors-title =
+    文件編輯器

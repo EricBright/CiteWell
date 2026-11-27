@@ -373,3 +373,14 @@ data-dir-reveal =
     .label = 打开数据文件夹
 data-dir-migrate =
     .label = 迁移到新的默认位置…
+
+cite-styles-title =
+    样式管理器
+cite-tools-title =
+    工具
+cite-style-editor =
+    .label = 样式编辑器
+cite-style-preview =
+    .label = 样式预览
+cite-word-processors-title =
+    文档编辑软件

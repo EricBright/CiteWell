@@ -37,30 +37,35 @@ describe("Create Bibliography Dialog", function () {
 		assert.equal(styleID, "http://www.zotero.org/styles/chicago-notes-bibliography");
 	});
 	
-	it("should open the Cite prefpane when Manage Styles… is clicked", async function () {
-		var item = await createDataObject('item');
-		
-		var deferred = Zotero.Promise.defer();
-		var called = false;
-		waitForWindow("chrome://zotero/content/bibliography.xhtml", function (dialog) {
-			waitForWindow("chrome://zotero/content/preferences/preferences.xhtml", function (window) {
-				// Wait for switch to Cite pane
-				(async function () {
-					do {
-						Zotero.debug("Checking for pane");
-						await Zotero.Promise.delay(5);
-					}
-					while (!window.document.querySelector('[value=zotero-prefpane-cite]').selected);
-					called = true;
-					window.close();
-					deferred.resolve();
-				})();
-			});
-			dialog.document.getElementById('manage-styles').click();
+	it("should send Manage Styles to the Cite pane", async function () {
+		await createDataObject('item');
+
+		let original = Zotero.Utilities.Internal.openPreferences;
+		let calls = [];
+		Zotero.Utilities.Internal.openPreferences = (...args) => {
+			calls.push(args);
+			return null;
+		};
+		let deferred = Zotero.Promise.defer();
+		waitForWindow("chrome://zotero/content/bibliography.xhtml", async function (dialog) {
+			try {
+				await dialog.isLoadedPromise;
+				dialog.document.getElementById('manage-styles').click();
+			}
+			finally {
+				deferred.resolve();
+			}
 		});
-		await win.Zotero_File_Interface.bibliographyFromItems();
-		await deferred.promise;
-		
-		assert.ok(called);
+		try {
+			await win.Zotero_File_Interface.bibliographyFromItems();
+			await deferred.promise;
+		}
+		finally {
+			Zotero.Utilities.Internal.openPreferences = original;
+		}
+
+		assert.lengthOf(calls, 1);
+		assert.equal(calls[0][0], "zotero-prefpane-cite");
+		assert.equal(calls[0][1].scrollTo, "#styles");
 	});
 });
