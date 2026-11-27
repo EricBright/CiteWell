@@ -220,6 +220,11 @@ describe("UI copy", function () {
 			"standalone.addonInstallationFailed.body",
 			"upgrade.nonupgradeableDB1",
 			"upgrade.nonupgradeableDB2",
+			"upgrade.failed",
+			"upgrade.dbUpdateRequired",
+			"upgrade.integrityCheckFailed",
+			"upgrade.couldNotMigrate",
+			"ingester.scrapeErrorDescription.previousError",
 		];
 		let entities = [
 			["csledit.dtd", "styles.editor"],
