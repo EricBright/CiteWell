@@ -57,10 +57,6 @@ Zotero_Preferences.Advanced = {
 		}
 
 		this.updateIndexStats();
-		this.updateLocalAPIUI();
-		document.getElementById('zotero-prefpane-advanced-enable-local-api').addEventListener('synctopreference', () => {
-			this.updateLocalAPIUI();
-		});
 	},
 	
 	
@@ -327,23 +323,6 @@ Zotero_Preferences.Advanced = {
 	},
 	
 	
-	initConnector: function () {
-		let set = (id, key) => {
-			let value = Zotero.getString(key);
-			let element = document.getElementById(id);
-			if (element.tagName.toLowerCase() === "button") {
-				element.setAttribute("label", value);
-			}
-			else {
-				element.textContent = value;
-			}
-		};
-		set("connector-heading", "connector.section.title");
-		set("connector-body1", "connector.section.body1");
-		set("connector-body2", "connector.section.body2");
-		set("connector-download", "connector.section.download");
-	},
-
 	dataDirUpdate: async function (isCustomSelection) {
 		if (!isCustomSelection && this._usingDefaultDataDir()) return;
 		
@@ -448,53 +427,7 @@ Zotero_Preferences.Advanced = {
 		}
 	},
 
-	updateLocalAPIUI() {
-		let serverEnabled = Zotero.Prefs.get('httpServer.enabled');
-		let localAPIEnabled = Zotero.Prefs.get('httpServer.localAPI.enabled');
-		
-		let checkbox = document.getElementById('zotero-prefpane-advanced-enable-local-api');
-		let availableMessage = document.getElementById('zotero-prefpane-advanced-local-api-available');
-		let authorizationsSection = document.getElementById('zotero-prefpane-advanced-local-api-write-authorizations');
-		let serverDisabledSection = document.getElementById('zotero-prefpane-advanced-server-disabled');
-		
-		if (!serverEnabled) {
-			checkbox.disabled = true;
-			availableMessage.hidden = true;
-			authorizationsSection.hidden = true;
-			serverDisabledSection.hidden = false;
-			return;
-		}
-		
-		checkbox.disabled = false;
-		availableMessage.hidden = !localAPIEnabled;
-		authorizationsSection.hidden = !localAPIEnabled;
-		serverDisabledSection.hidden = true;
-		
-		document.l10n.setArgs(availableMessage, {
-			url: `http://localhost:${Zotero.Server.port}/api/`
-		});
-		
-		if (localAPIEnabled) {
-			this.updateLocalAPIClearAuthorizationsButton();
-		}
-	},
-	
-	async updateLocalAPIClearAuthorizationsButton() {
-		let clearButton = document.getElementById('zotero-prefpane-advanced-local-api-clear');
-		let count = await Zotero.Server.LocalAPI.getAuthorizationCount();
-		clearButton.disabled = count === 0;
-	},
-
-	async clearLocalAPIAuthorizations() {
-		await Zotero.Server.LocalAPI.clearAuthorizations();
-		await this.updateLocalAPIClearAuthorizationsButton();
-	},
-
-	enableServerForLocalAPI() {
-		Zotero.Prefs.set('httpServer.enabled', true);
-		Zotero.Utilities.Internal.quit(true);
-	}
-};
+};;
 
 
 Zotero_Preferences.Attachment_Base_Directory = {

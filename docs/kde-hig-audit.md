@@ -38,6 +38,9 @@ Options: point each Help button at the matching CiteWell documentation (the repo
 public), point all of them at GitHub Discussions, or remove the button. Removing is the smallest
 change; repointing keeps help useful.
 
+**Resolved 2026-11-27 (D66):** the five links point at `https://github.com/EricBright/CiteWell`,
+and the repository's Discussions and Issues were enabled so the app's support links resolve.
+
 ## Where the app conforms
 
 These are the checks the app passes, with the evidence that made me say so.
@@ -81,7 +84,7 @@ behaviour change; **C** is a project.
 | 30 standard prompt calls remain (12 `confirm`, 10 `alert`, 6 `confirmEx`, 1 `prompt`, 1 `confirmCheck`), plus two `window.prompt` | Minimize dialogs | `grep Services.prompt` across `chrome/content/zotero` | C |
 | Second-person instructions in about 167 string lines | Mood and tone | `zotero.properties` | C, with eight-locale cost |
 | Icons are bundled rather than taken from the system theme | Icons | `chrome/skin/` ships the icon set | C, structural |
-| No way for a person to assign shortcuts | Powerful when needed, accelerators | No shortcut editor | C |
+| Shortcuts are assignable, but the editor sits under Advanced | Powerful when needed, accelerators | Keyboard-shortcut grid in `preferences_advanced.xhtml`; seven keys only | A, once it moves |
 | Several toolbar buttons set `tabindex="-1"` | Accessibility, keyboard | `zoteroPane.xhtml` toolbar | Unknown until a keyboard pass |
 
 ## Decisions the audit raises
@@ -89,12 +92,10 @@ behaviour change; **C** is a project.
 These are not defects. Each conflicts with something already decided, so the HIG is one input
 rather than a verdict.
 
-1. **The Browser Connector sits under "Advanced".** The HIG says not to hide settings on pages
-   named Advanced, because the word says nothing about the contents, and it asks for progressive
-   disclosure instead. There is already an **Integrations** pane. Moving the connector section
-   there would satisfy the guideline and D63 at the same time, since a browser integration is an
-   integration, not an expert tweak. This revisits D65. Cost: a section move, new Fluent ids, the
-   tests that pin the current location, and the eight locales.
+1. **The Browser Connector sat under "Advanced".** Resolved 2026-11-27 (D67): the section moved to
+   Integrations, and the local API that shared the pane moved to Agent access. The HIG asked for
+   this, and moving the controls needed no new translations because the strings travelled with
+   them.
 2. **Modal citation dialogs.** The HIG asks to minimize dialogs and to prefer inline input. The
    [attention contract](attention.md) deliberately makes citation and document-preferences dialogs
    parented and modal, because an invisible prompt was the original failure. The contract wins; the
@@ -144,7 +145,8 @@ real gaps cluster in three places: **dialog and window titles**, **confirmation 
 Suggested order, smallest first:
 
 1. **Now, as a bug fix:** the Settings Help links to `zotero.org`, and the wrong title on the file
-   locator. Both are small and both are currently misstatements about the product.
+   locator. Both are small and both are currently misstatements about the product. The links were
+   retargeted to the CiteWell repository and GitHub Discussions/Issues were enabled (D66).
 2. **One copy batch, next release:** the ASCII ellipsis, the six missing dialog titles, and the
    confirmation rewrites. Batch them so the eight locales are touched once.
 3. **One decision:** move the connector from Advanced to Integrations, or record why not.

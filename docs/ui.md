@@ -34,6 +34,10 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 8. **An empty view states, it does not instruct.** The empty library says what it is in one line
    and may offer one action (Browse the web). Instructions and tutorials belong under Help, not in
    the content area, and a link never points at another product's documentation.
+9. **Help points at CiteWell.** A Help or support control opens a page this project controls: the
+   GitHub repository today, a wiki page when one exists (D66). No control opens Zotero's support
+   site. The connector download, the Style Manager catalog and dictionary downloads are the named
+   exceptions (D63).
 
 ## Where each rule is enforced
 
@@ -47,6 +51,7 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 | 6 | `test/tests/uiCopyTest.js` asserts the gate's one launch URL is the connectors page |
 | 7 | `test/tests/settingsTabTest.js` asserts the item exists between Tools and Help, that the Edit menu no longer carries a second entry, and that a click opens the Settings tab |
 | 8 | `test/tests/uiCopyTest.js` fails if the removed welcome strings or their references return, and pins the Browse action and its handler |
+| 9 | `test/tests/uiCopyTest.js` reads `resource/settings/panes.json` and fails if a pane help link leaves the CiteWell repository, if a help pane loses its link, or if `HELP_URL`/`DISCUSSIONS_URL` drift; it also pins the connector exception |
 
 A rule without a check is a rule waiting to rot. When a change cannot be tested, say so in its
 decision record instead of adding a test that cannot fail.

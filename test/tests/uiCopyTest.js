@@ -134,23 +134,40 @@ describe("UI copy", function () {
 		assert.notInclude(source, "errorReport.xhtml");
 	});
 
+	it("should keep the local API beside agent access", async function () {
+		let agent = await readLocale(
+			"chrome/content/zotero/preferences/preferences_agent.xhtml"
+		);
+		assert.include(agent, 'id="zotero-prefpane-agent-enable-local-api"');
+		assert.include(agent, 'id="zotero-prefpane-agent-local-api-clear"');
+		let advanced = await readLocale(
+			"chrome/content/zotero/preferences/preferences_advanced.xhtml"
+		);
+		assert.notInclude(advanced, "enable-local-api");
+		assert.notInclude(advanced, "httpServer.localAPI.enabled");
+	});
+
 	it("should keep the connector explanation in Settings", async function () {
 		assert.equal(
 			Zotero.CONNECTORS_URL,
 			"https://www.zotero.org/download/connectors"
 		);
 		let pane = await readLocale(
+			"chrome/content/zotero/preferences/preferences_integrations.xhtml"
+		);
+		assert.include(pane, 'id="zotero-prefpane-integrations-connector"');
+		assert.include(pane, 'id="connector-download"');
+		let advanced = await readLocale(
 			"chrome/content/zotero/preferences/preferences_advanced.xhtml"
 		);
-		assert.include(pane, 'id="zotero-prefpane-advanced-connector"');
-		assert.include(pane, 'id="connector-download"');
+		assert.notInclude(advanced, "connector-download");
 		let menu = await readLocale("chrome/content/zotero/zoteroPane.xhtml");
 		assert.notInclude(menu, "installConnector");
 		let prompt = await readLocale(
 			"chrome/content/zotero/xpcom/server/server_connector.js"
 		);
 		assert.notInclude(prompt, "CONNECTORS_URL");
-		assert.include(prompt, "zotero-prefpane-advanced");
+		assert.include(prompt, "openPreferences('zotero-prefpane-integrations')");
 		for (let locale of SUPPORTED_LOCALES) {
 			let properties = await readLocale(
 				`chrome/locale/${locale}/zotero/zotero.properties`
@@ -310,5 +327,48 @@ describe("UI copy", function () {
 		assert.include(tree, '"open-browse"');
 		let itemTree = await readLocale("chrome/content/zotero/itemTree.js");
 		assert.include(itemTree, '"open-browse"');
+	});
+});
+
+// D63: support and help go to CiteWell's own pages, never to Zotero's support
+// site. The pane registry is data, so the copy scan above cannot see it.
+describe("Support links", function () {
+	const REPO = "https://github.com/EricBright/CiteWell";
+	const HELP_PANES = [
+		"zotero-prefpane-general",
+		"zotero-prefpane-account",
+		"zotero-prefpane-cite",
+		"zotero-prefpane-advanced",
+		"zotero-subpane-reset-sync",
+	];
+
+	it("should keep every settings help link on CiteWell's pages", async function () {
+		let text = await readLocale("resource/settings/panes.json");
+		let panes = JSON.parse(text).panes;
+		let withHelp = panes.filter(pane => pane.helpURL).map(pane => pane.id);
+		for (let id of HELP_PANES) {
+			assert.include(withHelp, id, `${id} lost its help link`);
+		}
+		for (let pane of panes) {
+			if (!pane.helpURL) continue;
+			assert.notInclude(
+				pane.helpURL, "zotero.org",
+				`${pane.id} points at Zotero's site`
+			);
+			assert.match(
+				pane.helpURL, /^https:\/\/github\.com\/EricBright\/CiteWell(\/|$)/,
+				`${pane.id} does not point at CiteWell`
+			);
+		}
+	});
+
+	it("should point the app's help and discussions URLs at CiteWell", async function () {
+		let src = await readLocale("chrome/content/zotero/xpcom/zotero.js");
+		assert.include(src, `this.HELP_URL = '${REPO}';`);
+		assert.include(src, `this.DISCUSSIONS_URL = '${REPO}/discussions';`);
+		// The connector page is a named exception (D63), so it stays on zotero.org.
+		assert.include(
+			src, "this.CONNECTORS_URL = 'https://www.zotero.org/download/connectors';"
+		);
 	});
 });

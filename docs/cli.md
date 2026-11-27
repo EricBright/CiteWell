@@ -12,7 +12,7 @@ Both are loopback-only. The app stays the source of truth; the CLI never opens `
 
 ## Enable
 
-- **Local API** is on by default (D16); the toggle is in **Advanced** preferences.
+- **Local API** is on by default (D16); the toggle is in **Agent access** settings, under Local API.
 - **Agent bridge** is on by default; **Preferences → Agent access** has the toggle, the token,
   setup instructions and the audit log (D17).
 

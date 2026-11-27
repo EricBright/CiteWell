@@ -23,44 +23,7 @@
     ***** END LICENSE BLOCK *****
 -->
 
-<vbox id="zotero-prefpane-advanced" onload="Zotero_Preferences.Advanced.init(); Zotero_Preferences.DNS.init(); Zotero_Preferences.Advanced.initConnector()">
-	<vbox class="main-section" id="zotero-prefpane-advanced-general-tab">
-		<groupbox id="zotero-prefpane-advanced-miscellaneous" aria-label="&zotero.preferences.miscellaneous;">
-			<label><html:h2>&zotero.preferences.miscellaneous;</html:h2></label>
-
-			<checkbox
-				id="zotero-prefpane-advanced-enable-local-api"
-				data-l10n-id="preferences-advanced-enable-local-api"
-				preference="extensions.zotero.httpServer.localAPI.enabled"
-				native="true"
-			/>
-			<vbox class="indented-pref">
-				<label
-					id="zotero-prefpane-advanced-local-api-available"
-					data-l10n-id="preferences-advanced-local-api-available"
-				>
-					<html:code class="local-api-url" data-l10n-name="url"/>
-				</label>
-				<hbox id="zotero-prefpane-advanced-local-api-write-authorizations" align="center" hidden="true">
-					<button
-						id="zotero-prefpane-advanced-local-api-clear"
-						data-l10n-id="preferences-advanced-local-api-clear-authorizations"
-						oncommand="Zotero_Preferences.Advanced.clearLocalAPIAuthorizations()"
-					/>
-				</hbox>
-				<hbox id="zotero-prefpane-advanced-server-disabled" align="center" hidden="true">
-					<label data-l10n-id="preferences-advanced-server-disabled"/>
-					<button
-						data-l10n-id="preferences-advanced-server-enable-and-restart"
-						oncommand="Zotero_Preferences.Advanced.enableServerForLocalAPI()"
-					/>
-				</hbox>
-			</vbox>
-		</groupbox>
-
-
-	</vbox>
-
+<vbox id="zotero-prefpane-advanced" onload="Zotero_Preferences.Advanced.init(); Zotero_Preferences.DNS.init()">
 	<vbox class="main-section" id="zotero-prefpane-advanced-network" role="group" aria-label="DNS">
 		<groupbox aria-label="DNS">
 			<label><html:h2>DNS</html:h2></label>
@@ -85,18 +48,6 @@
 				DNS-over-TLS for NextDNS and other custom resolvers is a planned feature;
 				this engine speaks DNS-over-HTTPS today.
 			</description>
-		</groupbox>
-	</vbox>
-
-	<vbox class="main-section" id="zotero-prefpane-advanced-connector" role="group" aria-label="Browser Connector">
-		<groupbox aria-label="Browser Connector">
-			<label><html:h2 id="connector-heading"/></label>
-			<description id="connector-body1"/>
-			<description id="connector-body2"/>
-			<hbox>
-				<button id="connector-download"
-					oncommand="Zotero.launchURL(Zotero.CONNECTORS_URL)"/>
-			</hbox>
 		</groupbox>
 	</vbox>
 

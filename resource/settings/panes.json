@@ -15,7 +15,7 @@
         ],
         "defaultXUL": true
       },
-      "helpURL": "https://www.zotero.org/support/preferences/general"
+      "helpURL": "https://github.com/EricBright/CiteWell"
     },
     {
       "id": "zotero-prefpane-account",
@@ -32,7 +32,7 @@
         ],
         "defaultXUL": true
       },
-      "helpURL": "https://www.zotero.org/support/preferences/sync"
+      "helpURL": "https://github.com/EricBright/CiteWell"
     },
     {
       "id": "zotero-prefpane-notes",
@@ -79,7 +79,7 @@
         ],
         "defaultXUL": true
       },
-      "helpURL": "https://www.zotero.org/support/preferences/cite"
+      "helpURL": "https://github.com/EricBright/CiteWell"
     },
     {
       "id": "zotero-prefpane-integrations",
@@ -143,7 +143,7 @@
         ],
         "defaultXUL": true
       },
-      "helpURL": "https://www.zotero.org/support/preferences/advanced"
+      "helpURL": "https://github.com/EricBright/CiteWell"
     },
     {
       "id": "zotero-subpane-reset-sync",
@@ -160,7 +160,7 @@
         ],
         "defaultXUL": true
       },
-      "helpURL": "https://www.zotero.org/support/preferences/sync#reset"
+      "helpURL": "https://github.com/EricBright/CiteWell"
     }
   ],
   "retired": [
@@ -407,7 +407,7 @@
       "id": "translator-updates",
       "paneId": "zotero-prefpane-advanced",
       "titleKey": "preferences-translator-updates",
-      "before": "#zotero-prefpane-advanced-enable-local-api",
+      "before": "#zotero-prefpane-advanced-network",
       "order": 10,
       "settings": [
         {

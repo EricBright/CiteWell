@@ -1529,6 +1529,9 @@ it hid the reason the link exists.
 - **Rejected:** deleting the link. Without a CiteWell connector, browser saving and Docs citations
   would stop working; the exception is stated where users meet it.
 
+**Amended 2026-11-27 (D67):** the section moved from Advanced to Integrations. Its explanation,
+link and stated exception are unchanged.
+
 ## D64 — The maintained locale set is eight, and the build ships only those
 
 **Date:** 2026-11-26 · **Status:** accepted · **Reversible:** yes
@@ -1552,6 +1555,52 @@ translations are not shipped; adding one requires a GitHub issue that names a na
 - **Trade-off:** speakers of the removed languages get English instead of a Zotero-era translation.
   That is the honest state until a native reviewer is available; a partial old translation would
   still carry the other product's name.
+
+## D66 — Help and support links point at CiteWell's GitHub pages
+
+**Date:** 2026-11-27 · **Status:** accepted · **Reversible:** yes
+
+The HIG audit found five Settings panes whose Help button still opened `zotero.org/support`, and the
+app's "Ask a Question" target was a 404 because GitHub Discussions was disabled on the repository.
+
+- **Pane help is the repository root.** The five `helpURL` values are
+  `https://github.com/EricBright/CiteWell`, the same target as `Zotero.HELP_URL`.
+- **The support surfaces are enabled.** Discussions and Issues are on, so `DISCUSSIONS_URL` and the
+  problem-report target resolve instead of returning a 404 or a closed tracker.
+- **The wiki is the intended home.** When repository wiki pages exist, the per-pane `helpURL`
+  values move to the matching pages. The field is already per pane, so this is a data change, not
+  a code change.
+- **The named exceptions are unchanged:** the connector download, the Style Manager catalog and
+  dictionary downloads stay on Zotero's servers because they are Zotero's services (D63).
+- **Enforcement:** `uiCopyTest.js` fails if any pane `helpURL` points at `zotero.org` or anywhere
+  other than the CiteWell repository, if one of the five help panes loses its link, or if
+  `HELP_URL`/`DISCUSSIONS_URL` stop pointing at the repository. It also asserts that the connector
+  URL keeps its exception, so the guard cannot be satisfied by deleting the exception.
+- **Rejected:** an interim help page inside the repository. The wiki is the intended home and a
+  second landing page would need its own upkeep for a few weeks.
+
+## D67 — The connector and the local API leave the Advanced pane
+
+**Date:** 2026-11-27 · **Status:** accepted · **Reversible:** yes
+
+The HIG audit found two integration settings filed under Advanced: the Browser Connector section and
+a group named "Miscellaneous" that contained a single checkbox, the local API. Neither is an expert
+tuning knob.
+
+- **The connector moves to Integrations**, as the first section, beside the LibreOffice extension
+  and the system integration. The outdated-connector prompt opens Integrations now, so the
+  explanation still appears before the link.
+- **The local API moves to Agent access**, which already owns the token, the setup snippet and the
+  audit log. The controls keep their strings, so no translation is new; their ids become
+  `zotero-prefpane-agent-*`.
+- **The "Miscellaneous" group is deleted.** Advanced keeps DNS (D50), database maintenance, keyboard
+  shortcuts, feeds, full-text search and the Config Editor until a later pass moves what it decides
+  to move.
+- **Enforcement:** `uiCopyTest.js` checks that the connector section is in Integrations and absent
+  from Advanced, that the local API controls are in Agent access and absent from Advanced, and that
+  the outdated-connector prompt targets Integrations.
+- **Rejected:** putting both under Integrations. The local API is what scripts and agents call; the
+  connector is what a browser calls. Splitting by task keeps each next to the thing it serves.
 
 ## Dead ends
 

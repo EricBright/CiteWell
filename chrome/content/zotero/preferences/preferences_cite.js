@@ -670,10 +670,28 @@ Zotero_Preferences.Cite = {
 };
 Zotero_Preferences.Integrations = {
 	init: async function () {
+		this.initConnector();
 		await Zotero_Preferences.Cite.refreshSystemIntegration();
 		document.querySelector("#zotero-prefpane-integrations").addEventListener(
 			"showing",
 			() => Zotero_Preferences.Cite.refreshSystemIntegration(),
 		);
+	},
+
+	initConnector: function () {
+		let set = (id, key) => {
+			let value = Zotero.getString(key);
+			let element = document.getElementById(id);
+			if (element.tagName.toLowerCase() === "button") {
+				element.setAttribute("label", value);
+			}
+			else {
+				element.textContent = value;
+			}
+		};
+		set("connector-heading", "connector.section.title");
+		set("connector-body1", "connector.section.body1");
+		set("connector-body2", "connector.section.body2");
+		set("connector-download", "connector.section.download");
 	},
 };

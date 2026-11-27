@@ -19,7 +19,7 @@ across panes, while implementation details occupy their own sections. Examples:
 - File handling and renaming are in General; data and attachment base directories are in Advanced.
 - System integration is inside Cite.
 - Export contains only Quick Copy.
-- General and Advanced both contain sections named "Miscellaneous".
+- Advanced carried a section named "Miscellaneous" with a single control (removed in D67).
 
 The target is not "more tabs for their own sake". The target is one semantic settings document that
 owns pane, section, label, order, search alias and visibility metadata, rendered by the presentation
@@ -125,6 +125,7 @@ Script: `preferences_agent.js`.
 | Section | Contents | Proposed destination |
 |---|---|---|
 | Agent access / Connection / Setup / Capabilities / Skill / Audit | `agent.enabled`, token/endpoint, setup guidance, audit | Agent & API |
+| Local API | `httpServer.localAPI.enabled`, address, clear authorizations, server fallback | Agent & API (moved from Advanced, D67) |
 
 ### Advanced
 
@@ -133,7 +134,7 @@ Script: `preferences_advanced.js`.
 
 | Section | Contents / keys | Proposed destination |
 |---|---|---|
-| Miscellaneous | `automaticScraperUpdates`, translator update/failure reporting, local API | Advanced; local API → Agent & API |
+| Translator updates | `automaticScraperUpdates`, update now, failure reporting (registry section) | Advanced |
 | Language & Region | `bidi.browser.ui` | General |
 | Files and Folders | `baseAttachmentPath`, `dataDir`, database maintenance | Library & Files; database maintenance → Advanced |
 | Keys | Keyboard shortcuts | Advanced |
@@ -172,7 +173,7 @@ Eight visible panes, plus Account/Sync when online:
 | **Citations & Writing** | Styles, citation dialog, citation options |
 | **Notes & Annotations** | Note opening, Markdown migration, legacy annotation export |
 | **Import & Export** | Import from Zotero, restore points, last import, Quick Copy |
-| **Integrations** | LibreOffice extension, system integration, Word-processor/Google Docs bridges and the hidden upgrade group |
+| **Integrations** | Browser Connector, LibreOffice extension, system integration, Word-processor/Google Docs bridges and the hidden upgrade group |
 | **Agent & API** | Agent access, local API, authorizations, audit |
 | **Library & Files** | Current library, locations, item lookup/OpenURL, file handling, file renaming, attachment titles, data directory, attachment base directory |
 | **Advanced** | Database maintenance, search index, feeds, keyboard shortcuts, translator updates/diagnostics |
