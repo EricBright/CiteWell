@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "Zotero に保存 (アドレスバーのアイコン)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "ライブラリパネルへ">
-<!ENTITY zotero.preferences.keys.quicksearch "クイック検索">
-<!ENTITY zotero.preferences.keys.newItem "新しい項目の作成">
-<!ENTITY zotero.preferences.keys.newNote "新しいメモの作成">
-<!ENTITY zotero.preferences.keys.toggleAllRead "すべてのフィードの項目を既読/未読にする">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "選択された項目の引用文献をクリップボードにコピー">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "選択された項目の参考文献をクリップボードにコピー">
 <!ENTITY zotero.preferences.keys.importFromClipboard "クリップボードからインポート">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "変更は再起動後に有効になります">
 
 <!ENTITY zotero.preferences.prefpane.proxies "プロキシ">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "詳細">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "ファイルとフォルダー">
-<!ENTITY zotero.preferences.advanced.keys "ショートカット">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "高度な設定">
 

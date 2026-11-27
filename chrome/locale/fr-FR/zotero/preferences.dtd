@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "Enregistrer dans Zotero (icône de la barre d'adresse)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "Placer le curseur dans le volet de gauche (bibliothèques)">
-<!ENTITY zotero.preferences.keys.quicksearch "Recherche rapide">
-<!ENTITY zotero.preferences.keys.newItem "Créer un nouveau document">
-<!ENTITY zotero.preferences.keys.newNote "Créer une nouvelle note">
-<!ENTITY zotero.preferences.keys.toggleAllRead "Marquer tous les documents du flux comme lus / non lus">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "Copier dans le presse-papiers les documents sélectionnés, comme des citations">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "Copier dans le presse-papiers les documents sélectionnés, comme une bibliographie">
 <!ENTITY zotero.preferences.keys.importFromClipboard "Importer du presse-papiers">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "Les modifications prennent effet au prochain démarrage de Zotero">
 
 <!ENTITY zotero.preferences.prefpane.proxies "Serveurs mandataires">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "Avancé">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "Fichiers et dossiers">
-<!ENTITY zotero.preferences.advanced.keys "Raccourcis clavier">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "Configuration avancée">
 

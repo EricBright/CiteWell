@@ -160,3 +160,42 @@ database-maintenance-check-integrity =
     .label = Integrität der Datenbank überprüfen
 database-maintenance-reset-translators =
     .label = Übersetzer zurücksetzen...
+
+dns-title = DNS
+dns-description =
+    Legt fest, wie CiteWell Webadressen in Verbindungen umsetzt. Jede Auflösung, ob im Browser-Tab oder in der App, verwendet diesen Resolver.
+dns-cloudflare-label =
+    .label = Cloudflare-Malware-Blockierung (1.1.1.2 / 1.0.0.2), empfohlen
+dns-system-label =
+    .label = Systemstandard (der eigene DNS dieses Computers)
+dns-detail =
+    Die Voreinstellung sendet verschlüsselte DNS-over-HTTPS-Anfragen direkt an https://1.1.1.2/dns-query und blockiert bekannte Malware-Domains. Verschlüsseltes DNS verbirgt Anfragen vor dem lokalen Netzwerk, ist aber kein VPN: Websites sehen weiterhin Ihre Adresse.
+dns-planned =
+    DNS-over-TLS für NextDNS und andere eigene Resolver ist geplant; diese Engine spricht derzeit DNS-over-HTTPS.
+
+keyboard-shortcuts-title =
+    Tastenkombinationen
+
+keyboard-shortcuts-new-item =
+    Neuen Eintrag erstellen
+
+keyboard-shortcuts-new-note =
+    Neue Notiz erstellen
+
+keyboard-shortcuts-focus-libraries =
+    Fokus auf Bibliotheksspalte
+
+keyboard-shortcuts-quick-search =
+    Schnellsuche
+
+keyboard-shortcuts-copy-item-citations =
+    Ausgewählte Einträge als Zitationen in die Zwischenablage kopieren
+
+keyboard-shortcuts-copy-items =
+    Ausgewählte Einträge in die Zwischenablage kopieren
+
+keyboard-shortcuts-toggle-all-read =
+    Alle Feed-Einträge als gelesen/ungelesen markieren
+
+keyboard-shortcuts-changes-take-effect =
+    Änderungen werden nach Neustart wirksam

@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "引用文獻樣式語言 CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "儲存到 Zotero (網址列圖示)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "聚焦到文獻庫窗格">
-<!ENTITY zotero.preferences.keys.quicksearch "快速搜尋">
-<!ENTITY zotero.preferences.keys.newItem "新增項目">
-<!ENTITY zotero.preferences.keys.newNote "新增筆記">
-<!ENTITY zotero.preferences.keys.toggleAllRead "將所有新聞來源項目標示成已讀/未讀">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "複製所選項目的引用文獻到剪貼簿">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "複製所選項目到剪貼簿">
 <!ENTITY zotero.preferences.keys.importFromClipboard "從剪貼簿匯入">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "重新啟動後改變才會生效">
 
 <!ENTITY zotero.preferences.prefpane.proxies "代理伺服器">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "進階">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "檔案與資料夾">
-<!ENTITY zotero.preferences.advanced.keys "快捷鍵">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "進階設定">
 

@@ -246,6 +246,60 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders the DNS resolver from the catalog", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.equal(
+				win.document.getElementById("dns-title").textContent,
+				"DNS",
+				"the Fluent title was not translated"
+			);
+			let group = win.document.getElementById("dns-resolver");
+			assert.ok(group, "the radio group did not render");
+			assert.equal(group.value, win.Zotero.DNS.resolver);
+			let radios = [...group.querySelectorAll("radio")];
+			assert.lengthOf(radios, 2);
+			for (let radio of radios) {
+				assert.isAbove(
+					radio.getAttribute("label").length, 0,
+					"a radio label was not translated"
+				);
+			}
+		}
+		finally {
+			win.close();
+		}
+	});
+
+	it("renders keyboard shortcuts from the catalog component", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-advanced"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			assert.isAbove(
+				win.document.getElementById("keyboard-shortcuts-title")
+					.textContent.trim().length,
+				0,
+				"the Fluent title was not translated"
+			);
+			let grid = win.document.getElementById("zotero-keys-grid");
+			assert.ok(grid, "the component grid did not render");
+			assert.lengthOf(grid.querySelectorAll("input"), 7);
+			let label = win.document.querySelector('label[for="textbox-newItem"]');
+			assert.isAbove(
+				label.textContent.trim().length, 0,
+				"a shortcut label was not translated"
+			);
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("renders database maintenance from the catalog", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-advanced"

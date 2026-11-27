@@ -138,8 +138,7 @@
         "type": "custom",
         "src": "chrome://zotero/content/preferences/preferences_advanced.xhtml",
         "scripts": [
-          "chrome://zotero/content/preferences/preferences_advanced.js",
-          "chrome://zotero/content/preferences/preferences_dns.js"
+          "chrome://zotero/content/preferences/preferences_advanced.js"
         ],
         "defaultXUL": true
       },
@@ -517,7 +516,6 @@
       "paneId": "zotero-prefpane-advanced",
       "order": 10,
       "titleKey": "database-maintenance-title",
-      "after": "#zotero-prefpane-advanced-network",
       "items": [
         {
           "id": "check-integrity",
@@ -531,7 +529,56 @@
           "command": "reset-translators",
           "labelKey": "database-maintenance-reset-translators"
         }
+      ],
+      "before": "#zotero-prefpane-advanced-keys-tab"
+    },
+    {
+      "id": "dns",
+      "kind": "group",
+      "paneId": "zotero-prefpane-advanced",
+      "order": 5,
+      "titleKey": "dns-title",
+      "descriptionKey": "dns-description",
+      "init": "dns",
+      "before": "#zotero-prefpane-advanced-keys-tab",
+      "items": [
+        {
+          "id": "dns-resolver",
+          "kind": "setting",
+          "control": "radio",
+          "labelKey": "dns-title",
+          "change": "apply-dns-resolver",
+          "options": [
+            {
+              "value": "cloudflare",
+              "labelKey": "dns-cloudflare-label"
+            },
+            {
+              "value": "system",
+              "labelKey": "dns-system-label"
+            }
+          ]
+        },
+        {
+          "id": "dns-detail",
+          "kind": "text",
+          "textKey": "dns-detail"
+        },
+        {
+          "id": "dns-planned",
+          "kind": "text",
+          "textKey": "dns-planned"
+        }
       ]
+    },
+    {
+      "id": "keyboard-shortcuts",
+      "kind": "component",
+      "component": "keyboard-shortcuts",
+      "paneId": "zotero-prefpane-advanced",
+      "order": 20,
+      "titleKey": "keyboard-shortcuts-title",
+      "before": "#zotero-prefpane-advanced-feeds-tab"
     }
   ]
 }

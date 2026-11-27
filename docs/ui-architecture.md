@@ -195,6 +195,23 @@ changing only `paneId` renders the section in another pane.
 
 **Gate G4:** moving a group is a one-field edit plus a test run.
 
+### Advanced slice (in progress)
+
+The Advanced pane is the forced case because it contains one of each remaining shape.
+
+- **Radios are supported.** A setting may bind a preference directly or name a `change` action, which
+  is how the DNS resolver applies itself. Its section moved to the catalog, its six hardcoded English
+  strings were drafted into all eight locales, and the DNS module is now loaded with the preferences
+  window rather than the pane, so the section can move without losing its behaviour.
+- **Components are supported.** A section may name a registered component instead of items. The
+  Keyboard Shortcuts grid is the first one: the component builds the seven rows, the labels moved
+  from DTD to Fluent in eight locales, and the section is now placed by data.
+- **Ordering rule.** While hand-written content remains in a pane, a section may use `before` or
+  `after` as a transition anchor. Once a pane is fully catalog-owned, only `order` decides. Anchors
+  are therefore temporary, not a second map.
+- **Still hand-written in Advanced:** Feeds and the full-text index panel, plus the generated
+  Translator updates section. They are the next targets.
+
 ### P6 — Bulk text migration
 
 Only after the pilots: migrate every string in Settings, per item, including the dialogs and

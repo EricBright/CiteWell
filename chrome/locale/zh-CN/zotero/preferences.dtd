@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "保存到 Zotero (地址栏图标)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "聚焦文库窗格">
-<!ENTITY zotero.preferences.keys.quicksearch "快速搜索">
-<!ENTITY zotero.preferences.keys.newItem "新建条目">
-<!ENTITY zotero.preferences.keys.newNote "新建笔记">
-<!ENTITY zotero.preferences.keys.toggleAllRead "订阅条目全部标为已读/未读">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "复制选定条目的引注到剪贴板">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "复制选定的条目到剪贴板">
 <!ENTITY zotero.preferences.keys.importFromClipboard "从剪贴板导入">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "所做更改会在重启后生效">
 
 <!ENTITY zotero.preferences.prefpane.proxies "代理">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "高级">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "文件和文件夹">
-<!ENTITY zotero.preferences.advanced.keys "快捷键">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "高级设置">
 

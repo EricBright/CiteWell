@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "In Zotero speichern (Adressleisten-Symbol)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "Fokus auf Bibliotheksspalte">
-<!ENTITY zotero.preferences.keys.quicksearch "Schnellsuche">
-<!ENTITY zotero.preferences.keys.newItem "Neuen Eintrag erstellen">
-<!ENTITY zotero.preferences.keys.newNote "Neue Notiz erstellen">
-<!ENTITY zotero.preferences.keys.toggleAllRead "Alle Feed-Einträge als gelesen/ungelesen markieren">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "Ausgewählte Einträge als Zitationen in die Zwischenablage kopieren">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "Ausgewählte Einträge in die Zwischenablage kopieren">
 <!ENTITY zotero.preferences.keys.importFromClipboard "Import aus der Zwischenablage">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "Änderungen werden nach Neustart wirksam">
 
 <!ENTITY zotero.preferences.prefpane.proxies "Proxies">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "Erweitert">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "Dateien und Ordner">
-<!ENTITY zotero.preferences.advanced.keys "Tastenkombinationen">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "Erweiterte Konfiguration">
 

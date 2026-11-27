@@ -122,15 +122,7 @@
 <!ENTITY zotero.preferences.cite.styles.styleManager.csl "CSL">
 
 <!ENTITY zotero.preferences.keys.saveToZotero "Guardar en Zotero (icono de la barra de direcciones)">
-<!ENTITY zotero.preferences.keys.focusLibrariesPane "Enfocar el panel de bibliotecas">
-<!ENTITY zotero.preferences.keys.quicksearch "Búsqueda rápida">
-<!ENTITY zotero.preferences.keys.newItem "Crear un nuevo elemento">
-<!ENTITY zotero.preferences.keys.newNote "Crear una nota nueva">
-<!ENTITY zotero.preferences.keys.toggleAllRead "Marcar todos los elementos del canal como leídos/no leídos">
-<!ENTITY zotero.preferences.keys.copySelectedItemCitationsToClipboard "Copiar las citas de los elementos seleccionados al portapapeles">
-<!ENTITY zotero.preferences.keys.copySelectedItemsToClipboard "Copiar los elementos seleccionados al portapapeles">
 <!ENTITY zotero.preferences.keys.importFromClipboard "Importar desde el portapapeles">
-<!ENTITY zotero.preferences.keys.changesTakeEffect "Los cambios tendrán efecto después de reiniciar">
 
 <!ENTITY zotero.preferences.prefpane.proxies "Servidores proxies">
 
@@ -157,7 +149,6 @@
 
 <!ENTITY zotero.preferences.prefpane.advanced "Avanzadas">
 <!ENTITY zotero.preferences.advanced.filesAndFolders "Archivos y carpetas">
-<!ENTITY zotero.preferences.advanced.keys "Atajos">
 
 <!ENTITY zotero.preferences.advanced.advancedConfiguration "Configuración avanzada">
 

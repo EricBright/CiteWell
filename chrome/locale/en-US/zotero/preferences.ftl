@@ -183,3 +183,42 @@ database-maintenance-check-integrity =
     .label = Check Database Integrity
 database-maintenance-reset-translators =
     .label = Reset Translators…
+
+dns-title = DNS
+dns-description =
+    Choose how CiteWell turns web addresses into connections. Every lookup, from the Browse tab or the app, uses this resolver.
+dns-cloudflare-label =
+    .label = Cloudflare malware blocking (1.1.1.2 / 1.0.0.2), recommended
+dns-system-label =
+    .label = System default (this computer's own DNS)
+dns-detail =
+    The default sends encrypted DNS-over-HTTPS queries straight to https://1.1.1.2/dns-query, which blocks known malware domains. Encrypted DNS hides lookups from the local network, but it is not a VPN: sites you visit still see your address.
+dns-planned =
+    DNS-over-TLS for NextDNS and other custom resolvers is a planned feature; this engine speaks DNS-over-HTTPS today.
+
+keyboard-shortcuts-title =
+    Shortcuts
+
+keyboard-shortcuts-new-item =
+    Create a New Item
+
+keyboard-shortcuts-new-note =
+    Create a New Note
+
+keyboard-shortcuts-focus-libraries =
+    Focus Libraries Pane
+
+keyboard-shortcuts-quick-search =
+    Quick Search
+
+keyboard-shortcuts-copy-item-citations =
+    Copy Selected Item Citations to Clipboard
+
+keyboard-shortcuts-copy-items =
+    Copy Selected Items to Clipboard
+
+keyboard-shortcuts-toggle-all-read =
+    Mark All Feed Items As Read/Unread
+
+keyboard-shortcuts-changes-take-effect =
+    Changes take effect after restart

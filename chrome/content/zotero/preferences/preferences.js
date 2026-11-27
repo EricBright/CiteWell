@@ -126,9 +126,57 @@ async function resetTranslators() {
 		}
 }
 
+const CATALOG_COMPONENTS = {
+	'keyboard-shortcuts': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		const rows = [
+			['textbox-newItem', 'extensions.zotero.keys.newItem', 'keyboard-shortcuts-new-item'],
+			['textbox-newNote', 'extensions.zotero.keys.newNote', 'keyboard-shortcuts-new-note'],
+			['textbox-library', 'extensions.zotero.keys.library', 'keyboard-shortcuts-focus-libraries'],
+			['textbox-quicksearch', 'extensions.zotero.keys.quicksearch', 'keyboard-shortcuts-quick-search'],
+			['textbox-copySelectedItemCitationsToClipboard',
+				'extensions.zotero.keys.copySelectedItemCitationsToClipboard',
+				'keyboard-shortcuts-copy-item-citations', true],
+			['textbox-copySelectedItemsToClipboard',
+				'extensions.zotero.keys.copySelectedItemsToClipboard',
+				'keyboard-shortcuts-copy-items', true],
+			['textbox-toggleAllRead', 'extensions.zotero.keys.toggleAllRead',
+				'keyboard-shortcuts-toggle-all-read'],
+		];
+		let grid = document.createElementNS(HTML, 'div');
+		grid.id = 'zotero-keys-grid';
+		for (let [id, pref, labelKey, updatesQuickCopy] of rows) {
+			let label = document.createElementNS(HTML, 'label');
+			label.setAttribute('for', id);
+			Zotero_Preferences._applyText(label, labelKey);
+			let modifier = document.createElementNS(HTML, 'label');
+			modifier.classList.add('modifier');
+			let input = document.createElementNS(HTML, 'input');
+			input.type = 'text';
+			input.id = id;
+			input.maxLength = 1;
+			input.size = 1;
+			input.setAttribute('preference', pref);
+			if (updatesQuickCopy) {
+				input.addEventListener('input', () => {
+					if (Zotero_Preferences.Export) {
+						Zotero_Preferences.Export.updateQuickCopyInstructions();
+					}
+				});
+			}
+			grid.append(label, modifier, input);
+		}
+		let note = document.createElementNS(HTML, 'label');
+		note.classList.add('statusLine');
+		Zotero_Preferences._applyText(note, 'keyboard-shortcuts-changes-take-effect');
+		groupbox.append(grid, note);
+	},
+};
+
 const CATALOG_ACTIONS = {
 	'open-connector-page': () => Zotero.launchURL(Zotero.CONNECTORS_URL),
 	'check-database-integrity': checkDatabaseIntegrity,
+	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'reset-translators': resetTranslators,
 	'clear-local-api-authorizations': async () => {
 		await Zotero.Server.LocalAPI.clearAuthorizations();
@@ -149,6 +197,7 @@ const CATALOG_CONDITIONS = {
 };
 
 const CATALOG_INITIALIZERS = {
+	'dns': () => Zotero_Preferences.DNS.init(),
 	'local-api': groupbox => {
 		let url = groupbox.querySelector('#local-api-url');
 		if (url) {
@@ -631,6 +680,14 @@ var Zotero_Preferences = {
 				groupbox.append(description);
 			}
 
+			if (section.component) {
+				let factory = CATALOG_COMPONENTS[section.component];
+				if (!factory) {
+					throw new Error('Unknown catalog component: ' + section.component);
+				}
+				factory(groupbox);
+			}
+
 			for (let item of section.items || []) {
 				let element;
 				if (item.kind === 'text') {
@@ -669,6 +726,27 @@ var Zotero_Preferences = {
 						element.setAttribute('data-disabled-when', item.disabledWhen);
 					}
 				}
+				else if (item.kind === 'setting' && item.control === 'radio') {
+					element = document.createXULElement('radiogroup');
+					element.id = item.id;
+					element.setAttribute('native', 'true');
+					if (item.pref) {
+						element.setAttribute('preference', item.pref);
+					}
+					for (let option of item.options) {
+						let radio = document.createXULElement('radio');
+						radio.setAttribute('value', option.value);
+						this._applyLabel(radio, option.labelKey);
+						element.append(radio);
+					}
+					if (item.change) {
+						let change = CATALOG_ACTIONS[item.change];
+						if (!change) {
+							throw new Error('Unknown catalog action: ' + item.change);
+						}
+						element.addEventListener('command', () => change(element.value));
+					}
+				}
 				else {
 					throw new Error(
 						`Unsupported catalog item ${item.id}: ${item.kind}/${item.control}`
@@ -690,12 +768,21 @@ var Zotero_Preferences = {
 				init(groupbox);
 			}
 
-			// Place inside the pane document, not beside it. `after` is the
-			// pilot's placement rule; ordering is a catalog field, not code.
+			// Place inside the pane document, not beside it. `before`/`after`
+			// are transition anchors to hand-written content; they disappear
+			// once a pane is fully catalog-owned.
 			let root = container.firstElementChild || container;
-			let anchor = section.after && root.querySelector(section.after);
+			let anchor = section.before && root.querySelector(section.before);
+			if (!anchor && section.after) {
+				anchor = root.querySelector(section.after);
+			}
 			if (anchor && anchor.parentNode) {
-				anchor.parentNode.insertBefore(groupbox, anchor.nextSibling);
+				if (section.before) {
+					anchor.parentNode.insertBefore(groupbox, anchor);
+				}
+				else {
+					anchor.parentNode.insertBefore(groupbox, anchor.nextSibling);
+				}
 			}
 			else {
 				root.append(groupbox);

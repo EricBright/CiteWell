@@ -160,3 +160,42 @@ database-maintenance-check-integrity =
     .label = 檢查資料庫完整性
 database-maintenance-reset-translators =
     .label = 重設轉譯器……
+
+dns-title = DNS
+dns-description =
+    選擇 CiteWell 如何將網址轉換為連線。無論是瀏覽分頁還是應用程式，每次查詢都使用此解析器。
+dns-cloudflare-label =
+    .label = Cloudflare 惡意軟體封鎖（1.1.1.2 / 1.0.0.2），推薦
+dns-system-label =
+    .label = 系統預設（這台電腦自帶的 DNS）
+dns-detail =
+    預設會將加密的 DNS-over-HTTPS 查詢直接傳送到 https://1.1.1.2/dns-query，藉此封鎖已知的惡意網域。加密 DNS 會對本機網路隱藏查詢，但它不是 VPN：造訪的網站仍會看到您的位址。
+dns-planned =
+    適用於 NextDNS 和其他自訂解析器的 DNS-over-TLS 尚在規劃中；此引擎目前使用 DNS-over-HTTPS。
+
+keyboard-shortcuts-title =
+    快捷鍵
+
+keyboard-shortcuts-new-item =
+    新增項目
+
+keyboard-shortcuts-new-note =
+    新增筆記
+
+keyboard-shortcuts-focus-libraries =
+    聚焦到文獻庫窗格
+
+keyboard-shortcuts-quick-search =
+    快速搜尋
+
+keyboard-shortcuts-copy-item-citations =
+    複製所選項目的引用文獻到剪貼簿
+
+keyboard-shortcuts-copy-items =
+    複製所選項目到剪貼簿
+
+keyboard-shortcuts-toggle-all-read =
+    將所有新聞來源項目標示成已讀/未讀
+
+keyboard-shortcuts-changes-take-effect =
+    重新啟動後改變才會生效

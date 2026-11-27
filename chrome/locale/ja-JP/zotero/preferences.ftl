@@ -159,3 +159,42 @@ database-maintenance-check-integrity =
     .label = データベースの整合性をチェック
 database-maintenance-reset-translators =
     .label = トランスレータをリセット...
+
+dns-title = DNS
+dns-description =
+    CiteWell がウェブアドレスを接続に変換する方法を選びます。ブラウズタブからでもアプリからでも、すべての名前解決がこのリゾルバーを使用します。
+dns-cloudflare-label =
+    .label = Cloudflare によるマルウェアブロック（1.1.1.2 / 1.0.0.2）、推奨
+dns-system-label =
+    .label = システムの既定（このコンピューター自身の DNS）
+dns-detail =
+    既定では、暗号化された DNS-over-HTTPS クエリを https://1.1.1.2/dns-query に直接送信し、既知のマルウェアドメインをブロックします。暗号化 DNS はローカルネットワークから問い合わせを隠しますが、VPN ではありません。訪問先のサイトには引き続きあなたのアドレスが見えます。
+dns-planned =
+    NextDNS などの独自リゾルバー向けの DNS-over-TLS は計画中です。現在のエンジンは DNS-over-HTTPS に対応しています。
+
+keyboard-shortcuts-title =
+    ショートカット
+
+keyboard-shortcuts-new-item =
+    新しい項目の作成
+
+keyboard-shortcuts-new-note =
+    新しいメモの作成
+
+keyboard-shortcuts-focus-libraries =
+    ライブラリパネルへ
+
+keyboard-shortcuts-quick-search =
+    クイック検索
+
+keyboard-shortcuts-copy-item-citations =
+    選択された項目の引用文献をクリップボードにコピー
+
+keyboard-shortcuts-copy-items =
+    選択された項目の参考文献をクリップボードにコピー
+
+keyboard-shortcuts-toggle-all-read =
+    すべてのフィードの項目を既読/未読にする
+
+keyboard-shortcuts-changes-take-effect =
+    変更は再起動後に有効になります

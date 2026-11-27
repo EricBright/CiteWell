@@ -161,3 +161,42 @@ database-maintenance-check-integrity =
     .label = Vérifier l'intégrité de la base de données
 database-maintenance-reset-translators =
     .label = Réinitialiser les convertisseurs…
+
+dns-title = DNS
+dns-description =
+    Choisissez comment CiteWell transforme les adresses web en connexions. Chaque résolution, depuis l’onglet Navigateur ou l’application, utilise ce résolveur.
+dns-cloudflare-label =
+    .label = Blocage des domaines malveillants par Cloudflare (1.1.1.2 / 1.0.0.2), recommandé
+dns-system-label =
+    .label = Valeur par défaut du système (le DNS de cet ordinateur)
+dns-detail =
+    Par défaut, les requêtes DNS-over-HTTPS chiffrées sont envoyées directement à https://1.1.1.2/dns-query, qui bloque les domaines malveillants connus. Le DNS chiffré cache les requêtes au réseau local, mais ce n’est pas un VPN : les sites visités voient toujours votre adresse.
+dns-planned =
+    DNS-over-TLS pour NextDNS et d’autres résolveurs personnalisés est prévu ; ce moteur utilise DNS-over-HTTPS aujourd’hui.
+
+keyboard-shortcuts-title =
+    Raccourcis clavier
+
+keyboard-shortcuts-new-item =
+    Créer un nouveau document
+
+keyboard-shortcuts-new-note =
+    Créer une nouvelle note
+
+keyboard-shortcuts-focus-libraries =
+    Placer le curseur dans le volet de gauche (bibliothèques)
+
+keyboard-shortcuts-quick-search =
+    Recherche rapide
+
+keyboard-shortcuts-copy-item-citations =
+    Copier dans le presse-papiers les documents sélectionnés, comme des citations
+
+keyboard-shortcuts-copy-items =
+    Copier dans le presse-papiers les documents sélectionnés, comme une bibliographie
+
+keyboard-shortcuts-toggle-all-read =
+    Marquer tous les documents du flux comme lus / non lus
+
+keyboard-shortcuts-changes-take-effect =
+    Les modifications prennent effet au prochain démarrage de Zotero

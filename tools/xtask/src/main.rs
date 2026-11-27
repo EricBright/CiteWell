@@ -384,8 +384,13 @@ fn validate_catalog_sections(
             .get("kind")
             .and_then(|v| v.as_str())
             .unwrap_or("group");
-        if !matches!(kind, "group" | "content") {
+        if !matches!(kind, "group" | "content" | "component") {
             return Err(format!("catalog section {id} has unsupported kind {kind}"));
+        }
+        if kind == "component"
+            && section.get("component").and_then(|v| v.as_str()).is_none()
+        {
+            return Err(format!("catalog component section {id} is missing component"));
         }
         if let Some(list) = section.get("aliases") {
             let list = list
@@ -400,10 +405,12 @@ fn validate_catalog_sections(
                 }
             }
         }
-        let items = section
-            .get("items")
-            .and_then(|v| v.as_array())
-            .ok_or_else(|| format!("catalog section {id} is missing items[]"))?;
+        let empty = Vec::new();
+        let items = match section.get("items").and_then(|v| v.as_array()) {
+            Some(items) => items,
+            None if kind == "component" => &empty,
+            None => return Err(format!("catalog section {id} is missing items[]")),
+        };
         for item in items {
             let item_id = item
                 .get("id")
@@ -418,12 +425,18 @@ fn validate_catalog_sections(
                 .ok_or_else(|| format!("catalog item {item_id} is missing kind"))?;
             match item_kind {
                 "setting" => {
-                    let pref = item
-                        .get("pref")
-                        .and_then(|v| v.as_str())
-                        .ok_or_else(|| format!("catalog setting {item_id} is missing pref"))?;
-                    if !preferences.insert(pref.to_string()) {
-                        return Err(format!("duplicate preference key: {pref}"));
+                    // A setting may apply through a named change action instead of
+                    // a direct preference binding (the DNS resolver does).
+                    let change = item.get("change").and_then(|v| v.as_str());
+                    if let Some(pref) = item.get("pref").and_then(|v| v.as_str()) {
+                        if !preferences.insert(pref.to_string()) {
+                            return Err(format!("duplicate preference key: {pref}"));
+                        }
+                    }
+                    else if change.is_none() {
+                        return Err(format!(
+                            "catalog setting {item_id} is missing pref or change"
+                        ));
                     }
                     let control = item
                         .get("control")
@@ -438,6 +451,26 @@ fn validate_catalog_sections(
                         return Err(format!(
                             "catalog setting {item_id} has unsupported control {control}"
                         ));
+                    }
+                    if control == "radio" {
+                        let options = item
+                            .get("options")
+                            .and_then(|v| v.as_array())
+                            .ok_or_else(|| {
+                                format!("catalog radio {item_id} is missing options[]")
+                            })?;
+                        if options.len() < 2 {
+                            return Err(format!("catalog radio {item_id} has too few options"));
+                        }
+                        for option in options {
+                            if option.get("value").and_then(|v| v.as_str()).is_none()
+                                || option.get("labelKey").and_then(|v| v.as_str()).is_none()
+                            {
+                                return Err(format!(
+                                    "catalog radio {item_id} has an option without value/labelKey"
+                                ));
+                            }
+                        }
                     }
                     if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
                         return Err(format!("catalog setting {item_id} is missing labelKey"));
@@ -819,6 +852,19 @@ mod catalog_tests {
         let (mut prefs, mut ids) = fresh();
         assert_eq!(check(value, &mut prefs, &mut ids).unwrap(), 1);
         assert!(prefs.contains("extensions.zotero.httpServer.localAPI.enabled"));
+    }
+
+    #[test]
+    fn accepts_a_radio_bound_to_a_change_action() {
+        let value = json!({"sections": [{
+            "id": "dns", "paneId": "zotero-prefpane-general", "order": 1, "titleKey": "t",
+            "items": [{"id": "dns-resolver", "kind": "setting", "control": "radio",
+                       "change": "apply-dns-resolver", "labelKey": "l",
+                       "options": [{"value": "a", "labelKey": "la"},
+                                   {"value": "b", "labelKey": "lb"}]}]
+        }]});
+        let (mut prefs, mut ids) = fresh();
+        assert_eq!(check(value, &mut prefs, &mut ids).unwrap(), 1);
     }
 
     #[test]
