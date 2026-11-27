@@ -453,3 +453,39 @@ quick-copy-site-format =
     .value = Formato
 quick-copy-site-locale =
     .value = Idioma
+
+zotero-preferences-update-error =
+    Error
+
+zotero-preferences-update-updated =
+    Actualizado
+
+zotero-preferences-update-upToDate =
+    Actualizado
+
+zotero-preferences-chooseApplication =
+    Elige la aplicación
+
+zotero-preferences-locale-automatic =
+    Automático
+
+zotero-preferences-advanced-migrateDataDir-title =
+    Migrar directorio de datos
+
+zotero-preferences-advanced-migrateDataDir-directoryExists1 =
+    Ya existe un directorio en { $arg1 }.
+
+zotero-preferences-advanced-migrateDataDir-directoryExists2 =
+    Por favor, muévelo o renómbralo y vuelve a intentarlo.
+
+zotero-preferences-advanced-resetStyles =
+    Restablecer estilos
+
+zotero-preferences-advanced-resetStyles-changesLost =
+    Cualquier estilo nuevo o modificado se perderá.
+
+zotero-preferences-advanced-resetTranslators =
+    Restablecer traductores
+
+zotero-preferences-advanced-resetTranslators-changesLost =
+    Cualquier traductor nuevo o modificado se perderá.

@@ -452,3 +452,39 @@ quick-copy-site-format =
     .value = 格式
 quick-copy-site-locale =
     .value = 語言
+
+zotero-preferences-update-error =
+    錯誤
+
+zotero-preferences-update-updated =
+    已更新
+
+zotero-preferences-update-upToDate =
+    最新的
+
+zotero-preferences-chooseApplication =
+    選取應用程式
+
+zotero-preferences-locale-automatic =
+    自動
+
+zotero-preferences-advanced-migrateDataDir-title =
+    轉移資料目錄
+
+zotero-preferences-advanced-migrateDataDir-directoryExists1 =
+    目錄已存在於 { $arg1 } 。
+
+zotero-preferences-advanced-migrateDataDir-directoryExists2 =
+    請移動或重新命名後，再試一次。
+
+zotero-preferences-advanced-resetStyles =
+    重設樣式
+
+zotero-preferences-advanced-resetStyles-changesLost =
+    將會失去任何新增或修改過的樣式
+
+zotero-preferences-advanced-resetTranslators =
+    重設轉譯器
+
+zotero-preferences-advanced-resetTranslators-changesLost =
+    將會失去任何新增或修改過的轉譯器

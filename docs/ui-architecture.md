@@ -270,7 +270,16 @@ All pane labels are Fluent now. What remains is not labels but three pools:
   opened it. Unreferenced DTD entities were pruned from all eight locales; the pruning counts a
   reference in JavaScript and `panes.json` as a use, because `Zotero.getString()` reads the DTD as a
   string bundle.
-- **About seventy `.properties` keys used by preferences JavaScript** for dialogs and status text:
+- **About seventy `.properties` keys used by preferences JavaScript** for dialogs and status text.
+  `Zotero.getString()` now tries Fluent first for these too, including positional parameters, and
+  falls back to the legacy bundle. A dotted legacy key is also tried with hyphens, because Fluent
+  message ids cannot contain dots. That makes the message migration incremental: move a key to
+  `preferences.ftl`, delete it from `.properties`, and no call site changes.
+  The first batch (twelve Settings-owned keys: translator-update notices, data-directory migration
+  prompts, reset prompts, application chooser, automatic locale) is migrated in all eight locales.
+  The remaining Settings-owned keys are the integrity-check messages, style deletion and Quick Copy
+  instructions; the shared `general.*` keys stay until a deliberate app-wide text pass, since other
+  parts of the app call them too. Details:
   `general.error`, `general.warning`, `general.restartRequired`, `db.integrityCheck.*`,
   `zotero.preferences.advanced.reset*`, `zotero.preferences.export.quickCopy.*`, the data-directory
   migration messages and the style-reset prompts. These are runtime messages, not pane labels, and

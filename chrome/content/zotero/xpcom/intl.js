@@ -133,6 +133,31 @@ Zotero.Intl = new function () {
 	this.getString = function (name, params, num) {
 		try {
 			var l10n;
+			// Fluent first, for parameters too. FTL message ids cannot contain dots,
+			// so a dotted legacy key is also tried with hyphens.
+			let ftlParams = params;
+			if (params != undefined && typeof params != 'object') {
+				ftlParams = { arg1: params };
+			}
+			else if (Array.isArray(params)) {
+				ftlParams = {};
+				params.forEach((value, index) => {
+					ftlParams['arg' + (index + 1)] = value;
+				});
+			}
+			for (let ftlName of [name, name.replace(/\./g, '-')]) {
+				try {
+					let ftlString = ftlParams == undefined
+						? ftl.formatValueSync(ftlName)
+						: ftl.formatValueSync(ftlName, ftlParams);
+					if (ftlString) {
+						return ftlString;
+					}
+				}
+				catch (e) {
+					// Not a Fluent message; fall through to the legacy bundle.
+				}
+			}
 			if (params != undefined) {
 				if (typeof params != 'object') {
 					params = [params];

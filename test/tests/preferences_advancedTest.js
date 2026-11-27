@@ -246,6 +246,16 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("resolves migrated Settings messages through Fluent, with parameters", function () {
+		assert.include(
+			Zotero.getString(
+				"zotero.preferences.advanced.migrateDataDir.directoryExists1", "/tmp/example"
+			),
+			"/tmp/example"
+		);
+		assert.isAbove(Zotero.getString("zotero.preferences.update.error").length, 0);
+	});
+
 	it("loads the Integrations pane from the manifest", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-integrations"

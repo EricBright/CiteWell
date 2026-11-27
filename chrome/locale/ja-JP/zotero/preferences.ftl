@@ -451,3 +451,39 @@ quick-copy-site-format =
     .value = フォーマット
 quick-copy-site-locale =
     .value = 言語
+
+zotero-preferences-update-error =
+    エラー
+
+zotero-preferences-update-updated =
+    更新されました
+
+zotero-preferences-update-upToDate =
+    最新版
+
+zotero-preferences-chooseApplication =
+    アプリケーションの選択
+
+zotero-preferences-locale-automatic =
+    自動
+
+zotero-preferences-advanced-migrateDataDir-title =
+    データディレクトリの移行
+
+zotero-preferences-advanced-migrateDataDir-directoryExists1 =
+    { $arg1 } にディレクトリが既に存在します。
+
+zotero-preferences-advanced-migrateDataDir-directoryExists2 =
+    移動するか名前を変更してもう一度試してください。
+
+zotero-preferences-advanced-resetStyles =
+    スタイルをリセット
+
+zotero-preferences-advanced-resetStyles-changesLost =
+    新しく追加あるいは変更されたスタイルは失われます。
+
+zotero-preferences-advanced-resetTranslators =
+    トランスレータをリセット
+
+zotero-preferences-advanced-resetTranslators-changesLost =
+    新しく追加あるいは変更されたトランスレータはすべて失われます。
