@@ -48,8 +48,8 @@ after source changes. Tests run in a built app: `test/runtests.sh`. Output lands
 
 ## Documentation index
 
-`README.md` and `AGENTS.md` are always-tier documents, read every session and held to word
-budgets by `tools/docs-check`. Everything else is on-demand.
+`README.md` and `AGENTS.md` are always-tier, read every session, with word budgets checked by
+`tools/docs-check`. Everything else is on-demand.
 
 | File | Tier | Read it when | Purpose |
 |---|---|---|---|
@@ -66,18 +66,19 @@ budgets by `tools/docs-check`. Everything else is on-demand.
 | `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
 | `docs/rust.md` | on-demand | choosing a language or dependency | Where Rust may land, crates, UI exemption |
 | `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
-| `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, what replaced it, 23119 listener |
+| `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, 23119 listener |
 | `docs/export.md` | on-demand | planning a vault export | Obsidian/Markdown export design and safety rules |
 | `docs/cli.md` | on-demand | agents and scripting | `citewell` CLI, local API, write authorization |
 | `docs/agent.md` | on-demand | the agent bridge and MCP tools | `/agent/v1`, verb surface, token model, phases |
 | `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
-| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants, milestones |
+| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants |
 | `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and honest trade-offs |
-| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation, fallbacks, tests |
+| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation, tests |
 | `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
 | `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
 | `docs/settings.md` | on-demand | reorganizing settings or adding a pane | Inventory, target tabs, registry rules |
 | `docs/ui.md` | on-demand | UI copy, layout, interaction | Rules and their tests |
+| `docs/kde-hig-audit.md` | on-demand | UI polish decisions | HIG conformance |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
 ## License

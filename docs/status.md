@@ -46,7 +46,9 @@ sha256 `97a0b762c8d974cadbf34b92449c984a5140e760181b5e86e72e1544ce99d4ae`, 128,0
 
 **Next.** Native review of the eight translations when someone steps up; R32's optional follow-ups;
 the next release's notes need the same claims pass before publishing. The connector is still the
-only Zotero product users are asked to install.
+only Zotero product users are asked to install. A KDE HIG audit landed in
+[kde-hig-audit.md](kde-hig-audit.md); it found that Settings Help still opens Zotero's support site,
+which contradicts D63 and the release note.
 
 ## Handoff 2026-11-26 (late: release live, self-updater, settings UI)
 
