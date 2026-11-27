@@ -488,3 +488,57 @@ zotero-preferences-advanced-resetTranslators =
 
 zotero-preferences-advanced-resetTranslators-changesLost =
     Sämtliche neuen oder modifizierten Übersetzer werden verloren gehen.
+
+attachmentBasePath-selectDir =
+    Basisverzeichnis auswählen
+
+db-integrityCheck-passed =
+    Es wurden keine Fehler in der Datenbank gefunden.
+
+db-integrityCheck-failed =
+    Es wurden Fehler in der CiteWell-Datenbank gefunden!
+
+db-integrityCheck-appRestartNeeded =
+    { $arg1 } muss neu gestartet werden.
+
+db-integrityCheck-errorsFixed =
+    Diese Fehler in Ihrer CiteWell-Datenbank wurden behoben.
+
+db-integrityCheck-errorsNotFixed =
+    CiteWell konnte nicht alle Fehler in Ihrer Datenbank beheben.
+
+db-integrityCheck-fixAndRestart =
+    Fehler beheben und { $arg1 } neu starten
+
+db-integrityCheck-repairAttempt =
+    CiteWell kann versuchen, diese Fehler zu korrigieren.
+
+db-integrityCheck-reportInForums =
+    Sie können dieses Problem im Issue-Tracker von CiteWell melden.
+
+styles-deleteStyle =
+    Sind Sie sicher, dass Sie den Stil "{ $arg1 }" löschen möchten?
+
+styles-deleteStyles =
+    Sind Sie sicher, dass Sie die ausgewählten Stile löschen möchten?
+
+styles-installError =
+    { $arg1 } scheint keine gültige Zitierstils-Datei zu sein.
+
+zotero-preferences-export-quickCopy-citationStyles =
+    Zitierstile
+
+zotero-preferences-export-quickCopy-exportFormats =
+    Export-Formate
+
+zotero-preferences-export-quickCopy-instructions =
+    Schnelles Kopieren ermöglicht Ihnen, Einträge schnell in einem vorgegebenen Format zu exportieren. Sie können die ausgewählten Einträge durch Drücken von { $arg1 } in die Zwischenablage kopieren oder Einträge direkt in ein Textfeld eines anderen Programms ziehen.
+
+zotero-preferences-export-quickCopy-note-htmlOptions-label =
+    Rich Text/HTML
+
+zotero-preferences-styles-addStyle =
+    Stil hinzufügen
+
+exportOptions-includeAppLinks =
+    { $arg1 }-Links einschließen

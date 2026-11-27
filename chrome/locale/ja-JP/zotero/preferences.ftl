@@ -487,3 +487,57 @@ zotero-preferences-advanced-resetTranslators =
 
 zotero-preferences-advanced-resetTranslators-changesLost =
     新しく追加あるいは変更されたトランスレータはすべて失われます。
+
+attachmentBasePath-selectDir =
+    ベースディレクトリを選択して下さい。
+
+db-integrityCheck-passed =
+    データベースにエラーは見つかりませんでした。
+
+db-integrityCheck-failed =
+    データベースにエラーが見つかりました。
+
+db-integrityCheck-appRestartNeeded =
+    { $arg1 } を再起動する必要があります。
+
+db-integrityCheck-errorsFixed =
+    CiteWellデータベースのエラーは修復されました。
+
+db-integrityCheck-errorsNotFixed =
+    CiteWell データベースのエラーを修復することができません。
+
+db-integrityCheck-fixAndRestart =
+    エラーを修復して{ $arg1 }を再起動
+
+db-integrityCheck-repairAttempt =
+    CiteWell はこれらのエラーの修復を試みることができます。
+
+db-integrityCheck-reportInForums =
+    この問題は CiteWell のイシュートラッカーで報告できます。
+
+styles-deleteStyle =
+    本当にスタイル "{ $arg1 }" を削除しますか？
+
+styles-deleteStyles =
+    本当に選択されたスタイルを削除しますか？
+
+styles-installError =
+    { $arg1 } は有効なスタイル定義ファイルではありません。
+
+zotero-preferences-export-quickCopy-citationStyles =
+    引用スタイル
+
+zotero-preferences-export-quickCopy-exportFormats =
+    エクスポート形式
+
+zotero-preferences-export-quickCopy-instructions =
+    クイック コピーを使用すると、指定されたフォーマットで項目をすばやくエクスポートできます。選択した項目をコピーするには、{ $arg1 } を押すしてクリップボードにコピーするか、別のプログラムのテキストボックスに直接ドラッグします。
+
+zotero-preferences-export-quickCopy-note-htmlOptions-label =
+    リッチ テキスト/HTML
+
+zotero-preferences-styles-addStyle =
+    スタイルを追加
+
+exportOptions-includeAppLinks =
+    { $arg1 } のリンクを含める

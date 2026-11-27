@@ -488,3 +488,57 @@ zotero-preferences-advanced-resetTranslators =
 
 zotero-preferences-advanced-resetTranslators-changesLost =
     Any new or modified translators will be lost.
+
+attachmentBasePath-selectDir =
+    Choose Base Directory
+
+db-integrityCheck-passed =
+    No errors were found in the database.
+
+db-integrityCheck-failed =
+    Errors were found in your CiteWell database.
+
+db-integrityCheck-appRestartNeeded =
+    { $arg1 } will need to be restarted.
+
+db-integrityCheck-errorsFixed =
+    The errors in your CiteWell database have been corrected.
+
+db-integrityCheck-errorsNotFixed =
+    CiteWell was unable to correct all the errors in your database.
+
+db-integrityCheck-fixAndRestart =
+    Fix Errors and Restart { $arg1 }
+
+db-integrityCheck-repairAttempt =
+    CiteWell can attempt to correct these errors.
+
+db-integrityCheck-reportInForums =
+    You can report this problem on CiteWell's issue tracker.
+
+styles-deleteStyle =
+    Are you sure you want to delete the style "{ $arg1 }"?
+
+styles-deleteStyles =
+    Are you sure you want to delete the selected styles?
+
+styles-installError =
+    "{ $arg1 }" is not a valid style file.
+
+zotero-preferences-export-quickCopy-citationStyles =
+    Citation Styles
+
+zotero-preferences-export-quickCopy-exportFormats =
+    Export Formats
+
+zotero-preferences-export-quickCopy-instructions =
+    Quick Copy allows you to quickly export items in a given format. You can copy selected items to the clipboard by pressing { $arg1 } or drag items directly into a text box in another program.
+
+zotero-preferences-export-quickCopy-note-htmlOptions-label =
+    Rich Text/HTML
+
+zotero-preferences-styles-addStyle =
+    Add Style
+
+exportOptions-includeAppLinks =
+    Include { $arg1 } Links

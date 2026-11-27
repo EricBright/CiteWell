@@ -489,3 +489,57 @@ zotero-preferences-advanced-resetTranslators =
 
 zotero-preferences-advanced-resetTranslators-changesLost =
     Cualquier traductor nuevo o modificado se perderá.
+
+attachmentBasePath-selectDir =
+    Escoger el directorio base
+
+db-integrityCheck-passed =
+    No se han encontrado errores en la base de datos.
+
+db-integrityCheck-failed =
+    Se han encontrado errores en su base de datos de CiteWell.
+
+db-integrityCheck-appRestartNeeded =
+    { $arg1 } necesitará ser reiniciado.
+
+db-integrityCheck-errorsFixed =
+    Se han corregido los errores en su base de datos de CiteWell.
+
+db-integrityCheck-errorsNotFixed =
+    CiteWell no ha podido corregir todos los errores en su base de datos.
+
+db-integrityCheck-fixAndRestart =
+    Corregir los errores y reiniciar { $arg1 }
+
+db-integrityCheck-repairAttempt =
+    CiteWell puede intentar corregir estos errores.
+
+db-integrityCheck-reportInForums =
+    Puede informar de este problema en el seguimiento de incidencias de CiteWell.
+
+styles-deleteStyle =
+    ¿Está seguro que de quiere borrar el estilo "{ $arg1 }"?
+
+styles-deleteStyles =
+    ¿Está seguro de que quiere borrar los estilos seleccionados?
+
+styles-installError =
+    «{ $arg1 }» no es un archivo de estilo válido.
+
+zotero-preferences-export-quickCopy-citationStyles =
+    Estilos de citas
+
+zotero-preferences-export-quickCopy-exportFormats =
+    Formatos de exportación
+
+zotero-preferences-export-quickCopy-instructions =
+    La copia rápida le permite exportar rápidamente elementos en un formato determinado. Puede copiar los elementos seleccionados al portapapeles pulsando { $arg1 } o arrastrar elementos directamente a un campo de texto en otro programa.
+
+zotero-preferences-export-quickCopy-note-htmlOptions-label =
+    Texto enriquecido/HTML
+
+zotero-preferences-styles-addStyle =
+    Añadir estilo
+
+exportOptions-includeAppLinks =
+    Incluye enlaces { $arg1 }

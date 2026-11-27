@@ -487,3 +487,57 @@ zotero-preferences-advanced-resetTranslators =
 
 zotero-preferences-advanced-resetTranslators-changesLost =
     所有新增的或修改过的转换器将丢失。
+
+attachmentBasePath-selectDir =
+    选择数据根目录
+
+db-integrityCheck-passed =
+    没有在此数据库中发现错误。
+
+db-integrityCheck-failed =
+    在 CiteWell 数据库中发现错误。
+
+db-integrityCheck-appRestartNeeded =
+    { $arg1 } 需要重启。
+
+db-integrityCheck-errorsFixed =
+    CiteWell数据库的错误已经修复。
+
+db-integrityCheck-errorsNotFixed =
+    CiteWell 无法修复您的数据库中存在的所有错误。
+
+db-integrityCheck-fixAndRestart =
+    修正错误并重启 { $arg1 }
+
+db-integrityCheck-repairAttempt =
+    CiteWell能够尝试更正这些错误。
+
+db-integrityCheck-reportInForums =
+    您可以在 CiteWell 的议题跟踪器中报告此问题。
+
+styles-deleteStyle =
+    您确定要删除样式"{ $arg1 }"吗？
+
+styles-deleteStyles =
+    您确定要删除选中的样式吗？
+
+styles-installError =
+    "{ $arg1 }" 不是有效的样式文件。
+
+zotero-preferences-export-quickCopy-citationStyles =
+    参考文献样式
+
+zotero-preferences-export-quickCopy-exportFormats =
+    导出格式
+
+zotero-preferences-export-quickCopy-instructions =
+    使用“快速复制”可以快速导出条目为特定格式。您可以按 { $arg1 } 来复制选中的条目到剪切板，或者直接拖拽条目到其他程序中的文本框。
+
+zotero-preferences-export-quickCopy-note-htmlOptions-label =
+    富文本/HTML
+
+zotero-preferences-styles-addStyle =
+    添加样式
+
+exportOptions-includeAppLinks =
+    包括{ $arg1 }链接
