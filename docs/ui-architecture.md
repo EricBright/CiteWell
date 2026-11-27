@@ -1,6 +1,8 @@
 # UI architecture and the XUL question
 
-**Status:** analysis, 2026-11-27. No code changed. This page answers two questions the settings
+**Status:** implementation record, 2026-11-27. The analysis below became the settings catalog in
+releases 2026.11.27.003–.006; the outcome and its costs are summarised in
+[why-citewell.md](why-citewell.md#12-settings-are-data-not-markup). This page answers two questions the settings
 work exposed: why moving a control costs five edits, and whether dropping XUL would remove the
 cause. Companion to [kde-hig-audit.md](kde-hig-audit.md) and [settings.md](settings.md).
 

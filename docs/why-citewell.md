@@ -146,6 +146,45 @@ destructive actions are opt-in.
 The mechanics are documented in [import.md](import.md) and
 [libreoffice.md](libreoffice.md).
 
+### 12. Settings are data, not markup
+
+A setting used to live in five places: a pane document, a pane script, an element id, a DTD or
+properties string, and the tests and documents that named the pane. Moving one section touched most
+of them. The settings catalog reduces placement to one entry in
+`resource/settings/panes.json` — pane, order, title, labels, binding and an optional component — and
+a renderer mounts it. The validator refuses an entry without a home, a label or exactly one binding,
+and the settings page is generated from the same file and checked for drift.
+
+Measured against the last release before the work: the eight pane documents shrank from 870 to 91
+lines, `preferences.dtd` from 163 to 37 entities, and `zotero.properties` lost 102 entries in the
+reference locale. Eight panes, 39 sections and 31 items are now catalog data. The three string
+systems became one for Settings and shared messages, with `Zotero.getString()` resolving Fluent
+first so call sites did not change. Account/Sync was deleted together with its dialog, script, test
+and every code path that opened it — a demonstration of what removal costs now.
+
+The ordinary change gets cheaper:
+
+- **Move or reorder a section:** one field. A test mutates `paneId` and asserts the section appears
+  in the other pane.
+- **Add a simple control:** one JSON item and one Fluent message. No markup and no pane script.
+- **Change a label:** one message in one catalog, not an entity plus markup.
+- **Delete a pane or section:** remove the data; validation and tests say what else referenced it.
+- **Keep a deep link working:** the section id is the contract and does not change when the section
+  moves. The aliases that bridged the migration were retired once the move was done.
+- **Review the change:** the diff is placement data, not five coupled files.
+
+The costs are real and worth stating. Components keep their internals in code, so data-only tooling
+can reason about placement but not about what a component draws. Initialization now runs after
+mounting, and the first release with this architecture shipped two regressions — a heading placed
+below the sections, and an element id that repeated its section id, which let initialization wipe
+its own buttons. The renderer is central infrastructure (2,574 lines) rather than markup spread
+across panes. One plural message still lives in the old bundle because the compatibility lookup does
+not carry a plural selector.
+
+Verification is executable: `cargo run -p xtask -- validate-settings` checks the schema and the
+generated page, and 85 tests across the settings-related suites cover placement, panes, text and the
+Agent, import and bibliography surfaces that use them.
+
 ## What you give up
 
 - Sync, collaboration and mobile: not supported; the code is present but disabled.
