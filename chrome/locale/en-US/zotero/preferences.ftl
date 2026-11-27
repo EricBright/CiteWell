@@ -526,3 +526,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     Include { $arg1 } Links
+
+general-accessDenied =
+    Access Denied
+
+general-actionCannotBeUndone =
+    This action cannot be undone.
+
+general-andJoiner =
+    %S and %S
+
+general-browserIsOffline =
+    %S is currently in offline mode.
+
+general-cancel =
+    Cancel
+
+general-character-plural =
+    characters
+
+general-character-singular =
+    character
+
+general-checkForUpdates =
+    Check for Updates
+
+general-close =
+    Close
+
+general-continue =
+    Continue
+
+general-copy =
+    Copy
+
+general-copyToClipboard =
+    Copy to Clipboard
+
+general-create =
+    Create
+
+general-custom =
+    Custom
+
+general-delete =
+    Delete
+
+general-dontAskAgain =
+    Don’t Ask Again
+
+general-dontShowWarningAgain =
+    Don't show this warning again.
+
+general-downloading-quoted =
+    Downloading “%S”…
+
+general-enable =
+    Enable
+
+general-error =
+    Error
+
+general-errorHasOccurred =
+    An error has occurred.
+
+general-etAl =
+    et al.
+
+general-failed =
+    Failed
+
+general-finished =
+    Finished
+
+general-fix =
+    Fix…
+
+general-hide =
+    Hide
+
+general-install =
+    Install
+
+general-invalidResponseServer =
+    Invalid response from server.
+
+general-keys-cmdShift =
+    Cmd+Shift+
+
+general-keys-ctrlShift =
+    Ctrl+Shift+
+
+general-learnMore =
+    Learn More
+
+general-loading =
+    Loading…
+
+general-locate =
+    Locate…
+
+general-moreInformation =
+    More Information
+
+general-no =
+    No
+
+general-notNow =
+    Not Now
+
+general-numMore =
+    %S more…
+
+general-openPreferences =
+    Open Preferences
+
+general-operationInProgress =
+    A CiteWell operation is currently in progress.
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    Please wait until it has finished and try again.
+
+general-permissionDenied =
+    Permission Denied
+
+general-pleaseRestart =
+    Please restart %S.
+
+general-processing =
+    Processing
+
+general-quit =
+    Quit
+
+general-quitApp =
+    Quit %S
+
+general-remindMeLater =
+    Remind Me Later
+
+general-remove =
+    Remove
+
+general-restartApp =
+    Restart %S
+
+general-restartLater =
+    Restart later
+
+general-restartNow =
+    Restart now
+
+general-restartRequired =
+    Restart Required
+
+general-restartRequiredForChange =
+    %S must be restarted for the change to take effect.
+
+general-richText =
+    Rich Text
+
+general-serverError =
+    The server returned an error. Please try again.
+
+general-showDirectory =
+    Show Directory
+
+general-showInLibrary =
+    Show in Library
+
+general-skip =
+    Skip
+
+general-tryAgain =
+    Try Again
+
+general-tryAgainLater =
+    Please try again in a few minutes.
+
+general-tryLater =
+    Try Later
+
+general-unknownErrorOccurred =
+    An unknown error occurred.
+
+general-updateAvailable =
+    Update Available
+
+general-upgrade =
+    Upgrade
+
+general-useDefault =
+    Use Default
+
+general-warning =
+    Warning
+
+general-yes =
+    Yes

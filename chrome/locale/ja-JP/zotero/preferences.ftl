@@ -541,3 +541,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     { $arg1 } のリンクを含める
+
+general-accessDenied =
+    アクセスが拒否されました。
+
+general-actionCannotBeUndone =
+    この操作を実行すると、元に戻すことができません。
+
+general-andJoiner =
+    %S と %S
+
+general-browserIsOffline =
+    %S は現在オフラインモードに入っています。
+
+general-cancel =
+    キャンセル
+
+general-character-plural =
+    文字
+
+general-character-singular =
+    文字
+
+general-checkForUpdates =
+    更新の確認
+
+general-close =
+    閉じる
+
+general-continue =
+    続行
+
+general-copy =
+    コピー
+
+general-copyToClipboard =
+    クリップボードにコピー
+
+general-create =
+    作成
+
+general-custom =
+    カスタム
+
+general-delete =
+    削除
+
+general-dontAskAgain =
+    今後このメッセージを表示しない
+
+general-dontShowWarningAgain =
+    次回からこの警告を表示しない。
+
+general-downloading-quoted =
+    ”%S” をダウンロードしています…
+
+general-enable =
+    有効化
+
+general-error =
+    エラー
+
+general-errorHasOccurred =
+    エラーが発生しました。
+
+general-etAl =
+    et al.
+
+general-failed =
+    失敗しました
+
+general-finished =
+    完了
+
+general-fix =
+    修復...
+
+general-hide =
+    隠す
+
+general-install =
+    インストール
+
+general-invalidResponseServer =
+    サーバーからの応答が無効です。
+
+general-keys-cmdShift =
+    Cmd+Shift+
+
+general-keys-ctrlShift =
+    Ctrl+Shift+
+
+general-learnMore =
+    詳細情報
+
+general-loading =
+    読み込み中…
+
+general-locate =
+    出典の確認...
+
+general-moreInformation =
+    詳細
+
+general-no =
+    いいえ
+
+general-notNow =
+    後で
+
+general-numMore =
+    さらに %S 個...
+
+general-openPreferences =
+    環境設定
+
+general-operationInProgress =
+    既に CiteWell 処理が進行中です。
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    完了してから、もう一度試してください。
+
+general-permissionDenied =
+    権限が拒否されました。
+
+general-pleaseRestart =
+    %S を再起動してください。
+
+general-processing =
+    処理中
+
+general-quit =
+    終了
+
+general-quitApp =
+    %S を終了
+
+general-remindMeLater =
+    後で通知する
+
+general-remove =
+    削除
+
+general-restartApp =
+    %S を再起動
+
+general-restartLater =
+    後で再起動
+
+general-restartNow =
+    今すぐ再起動
+
+general-restartRequired =
+    再起動してください。
+
+general-restartRequiredForChange =
+    変更を適用するために %S を再起動してください。
+
+general-richText =
+    リッチ テキスト
+
+general-serverError =
+    サーバーがエラーを返しました。もう一度試してください。
+
+general-showDirectory =
+    ディレクトリを表示
+
+general-showInLibrary =
+    ライブラリに表示
+
+general-skip =
+    スキップ
+
+general-tryAgain =
+    再試行
+
+general-tryAgainLater =
+    数分後にもう一度試してください。
+
+general-tryLater =
+    後で試す
+
+general-unknownErrorOccurred =
+    不明なエラーが発生しました。
+
+general-updateAvailable =
+    更新が利用可能です
+
+general-upgrade =
+    更新をインストールする
+
+general-useDefault =
+    既定値を使用
+
+general-warning =
+    警告
+
+general-yes =
+    はい

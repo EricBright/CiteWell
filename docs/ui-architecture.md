@@ -364,11 +364,10 @@ when a search finds no test, deep link or document still using it.
 
 **Gate G5:** the generated settings page matches the catalog; no alias remains in use.
 
-**Aliases are consumed (2026-11-27).** The renderer registers each section's old ids in a
-process-wide map, and `navigateToPane` resolves a `#old-id` scroll target through it. Recorded ids
-include `zotero-prefpane-advanced-connector`, the `simple-section-*` ids of the retired generated
-list, and the integrations connector id. A test exercises the resolver and a deep link written
-against an old id. Deleting an alias remains a cleanup step, guarded by the same test.
+**Aliases were consumed, then retired (2026-11-27).** The renderer registered each section's old
+ids in a process-wide map and `navigateToPane` resolved a `#old-id` target through it, with a test
+for the resolver. Both were removed the same day: the aliases had existed only to bridge the move,
+and nothing external depended on them. Old pre-move ids no longer resolve; current ids do.
 
 ### Rollback and kill criteria
 

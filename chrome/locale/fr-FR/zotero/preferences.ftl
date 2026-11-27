@@ -543,3 +543,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     Inclure les liens { $arg1 }
+
+general-accessDenied =
+    Accès refusé
+
+general-actionCannotBeUndone =
+    Cette action ne peut pas être annulée
+
+general-andJoiner =
+    %S et %S
+
+general-browserIsOffline =
+    %S est actuellement en mode hors connexion.
+
+general-cancel =
+    Annuler
+
+general-character-plural =
+    caractères
+
+general-character-singular =
+    caractère
+
+general-checkForUpdates =
+    Vérifier les mises à jour
+
+general-close =
+    Fermer
+
+general-continue =
+    Continuer
+
+general-copy =
+    Copier
+
+general-copyToClipboard =
+    Copier dans le presse-papiers
+
+general-create =
+    Créer
+
+general-custom =
+    Personnalisé
+
+general-delete =
+    Supprimer
+
+general-dontAskAgain =
+    Ne plus demander
+
+general-dontShowWarningAgain =
+    Ne plus montrer cet avertissement à nouveau.
+
+general-downloading-quoted =
+    Téléchargement de “%S”…
+
+general-enable =
+    Activer
+
+general-error =
+    Erreur
+
+general-errorHasOccurred =
+    Une erreur est survenue.
+
+general-etAl =
+    et al.
+
+general-failed =
+    Échouée
+
+general-finished =
+    Terminé
+
+general-fix =
+    Réparer…
+
+general-hide =
+    Cacher
+
+general-install =
+    Installer
+
+general-invalidResponseServer =
+    Réponse invalide du serveur.
+
+general-keys-cmdShift =
+    Cmd+Maj+
+
+general-keys-ctrlShift =
+    Ctrl+Maj+
+
+general-learnMore =
+    En savoir plus
+
+general-loading =
+    Chargement...
+
+general-locate =
+    Localisation en cours…
+
+general-moreInformation =
+    Plus d'informations
+
+general-no =
+    Non
+
+general-notNow =
+    Pas maintenant
+
+general-numMore =
+    %S autres…
+
+general-openPreferences =
+    Ouvrir les Préférences
+
+general-operationInProgress =
+    Une opération CiteWell est actuellement en cours.
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    Veuillez attendre jusqu'à ce qu'elle soit terminée et réessayez.
+
+general-permissionDenied =
+    Droit refusé
+
+general-pleaseRestart =
+    Veuillez redémarrer %S.
+
+general-processing =
+    En cours de traitement
+
+general-quit =
+    Quitter
+
+general-quitApp =
+    Quitter  %S
+
+general-remindMeLater =
+    Me le rappeler plus tard
+
+general-remove =
+    Supprimer
+
+general-restartApp =
+    Redémarrer %S
+
+general-restartLater =
+    Redémarrer plus tard
+
+general-restartNow =
+    Redémarrer maintenant
+
+general-restartRequired =
+    Redémarrage nécessaire
+
+general-restartRequiredForChange =
+    %S doit être redémarré pour que la modification soit prise en compte.
+
+general-richText =
+    Texte enrichi
+
+general-serverError =
+    Le serveur a retourné une erreur. Veuillez réessayer.
+
+general-showDirectory =
+    Ouvrir le répertoire
+
+general-showInLibrary =
+    Montrer dans la bibliothèque
+
+general-skip =
+    Passer
+
+general-tryAgain =
+    Réessayer
+
+general-tryAgainLater =
+    Veuillez réessayer dans quelques minutes
+
+general-tryLater =
+    Essayer plus tard
+
+general-unknownErrorOccurred =
+    Une erreur indéterminée est survenue.
+
+general-updateAvailable =
+    Mise à jour disponible
+
+general-upgrade =
+    Mise à niveau
+
+general-useDefault =
+    Utiliser l'emplacement par défaut
+
+general-warning =
+    Avertissement
+
+general-yes =
+    Oui

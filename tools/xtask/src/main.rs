@@ -392,7 +392,6 @@ fn validate_catalog_sections(
         .as_array()
         .ok_or_else(|| "settings sections must be an array".to_string())?;
     let mut section_ids = std::collections::BTreeSet::new();
-    let mut aliases = std::collections::BTreeSet::new();
     for section in sections {
         let id = section
             .get("id")
@@ -426,19 +425,7 @@ fn validate_catalog_sections(
         {
             return Err(format!("catalog component section {id} is missing component"));
         }
-        if let Some(list) = section.get("aliases") {
-            let list = list
-                .as_array()
-                .ok_or_else(|| format!("catalog section {id} has invalid aliases"))?;
-            for alias in list {
-                let alias = alias
-                    .as_str()
-                    .ok_or_else(|| format!("catalog section {id} has a non-string alias"))?;
-                if !aliases.insert(alias.to_string()) {
-                    return Err(format!("duplicate catalog alias: {alias}"));
-                }
-            }
-        }
+
         let empty = Vec::new();
         let items = match section.get("items").and_then(|v| v.as_array()) {
             Some(items) => items,

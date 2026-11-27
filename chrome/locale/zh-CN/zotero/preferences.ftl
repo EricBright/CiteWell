@@ -541,3 +541,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     包括{ $arg1 }链接
+
+general-accessDenied =
+    拒绝访问
+
+general-actionCannotBeUndone =
+    该操作无法撤销。
+
+general-andJoiner =
+    %S和%S
+
+general-browserIsOffline =
+    %S 现处于离线模式。
+
+general-cancel =
+    取消
+
+general-character-plural =
+    字符串
+
+general-character-singular =
+    字符
+
+general-checkForUpdates =
+    检查更新
+
+general-close =
+    关闭
+
+general-continue =
+    继续
+
+general-copy =
+    复制
+
+general-copyToClipboard =
+    复制到剪切板
+
+general-create =
+    创建
+
+general-custom =
+    自定义
+
+general-delete =
+    删除
+
+general-dontAskAgain =
+    不要再询问
+
+general-dontShowWarningAgain =
+    不再显示此警告。
+
+general-downloading-quoted =
+    正在下载 “%S”…
+
+general-enable =
+    启用
+
+general-error =
+    错误
+
+general-errorHasOccurred =
+    出错了。
+
+general-etAl =
+    等
+
+general-failed =
+    失败
+
+general-finished =
+    已完成
+
+general-fix =
+    修复…
+
+general-hide =
+    隐藏
+
+general-install =
+    安装
+
+general-invalidResponseServer =
+    服务器返回无效响应。
+
+general-keys-cmdShift =
+    Cmd+Shift+
+
+general-keys-ctrlShift =
+    Ctrl+Shift+
+
+general-learnMore =
+    了解更多
+
+general-loading =
+    加载中…
+
+general-locate =
+    检索…
+
+general-moreInformation =
+    更多信息
+
+general-no =
+    否
+
+general-notNow =
+    不是现在
+
+general-numMore =
+    还有 %S 个…
+
+general-openPreferences =
+    打开首选项
+
+general-operationInProgress =
+    另一个 CiteWell 操作正在进行。
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    请耐心等待完成，然后再试一次。
+
+general-permissionDenied =
+    拒绝许可
+
+general-pleaseRestart =
+    请重启 %S。
+
+general-processing =
+    正在处理
+
+general-quit =
+    退出
+
+general-quitApp =
+    退出 %S
+
+general-remindMeLater =
+    稍后提醒我
+
+general-remove =
+    移除
+
+general-restartApp =
+    重启 %S
+
+general-restartLater =
+    稍后重启
+
+general-restartNow =
+    立即重启
+
+general-restartRequired =
+    需要重新启动
+
+general-restartRequiredForChange =
+    %S 必须重启才能使变更生效。
+
+general-richText =
+    富文本
+
+general-serverError =
+    服务器响应错误，请稍后再试。
+
+general-showDirectory =
+    显示目录
+
+general-showInLibrary =
+    在文献库中显示
+
+general-skip =
+    跳过
+
+general-tryAgain =
+    重试
+
+general-tryAgainLater =
+    请稍后再试。
+
+general-tryLater =
+    请稍后重试
+
+general-unknownErrorOccurred =
+    发生未知错误。
+
+general-updateAvailable =
+    有更新可用
+
+general-upgrade =
+    升级
+
+general-useDefault =
+    使用默认
+
+general-warning =
+    警告
+
+general-yes =
+    是

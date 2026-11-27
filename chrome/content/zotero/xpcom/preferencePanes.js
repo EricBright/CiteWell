@@ -43,17 +43,6 @@ Zotero.PreferencePanes = {
 
 	sections: [],
 
-	/** Old element id → catalog section id, for deep links written before a move. */
-	aliases: new Map(),
-
-	registerAlias(alias, sectionId) {
-		this.aliases.set(alias, sectionId);
-	},
-
-	resolveAlias(alias) {
-		return this.aliases.get(alias) || null;
-	},
-
 	/**
 	 * Load pane structure from the versioned settings manifest. Pane content is
 	 * still a custom fragment in Phase 1; later phases can add section metadata

@@ -254,37 +254,7 @@ describe("Settings manifest navigation", function () {
 			"/tmp/example"
 		);
 		assert.isAbove(Zotero.getString("zotero.preferences.update.error").length, 0);
-	});
-
-	it("resolves old section ids through their aliases", async function () {
-		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
-			pane: "zotero-prefpane-integrations"
-		});
-		try {
-			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.equal(
-				win.Zotero.PreferencePanes.resolveAlias(
-					"zotero-prefpane-advanced-connector"
-				),
-				"browser-connector"
-			);
-			assert.equal(
-				win.Zotero.PreferencePanes.resolveAlias("simple-section-groups"),
-				"groups"
-			);
-			// A deep link written before the move still finds the section.
-			await win.Zotero_Preferences.navigateToPane(
-				"zotero-prefpane-integrations",
-				{ scrollTo: "#zotero-prefpane-advanced-connector" }
-			);
-			assert.equal(
-				win.Zotero_Preferences.navigation.value,
-				"zotero-prefpane-integrations"
-			);
-		}
-		finally {
-			win.close();
-		}
+		assert.isAbove(Zotero.getString("general.error").length, 0);
 	});
 
 	it("loads the Integrations pane from the manifest", async function () {

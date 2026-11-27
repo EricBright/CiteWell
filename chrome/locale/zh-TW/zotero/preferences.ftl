@@ -542,3 +542,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     包括 { $arg1 } 連結
+
+general-accessDenied =
+    存取被拒
+
+general-actionCannotBeUndone =
+    此動作無法復原。
+
+general-andJoiner =
+    %S和%S
+
+general-browserIsOffline =
+    %S 目前是在離線模式。
+
+general-cancel =
+    取消
+
+general-character-plural =
+    個字元
+
+general-character-singular =
+    個字元
+
+general-checkForUpdates =
+    檢查更新
+
+general-close =
+    關閉
+
+general-continue =
+    繼續
+
+general-copy =
+    複製
+
+general-copyToClipboard =
+    複製到剪貼簿
+
+general-create =
+    建立
+
+general-custom =
+    自訂
+
+general-delete =
+    刪除
+
+general-dontAskAgain =
+    不要再詢問
+
+general-dontShowWarningAgain =
+    不再顯示這個警告。
+
+general-downloading-quoted =
+    "%S" 下載中……
+
+general-enable =
+    啟用
+
+general-error =
+    錯誤
+
+general-errorHasOccurred =
+    出現一個錯誤。
+
+general-etAl =
+    …等
+
+general-failed =
+    失敗了
+
+general-finished =
+    已完成
+
+general-fix =
+    修正……
+
+general-hide =
+    隱藏
+
+general-install =
+    安裝
+
+general-invalidResponseServer =
+    來自伺服器的無效回應。
+
+general-keys-cmdShift =
+    Cmd+Shift+
+
+general-keys-ctrlShift =
+    Ctrl+Shift+
+
+general-learnMore =
+    了解更多
+
+general-loading =
+    載入中……
+
+general-locate =
+    找尋…
+
+general-moreInformation =
+    更多資訊
+
+general-no =
+    不要
+
+general-notNow =
+    現在不要
+
+general-numMore =
+    尚有%S…
+
+general-openPreferences =
+    開啟偏好設定
+
+general-operationInProgress =
+    CiteWell 進行操作中。
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    請稍候至完成，然後再試一次。
+
+general-permissionDenied =
+    權限被拒絕
+
+general-pleaseRestart =
+    請重新啟動 %S。
+
+general-processing =
+    執行中
+
+general-quit =
+    結束
+
+general-quitApp =
+    離開 %S
+
+general-remindMeLater =
+    稍後提醒我
+
+general-remove =
+    移除
+
+general-restartApp =
+    重新啟動 %S
+
+general-restartLater =
+    稍後再重新啟動
+
+general-restartNow =
+    立即重新啟動
+
+general-restartRequired =
+    需重新啟動
+
+general-restartRequiredForChange =
+    需重新啟動 %S 以使變更生效。
+
+general-richText =
+    富文字
+
+general-serverError =
+    伺服器傳回錯誤訊息。請再試一次。
+
+general-showDirectory =
+    顯示目錄
+
+general-showInLibrary =
+    在文獻庫中顯示
+
+general-skip =
+    跳過
+
+general-tryAgain =
+    再試一次
+
+general-tryAgainLater =
+    請於幾分鐘後重試。
+
+general-tryLater =
+    稍候再試
+
+general-unknownErrorOccurred =
+    出現一個不明的錯誤。
+
+general-updateAvailable =
+    有更新
+
+general-upgrade =
+    升級
+
+general-useDefault =
+    使用預設值
+
+general-warning =
+    警告
+
+general-yes =
+    要

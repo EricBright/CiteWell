@@ -1360,13 +1360,6 @@ var Zotero_Preferences = {
 		if (isNewPane) {
 			await this.waitForPaneSelect();
 		}
-		if (scrollTo && scrollTo.startsWith('#')) {
-			// A link written before a move may name an old element id.
-			let sectionID = Zotero.PreferencePanes.resolveAlias(scrollTo.slice(1));
-			if (sectionID) {
-				scrollTo = '#' + sectionID;
-			}
-		}
 		if (scrollTo) {
 			let elem = this.panes.get(paneID)?.container.querySelector(scrollTo);
 			if (elem) {
@@ -1703,12 +1696,6 @@ var Zotero_Preferences = {
 			groupbox.id = section.id;
 			groupbox.classList.add('main-section');
 			groupbox.setAttribute('data-catalog-section', 'true');
-			if (section.aliases && section.aliases.length) {
-				groupbox.setAttribute('data-aliases', section.aliases.join(','));
-				for (let alias of section.aliases) {
-					Zotero.PreferencePanes.registerAlias(alias, section.id);
-				}
-			}
 			let heading = document.createXULElement('label');
 			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
 			h2.id = section.id + '-title';

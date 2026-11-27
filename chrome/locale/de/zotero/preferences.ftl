@@ -542,3 +542,201 @@ zotero-preferences-styles-addStyle =
 
 exportOptions-includeAppLinks =
     { $arg1 }-Links einschließen
+
+general-accessDenied =
+    Zugriff verweigert
+
+general-actionCannotBeUndone =
+    Diese Aktion kann nicht rückgängig gemacht werden.
+
+general-andJoiner =
+    %S und %S
+
+general-browserIsOffline =
+    %S is momentan im Offline-Modus.
+
+general-cancel =
+    Abbrechen
+
+general-character-plural =
+    Zeichen
+
+general-character-singular =
+    Zeichen
+
+general-checkForUpdates =
+    Auf Updates überprüfen
+
+general-close =
+    Schließen
+
+general-continue =
+    Weiter
+
+general-copy =
+    Kopieren
+
+general-copyToClipboard =
+    In die Zwischenablage kopieren
+
+general-create =
+    Erstelle
+
+general-custom =
+    Benutzerdefiniert
+
+general-delete =
+    Löschen
+
+general-dontAskAgain =
+    Nicht erneut fragen
+
+general-dontShowWarningAgain =
+    Diese Warnung nicht erneut anzeigen.
+
+general-downloading-quoted =
+    Lade “%S” herunter…
+
+general-enable =
+    Aktivieren
+
+general-error =
+    Fehler
+
+general-errorHasOccurred =
+    Ein Fehler ist aufgetreten.
+
+general-etAl =
+    et al.
+
+general-failed =
+    Fehlgeschlagen
+
+general-finished =
+    Abgeschlossen
+
+general-fix =
+    Reparieren...
+
+general-hide =
+    Verbergen
+
+general-install =
+    Installieren
+
+general-invalidResponseServer =
+    Ungültige Serverantwort.
+
+general-keys-cmdShift =
+    Cmd+Shift+
+
+general-keys-ctrlShift =
+    Strg+Umschalt+
+
+general-learnMore =
+    Mehr erfahren
+
+general-loading =
+    Lädt...
+
+general-locate =
+    Lokalisieren...
+
+general-moreInformation =
+    Weitere Informationen
+
+general-no =
+    Nein
+
+general-notNow =
+    Jetzt nicht
+
+general-numMore =
+    %S mehr...
+
+general-openPreferences =
+    Einstellungen öffnen
+
+general-operationInProgress =
+    CiteWell ist beschäftigt.
+
+general-operationInProgress-waitUntilFinishedAndTryAgain =
+    Bitte warten Sie, bis der Vorgang abgeschlossen ist, und versuchen Sie es dann erneut.
+
+general-permissionDenied =
+    Erlaubnis verweigert
+
+general-pleaseRestart =
+    Bitte starten Sie %S neu.
+
+general-processing =
+    Verarbeitung
+
+general-quit =
+    Beenden
+
+general-quitApp =
+    Verlasse %S
+
+general-remindMeLater =
+    Später erinnern
+
+general-remove =
+    Entfernen
+
+general-restartApp =
+    %S neu starten
+
+general-restartLater =
+    Später neustarten
+
+general-restartNow =
+    Jetzt neustarten
+
+general-restartRequired =
+    Neustart erforderlich
+
+general-restartRequiredForChange =
+    %S muss neu gestartet werden, damit die Änderung wirksam wird.
+
+general-richText =
+    Rich Text
+
+general-serverError =
+    Ein Fehler ist aufgetreten. Bitte erneut versuchen.
+
+general-showDirectory =
+    Verzeichnis anzeigen
+
+general-showInLibrary =
+    In Bibliothek anzeigen
+
+general-skip =
+    Überspringen
+
+general-tryAgain =
+    Versuchen Sie es erneut
+
+general-tryAgainLater =
+    Bitte in wenigen Minuten erneut versuchen.
+
+general-tryLater =
+    Versuchen Sie es später
+
+general-unknownErrorOccurred =
+    Ein unbekannter Fehler ist aufgetreten.
+
+general-updateAvailable =
+    Update verfügbar
+
+general-upgrade =
+    Upgrade
+
+general-useDefault =
+    Standard benutzen
+
+general-warning =
+    Warnung
+
+general-yes =
+    Ja

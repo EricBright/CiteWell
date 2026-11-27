@@ -44,11 +44,12 @@ pushed to the bottom, Agent setup wiped by an element id equal to its section id
 
 **Not done, each for a different reason.** They are not one bucket.
 
-- **App-wide `general.*` text pass — out of scope, ready to start.** 68 shared keys, some with
-  plurals, outside the Settings scope agreed for this program. Nothing blocks it; it is the natural
-  next program if wanted.
-- **Alias retirement — time-deferred maintenance.** Remove aliases only after a release or two in
-  which no link uses an old id. Doing it now would break the compatibility the aliases exist for.
+- **App-wide `general.*` text pass — done 2026-11-27**, after the program closed: 66 shared messages
+  moved to Fluent in eight locales with their existing translations. `general.dontShowAgainFor`
+  stays in the legacy bundle because it is a plural message and `getString`'s Fluent path does not
+  carry the plural selector yet.
+- **Alias retirement — done 2026-11-27.** The manifest alias data, the resolver and its test are
+  gone. Old pre-move deep links no longer resolve; ids in the current catalog do.
 - **Accessibility pass — priority-deferred.** One user, no present need. Pick it up if a need
   appears or there is nothing more valuable to do.
 - **Native review — opportunistic (D68).** Depends on a volunteer, so it is not scheduled; drafts
