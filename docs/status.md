@@ -43,9 +43,17 @@ wrote into the section container and removed its own buttons.
 **Tests.** 86/86 across preferences, agent, import, copy, settings-tab and bibliography, including a
 layout assertion that the Agent setup buttons sit below the snippet.
 
-**Next.** The runtime accessibility pass needs the app and a person. The app-wide text pass covers
-the 68 shared `general.*` keys, some plural. Native review is opportunistic, not a pending task
-(D68): the new strings ship as drafts and will be reviewed only if a native speaker volunteers.
+**Program closed.** The settings catalog work is finished and `.005` is the closing release. What
+remains is parked by decision, not pending:
+
+- **Accessibility pass, parked.** The app has one user, who does not need it now. Do it if a real
+  need appears or there is nothing more valuable to do.
+- **App-wide `general.*` text pass, parked.** It covers 68 shared keys, some plural, outside the
+  agreed Settings scope; the Fluent-first lookup already makes it possible without call-site churn.
+- **Alias retirement, deferred.** Remove aliases only after a release or two in which no link uses
+  an old id.
+- **Native review, opportunistic (D68).** New strings ship as drafts and are reviewed only if a
+  native speaker volunteers.
 
 ## Handoff 2026-11-27 (settings catalog program)
 
