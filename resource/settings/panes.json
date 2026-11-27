@@ -162,7 +162,8 @@
       "order": 10,
       "titleKey": "browser-connector-title",
       "aliases": [
-        "zotero-prefpane-integrations-connector"
+        "zotero-prefpane-integrations-connector",
+        "zotero-prefpane-advanced-connector"
       ],
       "items": [
         {
@@ -442,6 +443,9 @@
           "pref": "bidi.browser.ui",
           "labelKey": "preferences-advanced-enable-bidi-ui"
         }
+      ],
+      "aliases": [
+        "simple-section-language-region"
       ]
     },
     {
@@ -462,6 +466,9 @@
           "pref": "extensions.zotero.openNoteInNewWindow",
           "labelKey": "preferences-note-open-in-new-window"
         }
+      ],
+      "aliases": [
+        "simple-section-note-behaviour"
       ]
     },
     {
@@ -513,6 +520,9 @@
           "pref": "extensions.zotero.groups.copyTags",
           "labelKey": "zotero.preferences.groups.tags"
         }
+      ],
+      "aliases": [
+        "simple-section-groups"
       ]
     },
     {
@@ -534,6 +544,9 @@
           "pref": "extensions.zotero.export.citePaperJournalArticleURL",
           "labelKey": "zotero.preferences.export.citePaperJournalArticleURL"
         }
+      ],
+      "aliases": [
+        "simple-section-citation-options"
       ]
     },
     {
@@ -570,6 +583,9 @@
           "pref": "extensions.zotero.automaticSnapshots",
           "labelKey": "zotero.preferences.automaticSnapshots"
         }
+      ],
+      "aliases": [
+        "simple-section-file-handling"
       ]
     },
     {
@@ -592,6 +608,9 @@
           "pref": "extensions.zotero.showAttachmentFilenames",
           "labelKey": "preferences-attachment-titles-show-filenames"
         }
+      ],
+      "aliases": [
+        "simple-section-attachment-titles"
       ]
     },
     {
@@ -626,6 +645,9 @@
             }
           ]
         }
+      ],
+      "aliases": [
+        "simple-section-citation-dialog"
       ]
     },
     {
@@ -656,6 +678,9 @@
           "afterKey": "zotero.preferences.trashAutoEmptyDaysPost",
           "size": 2
         }
+      ],
+      "aliases": [
+        "simple-section-behaviour"
       ]
     },
     {
