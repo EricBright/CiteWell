@@ -403,3 +403,44 @@ quick-copy-loading =
     .label = 読み込み中...
 quick-copy-items =
     .value = 項目
+
+import-library-title =
+    Zotero からインポート
+import-library-description =
+    コピー元の Zotero ライブラリを選択します。CiteWell は独自のライブラリを持ち、Zotero を変更しません。Zotero の設定、プラグイン、同期の認証情報はコピーされません。
+import-library-merge-note =
+    インポートは、CiteWell が空のときに選択したライブラリから CiteWell ライブラリを作成します。結合は選択したライブラリのアイテム、コレクション、ノートを現在のライブラリに追加します。置換は現在のライブラリを選択したものと交換し、以前のものを復元ポイントとして保持します。各操作は確認を求めます。
+import-rescan =
+    .label = 再検索
+import-choose =
+    .label = 別のフォルダーを選択…
+import-check =
+    .label = 確認
+import-into-empty =
+    .label = 空のライブラリにインポート…
+import-merge =
+    .label = 現在のライブラリに結合…
+import-replace =
+    .label = 現在のライブラリを置換…
+import-cancel =
+    .label = 準備中のインポートをキャンセル
+import-cancel-restore =
+    .label = 準備中の復元をキャンセル
+import-open-backups =
+    .label = バックアップフォルダーを開く
+import-scan-duplicates =
+    .label = ライブラリの重複を検索…
+import-open-duplicates =
+    .label = 重複アイテムを開く
+import-skip-exact =
+    .label = 既存の DOI/ISBN/PMID と完全に一致するアイテムをスキップ
+restore-points-title =
+    復元ポイント
+restore-points-description =
+    インポート、置換、復元で作成されるバックアップです。復元は有効なライブラリを交換し、現在のものを新しい復元ポイントとして保持します。
+duplicate-review-title =
+    重複の確認
+duplicate-review-description =
+    Zotero の重複検出が同じ作品とみなすアイテムのグループを検索します。書き出すのは確認レポートのみで、結合は「重複アイテム」で手動で行います。
+last-import-title =
+    最後のインポート

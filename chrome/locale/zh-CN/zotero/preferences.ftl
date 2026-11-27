@@ -403,3 +403,44 @@ quick-copy-loading =
     .label = 加载…
 quick-copy-items =
     .value = 条目
+
+import-library-title =
+    从 Zotero 导入
+import-library-description =
+    选择要复制的 Zotero 文献库。CiteWell 拥有自己的文献库，绝不会修改 Zotero；Zotero 的设置、插件和同步凭据绝不会被复制。
+import-library-merge-note =
+    当 CiteWell 为空时，导入会根据所选文献库构建 CiteWell 文献库。合并会把所选文献库的条目、分类和笔记添加到当前文献库。替换会用所选文献库替换当前文献库，并将原文献库保留为恢复点。每个操作都会请求确认。
+import-rescan =
+    .label = 重新扫描
+import-choose =
+    .label = 选择其他文件夹…
+import-check =
+    .label = 检查
+import-into-empty =
+    .label = 导入到空文献库…
+import-merge =
+    .label = 合并到当前文献库…
+import-replace =
+    .label = 替换当前文献库…
+import-cancel =
+    .label = 取消暂存的导入
+import-cancel-restore =
+    .label = 取消暂存的恢复
+import-open-backups =
+    .label = 打开备份文件夹
+import-scan-duplicates =
+    .label = 扫描文献库中的重复项…
+import-open-duplicates =
+    .label = 打开重复条目
+import-skip-exact =
+    .label = 跳过与现有 DOI/ISBN/PMID 完全相同的条目
+restore-points-title =
+    恢复点
+restore-points-description =
+    由导入、替换或恢复创建的备份。恢复会切换活动文献库，并将当前文献库保留为新的恢复点。
+duplicate-review-title =
+    重复项审查
+duplicate-review-description =
+    查找 Zotero 重复检测器视为同一作品的分组条目。此操作只写出审查报告；合并在“重复条目”中手动完成。
+last-import-title =
+    上次导入

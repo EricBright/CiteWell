@@ -404,3 +404,44 @@ quick-copy-loading =
     .label = Lade...
 quick-copy-items =
     .value = Einträge
+
+import-library-title =
+    Aus Zotero importieren
+import-library-description =
+    Wählen Sie die Zotero-Bibliothek zum Kopieren. CiteWell hat eine eigene Bibliothek und ändert Zotero nie; dessen Einstellungen, Plugins und Sync-Zugangsdaten werden nie kopiert.
+import-library-merge-note =
+    Import erstellt die CiteWell-Bibliothek aus der ausgewählten Bibliothek, wenn CiteWell leer ist. Zusammenführen fügt Elemente, Sammlungen und Notizen der ausgewählten Bibliothek zur aktuellen hinzu. Ersetzen tauscht die aktuelle Bibliothek gegen die ausgewählte und behält die bisherige als Wiederherstellungspunkt. Jede Aktion fragt nach Bestätigung.
+import-rescan =
+    .label = Erneut suchen
+import-choose =
+    .label = Anderen Ordner wählen…
+import-check =
+    .label = Prüfen
+import-into-empty =
+    .label = In leere Bibliothek importieren…
+import-merge =
+    .label = In aktuelle Bibliothek zusammenführen…
+import-replace =
+    .label = Aktuelle Bibliothek ersetzen…
+import-cancel =
+    .label = Gestagten Import abbrechen
+import-cancel-restore =
+    .label = Gestagte Wiederherstellung abbrechen
+import-open-backups =
+    .label = Sicherungsordner öffnen
+import-scan-duplicates =
+    .label = Bibliothek auf Duplikate prüfen…
+import-open-duplicates =
+    .label = Duplikate öffnen
+import-skip-exact =
+    .label = Elemente überspringen, die exakt einer vorhandenen DOI/ISBN/PMID entsprechen
+restore-points-title =
+    Wiederherstellungspunkte
+restore-points-description =
+    Sicherungen von Import, Ersetzen oder Wiederherstellen. Wiederherstellen tauscht die aktive Bibliothek und behält die aktuelle als neuen Wiederherstellungspunkt.
+duplicate-review-title =
+    Duplikatprüfung
+duplicate-review-description =
+    Findet Gruppen von Elementen, die Zoteros Duplikaterkennung als dasselbe Werk betrachtet. Dies schreibt nur einen Prüfbericht; zusammengeführt wird manuell in Duplikate.
+last-import-title =
+    Letzter Import

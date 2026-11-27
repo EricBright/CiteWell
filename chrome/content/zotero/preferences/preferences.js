@@ -127,6 +127,124 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'import-library': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let target = document.createXULElement('description');
+		target.id = 'library-import-target';
+		target.classList.add('library-muted');
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'import-library-description');
+		let candidates = document.createXULElement('radiogroup');
+		candidates.id = 'library-candidates';
+		candidates.classList.add('library-candidates');
+		let warning = document.createXULElement('description');
+		warning.id = 'library-candidate-warning';
+		warning.classList.add('library-warning');
+		warning.hidden = true;
+		let summary = document.createXULElement('description');
+		summary.id = 'library-candidate-summary';
+		summary.classList.add('library-muted');
+
+		let row1 = document.createXULElement('hbox');
+		row1.classList.add('library-button-row');
+		for (let [id, key, command] of [
+			['library-rescan', 'import-rescan', 'rescan-library'],
+			['library-choose', 'import-choose', 'choose-library-folder'],
+			['library-check', 'import-check', 'check-library'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, key);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row1.append(button);
+		}
+
+		let progress = document.createXULElement('progressmeter');
+		progress.id = 'library-progress';
+		progress.setAttribute('mode', 'undetermined');
+		progress.hidden = true;
+		let status = document.createXULElement('description');
+		status.id = 'library-import-status';
+		status.classList.add('library-status');
+		status.setAttribute('role', 'status');
+		status.setAttribute('aria-live', 'polite');
+
+		let row2 = document.createXULElement('hbox');
+		row2.classList.add('library-button-row');
+		for (let [id, key, command, hidden, disabled] of [
+			['library-import', 'import-into-empty', 'import-selected', false, true],
+			['library-merge', 'import-merge', 'merge-selected', true, true],
+			['library-replace', 'import-replace', 'replace-selected', true, true],
+			['library-cancel', 'import-cancel', 'cancel-import', true, false],
+			['library-cancel-restore', 'import-cancel-restore', 'cancel-restore', true, false],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, key);
+			button.hidden = hidden;
+			button.disabled = disabled;
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row2.append(button);
+		}
+
+		let skip = document.createXULElement('checkbox');
+		skip.id = 'library-merge-skip-exact';
+		skip.setAttribute('preference', 'extensions.citewell.import.skipExactDuplicates');
+		Zotero_Preferences._applyLabel(skip, 'import-skip-exact');
+		let mergeNote = document.createXULElement('description');
+		mergeNote.classList.add('library-muted');
+		Zotero_Preferences._applyText(mergeNote, 'import-library-merge-note');
+
+		groupbox.append(
+			target, description, candidates, warning, summary,
+			row1, progress, status, row2, skip, mergeNote
+		);
+	},
+
+	'restore-points': groupbox => {
+		let description = document.createXULElement('description');
+		description.classList.add('library-muted');
+		Zotero_Preferences._applyText(description, 'restore-points-description');
+		let list = document.createXULElement('vbox');
+		list.id = 'library-restore-points';
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		let open = document.createXULElement('button');
+		open.id = 'library-restore-open';
+		Zotero_Preferences._applyLabel(open, 'import-open-backups');
+		open.addEventListener('command', () => CATALOG_ACTIONS['open-backups']());
+		row.append(open);
+		groupbox.append(description, list, row);
+	},
+
+	'duplicate-review': groupbox => {
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'duplicate-review-description');
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		for (let [id, key, command] of [
+			['library-duplicates-scan', 'import-scan-duplicates', 'scan-duplicates'],
+			['library-duplicates-review', 'import-open-duplicates', 'open-duplicates'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, key);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row.append(button);
+		}
+		let status = document.createXULElement('description');
+		status.id = 'library-duplicates-status';
+		status.classList.add('library-muted');
+		groupbox.append(description, row, status);
+	},
+
+	'last-import': groupbox => {
+		let result = document.createXULElement('description');
+		result.id = 'library-last-result';
+		result.classList.add('library-muted');
+		groupbox.append(result);
+	},
+
 	'quick-copy': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let instructions = document.createXULElement('label');
@@ -1015,6 +1133,17 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'rescan-library': () => Zotero_Preferences.Library.rescan(),
+	'choose-library-folder': () => Zotero_Preferences.Library.chooseFolder(),
+	'check-library': () => Zotero_Preferences.Library.checkSelected(),
+	'import-selected': () => Zotero_Preferences.Library.importSelected(),
+	'merge-selected': () => Zotero_Preferences.Library.mergeSelected(),
+	'replace-selected': () => Zotero_Preferences.Library.replaceSelected(),
+	'cancel-import': () => Zotero_Preferences.Library.cancelImport(),
+	'cancel-restore': () => Zotero_Preferences.Library.cancelRestore(),
+	'open-backups': () => Zotero_Preferences.Library.openBackups(),
+	'scan-duplicates': () => Zotero_Preferences.Library.scanDuplicates(),
+	'open-duplicates': () => Zotero_Preferences.Library.openDuplicatesView(),
 	'reset-styles': () => Zotero_Preferences.Cite.resetStyles(),
 	'add-style': () => Zotero_Preferences.Cite.addStyle(),
 	'open-styles-page': () => Zotero_Preferences.Cite.openStylesPage(),
@@ -1062,6 +1191,11 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'import-library': () => {
+		Zotero.Promise.delay().then(
+			() => Zotero_Preferences.ImportExport.init()
+		).catch(e => Zotero.logError(e));
+	},
 	'quick-copy': () => {
 		Zotero.Promise.delay().then(() => Zotero_Preferences.Export.init()).catch(
 			e => Zotero.logError(e)

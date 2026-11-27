@@ -772,10 +772,42 @@
       "kind": "component",
       "component": "quick-copy",
       "paneId": "zotero-prefpane-import-export",
-      "order": 20,
+      "order": 50,
       "titleKey": "quick-copy-title",
-      "init": "quick-copy",
-      "after": "#import-export-library"
+      "init": "quick-copy"
+    },
+    {
+      "id": "import-library",
+      "kind": "component",
+      "component": "import-library",
+      "paneId": "zotero-prefpane-import-export",
+      "order": 10,
+      "titleKey": "import-library-title",
+      "init": "import-library"
+    },
+    {
+      "id": "restore-points",
+      "kind": "component",
+      "component": "restore-points",
+      "paneId": "zotero-prefpane-import-export",
+      "order": 20,
+      "titleKey": "restore-points-title"
+    },
+    {
+      "id": "duplicate-review",
+      "kind": "component",
+      "component": "duplicate-review",
+      "paneId": "zotero-prefpane-import-export",
+      "order": 30,
+      "titleKey": "duplicate-review-title"
+    },
+    {
+      "id": "last-import",
+      "kind": "component",
+      "component": "last-import",
+      "paneId": "zotero-prefpane-import-export",
+      "order": 40,
+      "titleKey": "last-import-title"
     }
   ]
 }

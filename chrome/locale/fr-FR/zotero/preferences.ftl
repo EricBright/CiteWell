@@ -405,3 +405,44 @@ quick-copy-loading =
     .label = Chargement…
 quick-copy-items =
     .value = documents
+
+import-library-title =
+    Importer depuis Zotero
+import-library-description =
+    Choisissez la bibliothèque Zotero à copier. CiteWell a sa propre bibliothèque et ne modifie jamais Zotero ; ses réglages, extensions et identifiants de synchronisation ne sont jamais copiés.
+import-library-merge-note =
+    Importer construit la bibliothèque CiteWell à partir de la bibliothèque sélectionnée lorsque CiteWell est vide. Fusionner ajoute les éléments, collections et notes de la bibliothèque sélectionnée à la bibliothèque actuelle. Remplacer échange la bibliothèque actuelle contre la sélectionnée et conserve la précédente comme point de restauration. Chaque action demande confirmation.
+import-rescan =
+    .label = Rescanner
+import-choose =
+    .label = Choisir un autre dossier…
+import-check =
+    .label = Vérifier
+import-into-empty =
+    .label = Importer dans une bibliothèque vide…
+import-merge =
+    .label = Fusionner dans la bibliothèque actuelle…
+import-replace =
+    .label = Remplacer la bibliothèque actuelle…
+import-cancel =
+    .label = Annuler l’import préparé
+import-cancel-restore =
+    .label = Annuler la restauration préparée
+import-open-backups =
+    .label = Ouvrir le dossier des sauvegardes
+import-scan-duplicates =
+    .label = Rechercher les doublons…
+import-open-duplicates =
+    .label = Ouvrir les doublons
+import-skip-exact =
+    .label = Ignorer les éléments qui correspondent exactement à un DOI/ISBN/PMID existant
+restore-points-title =
+    Points de restauration
+restore-points-description =
+    Sauvegardes créées par import, remplacement ou restauration. Restaurer échange la bibliothèque active et conserve l’actuelle comme nouveau point de restauration.
+duplicate-review-title =
+    Examen des doublons
+duplicate-review-description =
+    Trouve les groupes d’éléments que le détecteur de doublons de Zotero considère comme la même œuvre. Cela écrit seulement un rapport ; la fusion se fait à la main dans Doublons.
+last-import-title =
+    Dernier import

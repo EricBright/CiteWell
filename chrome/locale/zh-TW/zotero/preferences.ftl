@@ -404,3 +404,44 @@ quick-copy-loading =
     .label = 載入中……
 quick-copy-items =
     .value = 項目
+
+import-library-title =
+    從 Zotero 匯入
+import-library-description =
+    選擇要複製的 Zotero 文獻庫。CiteWell 擁有自己的文獻庫，絕不會修改 Zotero；Zotero 的設定、外掛與同步認證絕不會被複製。
+import-library-merge-note =
+    當 CiteWell 為空時，匯入會根據所選文獻庫建立 CiteWell 文獻庫。合併會將所選文獻庫的項目、分類與筆記加入目前文獻庫。取代會以所選文獻庫取代目前文獻庫，並將原文獻庫保留為還原點。每個操作都會要求確認。
+import-rescan =
+    .label = 重新掃描
+import-choose =
+    .label = 選擇其他資料夾…
+import-check =
+    .label = 檢查
+import-into-empty =
+    .label = 匯入至空文獻庫…
+import-merge =
+    .label = 合併至目前文獻庫…
+import-replace =
+    .label = 取代目前文獻庫…
+import-cancel =
+    .label = 取消暫存的匯入
+import-cancel-restore =
+    .label = 取消暫存的還原
+import-open-backups =
+    .label = 開啟備份資料夾
+import-scan-duplicates =
+    .label = 掃描文獻庫中的重複項目…
+import-open-duplicates =
+    .label = 開啟重複項目
+import-skip-exact =
+    .label = 略過與現有 DOI/ISBN/PMID 完全相同的項目
+restore-points-title =
+    還原點
+restore-points-description =
+    由匯入、取代或還原建立的備份。還原會切換使用中的文獻庫，並將目前文獻庫保留為新的還原點。
+duplicate-review-title =
+    重複項目審查
+duplicate-review-description =
+    尋找 Zotero 重複偵測器視為同一作品的分組項目。此操作只會寫出審查報告；合併需在「重複項目」中手動完成。
+last-import-title =
+    上次匯入

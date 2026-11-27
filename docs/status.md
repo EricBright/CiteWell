@@ -31,10 +31,8 @@ binding, and a renderer mounts it. The plan, decisions and open questions are in
 - **Renderer capabilities:** content sections, groups, components (registered factories), checkbox,
   radio and number settings, display and text items, actions, named conditions, section
   initializers, search aliases, `before`/`after` transition anchors, and order.
-- **Panes fully catalog-owned:** Advanced, Integrations, Notes & Annotations, Agent access,
-  Library & Files, Cite.
-- **Partly catalog-owned:** General (Appearance; its other sections came from the retired generated
-  list and are catalog data), Import & Export (Quick Copy owned; the import/restore/duplicate half is the last hand-written block).
+- **All eight settings panes are catalog-owned.** General keeps an Appearance component and its
+  other sections came from the retired generated list; the rest are sections and components..
 - **Deep links kept:** section ids `styles` and `wordProcessors` were preserved for the Cite pane,
   and the Manage Styles test now asserts the routing instead of an obsolete preferences window.
 - **Move proof:** a test changes only `paneId` and asserts the section renders in the other pane.

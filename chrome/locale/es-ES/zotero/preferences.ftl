@@ -405,3 +405,44 @@ quick-copy-loading =
     .label = Cargando...
 quick-copy-items =
     .value = elementos
+
+import-library-title =
+    Importar desde Zotero
+import-library-description =
+    Elija la biblioteca de Zotero que desea copiar. CiteWell tiene su propia biblioteca y nunca modifica Zotero; sus ajustes, complementos y credenciales de sincronización nunca se copian.
+import-library-merge-note =
+    Importar crea la biblioteca de CiteWell a partir de la biblioteca seleccionada cuando CiteWell está vacío. Combinar añade los elementos, colecciones y notas de la biblioteca seleccionada a la actual. Reemplazar cambia la biblioteca actual por la seleccionada y conserva la anterior como punto de restauración. Cada acción pide confirmación.
+import-rescan =
+    .label = Volver a buscar
+import-choose =
+    .label = Elegir otra carpeta…
+import-check =
+    .label = Comprobar
+import-into-empty =
+    .label = Importar a una biblioteca vacía…
+import-merge =
+    .label = Combinar con la biblioteca actual…
+import-replace =
+    .label = Reemplazar la biblioteca actual…
+import-cancel =
+    .label = Cancelar la importación preparada
+import-cancel-restore =
+    .label = Cancelar la restauración preparada
+import-open-backups =
+    .label = Abrir carpeta de copias
+import-scan-duplicates =
+    .label = Buscar duplicados…
+import-open-duplicates =
+    .label = Abrir duplicados
+import-skip-exact =
+    .label = Omitir elementos que coincidan exactamente con un DOI/ISBN/PMID existente
+restore-points-title =
+    Puntos de restauración
+restore-points-description =
+    Copias de seguridad creadas al importar, reemplazar o restaurar. Restaurar cambia la biblioteca activa y conserva la actual como nuevo punto de restauración.
+duplicate-review-title =
+    Revisión de duplicados
+duplicate-review-description =
+    Encuentra grupos de elementos que el detector de duplicados de Zotero considera la misma obra. Solo escribe un informe; la combinación se hace a mano en Duplicados.
+last-import-title =
+    Última importación

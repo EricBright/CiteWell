@@ -268,9 +268,12 @@ locale menu, Copy as HTML, the note-format options, the site-specific table, Edi
 drag limit. Its labels moved from DTD to Fluent, and the Export module initializes after mounting,
 deferred and error-guarded.
 
-**Still hand-written:** Import from Zotero, Restore points, Duplicate review and Last import. That
-half is CiteWell-specific copy with about twenty-five hardcoded English strings, so it is one
-deliberate translation-and-move pass rather than a mechanical conversion.
+**The import half is done too.** Import from Zotero, Restore points, Duplicate review and Last
+import are four components, with their twenty English strings drafted in eight locales and the
+staged import/restore/merge states kept as ids and classes for the Library module. The pane document
+is empty except for its root, and the pane order is catalog order.
+
+Every settings pane is now catalog-owned.
 
 ### Cite pane (done 2026-11-27)
 

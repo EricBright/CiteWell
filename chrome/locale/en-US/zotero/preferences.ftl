@@ -427,3 +427,44 @@ quick-copy-loading =
     .label = Loading…
 quick-copy-items =
     .value = items
+
+import-library-title =
+    Import from Zotero
+import-library-description =
+    Choose the Zotero library to copy from. CiteWell has its own library and never modifies Zotero; its settings, plugins and sync credentials are never copied.
+import-library-merge-note =
+    Import builds the CiteWell library from the selected library when CiteWell is empty. Merge adds the selected library's items, collections and notes to the current one. Replace swaps the current library for the selected one and keeps the previous library as a restore point. Every action asks for confirmation.
+import-rescan =
+    .label = Rescan
+import-choose =
+    .label = Choose another folder…
+import-check =
+    .label = Check
+import-into-empty =
+    .label = Import into empty library…
+import-merge =
+    .label = Merge into current library…
+import-replace =
+    .label = Replace current library…
+import-cancel =
+    .label = Cancel staged import
+import-cancel-restore =
+    .label = Cancel staged restore
+import-open-backups =
+    .label = Open backup folder
+import-scan-duplicates =
+    .label = Scan library for duplicates…
+import-open-duplicates =
+    .label = Open Duplicate Items
+import-skip-exact =
+    .label = Skip items that exactly match an existing DOI/ISBN/PMID
+restore-points-title =
+    Restore points
+restore-points-description =
+    Backups made by import, replace or restore. Restoring swaps the active library and keeps the current one as a new restore point.
+duplicate-review-title =
+    Duplicate review
+duplicate-review-description =
+    Finds groups of items that Zotero's duplicate detector considers the same work. This only writes a review report; merging is done by hand in Duplicate Items.
+last-import-title =
+    Last import
