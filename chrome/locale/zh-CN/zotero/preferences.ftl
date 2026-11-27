@@ -364,3 +364,12 @@ attachment-base-revert =
 
 locate-title =
     检索
+
+data-dir-title =
+    数据存储位置
+data-dir-via-command-line =
+    .value = （已由命令行指定）
+data-dir-reveal =
+    .label = 打开数据文件夹
+data-dir-migrate =
+    .label = 迁移到新的默认位置…

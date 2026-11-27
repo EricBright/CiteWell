@@ -388,3 +388,12 @@ attachment-base-revert =
 
 locate-title =
     Locate
+
+data-dir-title =
+    Data Directory Location
+data-dir-via-command-line =
+    .value = (specified via command line)
+data-dir-reveal =
+    .label = Show Data Directory
+data-dir-migrate =
+    .label = Migrate To New Default Location…

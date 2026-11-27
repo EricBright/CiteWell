@@ -365,3 +365,12 @@ attachment-base-revert =
 
 locate-title =
     查詢
+
+data-dir-title =
+    資料目錄所在位置
+data-dir-via-command-line =
+    .value = (透過 command line 指定)
+data-dir-reveal =
+    .label = 顯示資料目錄
+data-dir-migrate =
+    .label = 轉移到新的預設位置……

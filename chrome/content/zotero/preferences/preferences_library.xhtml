@@ -2,38 +2,4 @@
 	onload="Zotero_Preferences.Library.init()"
 	onunload="Zotero_Preferences.Library.uninit()"
 >
-	<vbox class="main-section">
-		<groupbox aria-label="&zotero.preferences.dataDir;">
-			<label><html:h2>&zotero.preferences.dataDir;</html:h2></label>
-
-			<hbox align="center">
-				<label id="data-dir-label" data-l10n-id="preferences-advanced-data-dir" control="data-dir-path"></label>
-				<html:input type="text" id="data-dir-path" preference="extensions.zotero.dataDir"
-					readonly="true" class="directory-path"/>
-				<button id="change-data-dir" label="&zotero.preferences.attachmentBaseDir.selectBasePath;"
-					aria-describedby="data-dir-label"
-					oncommand="Zotero_Preferences.Advanced.dataDirUpdate(true)"/>
-			</hbox>
-
-			<vbox id="command-line-data-dir" hidden="true">
-				<description id="command-line-data-dir-path"/>
-				<label value="&zotero.preferences.dataDir.viaCommandLine;"/>
-			</vbox>
-
-			<hbox class="preferences-button-group">
-				<button label="&zotero.preferences.dataDir.reveal;"
-					oncommand="Zotero.DataDirectory.reveal()"/>
-				<button id="custom-data-dir" data-l10n-id="preferences-advanced-custom-data-dir"
-					oncommand="Zotero_Preferences.Advanced.dataDirUpdate(true)"/>
-				<button id="reset-data-dir" data-l10n-id="preferences-advanced-reset-data-dir"
-					oncommand="Zotero_Preferences.Advanced.dataDirUpdate(false)" aria-describedby="default-data-dir"/>
-				<html:input id="default-data-dir" data-l10n-id="preferences-advanced-default-data-dir"
-					data-l10n-attrs="value" readonly="true" class="directory-path"/>
-				<button id="migrate-data-dir" label="&zotero.preferences.dataDir.migrate;"
-					oncommand="Zotero_Preferences.Advanced.migrateDataDirectory()" hidden="true"/>
-			</hbox>
-		</groupbox>
-
-
-	</vbox>
 </vbox>

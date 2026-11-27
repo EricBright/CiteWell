@@ -256,7 +256,10 @@ Section initializers now run after the section is inserted into the document. Th
 lets an initializer use `document.getElementById()` like a pane module does; before this, the base
 directory initializer ran against a detached tree and silently found nothing.
 
-Still hand-written: the data directory and its migration states.
+The data directory is the last Library component: current path, Change, the command-line override
+note, Reveal, custom/reset/default states and the migration button. Its logic still delegates to the
+Advanced module for now; extracting it into a data-directory module is a follow-up, not a placement
+question. With it, the Library pane document is empty and the whole pane is catalog-owned.
 
 ### One list (done 2026-11-27)
 

@@ -730,8 +730,17 @@
       "kind": "component",
       "component": "library-locate",
       "paneId": "zotero-prefpane-library",
-      "order": 40,
+      "order": 50,
       "titleKey": "locate-title"
+    },
+    {
+      "id": "library-data-dir",
+      "kind": "component",
+      "component": "library-data-dir",
+      "paneId": "zotero-prefpane-library",
+      "order": 40,
+      "titleKey": "data-dir-title",
+      "init": "library-data-dir"
     }
   ]
 }

@@ -366,3 +366,12 @@ attachment-base-revert =
 
 locate-title =
     Localiser
+
+data-dir-title =
+    Emplacement du répertoire de données
+data-dir-via-command-line =
+    .value = (spécifié en ligne de commande)
+data-dir-reveal =
+    .label = Ouvrir le répertoire de données
+data-dir-migrate =
+    .label = Migrer vers le nouvel emplacement par défaut…

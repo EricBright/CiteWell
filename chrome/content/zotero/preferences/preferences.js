@@ -127,6 +127,65 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'library-data-dir': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let row = document.createXULElement('hbox');
+		row.setAttribute('align', 'center');
+		let label = document.createXULElement('label');
+		label.id = 'data-dir-label';
+		label.setAttribute('control', 'data-dir-path');
+		label.setAttribute('data-l10n-id', 'preferences-advanced-data-dir');
+		let input = document.createElementNS(HTML, 'input');
+		input.type = 'text';
+		input.id = 'data-dir-path';
+		input.readOnly = true;
+		input.setAttribute('preference', 'extensions.zotero.dataDir');
+		input.classList.add('directory-path');
+		let change = document.createXULElement('button');
+		change.id = 'change-data-dir';
+		change.setAttribute('aria-describedby', 'data-dir-label');
+		Zotero_Preferences._applyLabel(change, 'attachment-base-choose');
+		change.addEventListener('command', () => CATALOG_ACTIONS['change-data-dir']());
+		row.append(label, input, change);
+
+		let commandLine = document.createXULElement('vbox');
+		commandLine.id = 'command-line-data-dir';
+		commandLine.hidden = true;
+		let commandLinePath = document.createXULElement('description');
+		commandLinePath.id = 'command-line-data-dir-path';
+		let commandLineLabel = document.createXULElement('label');
+		Zotero_Preferences._applyLabel(commandLineLabel, 'data-dir-via-command-line', 'value');
+		commandLine.append(commandLinePath, commandLineLabel);
+
+		let buttons = document.createXULElement('hbox');
+		buttons.classList.add('preferences-button-group');
+		let reveal = document.createXULElement('button');
+		Zotero_Preferences._applyLabel(reveal, 'data-dir-reveal');
+		reveal.addEventListener('command', () => CATALOG_ACTIONS['reveal-data-dir']());
+		let custom = document.createXULElement('button');
+		custom.id = 'custom-data-dir';
+		custom.setAttribute('data-l10n-id', 'preferences-advanced-custom-data-dir');
+		custom.addEventListener('command', () => CATALOG_ACTIONS['change-data-dir']());
+		let reset = document.createXULElement('button');
+		reset.id = 'reset-data-dir';
+		reset.setAttribute('data-l10n-id', 'preferences-advanced-reset-data-dir');
+		reset.setAttribute('aria-describedby', 'default-data-dir');
+		reset.addEventListener('command', () => CATALOG_ACTIONS['reset-data-dir']());
+		let defaultDir = document.createElementNS(HTML, 'input');
+		defaultDir.id = 'default-data-dir';
+		defaultDir.readOnly = true;
+		defaultDir.classList.add('directory-path');
+		defaultDir.setAttribute('data-l10n-id', 'preferences-advanced-default-data-dir');
+		defaultDir.setAttribute('data-l10n-attrs', 'value');
+		let migrate = document.createXULElement('button');
+		migrate.id = 'migrate-data-dir';
+		migrate.hidden = true;
+		Zotero_Preferences._applyLabel(migrate, 'data-dir-migrate');
+		migrate.addEventListener('command', () => CATALOG_ACTIONS['migrate-data-dir']());
+		buttons.append(reveal, custom, reset, defaultDir, migrate);
+		groupbox.append(row, commandLine, buttons);
+	},
+
 	'library-locate': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let intro = document.createElementNS(HTML, 'label');
@@ -748,6 +807,10 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'change-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(true),
+	'reset-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(false),
+	'migrate-data-dir': () => Zotero_Preferences.Advanced.migrateDataDirectory(),
+	'reveal-data-dir': () => Zotero.DataDirectory.reveal(),
 	'choose-base-path': () => Zotero_Preferences.Attachment_Base_Directory.choosePath(),
 	'clear-base-path': () => Zotero_Preferences.Attachment_Base_Directory.clearPath(),
 	'open-file-renaming': () => Zotero_Preferences.General.openFileRenamingDialog(),
@@ -786,6 +849,7 @@ const CATALOG_CONDITIONS = {
 
 const CATALOG_INITIALIZERS = {
 	'dns': () => Zotero_Preferences.DNS.init(),
+	'library-data-dir': () => Zotero_Preferences.Advanced.onDataDirLoad(),
 	'library-base-dir': groupbox => {
 		let field = groupbox.querySelector('#baseAttachmentPath');
 		if (field) {

@@ -365,3 +365,12 @@ attachment-base-revert =
 
 locate-title =
     Finden
+
+data-dir-title =
+    Speicherort
+data-dir-via-command-line =
+    .value = (über Kommandozeile spezifiziert)
+data-dir-reveal =
+    .label = Datenverzeichnis anzeigen
+data-dir-migrate =
+    .label = Nach neuem Standardverzeichnis migrieren...

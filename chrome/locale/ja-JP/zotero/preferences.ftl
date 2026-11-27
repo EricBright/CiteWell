@@ -364,3 +364,12 @@ attachment-base-revert =
 
 locate-title =
     出典の確認
+
+data-dir-title =
+    データディレクトリの場所
+data-dir-via-command-line =
+    .value = (コマンドライン経由で指定)
+data-dir-reveal =
+    .label = データディレクトリを表示
+data-dir-migrate =
+    .label = 新しい既定の場所へ移動...

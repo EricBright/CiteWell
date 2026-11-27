@@ -530,6 +530,10 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("file-renaming-configure-button"));
 			assert.ok(win.document.getElementById("baseAttachmentPath"));
 			assert.ok(win.document.getElementById("data-dir-path"));
+			assert.ok(win.document.getElementById("change-data-dir"));
+			assert.ok(win.document.getElementById("custom-data-dir"));
+			assert.ok(win.document.getElementById("reset-data-dir"));
+			assert.ok(win.document.getElementById("default-data-dir"));
 			assert.ok(win.document.getElementById("openurl-menu"));
 			assert.ok(win.document.getElementById("library-current-path"));
 		}

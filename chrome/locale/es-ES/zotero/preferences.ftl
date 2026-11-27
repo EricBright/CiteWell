@@ -366,3 +366,12 @@ attachment-base-revert =
 
 locate-title =
     Buscar
+
+data-dir-title =
+    Ubicación del directorio de datos
+data-dir-via-command-line =
+    .value = (especificado a través de línea de comandos)
+data-dir-reveal =
+    .label = Mostrar el directorio de datos
+data-dir-migrate =
+    .label = Migrar a una nueva ubicación predeterminada...
