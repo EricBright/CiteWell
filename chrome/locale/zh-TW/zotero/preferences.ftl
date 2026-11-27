@@ -338,3 +338,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = 語言：
+
+library-current-title =
+    目前文獻庫
+library-current-description =
+    這是存放文獻庫及其檔案的資料夾。
+library-open =
+    .label = 開啟資料夾
+library-move =
+    .label = 移動…
+library-locations-title =
+    位置
+library-locations-description =
+    CiteWell 在這台電腦上使用的其他資料夾。每個路徑都會顯示其用途。

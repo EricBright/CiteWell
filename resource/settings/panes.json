@@ -691,6 +691,14 @@
           "size": 2
         }
       ]
+    },
+    {
+      "id": "library-current",
+      "kind": "component",
+      "component": "library-current",
+      "paneId": "zotero-prefpane-library",
+      "order": 10,
+      "titleKey": "library-current-title"
     }
   ]
 }

@@ -339,3 +339,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = Langue :
+
+library-current-title =
+    Bibliothèque actuelle
+library-current-description =
+    Il s’agit du dossier qui contient votre bibliothèque et ses fichiers.
+library-open =
+    .label = Ouvrir le dossier
+library-move =
+    .label = Déplacer…
+library-locations-title =
+    Emplacements
+library-locations-description =
+    Autres dossiers utilisés par CiteWell sur cet ordinateur. Chaque chemin est affiché avec sa fonction.

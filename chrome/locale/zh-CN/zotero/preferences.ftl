@@ -337,3 +337,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = 语言：
+
+library-current-title =
+    当前文献库
+library-current-description =
+    这是存放文献库及其文件的文件夹。
+library-open =
+    .label = 打开文件夹
+library-move =
+    .label = 移动…
+library-locations-title =
+    位置
+library-locations-description =
+    CiteWell 在此计算机上使用的其他文件夹。每个路径都会显示其用途。

@@ -361,3 +361,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = Language:
+
+library-current-title =
+    Current library
+library-current-description =
+    This is the folder that holds your library and its files.
+library-open =
+    .label = Open folder
+library-move =
+    .label = Move…
+library-locations-title =
+    Locations
+library-locations-description =
+    Other folders CiteWell uses on this computer. Each path is shown with what it is for.

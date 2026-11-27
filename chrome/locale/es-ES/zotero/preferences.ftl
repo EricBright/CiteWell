@@ -339,3 +339,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = Idioma:
+
+library-current-title =
+    Biblioteca actual
+library-current-description =
+    Esta es la carpeta que contiene su biblioteca y sus archivos.
+library-open =
+    .label = Abrir carpeta
+library-move =
+    .label = Mover…
+library-locations-title =
+    Ubicaciones
+library-locations-description =
+    Otras carpetas que CiteWell usa en este equipo. Cada ruta se muestra con su finalidad.

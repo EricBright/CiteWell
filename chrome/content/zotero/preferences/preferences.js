@@ -127,6 +127,46 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'library-current': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let path = document.createXULElement('description');
+		path.id = 'library-current-path';
+		path.classList.add('library-path');
+		let status = document.createXULElement('description');
+		status.id = 'library-current-status';
+		status.classList.add('library-muted');
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		for (let [id, labelKey, command] of [
+			['library-open', 'library-open', 'open-library'],
+			['library-move', 'library-move', 'move-library'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, labelKey);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row.append(button);
+		}
+		let description = document.createXULElement('description');
+		description.classList.add('library-muted');
+		Zotero_Preferences._applyText(description, 'library-current-description');
+		groupbox.append(path, status, row, description);
+
+		let locations = document.createXULElement('groupbox');
+		let heading = document.createXULElement('label');
+		let h2 = document.createElementNS(HTML, 'h2');
+		Zotero_Preferences._applyText(h2, 'library-locations-title');
+		heading.append(h2);
+		let locDescription = document.createXULElement('description');
+		locDescription.classList.add('library-muted');
+		Zotero_Preferences._applyText(locDescription, 'library-locations-description');
+		let list = document.createXULElement('vbox');
+		list.id = 'library-locations';
+		list.classList.add('library-locations');
+		locations.append(heading, locDescription, list);
+		groupbox.append(locations);
+	},
+
 	'general-appearance': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let schemeBox = document.createXULElement('groupbox');
@@ -608,6 +648,8 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'open-library': () => Zotero_Preferences.Library.openLibrary(),
+	'move-library': () => Zotero_Preferences.Library.moveLibrary(),
 	'copy-skill-link': () => Zotero_Preferences.Agent.copySkillLink(),
 	'open-skill-link': () => Zotero_Preferences.Agent.openSkill(),
 	'copy-setup': () => Zotero_Preferences.Agent.copySetup(),

@@ -13,6 +13,35 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-27 (settings catalog program)
+
+Compaction anchor. The last release is `v2026.11.27.002`; nothing has been released since, and the
+`version` file is `2026.11.27.SOURCE`. The work below is committed on `citewell`.
+
+**Why.** Moving one setting used to touch markup, a pane script, ids, string keys, tests and docs.
+The settings catalog makes placement data: a section names its pane, order, title, labels and
+binding, and a renderer mounts it. The plan, decisions and open questions are in
+[ui-architecture.md](ui-architecture.md).
+
+**Done.**
+
+- **One list.** `resource/settings/panes.json` holds `sections` only; `simpleSections` is retired
+  and its renderer deleted. The validator checks unique ids, known panes, one binding per item,
+  unique preferences, labels, radio options and number label pairs, with unit tests.
+- **Renderer capabilities:** content sections, groups, components (registered factories), checkbox,
+  radio and number settings, display and text items, actions, named conditions, section
+  initializers, search aliases, `before`/`after` transition anchors, and order.
+- **Panes fully catalog-owned:** Advanced, Integrations, Notes & Annotations, Agent access.
+- **Partly catalog-owned:** General (Appearance), Library & Files (Current library and Locations).
+- **Move proof:** a test changes only `paneId` and asserts the section renders in the other pane.
+
+**Tests.** `uiCopyTest` 20/20, `preferences_advancedTest` plus `agentTest`/`dnsPrefsTest` 43/43 in
+the runs used. `validate-settings` and `docs-check` pass.
+
+**Next.** Finish Library & Files (file renaming, attachment base directory, data directory, Locate),
+then Cite and Import & Export. Then the Settings-wide text pass (P6), alias/deep-link cleanup, and
+generating `settings.md` from the catalog.
+
 ## Handoff 2026-11-27 (release 2026.11.27.002)
 
 Compaction anchor. Code commit `791ab17f3`; docs commits follow. Release `v2026.11.27.002` is

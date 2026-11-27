@@ -338,3 +338,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = Sprache:
+
+library-current-title =
+    Aktuelle Bibliothek
+library-current-description =
+    Dies ist der Ordner mit Ihrer Bibliothek und ihren Dateien.
+library-open =
+    .label = Ordner öffnen
+library-move =
+    .label = Verschieben…
+library-locations-title =
+    Speicherorte
+library-locations-description =
+    Weitere Ordner, die CiteWell auf diesem Computer verwendet. Jeder Pfad wird mit seinem Zweck angezeigt.

@@ -3,30 +3,6 @@
 	onunload="Zotero_Preferences.Library.uninit()"
 >
 	<vbox class="main-section">
-		<groupbox aria-label="Current library">
-			<label><html:h2>Current library</html:h2></label>
-			<description id="library-current-path" class="library-path"/>
-			<description id="library-current-status" class="library-muted"/>
-			<hbox class="library-button-row">
-				<button id="library-open" label="Open folder" oncommand="Zotero_Preferences.Library.openLibrary()"/>
-				<button id="library-move" label="Move…" oncommand="Zotero_Preferences.Library.moveLibrary()"/>
-			</hbox>
-			<description class="library-muted">
-				CiteWell is independent of Zotero: it has its own library and profile, and it never
-				writes to Zotero's data directory.
-			</description>
-		</groupbox>
-
-		<groupbox aria-label="Locations">
-			<label><html:h2>Locations</html:h2></label>
-			<description class="library-muted">
-				Where each piece of the current library lives.
-			</description>
-			<vbox id="library-locations" class="library-locations"/>
-		</groupbox>
-
-
-
 		<groupbox id="zotero-prefpane-file-renaming-groupbox" aria-labelledby="preferences-file-renaming-title" aria-describedby="preferences-file-renaming-intro">
 			<label><html:h2 id="preferences-file-renaming-title" data-l10n-id="preferences-file-renaming-title"/></label>
 

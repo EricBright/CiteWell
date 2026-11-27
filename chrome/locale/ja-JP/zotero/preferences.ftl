@@ -337,3 +337,16 @@ agent-audit-description =
 
 bibliography-locale-label =
     .value = 言語 :
+
+library-current-title =
+    現在のライブラリ
+library-current-description =
+    ライブラリとそのファイルを保存するフォルダーです。
+library-open =
+    .label = フォルダーを開く
+library-move =
+    .label = 移動…
+library-locations-title =
+    保存場所
+library-locations-description =
+    CiteWell がこのコンピューターで使用するその他のフォルダーです。各パスには用途が表示されます。
