@@ -135,11 +135,18 @@ describe("UI copy", function () {
 	});
 
 	it("should keep the local API beside agent access", async function () {
+		let manifest = JSON.parse(await readLocale("resource/settings/panes.json"));
+		let section = (manifest.sections || []).find(entry => entry.id === "local-api");
+		assert.ok(section, "the local API group is missing from the catalog");
+		assert.equal(section.paneId, "zotero-prefpane-agent");
+		let itemIDs = (section.items || []).map(item => item.id);
+		assert.include(itemIDs, "local-api-enabled");
+		assert.include(itemIDs, "local-api-clear");
+		assert.equal(section.titleKey, "local-api-title");
 		let agent = await readLocale(
 			"chrome/content/zotero/preferences/preferences_agent.xhtml"
 		);
-		assert.include(agent, 'id="zotero-prefpane-agent-enable-local-api"');
-		assert.include(agent, 'id="zotero-prefpane-agent-local-api-clear"');
+		assert.notInclude(agent, "enable-local-api");
 		let advanced = await readLocale(
 			"chrome/content/zotero/preferences/preferences_advanced.xhtml"
 		);

@@ -246,6 +246,35 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders the local API group from the catalog", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-agent"
+		});
+		let localAPI = win.Zotero.Prefs.get("httpServer.localAPI.enabled");
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			let title = win.document.getElementById("local-api-title");
+			assert.equal(title.textContent, "Local API", "the Fluent title was not translated");
+			let enabled = win.document.getElementById("local-api-enabled");
+			let url = win.document.getElementById("local-api-url");
+			let clear = win.document.getElementById("local-api-clear");
+			let disabledNote = win.document.getElementById("local-api-server-disabled");
+			assert.ok(enabled && url && clear && disabledNote);
+			assert.isFalse(url.hidden, "the address should be visible while enabled");
+			assert.isFalse(clear.hidden, "the clear button should be visible while enabled");
+			assert.isTrue(disabledNote.hidden, "the server-disabled note should be hidden");
+
+			win.Zotero.Prefs.set("httpServer.localAPI.enabled", false);
+			win.Zotero_Preferences._refreshLocalAPI(win.document.getElementById("local-api"));
+			assert.isTrue(url.hidden, "disabling the API should hide the address");
+			assert.isTrue(clear.hidden, "disabling the API should hide the clear button");
+		}
+		finally {
+			win.Zotero.Prefs.set("httpServer.localAPI.enabled", localAPI);
+			win.close();
+		}
+	});
+
 	it("places a catalog section in the pane the catalog names", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-integrations"

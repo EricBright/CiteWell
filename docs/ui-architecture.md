@@ -173,9 +173,14 @@ no item uses two label systems at once.
 
 ### P4 — Pilot B: Local API
 
-The hardest group: a preference checkbox, a computed value, two actions, and visibility rules. Add
-its initializer to the central registry rather than the pane script. Prove pref reads and writes,
-dependent UI, and that no initializer runs twice.
+**Done 2026-11-27.** The group is catalog data: a pref-bound checkbox, a computed address, a clear
+action, the server-disabled note and the enable-and-restart action. Visibility and disabled state
+are named conditions resolved centrally, not pane code; the address and the authorization count are
+set by a registered initializer. The Agent pane no longer contains the group or its functions.
+
+The test proves the Fluent title, the address and the clear button render, and that turning the API
+off hides both without a reload. The server-disabled branch is code-reviewed but not exercised: the
+suite runs with the server enabled, and flipping that preference would stop the server mid-run.
 
 ### P5 — Pilot C: actions, Database Maintenance
 

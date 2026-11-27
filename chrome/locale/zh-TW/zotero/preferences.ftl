@@ -149,3 +149,8 @@ browser-connector-body1 = CiteWell 不包含瀏覽器連接器。從網頁儲存
 browser-connector-body2 = CiteWell 僅在本機的 127.0.0.1:23119 上等待它，而且沒有 Zotero 帳戶、同步或雲端儲存。此擴充功能遵循 Zotero 自己的隱私權政策。目前還沒有 CiteWell 連接器，因此只保留這一個連結。
 browser-connector-download =
     .label = 開啟連接器下載頁面
+
+local-api-title =
+    本機 API
+local-api-description =
+    允許本機指令碼透過 HTTP 讀取和寫入文獻庫。只有這台電腦可以連線，寫入需要授權，可在此清除。

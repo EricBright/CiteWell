@@ -464,6 +464,52 @@
         }
       ],
       "after": ".main-section"
+    },
+    {
+      "id": "local-api",
+      "kind": "group",
+      "paneId": "zotero-prefpane-agent",
+      "order": 30,
+      "titleKey": "local-api-title",
+      "descriptionKey": "local-api-description",
+      "init": "local-api",
+      "items": [
+        {
+          "id": "local-api-enabled",
+          "kind": "setting",
+          "control": "checkbox",
+          "pref": "extensions.zotero.httpServer.localAPI.enabled",
+          "labelKey": "preferences-advanced-enable-local-api",
+          "disabledWhen": "server-disabled"
+        },
+        {
+          "id": "local-api-url",
+          "kind": "display",
+          "labelKey": "preferences-advanced-local-api-available",
+          "value": "server-url",
+          "condition": "local-api-ready"
+        },
+        {
+          "id": "local-api-clear",
+          "kind": "action",
+          "command": "clear-local-api-authorizations",
+          "labelKey": "preferences-advanced-local-api-clear-authorizations",
+          "condition": "local-api-ready"
+        },
+        {
+          "id": "local-api-server-disabled",
+          "kind": "text",
+          "textKey": "preferences-advanced-server-disabled",
+          "condition": "server-disabled"
+        },
+        {
+          "id": "local-api-enable-server",
+          "kind": "action",
+          "command": "enable-http-server",
+          "labelKey": "preferences-advanced-server-enable-and-restart",
+          "condition": "server-disabled"
+        }
+      ]
     }
   ]
 }

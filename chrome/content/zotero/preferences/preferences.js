@@ -27,6 +27,41 @@
 
 const CATALOG_ACTIONS = {
 	'open-connector-page': () => Zotero.launchURL(Zotero.CONNECTORS_URL),
+	'clear-local-api-authorizations': async () => {
+		await Zotero.Server.LocalAPI.clearAuthorizations();
+		Zotero_Preferences._refreshLocalAPI(
+			document.getElementById('local-api').parentNode
+		);
+	},
+	'enable-http-server': () => {
+		Zotero.Prefs.set('httpServer.enabled', true);
+		Zotero.Utilities.Internal.quit(true);
+	},
+};
+
+const CATALOG_CONDITIONS = {
+	'server-disabled': () => !Zotero.Prefs.get('httpServer.enabled'),
+	'local-api-ready': () => Zotero.Prefs.get('httpServer.enabled')
+		&& Zotero.Prefs.get('httpServer.localAPI.enabled'),
+};
+
+const CATALOG_INITIALIZERS = {
+	'local-api': groupbox => {
+		let url = groupbox.querySelector('#local-api-url');
+		if (url) {
+			document.l10n.setArgs(url, {
+				url: `http://localhost:${Zotero.Server.port}/api/`
+			});
+		}
+		let checkbox = groupbox.querySelector('#local-api-enabled');
+		if (checkbox) {
+			checkbox.addEventListener(
+				'synctopreference',
+				() => Zotero_Preferences._refreshLocalAPI(groupbox)
+			);
+		}
+		Zotero_Preferences._refreshLocalAPI(groupbox);
+	},
 };
 
 var Zotero_Preferences = {
@@ -402,6 +437,35 @@ var Zotero_Preferences = {
 	 * string table and falling back to Fluent. Shared by generated sections and
 	 * catalog sections so both resolve text the same way while P6 migrates them.
 	 */
+	_applyCatalogConditions(root) {
+		for (let element of root.querySelectorAll('[data-condition]')) {
+			let name = element.getAttribute('data-condition');
+			let condition = CATALOG_CONDITIONS[name];
+			if (!condition) {
+				throw new Error('Unknown catalog condition: ' + name);
+			}
+			element.hidden = !condition();
+		}
+		for (let element of root.querySelectorAll('[data-disabled-when]')) {
+			let name = element.getAttribute('data-disabled-when');
+			let condition = CATALOG_CONDITIONS[name];
+			if (!condition) {
+				throw new Error('Unknown catalog condition: ' + name);
+			}
+			element.disabled = !!condition();
+		}
+	},
+
+	_refreshLocalAPI(groupbox) {
+		if (!groupbox) return;
+		this._applyCatalogConditions(groupbox);
+		let button = groupbox.querySelector('#local-api-clear');
+		if (!button) return;
+		Zotero.Server.LocalAPI.getAuthorizationCount().then(count => {
+			button.disabled = count === 0;
+		});
+	},
+
 	_applyText(element, key) {
 		let text = null;
 		try {
@@ -458,38 +522,71 @@ var Zotero_Preferences = {
 			heading.append(h2);
 			groupbox.append(heading);
 			groupbox.setAttribute('aria-labelledby', h2.id);
+			if (section.descriptionKey) {
+				let description = document.createXULElement('description');
+				this._applyText(description, section.descriptionKey);
+				groupbox.append(description);
+			}
 
 			for (let item of section.items || []) {
+				let element;
 				if (item.kind === 'text') {
-					let description = document.createXULElement('description');
-					this._applyText(description, item.textKey);
-					groupbox.append(description);
+					element = document.createXULElement('description');
+					this._applyText(element, item.textKey);
+				}
+				else if (item.kind === 'display') {
+					element = document.createXULElement('label');
+					element.setAttribute('data-l10n-id', item.labelKey);
+					if (item.value === 'server-url') {
+						let code = document.createElementNS(
+							'http://www.w3.org/1999/xhtml', 'code'
+						);
+						code.setAttribute('data-l10n-name', 'url');
+						code.classList.add('local-api-url');
+						element.append(code);
+					}
 				}
 				else if (item.kind === 'action') {
-					let button = document.createXULElement('button');
-					button.id = item.id;
-					this._applyLabel(button, item.labelKey);
+					element = document.createXULElement('button');
+					element.id = item.id;
+					this._applyLabel(element, item.labelKey);
 					let action = CATALOG_ACTIONS[item.command];
 					if (!action) {
 						throw new Error('Unknown catalog action: ' + item.command);
 					}
-					button.addEventListener('command', action);
-					groupbox.append(button);
+					element.addEventListener('command', action);
 				}
 				else if (item.kind === 'setting' && item.control === 'checkbox') {
-					let checkbox = document.createXULElement('checkbox');
-					checkbox.id = item.id;
-					checkbox.setAttribute('preference', item.pref);
-					checkbox.setAttribute('native', 'true');
-					this._applyLabel(checkbox, item.labelKey);
-					groupbox.append(checkbox);
+					element = document.createXULElement('checkbox');
+					element.id = item.id;
+					element.setAttribute('preference', item.pref);
+					element.setAttribute('native', 'true');
+					this._applyLabel(element, item.labelKey);
+					if (item.disabledWhen) {
+						element.setAttribute('data-disabled-when', item.disabledWhen);
+					}
 				}
 				else {
 					throw new Error(
 						`Unsupported catalog item ${item.id}: ${item.kind}/${item.control}`
 					);
 				}
+				if (!element.id) {
+					element.id = item.id;
+				}
+				if (item.condition) {
+					element.setAttribute('data-condition', item.condition);
+				}
+				groupbox.append(element);
 			}
+			if (section.init) {
+				let init = CATALOG_INITIALIZERS[section.init];
+				if (!init) {
+					throw new Error('Unknown catalog initializer: ' + section.init);
+				}
+				init(groupbox);
+			}
+
 			// Place inside the pane document, not beside it. `after` is the
 			// pilot's placement rule; ordering is a catalog field, not code.
 			let root = container.firstElementChild || container;

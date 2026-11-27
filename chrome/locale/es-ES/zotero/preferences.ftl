@@ -150,3 +150,8 @@ browser-connector-body1 = CiteWell no incluye un conector de navegador. Para gua
 browser-connector-body2 = CiteWell lo espera solo en este equipo, en 127.0.0.1:23119, y no tiene cuenta de Zotero, sincronización ni almacenamiento en la nube. La extensión sigue la política de privacidad de Zotero. Todavía no existe un conector de CiteWell, por eso se mantiene este único enlace.
 browser-connector-download =
     .label = Abrir la página de descarga del conector
+
+local-api-title =
+    API local
+local-api-description =
+    Permite que los scripts locales lean y escriban la biblioteca por HTTP. Solo este equipo puede conectarse, y la escritura requiere una autorización que puede borrar aquí.

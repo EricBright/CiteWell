@@ -149,3 +149,8 @@ browser-connector-body1 = CiteWell does not include a browser connector. Saving 
 browser-connector-body2 = CiteWell listens for it only on this computer, at 127.0.0.1:23119, and has no Zotero account, sync, or cloud storage. The extension follows Zotero's own privacy policy. There is no CiteWell connector yet, which is why this one link remains.
 browser-connector-download =
     .label = Open the connector download page
+
+local-api-title =
+    Local API
+local-api-description =
+    Lets local scripts read and write the library over HTTP. Only this computer can connect, and write access needs an authorization you can clear here.

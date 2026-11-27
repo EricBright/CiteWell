@@ -148,3 +148,8 @@ browser-connector-body1 = CiteWell にはブラウザーコネクターが含ま
 browser-connector-body2 = CiteWell はこのコンピューターの 127.0.0.1:23119 でのみ待ち受けます。CiteWell には Zotero アカウント、同期、クラウドストレージはありません。拡張機能は Zotero 独自のプライバシーポリシーに従います。CiteWell のコネクターはまだ存在しないため、この 1 つのリンクのみ残っています。
 browser-connector-download =
     .label = コネクターのダウンロードページを開く
+
+local-api-title =
+    ローカル API
+local-api-description =
+    ローカルのスクリプトが HTTP 経由でライブラリを読み書きできるようにします。接続できるのはこのコンピューターだけです。書き込みには、ここで解除できる承認が必要です。

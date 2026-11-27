@@ -36,42 +36,6 @@
 			</description>
 		</groupbox>
 
-		<groupbox aria-label="Local API">
-			<label><html:h2>Local API</html:h2></label>
-			<description>
-				Lets local scripts read and write the library over HTTP. Only this computer can
-				connect, and write access needs an authorization you can clear here.
-			</description>
-			<checkbox
-				id="zotero-prefpane-agent-enable-local-api"
-				data-l10n-id="preferences-advanced-enable-local-api"
-				preference="extensions.zotero.httpServer.localAPI.enabled"
-				native="true"
-			/>
-			<vbox class="indented-pref">
-				<label
-					id="zotero-prefpane-agent-local-api-available"
-					data-l10n-id="preferences-advanced-local-api-available"
-				>
-					<html:code class="local-api-url" data-l10n-name="url"/>
-				</label>
-				<hbox id="zotero-prefpane-agent-local-api-write-authorizations" align="center" hidden="true">
-					<button
-						id="zotero-prefpane-agent-local-api-clear"
-						data-l10n-id="preferences-advanced-local-api-clear-authorizations"
-						oncommand="Zotero_Preferences.Agent.clearLocalAPIAuthorizations()"
-					/>
-				</hbox>
-				<hbox id="zotero-prefpane-agent-server-disabled" align="center" hidden="true">
-					<label data-l10n-id="preferences-advanced-server-disabled"/>
-					<button
-						data-l10n-id="preferences-advanced-server-enable-and-restart"
-						oncommand="Zotero_Preferences.Agent.enableServerForLocalAPI()"
-					/>
-				</hbox>
-			</vbox>
-		</groupbox>
-
 		<groupbox aria-label="Set up an agent">
 			<label><html:h2>Set up an agent</html:h2></label>
 			<description>
