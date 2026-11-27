@@ -13,6 +13,31 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-27 (release 2026.11.27.003)
+
+Compaction anchor. Code commit `a12ec6e93`; docs commits follow. Release `v2026.11.27.003` is
+latest, tag on `a12ec6e93`, three assets. Installed `~/AppImages/citewell.appimage` is the published
+file, sha256 `c081068af869370d4953ed162c3c9c172e452b42e0990cba8982baa39537aee3`, 121,981,432 bytes;
+`~/AppImages/release-2026.11.27.003/` holds the three assets. The `version` file is back to
+`2026.11.27.SOURCE`.
+
+**Shipped since 2026.11.27.002.**
+
+- **One settings catalog.** All eight panes are `sections` in `panes.json`; moving a section is a
+  `paneId` change, proven by a test. Pane documents are empty roots.
+- **Account/Sync removed.** The pane, reset subpane, libraries-to-sync dialog, script and test are
+  gone, along with the four code paths that opened them; dead DTD strings were pruned.
+- **Text.** Settings labels and Settings-owned runtime messages are Fluent in eight locales;
+  `Zotero.getString()` resolves Fluent first, parameters included, then the legacy bundle.
+- **Aliases and generated docs.** Old element ids resolve in deep links; `settings.md` is generated
+  from the catalog and checked by `validate-settings`.
+- **Data-directory logic** is `Zotero_Preferences.DataDirectory`.
+
+**Tests.** 90/90 across preferences, import, copy, settings-tab, bibliography, agent and DNS.
+
+**Next.** The runtime accessibility pass needs the app and a person. The app-wide text pass covers
+the 68 shared `general.*` keys, some plural. Native review of the translations is still deferred.
+
 ## Handoff 2026-11-27 (settings catalog program)
 
 Compaction anchor. The last release is `v2026.11.27.002`; nothing has been released since, and the
