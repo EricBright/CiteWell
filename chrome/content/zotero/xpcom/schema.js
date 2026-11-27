@@ -124,7 +124,7 @@ Zotero.Schema = new function () {
 		// We don't handle upgrades from pre-Zotero 2.1 databases
 		if (userdata < 76) {
 			let msg = Zotero.getString('upgrade.nonupgradeableDB1')
-				+ "\n\n" + Zotero.getString('upgrade.nonupgradeableDB2', "4.0");
+				+ "\n\n" + Zotero.getString('upgrade.nonupgradeableDB2');
 			throw new Error(msg);
 		}
 		

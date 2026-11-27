@@ -218,6 +218,8 @@ describe("UI copy", function () {
 			"standalone.rootWarning",
 			"proxies.recognized.message",
 			"standalone.addonInstallationFailed.body",
+			"upgrade.nonupgradeableDB1",
+			"upgrade.nonupgradeableDB2",
 		];
 		let entities = [
 			["csledit.dtd", "styles.editor"],
