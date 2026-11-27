@@ -127,6 +127,12 @@ once, with its current pane, order, label key and behaviour.
 
 **Gate G1:** the inventory count matches the DOM; nothing is unaccounted for. No behaviour changes.
 
+The first pass found 10 pane documents, 33 preference-bound controls in markup, 18 settings
+generated from `panes.json`, and 18 action buttons. It also surfaced two defects the copy tests
+could not see: the DNS radio labels and the sync "Stop" button are hardcoded English, and the
+connector and local API titles are written by scripts at runtime, so the inventory must include
+script-rendered text as well as markup.
+
 ### P1 — Schema, validator, aliases, resolver
 
 Define the catalog format (panes, groups, controls, actions, aliases, label keys, visibility) and a
@@ -168,10 +174,13 @@ with its labels, aliases and deep link intact.
 
 **Gate G4:** moving a group is a one-field edit plus a test run.
 
-### P6 — Bulk label migration
+### P6 — Bulk text migration
 
-Only after the pilots: migrate the remaining items' labels per item, copy the translations, delete
-the legacy key, and extend the locale completeness test. No item keeps both systems.
+Only after the pilots: migrate every string in Settings, per item, including the dialogs and
+messages that Settings opens (the integrity-check results, for example). Copy the existing
+translations, delete the legacy key, and extend the locale completeness test. No item keeps both
+systems. This is the widened scope confirmed on 2026-11-27; strings outside Settings are not part
+of it.
 
 ### P7 — Rollout and cleanup
 
@@ -191,9 +200,10 @@ structural, not cosmetic, and no amount of catalog design fixes them.
 
 ### Scope boundary
 
-The book covers labels and descriptions it renders, not runtime messages such as the integrity-check
-dialogs. Those strings are not placed by the book and can migrate separately. Dropping XUL or Gecko,
-and moving menu actions into the same book, are separate decisions after this plan.
+The text scope is the whole Settings surface, including the dialogs it opens; that was confirmed on
+2026-11-27. Strings elsewhere in the app, such as import errors or the main window, are not part of
+this program. Dropping XUL or Gecko, and moving menu actions into the same book, are separate
+decisions after this plan.
 
 ## Worked entries
 
