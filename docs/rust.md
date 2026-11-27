@@ -258,4 +258,4 @@ A pure-Rust CiteWell means replacing Gecko, XUL and the remaining translator/plu
 reach into `Zotero.*`. That is a new product, not a refactor, and it would end plugin compatibility. If it is ever wanted, it gets its own decision record — not a
 quiet assumption behind the word "migration".
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

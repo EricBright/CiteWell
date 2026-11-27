@@ -137,4 +137,4 @@ profile. The CLI fetches the server ID itself for writes.
 
 stdout carries only JSON-RPC; logs never mix into the protocol stream.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

@@ -107,7 +107,7 @@ content to HTML as sections are touched, and define the UI-to-core command seam 
 an out-of-process UI. Record the schema decision before the next section moves, so the moves stop
 being five-edit changes.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*
 
 ## Proposed plan (awaiting approval)
 

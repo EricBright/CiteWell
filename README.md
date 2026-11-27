@@ -1,95 +1,101 @@
 # CiteWell
 
-CiteWell is a citation catalogue built on [Zotero](https://github.com/zotero/zotero)'s engine
-and data model for citation work. PDF reading, annotation, and note editing are left to desktop
-tools; CiteWell owns the catalogue.
+**A citation catalogue for people who already have somewhere to read and write.**
 
-CiteWell is independent, not produced or endorsed by Zotero project or Corporation for Digital
-Scholarship, and is not the place to report Zotero bugs.
+CiteWell keeps the hard part of reference management — the catalogue, the metadata, the translators,
+the citation styles — and leaves the rest to the tools you already use. PDFs open in your reader.
+Notes are Markdown files. Writing happens in Word, LibreOffice, LaTeX or Markdown. CiteWell holds
+the library and makes the citations work.
+
+It is built on [Zotero](https://github.com/zotero/zotero)'s engine and data model, under the
+AGPL-3.0. It is an independent fork, not produced or endorsed by the Zotero project or the
+Corporation for Digital Scholarship, and it is not the place to report Zotero bugs.
+
+## Why another citation manager?
+
+Because the alternative is a research workspace that keeps growing: a PDF engine, an annotation
+layer, a note editor, a plugin runtime, a sync service. Each one is a surface to maintain, secure
+and explain. CiteWell makes the opposite bet: one catalogue, done well, with clean exits to
+everything else.
+
+That bet shows up in everyday use. Your library is SQLite and files on disk. A note is a `.md`
+attachment you can read, diff and grep. Export is a documented path, not a hostage negotiation.
+Automation is a supported interface with a CLI, a local API and an audit trail, not screen-scraping.
+And when an operation needs your attention, the prompt comes to you instead of waiting behind
+another window.
+
+## What you get
+
+- **A catalogue that is the product.** Items, collections, tags, attachments, translators, CSL
+  styles and citation output, without the workspace around them.
+- **Markdown notes.** Notes are `.md` files in the item's folder. Legacy notes migrate once; the
+  in-app view is read-only because editing belongs to your editor.
+- **Agent access as a first-class surface.** A token-authenticated local API, a `citewell` CLI and
+  MCP tools expose items, collections, search, translators, notes, export and UI selection. Every
+  call is audited and there are no destructive verbs.
+- **LibreOffice integration without Java.** A small Python UNO shim uses the runtime LibreOffice
+  already ships. No JDK, no SDK, no JVM component to patch.
+- **One AppImage.** A self-contained Linux binary with its own profile and data directory, so it
+  never reads or writes a Zotero installation and can sit beside it without sharing a port or
+  profile.
+- **Migration that asks.** Importing, merging and deduplicating are reviewable operations: the
+  source is copied and hashed, counts are shown before the action, and ambiguous duplicates are
+  reported rather than guessed.
+- **A small supply chain.** No npm tree, no Node build, no Java runtime, no PDF.js. Sass is compiled
+  by a Rust tool; React, Monaco and the rest are vendored. Fewer dependencies to track, and a build
+  one person can reproduce.
+
+## What it does not do
+
+No PDF viewer, annotation tools, in-app note editor or plugin runtime. No online sync,
+collaboration, mobile app, Windows or macOS build. CiteWell is deliberately smaller than Zotero;
+[why-citewell.md](docs/why-citewell.md) explains each trade and what it costs.
+
+## Install
+
+Download the latest AppImage from
+[Releases](https://github.com/EricBright/CiteWell/releases/latest), make it executable, and run it:
+
+```bash
+chmod +x CiteWell-x86_64.AppImage
+./CiteWell-x86_64.AppImage
+```
+
+Linux x86-64 only, glibc 2.34 or newer. Replace the file to update, or use Gear Lever or the in-app
+updater; all three use the same path. CiteWell keeps its own profile and data directory, so your
+first launch starts a fresh library. Importing an existing Zotero library is built in.
 
 ## Status
 
-| Field | Value |
-|---|---|
-| Branch | `citewell` |
-| Base | Zotero 10.0, upstream `864b2d47e` |
-| Version string | `10.0.9.SOURCE.cf3e2382a` |
-| Build verified | Linux dev build, 2026-11-25 |
-| Platform | Linux x86_64, AppImage only |
+CiteWell is usable and in active development. The current scope and the next work are in
+[roadmap.md](roadmap.md); what is shipped today is in [status.md](docs/status.md); the latest
+version is whatever [Releases](https://github.com/EricBright/CiteWell/releases/latest) says.
 
-Work in progress and scope: [roadmap.md](roadmap.md).
+The short version: Linux, one user, a catalogue and citation pipeline that work, agent access and
+LibreOffice integration in place, and no online services. No sync means no account and no cloud
+dependency; it also means one machine.
 
-## Quick start
+## Documentation
 
-Requirements: Rust, [Git LFS](https://git-lfs.com/), and the tools in
-[app/README.md](app/README.md). Node is not needed to build; npm is retired (D32).
+- [Why CiteWell](docs/why-citewell.md) — the full case, the selling points and the trade-offs.
+- [Documentation index](docs/index.md) — every document, grouped by task.
+- [Decisions](docs/decisions.md) — why each choice was made, including the abandoned ones.
+- [Status](docs/status.md) — current state and resumption notes.
+- [Roadmap](roadmap.md) — what is next, and what is deliberately not planned.
 
-```bash
-git clone --recursive https://github.com/EricBright/CiteWell
-cd CiteWell
-app/scripts/build_and_run      # build and launch with debug output
-```
+## For developers and agents
 
-No JS watcher; rerun `cargo run --manifest-path tools/Cargo.toml -p xtask -- build`
-after source changes. Tests run in a built app: `test/runtests.sh`. Output lands in
-`app/staging/`.
+Building from source needs Rust and Git LFS; Node is not required. Start with
+[docs/agent-context.md](docs/agent-context.md) for commands, the repository map and current state,
+and [AGENTS.md](AGENTS.md) for the rules a change must not break.
 
-## Repository map
+## License and reporting
 
-| Path | Contents |
-|---|---|
-| `chrome/` | Application UI and XPCOM |
-| `resource/` | Bundled runtime resources |
-| `scss/` | Styles, compiled to CSS during the build |
-| `app/` | Packaging and platform runtimes |
-| `test/` | Tests and support code |
-| `docs/` | On-demand documentation (`research/` is archival) |
-| `tools/` | Rust tooling |
+CiteWell is distributed under the GNU Affero General Public License, version 3 or later. The full
+text is in `COPYING`; attribution, modification notices and the trademark disclaimer are in
+`NOTICE`. “Zotero” and the Zotero logo are trademarks of the Corporation for Digital Scholarship,
+used here only to describe the origin of this software.
 
-## Documentation index
-
-`README.md` and `AGENTS.md` are always-tier, read every session, with word budgets checked by
-`tools/docs-check`. Everything else is on-demand.
-
-| File | Tier | Read it when | Purpose |
-|---|---|---|---|
-| `README.md` | always | starting any session | Identity, commands, repository map, this index |
-| `AGENTS.md` | always | working as an AI agent | Agent contract: language rule, naming invariant, doc rules |
-| `roadmap.md` | on-demand | choosing what to work on | Now / Next / Later, not-doing, exit criteria |
-| `docs/status.md` | on-demand | resuming after a break | Current state, next work, pitfalls |
-| `NOTICE` | once | redistributing, or asking about attribution | Fork statement, copyright, trademark |
-| `COPYING` | once | legal questions | Full AGPL-3.0 text |
-| `docs/naming.md` | on-demand | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
-| `docs/sync.md` | on-demand | relating CiteWell to upstream | Branch model; upstream is reference only |
-| `docs/branding.md` | on-demand | titles, icons, installer, channel | Where each piece of branding lives |
-| `docs/decisions.md` | on-demand | asking why something is | Decision records and dead ends |
-| `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
-| `docs/rust.md` | on-demand | choosing a language or dependency | Where Rust may land, crates |
-| `docs/packaging.md` | on-demand | building or shipping a release | AppImage pipeline, prerequisites |
-| `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, 23119 listener |
-| `docs/export.md` | on-demand | planning a vault export | Obsidian/Markdown export design |
-| `docs/cli.md` | on-demand | agents and scripting | `citewell` CLI, local API, write authorization |
-| `docs/agent.md` | on-demand | the agent bridge and MCP tools | `/agent/v1`, verb surface, token model |
-| `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
-| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol |
-| `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and trade-offs |
-| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation |
-| `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge |
-| `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes |
-| `docs/settings.md` | on-demand | reorganizing settings or adding a pane | Inventory, target tabs, registry rules |
-| `docs/ui.md` | on-demand | UI copy, layout, interaction | Rules and their tests |
-| `docs/ui-architecture.md` | on-demand | UI structure decisions | Settings schema, toolkit limits |
-| `docs/kde-hig-audit.md` | on-demand | UI polish decisions | HIG conformance |
-| `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
-
-## License
-
-CiteWell is distributed under the GNU Affero General Public License, version 3 or later. The
-full text is in `COPYING`; attribution, modification notices, and the trademark disclaimer are
-in `NOTICE`. "Zotero" and the Zotero logo are registered trademarks of the Corporation for
-Digital Scholarship, and the name is used here only to describe the origin of this software.
-
-## Reporting
-
-Bugs, questions, and feature ideas for CiteWell: [open an issue](https://github.com/EricBright/CiteWell/issues).
-Bugs in upstream Zotero belong in the [Zotero forums](https://forums.zotero.org/), not here.
+Bugs, questions and feature ideas for CiteWell:
+[open an issue](https://github.com/EricBright/CiteWell/issues). Bugs in upstream Zotero belong in
+the [Zotero forums](https://forums.zotero.org/), not here.

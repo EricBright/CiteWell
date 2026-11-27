@@ -110,4 +110,4 @@ ProseMirror behaviour are gone; migration, external-open and note-tab coverage r
    (current proposal: preferences action, plus a one-time banner).
 5. How to index files changed while CiteWell is closed without a full-library rescan on every start.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

@@ -96,4 +96,4 @@ Matched by `zoteroItemKey`; note bodies may round-trip, metadata does not. The i
 Exporting a 10,000-item library completes in under a minute, the vault opens in Obsidian with
 working links, and a second run produces no changed files.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

@@ -233,7 +233,7 @@ mutation check is part of validating the tests, not a coverage claim.
 - Background operations do not steal focus.
 - Removing a fallback makes a test fail.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*
 
 ## Minimized main window
 

@@ -67,4 +67,4 @@ Completed outcomes, kept for context.
 | Replacing SQLite with a file-based store | A data-layer rewrite with real data-loss risk; [docs/export.md](docs/export.md) gets the portability without it |
 | Upstreaming CiteWell branding to `zotero/zotero` | Not wanted upstream, and it would make every merge a negotiation |
 
-*For the full documentation index, see [README.md](README.md).*
+*For the full documentation index, see [docs/index.md](docs/index.md).*

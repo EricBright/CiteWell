@@ -54,4 +54,4 @@ Zotero's connector is a third-party project. Changes belong in its repository, o
 `/connector/*` handling; nothing about Docs is re-imported here. The app never holds a Google
 session and no Google request is ever made from CiteWell itself (D47, D49).
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

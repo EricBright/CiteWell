@@ -162,4 +162,4 @@ double. No automatic repair of LibreOffice state (D35).
   now runs the hidden `selftest`.
 - The end-of-document, APA-only insertion path was deleted with M1.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

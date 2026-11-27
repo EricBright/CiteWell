@@ -8,8 +8,9 @@
 //! Enforces the rules that nothing else can enforce, because a budget or an index
 //! that no check reads decays silently:
 //!
-//!   * `README.md` and `AGENTS.md` stay within their always-tier word budgets;
-//!   * every documentation file is registered in the README index;
+//!   * the always-tier files (`AGENTS.md`, `docs/agent-context.md`, `docs/index.md`)
+//!     and the human `README.md` stay within their word budgets;
+//!   * every documentation file is registered in the public index;
 //!   * every registered path exists, exactly once;
 //!   * every on-demand document carries the back-reference line.
 //!
@@ -24,11 +25,15 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-const README_CAP: usize = 800;
+const README_CAP: usize = 1600;
 const AGENTS_CAP: usize = 350;
+const AGENT_CONTEXT_CAP: usize = 600;
+const INDEX_CAP: usize = 800;
 const BACKREF: &str = "For the full documentation index";
 const README: &str = "README.md";
 const AGENTS: &str = "AGENTS.md";
+const AGENT_CONTEXT: &str = "docs/agent-context.md";
+const INDEX: &str = "docs/index.md";
 const REGISTRY_HEADING: &str = "## Documentation index";
 const ON_DEMAND: [&str; 1] = ["roadmap.md"];
 
@@ -36,7 +41,7 @@ fn words(text: &str) -> usize {
     text.split_whitespace().count()
 }
 
-/// Paths registered in the README index, mapped to the line they appear on.
+/// Paths registered in the public documentation index, mapped to the line they appear on.
 /// A row counts only if its first cell is wrapped in backticks and the row sits
 /// under the "Documentation index" heading; header and separator rows have no
 /// backticked first cell and are ignored.
@@ -69,12 +74,12 @@ fn registry_entries(readme: &str) -> BTreeMap<String, usize> {
     entries
 }
 
-/// Documentation files that must appear in the index: the agent contract, the
-/// roadmap, and every top-level markdown file under `docs/`. `docs/research/`
-/// is archival and intentionally excluded; new on-demand documents belong at
-/// the top level so this gate sees them.
+/// Documentation files that must appear in the index: the human entry point,
+/// the agent contract, the roadmap, and every top-level markdown file under
+/// `docs/`. `docs/research/` is archival and intentionally excluded; new
+/// on-demand documents belong at the top level so this gate sees them.
 fn documentation_files(root: &Path) -> Vec<String> {
-    let mut files: Vec<String> = vec![AGENTS.to_string()];
+    let mut files: Vec<String> = vec![README.to_string(), AGENTS.to_string()];
     files.extend(ON_DEMAND.iter().map(|name| name.to_string()));
 
     if let Ok(entries) = fs::read_dir(root.join("docs")) {
@@ -159,11 +164,13 @@ fn main() -> ExitCode {
         }
     };
     let agents = read(&root, AGENTS).unwrap_or_default();
+    let agent_context = read(&root, AGENT_CONTEXT).unwrap_or_default();
+    let index_text = read(&root, INDEX).unwrap_or_default();
 
     let readme_words = words(&readme);
     if readme_words > README_CAP {
         errors.push(format!(
-            "{README}: {readme_words} words exceeds the {README_CAP}-word always-tier budget; move detail into an on-demand document"
+            "{README}: {readme_words} words exceeds the {README_CAP}-word human front-page budget; move detail into an on-demand document"
         ));
     }
 
@@ -176,26 +183,45 @@ fn main() -> ExitCode {
         ));
     }
 
-    let registry = registry_entries(&readme);
+    let context_words = words(&agent_context);
+    if agent_context.is_empty() {
+        errors.push(format!("{AGENT_CONTEXT}: missing"));
+    } else if context_words > AGENT_CONTEXT_CAP {
+        errors.push(format!(
+            "{AGENT_CONTEXT}: {context_words} words exceeds the {AGENT_CONTEXT_CAP}-word budget"
+        ));
+    }
+
+    let index_words = words(&index_text);
+    if index_text.is_empty() {
+        errors.push(format!("{INDEX}: missing"));
+    } else if index_words > INDEX_CAP {
+        errors.push(format!(
+            "{INDEX}: {index_words} words exceeds the {INDEX_CAP}-word budget"
+        ));
+    }
+
+    let registry = registry_entries(&index_text);
     if registry.is_empty() {
-        errors.push(format!("{README}: no entries found under \"{REGISTRY_HEADING}\""));
+        errors.push(format!("{INDEX}: no entries found under \"{REGISTRY_HEADING}\""));
     }
 
     for (path, line) in &registry {
         if !root.join(path).is_file() {
-            errors.push(format!("{README}:{line}: registered path does not exist: {path}"));
+            errors.push(format!("{INDEX}:{line}: registered path does not exist: {path}"));
         }
     }
 
     let required = documentation_files(&root);
     for file in &required {
         if !registry.contains_key(file) {
-            errors.push(format!("{file}: not registered in the {README} documentation index"));
+            errors.push(format!("{file}: not registered in the {INDEX} documentation index"));
         }
     }
 
+    let always_tier = [AGENTS, AGENT_CONTEXT, INDEX];
     for file in &required {
-        if file == AGENTS {
+        if file == README || always_tier.contains(&file.as_str()) {
             continue;
         }
         match read(&root, file) {
@@ -218,7 +244,7 @@ fn main() -> ExitCode {
     }
 
     println!(
-        "docs-check: {README} {readme_words}/{README_CAP} words, {AGENTS} {agents_words}/{AGENTS_CAP} words, {} registered paths, {} documents required",
+        "docs-check: {README} {readme_words}/{README_CAP} words, {AGENTS} {agents_words}/{AGENTS_CAP} words, {AGENT_CONTEXT} {context_words}/{AGENT_CONTEXT_CAP} words, {INDEX} {index_words}/{INDEX_CAP} words, {} registered paths, {} documents required",
         registry.len(),
         required.len() + 1
     );

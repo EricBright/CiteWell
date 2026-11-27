@@ -156,4 +156,4 @@ git reflog                           # find the pre-pick state
 Verify with a build before deleting the backup branch; a pick that compiles is not the same as a
 pick that runs.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

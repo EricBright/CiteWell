@@ -118,4 +118,4 @@ Then check: window title, About panel, desktop entry, launcher icon, toolbar at 
 contrast in both light and dark themes. Skin assets are not hot-reloaded; a stale icon usually
 means the build did not run.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

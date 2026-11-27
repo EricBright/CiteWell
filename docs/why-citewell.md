@@ -220,4 +220,4 @@ CiteWell is an independent fork of Zotero's engine, not produced, endorsed or su
 Zotero project or the Corporation for Digital Scholarship. It is AGPL-3.0-or-later; attribution and
 trademark notes are in `NOTICE`. Zotero bugs belong upstream; CiteWell bugs belong here.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

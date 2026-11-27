@@ -236,4 +236,4 @@ so the same rules (stable path, published bytes, valid update information) cover
   which protects against a truncated or swapped download but not against a compromised release; a
   detached signature is the stronger form and is deferred with the updater.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

@@ -73,4 +73,4 @@ separate compatibility change, not a namespace claim.
 4. If it is a new file, use CiteWell. If it is an existing tracked file, prefer leaving it and
    adding a layer.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

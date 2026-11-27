@@ -57,4 +57,4 @@ why each surface is shaped the way it is, and [settings.md](settings.md) the pan
 A rule without a check is a rule waiting to rot. When a change cannot be tested, say so in its
 decision record instead of adding a test that cannot fail.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

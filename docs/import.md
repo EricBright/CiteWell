@@ -271,4 +271,4 @@ Checkpoints are cumulative now: the writer reads the session file and extends it
 The source library itself carries 148 attachment rows with no path and two missing storage
 directories; those are inherited, reported, and never invented.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

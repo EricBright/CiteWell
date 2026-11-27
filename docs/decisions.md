@@ -58,6 +58,11 @@ verifies the cap, the completeness of the index, and the back-reference line.
 
 Rejected: conventions-only — observed to decay; the rule lives inside the file it governs.
 
+**Amended 2026-11-27.** The README is now the human front page, not agent context. The always-tier
+set is `AGENTS.md` (contract), `docs/agent-context.md` (commands, map, state) and `docs/index.md`
+(the public index). Budgets: README 1,600 words, AGENTS 350, agent context 600, index 800. The
+index registry is `docs/index.md`; the back-reference line points there.
+
 ## D6 — Rewrite `README.md`, leave `COPYING` untouched, add `NOTICE`
 
 **Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes
@@ -1636,4 +1641,4 @@ not by native speakers, and the owner has no native speaker available to review 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is
 not repeated. None yet.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

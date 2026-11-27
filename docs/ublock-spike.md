@@ -58,4 +58,4 @@ machinery and no app-wide request hooks.
 What would reopen the question: a Zotero/Gecko release in which WebExtensions install and activate
 in this app, or a pin that ships URL-classifier tracking lists. Either is a spike, not a guess.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

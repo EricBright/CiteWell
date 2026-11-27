@@ -159,4 +159,4 @@ Suggested order, smallest first:
 4. **Defer:** mnemonics, row shading, dialog minimization, second-person copy, and the runtime
    accessibility pass. None is worth a project on its own evidence yet.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

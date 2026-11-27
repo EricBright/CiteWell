@@ -253,4 +253,4 @@ Use an isolated LibreOffice profile, never the owner’s real one:
 The execution plan, command surface, security contract and milestones are in
 [libreoffice-parity.md](libreoffice-parity.md).
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

@@ -162,4 +162,4 @@ Reading collection, and show me."
 - Replacing the local API. CRUD clients that only need data keep using `/api/`; the bridge is for
   actions that require the running app.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

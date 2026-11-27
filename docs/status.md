@@ -453,7 +453,7 @@ captures a PDF response as an imported-URL attachment instead of rendering it (D
 | Dependencies | npm is retired (D32); the root npm tree and package metadata are gone (D46), and the connector tree's own Node build went with it (D47/R34). **No npm tree remains in the repository** |
 | LibreOffice | **M5 core passed 2026-11-22.** Six menu actions and a matching toolbar generated from `actions.json`; the current Addons schema renders the six icons in a clean Writer profile. Dialog insert/edit/cancel, multi-item citations, locators, style switching, 100-field Refresh, Unlink, multi-entry bibliography TextSection with CSL paragraph formatting, Add Note footnotes, table-cell citations, in-text ↔ footnote/endnote conversion all work and persist. Attention handling now has a platform-free 1/3/10 s controller, independent integration dialogs with focus/notification handling, modern system notifications, a test-only focus-denial hook, and a persistent timestamped shim log. The OXT installer now repairs stale deployment cache by moving only CiteWell `lu*.tmp_` directories to `~/.cache/citewell/lo-repair/…` and retrying; it never deletes the profile or another extension. **Open:** the KDE/GNOME/XWayland matrix is deferred. Owner confirmed the post-preferences Writer flow on 2026-11-23 and the user-scoped systemd/D-Bus repair/remove paths on the same day. Not done: add-only install in the real profile on request, citation explorer, undo/save listener. The real profile is untouched by tests (D35). |
 | Import | **R24 done 2026-11-25, hazard closed the same day.** Phases 1-4 shipped; the acceptance merge of the canonical 1,771-item library into a non-empty one imported 946 items, 589 attachments, 83 notes, 53 collections and 1 saved search, skipped nothing, reported 153 fileless rows, left the source checksum unchanged and took 38.1 s. Fixed: same-title children dropped by title-keyed resume, the 25-item checkpoint duplicating children, and a changed source after an interruption now refusing with a database restore (D52); `importTest.js` 19/19, importer 10/10 |
-| Docs | README index, Rust docs gate, D1–D58 |
+| Docs | Public docs index, Rust docs gate, D1–D58 |
 | CI | `docs` and `Dependency guard` on every push; `CodeQL` weekly/manual as an audit, not a per-push gate (D44). The inherited upstream `ci.yml` with its npm jobs is removed |
 
 **Next: R6** ([roadmap.md](../roadmap.md)). R34 closed 2026-11-25: the Browse tab, save
@@ -836,4 +836,4 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
   hands the URL to Firefox, where Zotero's connector inserts citations against this app's
   `/connector/document/*` endpoints. The sync-dependent parts of Docs remain gated by D14.
 
-*For the full documentation index, see [../README.md](../README.md).*
+*For the full documentation index, see [index.md](index.md).*

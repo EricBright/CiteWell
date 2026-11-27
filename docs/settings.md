@@ -1,4 +1,4 @@
-For the full documentation index, see [README.md](../README.md).
+For the full documentation index, see [index.md](index.md).
 
 # Settings information architecture
 
