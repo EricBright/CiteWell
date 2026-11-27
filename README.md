@@ -2,6 +2,9 @@
 
 **A citation catalogue for people who already have somewhere to read and write.**
 
+*Using an agent or building from source? Start with [AGENTS.md](AGENTS.md) and
+[docs/agent-context.md](docs/agent-context.md).*
+
 CiteWell keeps the hard part of reference management — the catalogue, the metadata, the translators,
 the citation styles — and leaves the rest to the tools you already use. PDFs open in your reader.
 Notes are Markdown files. Writing happens in Word, LibreOffice, LaTeX or Markdown. CiteWell holds
