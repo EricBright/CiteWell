@@ -31,16 +31,23 @@ binding, and a renderer mounts it. The plan, decisions and open questions are in
 - **Renderer capabilities:** content sections, groups, components (registered factories), checkbox,
   radio and number settings, display and text items, actions, named conditions, section
   initializers, search aliases, `before`/`after` transition anchors, and order.
-- **Panes fully catalog-owned:** Advanced, Integrations, Notes & Annotations, Agent access.
-- **Partly catalog-owned:** General (Appearance), Library & Files (Current library and Locations).
+- **Panes fully catalog-owned:** Advanced, Integrations, Notes & Annotations, Agent access,
+  Library & Files, Cite.
+- **Partly catalog-owned:** General (Appearance; its other sections came from the retired generated
+  list and are catalog data), Import & Export (untouched, the last pane).
+- **Deep links kept:** section ids `styles` and `wordProcessors` were preserved for the Cite pane,
+  and the Manage Styles test now asserts the routing instead of an obsolete preferences window.
 - **Move proof:** a test changes only `paneId` and asserts the section renders in the other pane.
 
 **Tests.** `uiCopyTest` 20/20, `preferences_advancedTest` plus `agentTest`/`dnsPrefsTest` 43/43 in
 the runs used. `validate-settings` and `docs-check` pass.
 
-**Next.** Finish Library & Files (file renaming, attachment base directory, data directory, Locate),
-then Cite and Import & Export. Then the Settings-wide text pass (P6), alias/deep-link cleanup, and
-generating `settings.md` from the catalog.
+**Next.** Import & Export is the last hand-written pane. Its Quick Copy half has translated DTD
+strings and is mechanical; its CiteWell import/restore/duplicate half has roughly twenty-five
+hardcoded English strings that need drafting in eight locales, so it is a deliberate pass rather
+than a mechanical move. After it: the Settings-wide text pass (P6), extracting the data-directory
+logic from the Advanced module, alias/deep-link cleanup, generating `settings.md`, and the runtime
+accessibility pass.
 
 ## Handoff 2026-11-27 (release 2026.11.27.002)
 

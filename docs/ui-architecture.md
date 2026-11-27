@@ -261,6 +261,13 @@ note, Reveal, custom/reset/default states and the migration button. Its logic st
 Advanced module for now; extracting it into a data-directory module is a follow-up, not a placement
 question. With it, the Library pane document is empty and the whole pane is catalog-owned.
 
+### Import & Export (not started)
+
+The last hand-written pane. Quick Copy is mostly existing translated DTD strings and a live table
+populated by the Export module; the import/restore/duplicate half is CiteWell-specific copy with
+about twenty-five hardcoded English strings. It is therefore one deliberate translation-and-move
+pass rather than a mechanical conversion.
+
 ### Cite pane (done 2026-11-27)
 
 The style manager, its three buttons, the style editor and preview tools, and the hidden
