@@ -281,3 +281,22 @@ annotations-description =
     CiteWell 不再顯示 PDF 註解。現有註解可以一次性匯出為每個 PDF 旁的可讀 annotations.md。現有附屬檔案絕不會被覆寫。
 annotations-export =
     .label = 將 PDF 註解匯出為 Markdown…
+
+agent-access-title = Agent access
+agent-access-description =
+    允許本機代理程式（DeepSeek、MiMo、指令碼或 MCP 用戶端）透過 /agent/v1 橋接使用此文獻庫。
+agent-enabled-label =
+    .label = 允許本機代理程式使用此文獻庫
+agent-bridge-note =
+    橋接僅監聽 127.0.0.1。讀取和寫入都需要下方權杖。刪除項目會將其移入垃圾桶；沒有「清空垃圾桶」命令。
+agent-connection-title =
+    連線
+agent-token-label =
+    .value = 權杖
+agent-copy =
+    .label = 複製
+agent-regenerate =
+    .label = 重新產生
+agent-token-note =
+    任何能讀取此檔案的本機程序都可以操控本應用程式。請保持私密；若可能已外洩，請重新產生，然後更新代理程式的副本。
+agent-token-path = 權杖檔案：{ $path }

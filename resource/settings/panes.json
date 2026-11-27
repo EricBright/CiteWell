@@ -621,6 +621,14 @@
       "paneId": "zotero-prefpane-notes",
       "order": 20,
       "titleKey": "annotations-title"
+    },
+    {
+      "id": "agent-access",
+      "kind": "component",
+      "component": "agent-access",
+      "paneId": "zotero-prefpane-agent",
+      "order": 10,
+      "titleKey": "agent-access-title"
     }
   ]
 }

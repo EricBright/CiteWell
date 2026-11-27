@@ -127,6 +127,58 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'agent-access': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'agent-access-description');
+		let enabled = document.createXULElement('checkbox');
+		enabled.id = 'agent-enabled';
+		enabled.setAttribute('preference', 'extensions.zotero.agent.enabled');
+		enabled.setAttribute('native', 'true');
+		Zotero_Preferences._applyLabel(enabled, 'agent-enabled-label');
+		let note = document.createXULElement('description');
+		note.classList.add('agent-muted');
+		Zotero_Preferences._applyText(note, 'agent-bridge-note');
+
+		let connection = document.createXULElement('groupbox');
+		let heading = document.createXULElement('label');
+		let h2 = document.createElementNS(HTML, 'h2');
+		Zotero_Preferences._applyText(h2, 'agent-connection-title');
+		heading.append(h2);
+		connection.append(heading);
+
+		let row = document.createXULElement('hbox');
+		row.classList.add('agent-token-row');
+		let label = document.createXULElement('label');
+		label.setAttribute('control', 'agent-token');
+		Zotero_Preferences._applyLabel(label, 'agent-token-label', 'value');
+		let input = document.createElementNS(HTML, 'input');
+		input.id = 'agent-token';
+		input.type = 'text';
+		input.readOnly = true;
+		input.setAttribute('flex', '1');
+		input.classList.add('agent-token');
+		let copy = document.createXULElement('button');
+		copy.id = 'agent-token-copy';
+		Zotero_Preferences._applyLabel(copy, 'agent-copy');
+		copy.addEventListener('command', () => CATALOG_ACTIONS['copy-token']());
+		let rotate = document.createXULElement('button');
+		rotate.id = 'agent-token-rotate';
+		Zotero_Preferences._applyLabel(rotate, 'agent-regenerate');
+		rotate.addEventListener('command', () => CATALOG_ACTIONS['rotate-token']());
+		row.append(label, input, copy, rotate);
+
+		let path = document.createXULElement('description');
+		path.id = 'agent-token-path';
+		path.classList.add('agent-path');
+		let tokenNote = document.createXULElement('description');
+		tokenNote.classList.add('agent-muted');
+		Zotero_Preferences._applyText(tokenNote, 'agent-token-note');
+
+		connection.append(row, path, tokenNote);
+		groupbox.append(description, enabled, note, connection);
+	},
+
 	'notes-migration': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let description = document.createXULElement('description');
@@ -394,6 +446,8 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'copy-token': () => Zotero_Preferences.Agent.copyToken(),
+	'rotate-token': () => Zotero_Preferences.Agent.rotateToken(),
 	'migrate-notes': () => Zotero_Preferences.Notes.migrateNotes(),
 	'export-annotations': () => Zotero_Preferences.Notes.exportAnnotations(),
 	'install-libreoffice': () => Zotero_Preferences.Cite.installLibreOffice(),

@@ -2,41 +2,7 @@
 	onload="Zotero_Preferences.Agent.init()"
 	onunload="Zotero_Preferences.Agent.uninit()"
 >
-	<vbox class="main-section">
-		<groupbox aria-label="Agent access">
-			<label><html:h2>Agent access</html:h2></label>
-			<description>
-				Allow a local agent, whether DeepSeek, MiMo, a script, or an MCP client, to work with this
-				library through the <html:code>/agent/v1</html:code> bridge.
-			</description>
-			<checkbox
-				id="agent-enabled"
-				label="Allow local agents to use this library"
-				preference="extensions.zotero.agent.enabled"
-				native="true"
-			/>
-			<description class="agent-muted">
-				The bridge listens on 127.0.0.1 only. Reads and writes both require the token below.
-				Deleting an item moves it to the trash; there is no "empty trash" verb.
-			</description>
-		</groupbox>
-
-		<groupbox aria-label="Connection">
-			<label><html:h2>Connection</html:h2></label>
-			<hbox align="center" class="agent-token-row">
-				<label value="Token" control="agent-token"/>
-				<html:input id="agent-token" type="text" readonly="true" flex="1" class="agent-token"/>
-				<button id="agent-token-copy" label="Copy" oncommand="Zotero_Preferences.Agent.copyToken()"/>
-				<button id="agent-token-rotate" label="Regenerate" oncommand="Zotero_Preferences.Agent.rotateToken()"/>
-			</hbox>
-			<description id="agent-token-path" class="agent-path"/>
-			<description class="agent-muted">
-				Any local process that can read this file can drive the app. Keep it private; regenerate
-				it if it may have been exposed, then update the agent's copy.
-			</description>
-		</groupbox>
-
-		<groupbox aria-label="Set up an agent">
+	<groupbox aria-label="Set up an agent">
 			<label><html:h2>Set up an agent</html:h2></label>
 			<description>
 				The CLI is a thin client for this bridge. Install it from a CiteWell source checkout,
@@ -93,4 +59,3 @@
 			</description>
 		</groupbox>
 	</vbox>
-</vbox>

@@ -280,3 +280,22 @@ annotations-description =
     CiteWell 不再显示 PDF 注释。现有注释可以一次性导出为每个 PDF 旁的可读 annotations.md。现有附属文件绝不会被覆盖。
 annotations-export =
     .label = 将 PDF 注释导出为 Markdown…
+
+agent-access-title = Agent access
+agent-access-description =
+    允许本地智能体（DeepSeek、MiMo、脚本或 MCP 客户端）通过 /agent/v1 桥接使用此文献库。
+agent-enabled-label =
+    .label = 允许本地智能体使用此文献库
+agent-bridge-note =
+    桥接仅监听 127.0.0.1。读取和写入都需要下方令牌。删除条目会将其移入回收站；没有“清空回收站”命令。
+agent-connection-title =
+    连接
+agent-token-label =
+    .value = 令牌
+agent-copy =
+    .label = 复制
+agent-regenerate =
+    .label = 重新生成
+agent-token-note =
+    任何能读取此文件的本地进程都可以操控本应用。请保持私密；如果可能已泄露，请重新生成，然后更新智能体的副本。
+agent-token-path = 令牌文件：{ $path }

@@ -304,3 +304,22 @@ annotations-description =
     CiteWell no longer displays PDF annotations. Existing annotations can be exported once to a human-readable annotations.md beside each PDF. Existing sidecar files are never overwritten.
 annotations-export =
     .label = Export PDF annotations to Markdown…
+
+agent-access-title = Agent access
+agent-access-description =
+    Allow a local agent, whether DeepSeek, MiMo, a script, or an MCP client, to work with this library through the /agent/v1 bridge.
+agent-enabled-label =
+    .label = Allow local agents to use this library
+agent-bridge-note =
+    The bridge listens on 127.0.0.1 only. Reads and writes both require the token below. Deleting an item moves it to the trash; there is no "empty trash" verb.
+agent-connection-title =
+    Connection
+agent-token-label =
+    .value = Token
+agent-copy =
+    .label = Copy
+agent-regenerate =
+    .label = Regenerate
+agent-token-note =
+    Any local process that can read this file can drive the app. Keep it private; regenerate it if it may have been exposed, then update the agent's copy.
+agent-token-path = Token file: { $path }

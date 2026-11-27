@@ -280,3 +280,22 @@ annotations-description =
     CiteWell は PDF 注釈を表示しなくなりました。既存の注釈は、各 PDF の隣にある読みやすい annotations.md に一度だけエクスポートできます。既存のサイドカーファイルは上書きされません。
 annotations-export =
     .label = PDF 注釈を Markdown にエクスポート…
+
+agent-access-title = Agent access
+agent-access-description =
+    ローカルエージェント（DeepSeek、MiMo、スクリプト、MCP クライアントなど）が /agent/v1 ブリッジ経由でこのライブラリを操作できるようにします。
+agent-enabled-label =
+    .label = ローカルエージェントにこのライブラリの使用を許可する
+agent-bridge-note =
+    ブリッジは 127.0.0.1 でのみ待ち受けます。読み取りと書き込みの両方に下のトークンが必要です。アイテムを削除するとゴミ箱に移動します。「ゴミ箱を空にする」コマンドはありません。
+agent-connection-title =
+    接続
+agent-token-label =
+    .value = トークン
+agent-copy =
+    .label = コピー
+agent-regenerate =
+    .label = 再生成
+agent-token-note =
+    このファイルを読めるローカルプロセスはアプリを操作できます。非公開に保ち、漏えいした可能性がある場合は再生成してからエージェント側のコピーを更新してください。
+agent-token-path = トークンファイル: { $path }

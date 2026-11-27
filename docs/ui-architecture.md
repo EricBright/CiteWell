@@ -230,6 +230,17 @@ It also fixed mounting for an empty pane: a pane with no hand-written section us
 beside the pane document, which sent catalog sections outside it. The title and the sections now go
 inside the pane root.
 
+### Agent access (in progress)
+
+- **Agent access and Connection** are one catalog component: the description, the enable checkbox,
+  the bridge note, the token row, the token-file path and the token note. Their nine strings are
+  Fluent drafts in eight locales, and the token path uses a Fluent message with the path passed as
+  an argument instead of the old hardcoded prefix.
+- **Still markup:** Set up an agent, What agents can do, Agent skill and Audit. They come next. The
+  setup block also raises the one copy question in this pane: its shell snippet has instruction
+  comments. The commands stay as code; the comments will be translated only if they can be separated
+  cleanly from the snippet.
+
 ### Notes pane (done)
 
 Both sections are catalog components: note migration and the legacy PDF-annotation export. Their six

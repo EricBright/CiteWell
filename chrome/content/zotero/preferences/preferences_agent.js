@@ -46,8 +46,11 @@ Zotero_Preferences.Agent = {
 		document.getElementById('agent-token-copy').disabled = !enabled;
 		document.getElementById('agent-token-rotate').disabled = !enabled;
 		document.getElementById('agent-setup-copy').disabled = !enabled;
-		document.getElementById('agent-token-path').textContent
-			= `Token file: ${Zotero.Server.Agent.tokenPath}`;
+		let tokenPath = document.getElementById('agent-token-path');
+		document.l10n.setAttributes(tokenPath, 'agent-token-path', {
+			path: Zotero.Server.Agent.tokenPath
+		});
+		await document.l10n.translateElements([tokenPath]);
 		document.getElementById('agent-audit-path').textContent
 			= Zotero.Server.Agent.auditPath;
 		document.getElementById('agent-setup').value = this._setupText();

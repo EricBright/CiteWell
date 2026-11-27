@@ -368,6 +368,30 @@ describe("Settings manifest navigation", function () {
 		}
 	});
 
+	it("renders agent access and connection from the catalog", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-agent"
+		});
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			for (let id of [
+				"agent-enabled", "agent-token", "agent-token-copy", "agent-token-rotate",
+			]) {
+				assert.ok(win.document.getElementById(id), `${id} did not render`);
+			}
+			assert.isAbove(
+				win.document.getElementById("agent-access-title").textContent.trim().length, 0
+			);
+			assert.isAbove(
+				win.document.getElementById("agent-token-path").textContent.trim().length, 0,
+				"the token path was not localized"
+			);
+		}
+		finally {
+			win.close();
+		}
+	});
+
 	it("renders the local API group from the catalog", async function () {
 		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
 			pane: "zotero-prefpane-agent"
