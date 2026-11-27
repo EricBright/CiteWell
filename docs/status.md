@@ -13,6 +13,31 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-27 (release 2026.11.27.002)
+
+Compaction anchor. Code commit `791ab17f3`; docs commits follow. Release `v2026.11.27.002` is
+latest, tag on `791ab17f3`, three assets. Installed `~/AppImages/citewell.appimage` is the published
+file, sha256 `6212c8097ddb9b8eff8453ea788df3f992833342a92fcc776eb49c231bfe6d68`, 121,936,376 bytes;
+`~/AppImages/release-2026.11.27.002/` holds the three assets.
+
+**Shipped since 2026.11.27.001.**
+
+- **Support links (D66 amendment).** The remaining 32 `zotero.org/support` links in 18 files now
+  open the CiteWell repository, and the sync storage string carries no Zotero URL in any of the
+  eight locales.
+- **Guard.** `uiCopyTest.js` walks every `.js` and `.xhtml` under `chrome/content` and fails on a
+  new support link, with three named exceptions: the OpenURL resolver fetch, API-reference
+  comments, and the developer console.
+- **Docs.** The audit and D66 record that the first pass fixed Settings only and the second pass
+  completed the sweep.
+
+**Tests.** `uiCopyTest` 20/20, including the source-wide scan.
+
+**Next.** The HIG audit's second settings pass: keyboard shortcuts out of Advanced, full-text
+indexing, translator updates, and a decision on Feeds; [settings.md](settings.md) still carries the
+older target layout and must be reconciled in that change. Also open: native review of the eight
+translations, R32's optional follow-ups, and the next release's notes need the same claims pass.
+
 ## Handoff 2026-11-27 (release 2026.11.27.001)
 
 Compaction anchor. Code commit `5fcd3281b`; docs commits follow. Release `v2026.11.27.001` is
