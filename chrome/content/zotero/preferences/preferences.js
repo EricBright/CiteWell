@@ -402,6 +402,22 @@ var Zotero_Preferences = {
 	 * string table and falling back to Fluent. Shared by generated sections and
 	 * catalog sections so both resolve text the same way while P6 migrates them.
 	 */
+	_applyText(element, key) {
+		let text = null;
+		try {
+			text = Zotero.getString(key);
+		}
+		catch (e) {
+			// Fluent-only messages have no value to fetch this way.
+		}
+		if (text && text !== key) {
+			element.textContent = text;
+		}
+		else {
+			element.setAttribute('data-l10n-id', key);
+		}
+	},
+
 	_applyLabel(element, key, attribute = 'label') {
 		let text = null;
 		try {
@@ -438,7 +454,7 @@ var Zotero_Preferences = {
 			let heading = document.createXULElement('label');
 			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
 			h2.id = section.id + '-title';
-			h2.textContent = Zotero.getString(section.titleKey);
+			this._applyText(h2, section.titleKey);
 			heading.append(h2);
 			groupbox.append(heading);
 			groupbox.setAttribute('aria-labelledby', h2.id);
@@ -446,7 +462,7 @@ var Zotero_Preferences = {
 			for (let item of section.items || []) {
 				if (item.kind === 'text') {
 					let description = document.createXULElement('description');
-					description.textContent = Zotero.getString(item.textKey);
+					this._applyText(description, item.textKey);
 					groupbox.append(description);
 				}
 				else if (item.kind === 'action') {

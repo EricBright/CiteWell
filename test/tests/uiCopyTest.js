@@ -181,13 +181,20 @@ describe("UI copy", function () {
 			let properties = await readLocale(
 				`chrome/locale/${locale}/zotero/zotero.properties`
 			);
+			assert.notInclude(
+				properties, "connector.section.",
+				`${locale} still carries the old connector strings`
+			);
+			let fluent = await readLocale(
+				`chrome/locale/${locale}/zotero/preferences.ftl`
+			);
 			for (let key of [
-				"connector.section.title",
-				"connector.section.body1",
-				"connector.section.body2",
-				"connector.section.download",
+				"browser-connector-title",
+				"browser-connector-body1",
+				"browser-connector-body2",
+				"browser-connector-download",
 			]) {
-				assert.include(properties, key, `${locale} is missing ${key}`);
+				assert.include(fluent, key, `${locale} is missing ${key}`);
 			}
 		}
 	});

@@ -162,9 +162,11 @@ is unchanged text on a new mounting path.
 
 ### P3 — Pilot A2: labels, Browser Connector
 
-Move the connector's four labels to Fluent, copying the existing translations into all eight
-locales, and keep the old keys until parity is confirmed. Then delete the old keys in the same
-change that proves the new ones.
+**Done 2026-11-27 for the pilot section.** Its four strings moved to Fluent in all eight locales,
+the translations were copied, and the old `.properties` keys were deleted. The renderer resolves a
+text key through the old string table first and falls back to Fluent, so both systems work during
+the migration without a second lookup table; the test asserts the title and the button label are
+actually translated, not merely present.
 
 **Gate G3:** no visual or accessibility difference; the locale test passes in all eight languages;
 no item uses two label systems at once.
@@ -223,9 +225,9 @@ Three real items, in the proposed format:
 - id: browser-connector
   kind: content
   placement: { pane: integrations, order: 10 }
-  title: connector.section.title
-  body: [connector.section.body1, connector.section.body2]
-  button: { label: connector.section.download, opens: connector-download-page }
+  title: browser-connector-title
+  body: [browser-connector-body1, browser-connector-body2]
+  button: { label: browser-connector-download, opens: connector-download-page }
 
 - id: local-api
   kind: group

@@ -142,3 +142,9 @@ fulltext-stats-attachments-indexed = 已索引附件:
 fulltext-stats-partially-indexed = 部分索引:
 fulltext-stats-not-available = 全文内容或文件不可用:
 fulltext-stats-notes-indexed = 已索引笔记:
+
+browser-connector-title = 浏览器连接器
+browser-connector-body1 = CiteWell 不包含浏览器连接器。从网页保存条目以及在 Google 文档中插入引注，使用的是 Zotero 的官方连接器。它是另一个项目的独立扩展。
+browser-connector-body2 = CiteWell 仅在本机的 127.0.0.1:23119 上等待它，并且没有 Zotero 账户、同步或云存储。该扩展遵循 Zotero 自己的隐私政策。目前还没有 CiteWell 连接器，因此只保留这一个链接。
+browser-connector-download =
+    .label = 打开连接器下载页面

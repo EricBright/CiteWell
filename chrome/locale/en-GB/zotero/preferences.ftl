@@ -143,3 +143,9 @@ fulltext-stats-attachments-indexed = Attachments indexed:
 fulltext-stats-partially-indexed = Partially indexed:
 fulltext-stats-not-available = Full-text content or file not available:
 fulltext-stats-notes-indexed = Notes indexed:
+
+browser-connector-title = Browser Connector
+browser-connector-body1 = CiteWell does not include a browser connector. Saving items from a web page, and citations in Google Docs, use Zotero's official connector. It is a separate extension from another project.
+browser-connector-body2 = CiteWell listens for it only on this computer, at 127.0.0.1:23119, and has no Zotero account, sync, or cloud storage. The extension follows Zotero's own privacy policy. There is no CiteWell connector yet, which is why this one link remains.
+browser-connector-download =
+    .label = Open the connector download page

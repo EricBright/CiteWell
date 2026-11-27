@@ -142,3 +142,9 @@ fulltext-stats-attachments-indexed = インデックス化された添付ファ�
 fulltext-stats-partially-indexed = 部分的にインデックス化 :
 fulltext-stats-not-available = 全文コンテンツまたはファイルは利用できません :
 fulltext-stats-notes-indexed = インデックス化されたメモ :
+
+browser-connector-title = ブラウザーコネクター
+browser-connector-body1 = CiteWell にはブラウザーコネクターが含まれていません。Web ページからのアイテム保存と Google ドキュメントの引用には、Zotero の公式コネクターを使用します。これは別プロジェクトの独立した拡張機能です。
+browser-connector-body2 = CiteWell はこのコンピューターの 127.0.0.1:23119 でのみ待ち受けます。CiteWell には Zotero アカウント、同期、クラウドストレージはありません。拡張機能は Zotero 独自のプライバシーポリシーに従います。CiteWell のコネクターはまだ存在しないため、この 1 つのリンクのみ残っています。
+browser-connector-download =
+    .label = コネクターのダウンロードページを開く

@@ -229,6 +229,17 @@ describe("Settings manifest navigation", function () {
 				"browser-connector",
 				"the catalog section did not take its declared position"
 			);
+			assert.equal(
+				win.document.getElementById("browser-connector-title").textContent,
+				"Browser Connector",
+				"the Fluent title was not translated"
+			);
+			assert.isAbove(
+				win.document.getElementById("browser-connector-download")
+					.getAttribute("label").length,
+				0,
+				"the Fluent button label was not applied"
+			);
 		}
 		finally {
 			win.close();

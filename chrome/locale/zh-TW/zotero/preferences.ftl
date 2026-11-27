@@ -143,3 +143,9 @@ fulltext-stats-attachments-indexed = Attachments indexed:
 fulltext-stats-partially-indexed = Partially indexed:
 fulltext-stats-not-available = Full-text content or file not available:
 fulltext-stats-notes-indexed = Notes indexed:
+
+browser-connector-title = 瀏覽器連接器
+browser-connector-body1 = CiteWell 不包含瀏覽器連接器。從網頁儲存項目以及在 Google 文件中插入引用，使用的是 Zotero 的官方連接器。它是另一個專案的獨立擴充功能。
+browser-connector-body2 = CiteWell 僅在本機的 127.0.0.1:23119 上等待它，而且沒有 Zotero 帳戶、同步或雲端儲存。此擴充功能遵循 Zotero 自己的隱私權政策。目前還沒有 CiteWell 連接器，因此只保留這一個連結。
+browser-connector-download =
+    .label = 開啟連接器下載頁面
