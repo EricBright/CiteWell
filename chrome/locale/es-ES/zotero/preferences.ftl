@@ -270,3 +270,15 @@ integrations-system-remove =
 integrations-installed = La integración de activación a nivel de usuario está instalada.
 integrations-not-installed = La integración de activación a nivel de usuario no está instalada.
 integrations-manifest = Manifiesto: { $path }
+
+notes-title = Notes
+notes-description =
+    Las notas son archivos Markdown que abre su editor. Las notas heredadas guardadas en la base de datos se pueden convertir una vez; cada archivo convertido se verifica antes de que la nota antigua pase a la papelera, y la base de datos se respalda primero.
+notes-migrate =
+    .label = Migrar notas a archivos Markdown…
+annotations-title =
+    Anotaciones PDF
+annotations-description =
+    CiteWell ya no muestra anotaciones PDF. Las anotaciones existentes se pueden exportar una vez a un archivo annotations.md legible junto a cada PDF. Los archivos sidecar existentes nunca se sobrescriben.
+annotations-export =
+    .label = Exportar anotaciones PDF a Markdown…

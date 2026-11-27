@@ -268,3 +268,15 @@ integrations-system-remove =
 integrations-installed = ユーザー単位のアクティベーション連携がインストールされています。
 integrations-not-installed = ユーザー単位のアクティベーション連携はインストールされていません。
 integrations-manifest = マニフェスト: { $path }
+
+notes-title = Notes
+notes-description =
+    ノートはエディターで開く Markdown ファイルです。データベース内の旧形式のノートは一度だけ変換できます。変換したファイルは検証されてから元のノートがゴミ箱に移動し、その前にデータベースがバックアップされます。
+notes-migrate =
+    .label = ノートを Markdown ファイルに移行…
+annotations-title =
+    PDF 注釈
+annotations-description =
+    CiteWell は PDF 注釈を表示しなくなりました。既存の注釈は、各 PDF の隣にある読みやすい annotations.md に一度だけエクスポートできます。既存のサイドカーファイルは上書きされません。
+annotations-export =
+    .label = PDF 注釈を Markdown にエクスポート…

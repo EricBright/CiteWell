@@ -127,6 +127,43 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'notes-migration': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'notes-description');
+		let status = document.createXULElement('description');
+		status.id = 'library-notes-status';
+		status.classList.add('library-muted');
+		let progress = document.createXULElement('progressmeter');
+		progress.id = 'library-notes-progress';
+		progress.setAttribute('mode', 'determined');
+		progress.hidden = true;
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		let button = document.createXULElement('button');
+		button.id = 'library-notes-migrate';
+		Zotero_Preferences._applyLabel(button, 'notes-migrate');
+		button.addEventListener('command', () => CATALOG_ACTIONS['migrate-notes']());
+		row.append(button);
+		groupbox.append(description, status, progress, row);
+	},
+
+	'annotations-export': groupbox => {
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'annotations-description');
+		let status = document.createXULElement('description');
+		status.id = 'library-annotations-status';
+		status.classList.add('library-muted');
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		let button = document.createXULElement('button');
+		button.id = 'library-annotations-export';
+		Zotero_Preferences._applyLabel(button, 'annotations-export');
+		button.addEventListener('command', () => CATALOG_ACTIONS['export-annotations']());
+		row.append(button);
+		groupbox.append(description, status, row);
+	},
+
 	'integrations-libreoffice': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let description = document.createXULElement('description');
@@ -357,6 +394,8 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'migrate-notes': () => Zotero_Preferences.Notes.migrateNotes(),
+	'export-annotations': () => Zotero_Preferences.Notes.exportAnnotations(),
 	'install-libreoffice': () => Zotero_Preferences.Cite.installLibreOffice(),
 	'open-lo-backups': () => Zotero_Preferences.Cite.openLibreOfficeRepairFolder(),
 	'repair-system-integration': () => Zotero_Preferences.Cite.repairSystemIntegration(),

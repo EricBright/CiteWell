@@ -230,6 +230,13 @@ It also fixed mounting for an empty pane: a pane with no hand-written section us
 beside the pane document, which sent catalog sections outside it. The title and the sections now go
 inside the pane root.
 
+### Notes pane (done)
+
+Both sections are catalog components: note migration and the legacy PDF-annotation export. Their six
+English strings moved to Fluent in eight locales as drafts, and the pane document is empty except
+for its load hook. The Notes module still owns the behaviour, and its status and progress elements
+keep their ids.
+
 ### P6 — Bulk text migration
 
 Only after the pilots: migrate every string in Settings, per item, including the dialogs and

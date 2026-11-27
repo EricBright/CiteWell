@@ -1,35 +1,3 @@
 <vbox id="zotero-prefpane-notes"
 	onload="event.waitUntil(Zotero_Preferences.Notes.init())">
-	<vbox class="main-section">
-
-		<groupbox aria-label="Notes">
-			<label><html:h2>Notes</html:h2></label>
-			<description>
-				Notes are Markdown files opened by your editor. Legacy notes stored inside the
-				database can be converted once; each converted file is verified before the old note
-				moves to Trash, and the database is backed up first.
-			</description>
-			<description id="library-notes-status" class="library-muted"/>
-			<progressmeter id="library-notes-progress" mode="determined" hidden="true"/>
-			<hbox class="library-button-row">
-				<button id="library-notes-migrate" label="Migrate notes to Markdown files…"
-					oncommand="Zotero_Preferences.Notes.migrateNotes()"/>
-			</hbox>
-		</groupbox>
-
-		<groupbox aria-label="PDF annotations">
-			<label><html:h2>PDF annotations</html:h2></label>
-			<description>
-				CiteWell no longer displays PDF annotations. Existing annotations can be exported
-				once to a human-readable <html:code>annotations.md</html:code> beside each PDF.
-				Existing sidecar files are never overwritten.
-			</description>
-			<description id="library-annotations-status" class="library-muted"/>
-			<hbox class="library-button-row">
-				<button id="library-annotations-export" label="Export PDF annotations to Markdown…"
-					oncommand="Zotero_Preferences.Notes.exportAnnotations()"/>
-			</hbox>
-		</groupbox>
-
-	</vbox>
 </vbox>

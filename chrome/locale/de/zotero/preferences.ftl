@@ -269,3 +269,15 @@ integrations-system-remove =
 integrations-installed = Die benutzereigene Aktivierungsintegration ist installiert.
 integrations-not-installed = Die benutzereigene Aktivierungsintegration ist nicht installiert.
 integrations-manifest = Manifest: { $path }
+
+notes-title = Notes
+notes-description =
+    Notizen sind Markdown-Dateien, die in Ihrem Editor geöffnet werden. Legacy-Notizen in der Datenbank können einmalig konvertiert werden; jede konvertierte Datei wird geprüft, bevor die alte Notiz in den Papierkorb wandert, und die Datenbank wird vorher gesichert.
+notes-migrate =
+    .label = Notizen in Markdown-Dateien migrieren…
+annotations-title =
+    PDF-Anmerkungen
+annotations-description =
+    CiteWell zeigt keine PDF-Anmerkungen mehr an. Bestehende Anmerkungen können einmalig als lesbare annotations.md neben jedem PDF exportiert werden. Bestehende Sidecar-Dateien werden nie überschrieben.
+annotations-export =
+    .label = PDF-Anmerkungen nach Markdown exportieren…

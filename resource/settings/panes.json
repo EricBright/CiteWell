@@ -605,6 +605,22 @@
       "paneId": "zotero-prefpane-integrations",
       "order": 30,
       "titleKey": "integrations-system-title"
+    },
+    {
+      "id": "notes-migration",
+      "kind": "component",
+      "component": "notes-migration",
+      "paneId": "zotero-prefpane-notes",
+      "order": 10,
+      "titleKey": "notes-title"
+    },
+    {
+      "id": "annotations-export",
+      "kind": "component",
+      "component": "annotations-export",
+      "paneId": "zotero-prefpane-notes",
+      "order": 20,
+      "titleKey": "annotations-title"
     }
   ]
 }

@@ -268,3 +268,15 @@ integrations-system-remove =
 integrations-installed = 用户级激活集成已安装。
 integrations-not-installed = 用户级激活集成未安装。
 integrations-manifest = 清单：{ $path }
+
+notes-title = Notes
+notes-description =
+    笔记是由您的编辑器打开的 Markdown 文件。数据库中的旧式笔记可以转换一次；每个转换后的文件都会先验证，然后旧笔记移入回收站，数据库会事先备份。
+notes-migrate =
+    .label = 将笔记迁移为 Markdown 文件…
+annotations-title =
+    PDF 注释
+annotations-description =
+    CiteWell 不再显示 PDF 注释。现有注释可以一次性导出为每个 PDF 旁的可读 annotations.md。现有附属文件绝不会被覆盖。
+annotations-export =
+    .label = 将 PDF 注释导出为 Markdown…
