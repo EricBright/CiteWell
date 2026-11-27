@@ -364,6 +364,12 @@ when a search finds no test, deep link or document still using it.
 
 **Gate G5:** the generated settings page matches the catalog; no alias remains in use.
 
+**Aliases are consumed (2026-11-27).** The renderer registers each section's old ids in a
+process-wide map, and `navigateToPane` resolves a `#old-id` scroll target through it. Recorded ids
+include `zotero-prefpane-advanced-connector`, the `simple-section-*` ids of the retired generated
+list, and the integrations connector id. A test exercises the resolver and a deep link written
+against an old id. Deleting an alias remains a cleanup step, guarded by the same test.
+
 ### Rollback and kill criteria
 
 Each pilot is one group: reverting it is restoring its markup and removing one catalog entry. Old
