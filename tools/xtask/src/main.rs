@@ -319,6 +319,7 @@ fn validate_settings_inner() -> Result<usize, String> {
             }
         }
     }
+    validate_catalog_sections(&value, &ids, &mut preferences, &mut setting_ids)?;
     if let Some(retired) = value.get("retired") {
         let retired = retired
             .as_array()
@@ -338,6 +339,137 @@ fn validate_settings_inner() -> Result<usize, String> {
         }
     }
     Ok(panes.len())
+}
+
+
+/// Validate the optional `sections[]` catalog. It is deliberately empty until the
+/// first renderer pilot: the rules exist so a section cannot be introduced without a
+/// home, a label and exactly one binding.
+fn validate_catalog_sections(
+    value: &serde_json::Value,
+    pane_ids: &std::collections::BTreeSet<String>,
+    preferences: &mut std::collections::BTreeSet<String>,
+    item_ids: &mut std::collections::BTreeSet<String>,
+) -> Result<usize, String> {
+    let Some(sections) = value.get("sections") else {
+        return Ok(0);
+    };
+    let sections = sections
+        .as_array()
+        .ok_or_else(|| "settings sections must be an array".to_string())?;
+    let mut section_ids = std::collections::BTreeSet::new();
+    let mut aliases = std::collections::BTreeSet::new();
+    for section in sections {
+        let id = section
+            .get("id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| "catalog section is missing id".to_string())?;
+        if !section_ids.insert(id.to_string()) {
+            return Err(format!("duplicate catalog section id: {id}"));
+        }
+        let pane_id = section
+            .get("paneId")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| format!("catalog section {id} is missing paneId"))?;
+        if !pane_ids.contains(pane_id) {
+            return Err(format!("catalog section {id} has unknown paneId {pane_id}"));
+        }
+        if section.get("order").and_then(|v| v.as_i64()).is_none() {
+            return Err(format!("catalog section {id} is missing numeric order"));
+        }
+        if section.get("titleKey").and_then(|v| v.as_str()).is_none() {
+            return Err(format!("catalog section {id} is missing titleKey"));
+        }
+        let kind = section
+            .get("kind")
+            .and_then(|v| v.as_str())
+            .unwrap_or("group");
+        if !matches!(kind, "group" | "content") {
+            return Err(format!("catalog section {id} has unsupported kind {kind}"));
+        }
+        if let Some(list) = section.get("aliases") {
+            let list = list
+                .as_array()
+                .ok_or_else(|| format!("catalog section {id} has invalid aliases"))?;
+            for alias in list {
+                let alias = alias
+                    .as_str()
+                    .ok_or_else(|| format!("catalog section {id} has a non-string alias"))?;
+                if !aliases.insert(alias.to_string()) {
+                    return Err(format!("duplicate catalog alias: {alias}"));
+                }
+            }
+        }
+        let items = section
+            .get("items")
+            .and_then(|v| v.as_array())
+            .ok_or_else(|| format!("catalog section {id} is missing items[]"))?;
+        for item in items {
+            let item_id = item
+                .get("id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| format!("catalog section {id} has an item without id"))?;
+            if !item_ids.insert(item_id.to_string()) {
+                return Err(format!("duplicate catalog item id: {item_id}"));
+            }
+            let item_kind = item
+                .get("kind")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| format!("catalog item {item_id} is missing kind"))?;
+            match item_kind {
+                "setting" => {
+                    let pref = item
+                        .get("pref")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| format!("catalog setting {item_id} is missing pref"))?;
+                    if !preferences.insert(pref.to_string()) {
+                        return Err(format!("duplicate preference key: {pref}"));
+                    }
+                    let control = item
+                        .get("control")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| {
+                            format!("catalog setting {item_id} is missing control")
+                        })?;
+                    if !matches!(
+                        control,
+                        "checkbox" | "radio" | "number" | "menulist" | "text"
+                    ) {
+                        return Err(format!(
+                            "catalog setting {item_id} has unsupported control {control}"
+                        ));
+                    }
+                    if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
+                        return Err(format!("catalog setting {item_id} is missing labelKey"));
+                    }
+                }
+                "action" => {
+                    if item.get("command").and_then(|v| v.as_str()).is_none() {
+                        return Err(format!("catalog action {item_id} is missing command"));
+                    }
+                    if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
+                        return Err(format!("catalog action {item_id} is missing labelKey"));
+                    }
+                }
+                "display" => {
+                    if item.get("labelKey").and_then(|v| v.as_str()).is_none() {
+                        return Err(format!("catalog display {item_id} is missing labelKey"));
+                    }
+                }
+                "text" => {
+                    if item.get("textKey").and_then(|v| v.as_str()).is_none() {
+                        return Err(format!("catalog text {item_id} is missing textKey"));
+                    }
+                }
+                other => {
+                    return Err(format!(
+                        "catalog item {item_id} has unsupported kind {other}"
+                    ));
+                }
+            }
+        }
+    }
+    Ok(sections.len())
 }
 
 pub(crate) fn repo_root() -> PathBuf {
@@ -642,4 +774,102 @@ fn make_executable(path: &Path) -> Result<(), String> {
         .permissions();
     permissions.set_mode(0o755);
     fs::set_permissions(path, permissions).map_err(|e| format!("chmod {}: {e}", path.display()))
+}
+
+#[cfg(test)]
+mod catalog_tests {
+    use super::*;
+    use serde_json::json;
+    use std::collections::BTreeSet;
+
+    fn panes() -> BTreeSet<String> {
+        ["zotero-prefpane-general".to_string()]
+            .into_iter()
+            .collect()
+    }
+
+    fn check(
+        value: serde_json::Value,
+        preferences: &mut BTreeSet<String>,
+        item_ids: &mut BTreeSet<String>,
+    ) -> Result<usize, String> {
+        validate_catalog_sections(&value, &panes(), preferences, item_ids)
+    }
+
+    fn fresh() -> (BTreeSet<String>, BTreeSet<String>) {
+        (BTreeSet::new(), BTreeSet::new())
+    }
+
+    #[test]
+    fn accepts_a_setting_and_an_action() {
+        let value = json!({"sections": [{
+            "id": "local-api",
+            "paneId": "zotero-prefpane-general",
+            "order": 10,
+            "titleKey": "local-api-title",
+            "items": [
+                {"id": "local-api-enabled", "kind": "setting", "control": "checkbox",
+                 "pref": "extensions.zotero.httpServer.localAPI.enabled",
+                 "labelKey": "local-api-enabled-label"},
+                {"id": "local-api-clear", "kind": "action",
+                 "command": "clear-local-api-authorizations",
+                 "labelKey": "local-api-clear-label"}
+            ]
+        }]});
+        let (mut prefs, mut ids) = fresh();
+        assert_eq!(check(value, &mut prefs, &mut ids).unwrap(), 1);
+        assert!(prefs.contains("extensions.zotero.httpServer.localAPI.enabled"));
+    }
+
+    #[test]
+    fn rejects_an_unknown_pane() {
+        let value = json!({"sections": [{
+            "id": "x", "paneId": "zotero-prefpane-nowhere", "order": 1,
+            "titleKey": "t", "items": []
+        }]});
+        let (mut prefs, mut ids) = fresh();
+        assert!(check(value, &mut prefs, &mut ids).unwrap_err().contains("unknown paneId"));
+    }
+
+    #[test]
+    fn rejects_duplicate_item_ids_across_sections() {
+        let value = json!({"sections": [
+            {"id": "a", "paneId": "zotero-prefpane-general", "order": 1, "titleKey": "t",
+             "items": [{"id": "same", "kind": "display", "labelKey": "l"}]},
+            {"id": "b", "paneId": "zotero-prefpane-general", "order": 2, "titleKey": "t",
+             "items": [{"id": "same", "kind": "display", "labelKey": "l"}]}
+        ]});
+        let (mut prefs, mut ids) = fresh();
+        assert!(check(value, &mut prefs, &mut ids)
+            .unwrap_err()
+            .contains("duplicate catalog item id"));
+    }
+
+    #[test]
+    fn rejects_a_setting_without_a_label() {
+        let value = json!({"sections": [{
+            "id": "a", "paneId": "zotero-prefpane-general", "order": 1, "titleKey": "t",
+            "items": [{"id": "s", "kind": "setting", "control": "checkbox",
+                       "pref": "p"}]
+        }]});
+        let (mut prefs, mut ids) = fresh();
+        assert!(check(value, &mut prefs, &mut ids)
+            .unwrap_err()
+            .contains("missing labelKey"));
+    }
+
+    #[test]
+    fn rejects_a_preference_already_bound_elsewhere() {
+        let value = json!({"sections": [{
+            "id": "a", "paneId": "zotero-prefpane-general", "order": 1, "titleKey": "t",
+            "items": [{"id": "s", "kind": "setting", "control": "checkbox",
+                       "pref": "p", "labelKey": "l"}]
+        }]});
+        let mut prefs = BTreeSet::new();
+        prefs.insert("p".to_string());
+        let mut ids = BTreeSet::new();
+        assert!(check(value, &mut prefs, &mut ids)
+            .unwrap_err()
+            .contains("duplicate preference key"));
+    }
 }

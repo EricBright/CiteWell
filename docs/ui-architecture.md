@@ -128,10 +128,11 @@ once, with its current pane, order, label key and behaviour.
 **Gate G1:** the inventory count matches the DOM; nothing is unaccounted for. No behaviour changes.
 
 The first pass found 10 pane documents, 33 preference-bound controls in markup, 18 settings
-generated from `panes.json`, and 18 action buttons. It also surfaced two defects the copy tests
-could not see: the DNS radio labels and the sync "Stop" button are hardcoded English, and the
-connector and local API titles are written by scripts at runtime, so the inventory must include
-script-rendered text as well as markup.
+generated from `panes.json`, and 18 action buttons. The merged seed holds 26 sections and 126
+items, including display text and duplicate account controls that the reconciliation will collapse.
+It also surfaced two defects the copy tests could not see: the DNS radio labels and the sync "Stop"
+button are hardcoded English, and the connector and local API titles are written by scripts at
+runtime, so the inventory must include script-rendered text as well as markup.
 
 ### P1 — Schema, validator, aliases, resolver
 
@@ -143,6 +144,12 @@ exactly one system.
 
 **Gate G2:** a dry-run renders the catalog into a skeleton page and every pane, section and control
 resolves; deep links and search still find the current panes.
+
+The rules are already in the settings validator: `sections[]` is optional today, and when present it
+requires a known pane, a unique id, an order and a title key; each item needs exactly one binding
+(a preference, a command, a display value or a text key); and a preference or item id may appear
+once in the whole manifest. Five unit tests cover the rejections. No section uses the array yet, so
+the live manifest still validates unchanged.
 
 ### P2 — Pilot A1: placement, Browser Connector
 
