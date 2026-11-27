@@ -230,8 +230,17 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("citewell-integration-repair"));
 			assert.ok(win.document.getElementById("browser-connector"));
 			assert.ok(win.document.getElementById("browser-connector-download"));
+			let paneRoot = win.document.getElementById("zotero-prefpane-integrations");
+			let mains = win.document.querySelectorAll(
+				"#zotero-prefpane-integrations .main-section"
+			);
+			assert.isAbove(
+				mains.length, 0,
+				"no catalog sections found; pane children: "
+					+ [...paneRoot.children].map(c => c.localName + "." + c.className).join(" | ")
+			);
 			assert.equal(
-				win.document.querySelectorAll("#zotero-prefpane-integrations .main-section")[1].id,
+				mains[0].id,
 				"browser-connector",
 				"the catalog section did not take its declared position"
 			);

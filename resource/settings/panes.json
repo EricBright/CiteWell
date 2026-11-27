@@ -430,8 +430,7 @@
           "command": "open-connector-page",
           "labelKey": "browser-connector-download"
         }
-      ],
-      "after": ".main-section"
+      ]
     },
     {
       "id": "local-api",
@@ -590,6 +589,22 @@
       "paneId": "zotero-prefpane-advanced",
       "order": 50,
       "titleKey": "search-title"
+    },
+    {
+      "id": "libreoffice",
+      "kind": "component",
+      "component": "integrations-libreoffice",
+      "paneId": "zotero-prefpane-integrations",
+      "order": 20,
+      "titleKey": "integrations-libreoffice-title"
+    },
+    {
+      "id": "system-integration",
+      "kind": "component",
+      "component": "integrations-system",
+      "paneId": "zotero-prefpane-integrations",
+      "order": 30,
+      "titleKey": "integrations-system-title"
     }
   ]
 }

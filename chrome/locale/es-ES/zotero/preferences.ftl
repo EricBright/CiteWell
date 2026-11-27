@@ -251,3 +251,22 @@ feeds-unread-after =
 
 search-default-note =
     (Predeterminado: 500000)
+
+integrations-libreoffice-title = LibreOffice
+integrations-libreoffice-description =
+    Añade citas en LibreOffice con la extensión de CiteWell. Cierre LibreOffice antes de instalar y vuelva a abrirlo después.
+integrations-libreoffice-install =
+    .label = Instalar / reparar la extensión de LibreOffice…
+integrations-libreoffice-backups =
+    .label = Abrir copias de reparación…
+integrations-system-title =
+    Integración con el sistema
+integrations-system-description =
+    CiteWell puede solicitar la atención del escritorio mediante una unidad systemd del usuario y un archivo de activación D-Bus. No se instala nada en todo el sistema. Estos archivos son independientes de su biblioteca y de su perfil de LibreOffice.
+integrations-system-repair =
+    .label = Reparar la integración con el sistema…
+integrations-system-remove =
+    .label = Eliminar la integración con el sistema…
+integrations-installed = La integración de activación a nivel de usuario está instalada.
+integrations-not-installed = La integración de activación a nivel de usuario no está instalada.
+integrations-manifest = Manifiesto: { $path }

@@ -249,3 +249,22 @@ feeds-unread-after =
 
 search-default-note =
     (默认: 500000)
+
+integrations-libreoffice-title = LibreOffice
+integrations-libreoffice-description =
+    使用 CiteWell 扩展在 LibreOffice 中添加引用。安装前请关闭 LibreOffice，安装后重新启动。
+integrations-libreoffice-install =
+    .label = 安装 / 修复 LibreOffice 扩展…
+integrations-libreoffice-backups =
+    .label = 打开修复备份…
+integrations-system-title =
+    系统集成
+integrations-system-description =
+    CiteWell 可通过用户级 systemd 单元和 D-Bus 激活文件请求桌面注意。不会在系统范围内安装任何内容。这些文件与您的文献库和 LibreOffice 配置文件相互独立。
+integrations-system-repair =
+    .label = 修复系统集成…
+integrations-system-remove =
+    .label = 移除系统集成…
+integrations-installed = 用户级激活集成已安装。
+integrations-not-installed = 用户级激活集成未安装。
+integrations-manifest = 清单：{ $path }

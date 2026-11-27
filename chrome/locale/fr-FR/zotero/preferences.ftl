@@ -251,3 +251,22 @@ feeds-unread-after =
 
 search-default-note =
     (Par défaut : 500000)
+
+integrations-libreoffice-title = LibreOffice
+integrations-libreoffice-description =
+    Ajoutez des citations dans LibreOffice avec l’extension CiteWell. Fermez LibreOffice avant l’installation, puis redémarrez-le ensuite.
+integrations-libreoffice-install =
+    .label = Installer / réparer l’extension LibreOffice…
+integrations-libreoffice-backups =
+    .label = Ouvrir les sauvegardes de réparation…
+integrations-system-title =
+    Intégration système
+integrations-system-description =
+    CiteWell peut demander l’attention du bureau au moyen d’une unité systemd propre à l’utilisateur et d’un fichier d’activation D-Bus. Rien n’est installé à l’échelle du système. Ces fichiers sont distincts de votre bibliothèque et de votre profil LibreOffice.
+integrations-system-repair =
+    .label = Réparer l’intégration système…
+integrations-system-remove =
+    .label = Supprimer l’intégration système…
+integrations-installed = L’intégration d’activation au niveau utilisateur est installée.
+integrations-not-installed = L’intégration d’activation au niveau utilisateur n’est pas installée.
+integrations-manifest = Manifeste : { $path }

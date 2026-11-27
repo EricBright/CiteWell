@@ -127,6 +127,53 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'integrations-libreoffice': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'integrations-libreoffice-description');
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		for (let [id, labelKey, command] of [
+			['citewell-lo-install', 'integrations-libreoffice-install', 'install-libreoffice'],
+			['citewell-lo-repair-folder', 'integrations-libreoffice-backups', 'open-lo-backups'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, labelKey);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row.append(button);
+		}
+		let status = document.createXULElement('description');
+		status.id = 'citewell-lo-status';
+		status.classList.add('library-muted');
+		groupbox.append(description, row, status);
+	},
+
+	'integrations-system': groupbox => {
+		let description = document.createXULElement('description');
+		Zotero_Preferences._applyText(description, 'integrations-system-description');
+		let row = document.createXULElement('hbox');
+		row.classList.add('library-button-row');
+		for (let [id, labelKey, command] of [
+			['citewell-integration-repair', 'integrations-system-repair', 'repair-system-integration'],
+			['citewell-integration-remove', 'integrations-system-remove', 'remove-system-integration'],
+		]) {
+			let button = document.createXULElement('button');
+			button.id = id;
+			Zotero_Preferences._applyLabel(button, labelKey);
+			button.addEventListener('command', () => CATALOG_ACTIONS[command]());
+			row.append(button);
+		}
+		let status = document.createXULElement('description');
+		status.id = 'citewell-integration-status';
+		status.classList.add('library-muted');
+		let paths = document.createXULElement('description');
+		paths.id = 'citewell-integration-paths';
+		paths.classList.add('library-muted');
+		groupbox.setAttribute('data-integration-section', 'true');
+		groupbox.append(description, row, status, paths);
+	},
+
 	'feeds': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let sortBox = document.createXULElement('groupbox');
@@ -310,6 +357,10 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'install-libreoffice': () => Zotero_Preferences.Cite.installLibreOffice(),
+	'open-lo-backups': () => Zotero_Preferences.Cite.openLibreOfficeRepairFolder(),
+	'repair-system-integration': () => Zotero_Preferences.Cite.repairSystemIntegration(),
+	'remove-system-integration': () => Zotero_Preferences.Cite.removeSystemIntegration(),
 	'reset-translators': resetTranslators,
 	'clear-local-api-authorizations': async () => {
 		await Zotero.Server.LocalAPI.clearAuthorizations();
@@ -690,8 +741,12 @@ var Zotero_Preferences = {
 			heading.textContent = pane.rawLabel;
 			pane.container.append(contentFragment);
 			this._renderSimpleSections(pane.id, pane.container);
+			let paneRoot = pane.container.querySelector('#' + pane.id);
 			if (pane.container.querySelector('.main-section')) {
 				pane.container.querySelector('.main-section').prepend(heading);
+			}
+			else if (paneRoot) {
+				paneRoot.prepend(heading);
 			}
 			else {
 				pane.container.prepend(heading);
@@ -905,7 +960,9 @@ var Zotero_Preferences = {
 			// Place inside the pane document, not beside it. `before`/`after`
 			// are transition anchors to hand-written content; they disappear
 			// once a pane is fully catalog-owned.
-			let root = container.firstElementChild || container;
+			let root = container.querySelector('#' + section.paneId)
+				|| container.firstElementChild
+				|| container;
 			let anchor = section.before && root.querySelector(section.before);
 			if (!anchor && section.after) {
 				anchor = root.querySelector(section.after);

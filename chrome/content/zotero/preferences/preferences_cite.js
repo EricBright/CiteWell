@@ -85,7 +85,7 @@ Zotero_Preferences.Cite = {
 		return PathUtils.join(configHome, "citewell", "integration.txt");
 	},
 	refreshSystemIntegration: async function () {
-		var section = document.getElementById("citewell-system-integration");
+		var section = document.querySelector("[data-integration-section]");
 		if (!section) return;
 		var appimage = Services.env.get("APPIMAGE");
 		var status = document.getElementById("citewell-integration-status");
@@ -99,10 +99,17 @@ Zotero_Preferences.Cite = {
 		section.hidden = false;
 		var manifest = this._integrationManifest();
 		var installed = await IOUtils.exists(manifest);
-		status.textContent = installed
-			? "User-level activation integration is installed."
-			: "User-level activation integration is not installed.";
-		paths.textContent = installed ? "Manifest: " + manifest : "";
+		document.l10n.setAttributes(
+			status,
+			installed ? "integrations-installed" : "integrations-not-installed"
+		);
+		if (installed) {
+			document.l10n.setAttributes(paths, "integrations-manifest", { path: manifest });
+		}
+		else {
+			paths.textContent = "";
+		}
+		await document.l10n.translateElements([status, paths]);
 		if (repair) repair.disabled = false;
 		if (remove) remove.disabled = !installed;
 	},

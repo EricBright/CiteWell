@@ -249,3 +249,22 @@ feeds-unread-after =
 
 search-default-note =
     (既定値 : 500000)
+
+integrations-libreoffice-title = LibreOffice
+integrations-libreoffice-description =
+    CiteWell 拡張機能を使って LibreOffice に引用を追加します。インストール前に LibreOffice を終了し、その後で再起動してください。
+integrations-libreoffice-install =
+    .label = LibreOffice 拡張機能をインストール / 修復…
+integrations-libreoffice-backups =
+    .label = 修復用バックアップを開く…
+integrations-system-title =
+    システム連携
+integrations-system-description =
+    CiteWell は、ユーザー単位の systemd ユニットと D-Bus アクティベーションファイルを通じて、デスクトップに通知を要求できます。システム全体には何もインストールされません。これらのファイルはライブラリや LibreOffice プロファイルとは別です。
+integrations-system-repair =
+    .label = システム連携を修復…
+integrations-system-remove =
+    .label = システム連携を削除…
+integrations-installed = ユーザー単位のアクティベーション連携がインストールされています。
+integrations-not-installed = ユーザー単位のアクティベーション連携はインストールされていません。
+integrations-manifest = マニフェスト: { $path }

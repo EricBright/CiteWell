@@ -216,6 +216,20 @@ The Advanced pane is the forced case because it contains one of each remaining s
   index panel. The transition anchors were removed, so catalog order alone places them; only the
   Config Editor row remains hand-written at the end of the pane, outside the section list.
 
+### Integrations pane (done)
+
+The whole pane is catalog data now: the connector, the LibreOffice extension and the system
+integration are three sections, in that order, each a component. The pane document is empty except
+for its load hook.
+
+The move fixed a latent bug: the system-integration refresh looked up an element id that no longer
+existed, so the status line and the repair/remove buttons were never updated. The component now
+marks its group, and the status text uses Fluent with the manifest path passed as an argument.
+
+It also fixed mounting for an empty pane: a pane with no hand-written section used to put its title
+beside the pane document, which sent catalog sections outside it. The title and the sections now go
+inside the pane root.
+
 ### P6 — Bulk text migration
 
 Only after the pilots: migrate every string in Settings, per item, including the dialogs and

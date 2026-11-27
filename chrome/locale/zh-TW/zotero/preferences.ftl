@@ -250,3 +250,22 @@ feeds-unread-after =
 
 search-default-note =
     (預設： 500000)
+
+integrations-libreoffice-title = LibreOffice
+integrations-libreoffice-description =
+    使用 CiteWell 擴充功能在 LibreOffice 中加入引用。安裝前請關閉 LibreOffice，安裝後重新啟動。
+integrations-libreoffice-install =
+    .label = 安裝 / 修復 LibreOffice 擴充功能…
+integrations-libreoffice-backups =
+    .label = 開啟修復備份…
+integrations-system-title =
+    系統整合
+integrations-system-description =
+    CiteWell 可透過使用者層級的 systemd 單元與 D-Bus 啟用檔案要求桌面注意。不會在系統範圍內安裝任何內容。這些檔案與您的文獻庫和 LibreOffice 設定檔各自獨立。
+integrations-system-repair =
+    .label = 修復系統整合…
+integrations-system-remove =
+    .label = 移除系統整合…
+integrations-installed = 使用者層級的啟用整合已安裝。
+integrations-not-installed = 使用者層級的啟用整合尚未安裝。
+integrations-manifest = 清單：{ $path }
