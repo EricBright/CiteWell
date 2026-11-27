@@ -47,98 +47,25 @@ from raw preference values.
 The manifest is the source of these IDs. The settings validator requires each one to remain
 documented.
 
-| Pane ID | Label |
-|---|---|
-| `zotero-prefpane-general` | zotero.preferences.prefpane.general |
-| `zotero-prefpane-notes` | Notes & Annotations |
-| `zotero-prefpane-import-export` | Import & Export |
-| `zotero-prefpane-cite` | zotero.preferences.prefpane.cite |
-| `zotero-prefpane-integrations` | Integrations |
-| `zotero-prefpane-agent` | Agent access |
-| `zotero-prefpane-library` | Library & Files |
-| `zotero-prefpane-advanced` | zotero.preferences.prefpane.advanced |
+<!-- BEGIN SETTINGS CATALOG -->
+<!-- Generated from resource/settings/panes.json by `cargo run -p xtask -- settings-docs`. Do not edit. -->
+| Pane | Order | Sections |
+|---|---|---|
+| `zotero-prefpane-general` | 10 | `general-appearance` (component, 0 items); `language-region` (group, 1 item); `groups` (group, 5 items); `behaviour` (group, 2 items) |
+| `zotero-prefpane-cite` | 20 | `styles` (component, 0 items); `citation-dialog` (group, 1 item); `citation-options` (group, 1 item); `cite-tools` (component, 0 items); `wordProcessors` (component, 0 items) |
+| `zotero-prefpane-notes` | 40 | `notes-migration` (component, 0 items); `note-behaviour` (group, 1 item); `annotations-export` (component, 0 items) |
+| `zotero-prefpane-import-export` | 50 | `import-library` (component, 0 items); `restore-points` (component, 0 items); `duplicate-review` (component, 0 items); `last-import` (component, 0 items); `quick-copy` (component, 0 items) |
+| `zotero-prefpane-integrations` | 60 | `browser-connector` (content, 3 items); `libreoffice` (component, 0 items); `system-integration` (component, 0 items) |
+| `zotero-prefpane-agent` | 70 | `agent-access` (component, 0 items); `agent-setup` (component, 0 items); `local-api` (group, 5 items); `agent-capabilities` (component, 0 items); `agent-skill` (component, 0 items); `agent-audit` (component, 0 items) |
+| `zotero-prefpane-library` | 80 | `file-handling` (group, 3 items); `library-current` (component, 0 items); `attachment-titles` (group, 1 item); `library-file-renaming` (component, 0 items); `library-base-dir` (component, 0 items); `library-data-dir` (component, 0 items); `library-locate` (component, 0 items) |
+| `zotero-prefpane-advanced` | 90 | `dns` (group, 3 items); `database-maintenance` (group, 2 items); `keyboard-shortcuts` (component, 0 items); `translator-updates` (group, 3 items); `feeds` (component, 0 items); `search-index` (component, 0 items) |
+<!-- END SETTINGS CATALOG -->
 
 ## Current inventory
 
-### General
-
-Source: [preferences_general.xhtml](../chrome/content/zotero/preferences/preferences_general.xhtml).
-Script: `preferences_general.js`.
-
-| Section | Contents / keys | Script concern | Proposed destination |
-|---|---|---|---|
-| Appearance | Colour scheme, bibliography locale, item-pane header and its bibliography style/locale | General init also initializes locale menu | General |
-| File Handling | `downloadAssociatedFiles`, `autoRecognizeFiles`, `automaticSnapshots` | General | Library & Files |
-| File Renaming | File-renaming dialog | General | Library & Files |
-| Attachment Titles | `showAttachmentFilenames` | General | Library & Files |
-| Notes | `openNoteInNewWindow` | General | Notes & Annotations |
-| Locate | OpenURL resolver and base URL | General | Library & Files |
-| Miscellaneous | `automaticTags`, `trashAutoEmptyDays` | General | General → Behaviour |
-| Groups | Copy child notes/files/annotations/links/tags | General | General → Behaviour |
-
-### Library
-
-Source: [preferences_library.xhtml](../chrome/content/zotero/preferences/preferences_library.xhtml).
-Script: `preferences_library.js`. This pane is mostly workflow, not preference rows.
-
-| Section | Contents | Script concern | Proposed destination |
-|---|---|---|---|
-| Current library | Path, counts, open/move | `preferences_library.js` | Library & Files |
-| Locations | Per-component paths | same | Library & Files |
-| Notes | Markdown migration and verification | same | Notes & Annotations |
-| PDF annotations | One-time legacy annotation export | same | Notes & Annotations → Migration |
-| Import from Zotero | Adopt-copy, merge, replace, staged import | same | Import & Export |
-| Restore points | Backups and restore | same | Import & Export |
-| Last import | Last result | same | Import & Export |
-
-### Export (retired)
-
-Source: [preferences_import_export.xhtml](../chrome/content/zotero/preferences/preferences_import_export.xhtml).
-Script: `preferences_export.js` (retired); Quick Copy now lives in `preferences_library.js`.
-
-| Section | Contents | Proposed destination |
-|---|---|---|
-| Quick Copy | `export.quickCopy.dragLimit`, format/site editor | Import & Export |
-
-### Cite
-
-Source: [preferences_cite.xhtml](../chrome/content/zotero/preferences/preferences_cite.xhtml).
-Script: `preferences_cite.jsx`.
-
-| Section | Contents | Script concern | Proposed destination |
-|---|---|---|---|
-| Styles | Style manager table and installed styles | `styles` deep link | Citations & Writing |
-| Citation Dialog | `integration.citationDialogMode` | Cite | Citations & Writing |
-| Citation Options | `export.citePaperJournalArticleURL` | Cite | Citations & Writing |
-| Tools | Word-processor tools / template upgrade | `#wordProcessors` deep link | Integrations |
-| LibreOffice | OXT install/repair, status, logs | `preferences_cite.jsx` | Integrations |
-| System integration | systemd/D-Bus attention integration | Cite | Integrations |
-| Word Processors | Hidden group used by integration upgrade | `#wordProcessors` | Integrations |
-
-### Agent
-
-Source: [preferences_agent.xhtml](../chrome/content/zotero/preferences/preferences_agent.xhtml).
-Script: `preferences_agent.js`.
-
-| Section | Contents | Proposed destination |
-|---|---|---|
-| Agent access / Connection / Setup / Capabilities / Skill / Audit | `agent.enabled`, token/endpoint, setup guidance, audit | Agent & API |
-| Local API | `httpServer.localAPI.enabled`, address, clear authorizations, server fallback | Agent & API (moved from Advanced, D67) |
-
-### Advanced
-
-Source: [preferences_advanced.xhtml](../chrome/content/zotero/preferences/preferences_advanced.xhtml).
-Script: `preferences_advanced.js`.
-
-| Section | Contents / keys | Proposed destination |
-|---|---|---|
-| Translator updates | `automaticScraperUpdates`, update now, failure reporting (registry section) | Advanced |
-| Language & Region | `bidi.browser.ui` | General |
-| Files and Folders | `baseAttachmentPath`, `dataDir`, database maintenance | Library & Files; database maintenance → Advanced |
-| Keys | Keyboard shortcuts | Advanced |
-| Feeds | Feed defaults, TTL, cleanup and sorting | Advanced → Feeds subpane |
-| Search | Full-text cache, index statistics | Advanced → Search subpane |
-| DNS | Resolver choice: Cloudflare malware blocking (`1.1.1.2` / `1.0.0.2`, DoH via `MODE_TRRONLY` to `https://1.1.1.2/dns-query`) or system DNS (`MODE_NATIVEONLY`); mirror pref `extensions.zotero.dns.resolver`, re-applied at startup (D50). Section `zotero-prefpane-advanced-network`, script `preferences_dns.js` | Advanced |
+The generated block above is the structural inventory: panes in order, and the catalog sections each
+owns. Behavioural notes that do not fit a table row live in the code and its tests; this page does not
+repeat them by hand.
 
 ## Deep links and tests
 

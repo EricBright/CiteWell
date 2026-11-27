@@ -449,3 +449,8 @@ Three real items, in the proposed format:
 The Local API entry shows the two current defects the book exposes: the group has no translatable
 title or description today, and its existing label keys still say `advanced` although the group
 lives in Agent access.
+
+
+**Settings inventory (2026-11-27).** `xtask settings-docs` writes the pane/section block in
+`docs/settings.md` between markers, and `validate-settings` fails on drift. The hand-written
+per-pane section tables were removed.

@@ -30,7 +30,8 @@ commands:
   appimage    assemble and package the staged Linux build as an AppImage
   build       copy JS/test data, apply patches, symlink, and compile Sass
   sass        compile scss/ into build/ (replaces Node Sass)
-  validate-settings  validate resource/settings/panes.json
+  settings-docs      write the generated catalog block in docs/settings.md
+  validate-settings  validate resource/settings/panes.json and its generated block
   help        show this message
 ";
 
@@ -40,6 +41,7 @@ fn main() -> ExitCode {
         Some("appimage") => appimage(),
         Some("build") => build::build(),
         Some("sass") => sass(),
+        Some("settings-docs") => settings_docs(),
         Some("validate-settings") => validate_settings(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
@@ -130,6 +132,139 @@ fn collect_scss_entries(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String
         {
             out.push(path);
         }
+    }
+    Ok(())
+}
+
+
+const CATALOG_BEGIN: &str = "<!-- BEGIN SETTINGS CATALOG -->";
+const CATALOG_END: &str = "<!-- END SETTINGS CATALOG -->";
+
+/// Render the pane/section inventory from the manifest. This is the only place
+/// where the structure is written for people; `validate-settings` compares the
+/// checked-in block with this output.
+fn render_settings_catalog(value: &serde_json::Value) -> Result<String, String> {
+    let panes = value
+        .get("panes")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| "settings manifest is missing panes[]".to_string())?;
+    let sections = value
+        .get("sections")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    let mut panes: Vec<&serde_json::Value> = panes.iter().collect();
+    panes.sort_by_key(|pane| pane.get("order").and_then(|v| v.as_i64()).unwrap_or(0));
+    let mut lines = vec![
+        CATALOG_BEGIN.to_string(),
+        "<!-- Generated from resource/settings/panes.json by `cargo run -p xtask -- settings-docs`. Do not edit. -->".to_string(),
+        "| Pane | Order | Sections |".to_string(),
+        "|---|---|---|".to_string(),
+    ];
+    for pane in panes {
+        let id = pane.get("id").and_then(|v| v.as_str()).unwrap_or("?");
+        let order = pane.get("order").and_then(|v| v.as_i64()).unwrap_or(0);
+        let mut own: Vec<&serde_json::Value> = sections
+            .iter()
+            .filter(|section| section.get("paneId").and_then(|v| v.as_str()) == Some(id))
+            .collect();
+        own.sort_by_key(|section| section.get("order").and_then(|v| v.as_i64()).unwrap_or(0));
+        let description = if own.is_empty() {
+            "(no catalog sections)".to_string()
+        } else {
+            own.iter()
+                .map(|section| {
+                    let sid = section.get("id").and_then(|v| v.as_str()).unwrap_or("?");
+                    let kind = section
+                        .get("kind")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("group");
+                    let items = section
+                        .get("items")
+                        .and_then(|v| v.as_array())
+                        .map(|items| items.len())
+                        .unwrap_or(0);
+                    format!(
+                        "`{sid}` ({kind}, {items} {})",
+                        if items == 1 { "item" } else { "items" }
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("; ")
+        };
+        lines.push(format!("| `{id}` | {order} | {description} |"));
+    }
+    lines.push(CATALOG_END.to_string());
+    Ok(lines.join("\n"))
+}
+
+fn settings_docs() -> ExitCode {
+    let root = repo_root();
+    let path = root.join("resource/settings/panes.json");
+    let text = match fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(e) => {
+            eprintln!("xtask: reading {}: {e}", path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let value: serde_json::Value = match serde_json::from_str(&text) {
+        Ok(value) => value,
+        Err(e) => {
+            eprintln!("xtask: parsing {}: {e}", path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let rendered = match render_settings_catalog(&value) {
+        Ok(rendered) => rendered,
+        Err(e) => {
+            eprintln!("xtask: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let docs_path = root.join("docs/settings.md");
+    let docs = match fs::read_to_string(&docs_path) {
+        Ok(docs) => docs,
+        Err(e) => {
+            eprintln!("xtask: reading {}: {e}", docs_path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let Some(start) = docs.find(CATALOG_BEGIN) else {
+        eprintln!("xtask: docs/settings.md is missing {CATALOG_BEGIN}");
+        return ExitCode::FAILURE;
+    };
+    let Some(end) = docs.find(CATALOG_END) else {
+        eprintln!("xtask: docs/settings.md is missing {CATALOG_END}");
+        return ExitCode::FAILURE;
+    };
+    let end = end + CATALOG_END.len();
+    let updated = format!("{}{}{}", &docs[..start], rendered, &docs[end..]);
+    if let Err(e) = fs::write(&docs_path, updated) {
+        eprintln!("xtask: writing {}: {e}", docs_path.display());
+        return ExitCode::FAILURE;
+    }
+    println!("settings-docs: updated docs/settings.md");
+    ExitCode::SUCCESS
+}
+
+fn check_settings_catalog(root: &Path, value: &serde_json::Value) -> Result<(), String> {
+    let docs_path = root.join("docs/settings.md");
+    let docs = fs::read_to_string(&docs_path)
+        .map_err(|e| format!("reading {}: {e}", docs_path.display()))?;
+    let start = docs
+        .find(CATALOG_BEGIN)
+        .ok_or_else(|| format!("docs/settings.md is missing {CATALOG_BEGIN}"))?;
+    let end = docs
+        .find(CATALOG_END)
+        .ok_or_else(|| format!("docs/settings.md is missing {CATALOG_END}"))?
+        + CATALOG_END.len();
+    let expected = render_settings_catalog(value)?;
+    if docs[start..end] != expected {
+        return Err(
+            "docs/settings.md catalog block is out of date; run `cargo run -p xtask -- settings-docs`"
+                .to_string(),
+        );
     }
     Ok(())
 }
@@ -338,6 +473,7 @@ fn validate_settings_inner() -> Result<usize, String> {
             }
         }
     }
+    check_settings_catalog(&root, &value)?;
     Ok(panes.len())
 }
 
