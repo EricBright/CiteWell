@@ -1149,9 +1149,9 @@ const CATALOG_ACTIONS = {
 	'open-styles-page': () => Zotero_Preferences.Cite.openStylesPage(),
 	'open-style-editor': () => window.open('chrome://zotero/content/tools/csledit.xhtml', '_blank', 'chrome,width=950,height=700,resizable'),
 	'open-style-preview': () => window.open('chrome://zotero/content/tools/cslpreview.xhtml', '_blank', 'chrome,width=950,height=700,resizable'),
-	'change-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(true),
-	'reset-data-dir': () => Zotero_Preferences.Advanced.dataDirUpdate(false),
-	'migrate-data-dir': () => Zotero_Preferences.Advanced.migrateDataDirectory(),
+	'change-data-dir': () => Zotero_Preferences.DataDirectory.dataDirUpdate(true),
+	'reset-data-dir': () => Zotero_Preferences.DataDirectory.dataDirUpdate(false),
+	'migrate-data-dir': () => Zotero_Preferences.DataDirectory.migrateDataDirectory(),
 	'reveal-data-dir': () => Zotero.DataDirectory.reveal(),
 	'choose-base-path': () => Zotero_Preferences.Attachment_Base_Directory.choosePath(),
 	'clear-base-path': () => Zotero_Preferences.Attachment_Base_Directory.clearPath(),
@@ -1208,7 +1208,7 @@ const CATALOG_INITIALIZERS = {
 			e => Zotero.logError(e)
 		);
 	},
-	'library-data-dir': () => Zotero_Preferences.Advanced.onDataDirLoad(),
+	'library-data-dir': () => Zotero_Preferences.DataDirectory.onDataDirLoad(),
 	'library-base-dir': groupbox => {
 		let field = groupbox.querySelector('#baseAttachmentPath');
 		if (field) {
@@ -2401,5 +2401,174 @@ ${str}
 	openURL: function (url) {
 		Zotero.warn("Zotero_Preferences.openURL() is deprecated -- use Zotero.launchURL()");
 		Zotero.launchURL(url);
+	}
+};
+
+Zotero_Preferences.DataDirectory = {
+async migrateDataDirectory() {
+		var currentDir = Zotero.DataDirectory.dir;
+		var defaultDir = Zotero.DataDirectory.defaultDir;
+		if (currentDir == defaultDir) {
+			Zotero.debug("Already using default directory");
+			return;
+		}
+		
+		var ps = Services.prompt;
+		
+		// If there's a migration marker, point data directory back to the current location and remove
+		// it to trigger the migration again
+		var marker = PathUtils.join(defaultDir, Zotero.DataDirectory.MIGRATION_MARKER);
+		if (await IOUtils.exists(marker)) {
+			Zotero.Prefs.clear('dataDir');
+			Zotero.Prefs.clear('useDataDir');
+			await IOUtils.remove(marker);
+			try {
+				await IOUtils.remove(PathUtils.join(defaultDir, '.DS_Store'));
+			}
+			catch (e) {}
+		}
+		
+		// ~/Zotero exists and is non-empty
+		if (((await IOUtils.exists(defaultDir))) && !((await Zotero.File.directoryIsEmpty(defaultDir)))) {
+			let buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
+				+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
+			let index = ps.confirmEx(
+				window,
+				Zotero.getString('general.error'),
+				Zotero.getString('zotero.preferences.advanced.migrateDataDir.directoryExists1', defaultDir)
+					+ "\n\n"
+					+ Zotero.getString('zotero.preferences.advanced.migrateDataDir.directoryExists2'),
+				buttonFlags,
+				Zotero.getString('general.showDirectory'),
+				null, null, null, {}
+			);
+			if (index == 0) {
+				await Zotero.File.reveal(
+					// Windows opens the directory, which might be confusing here, so open parent instead
+					Zotero.isWin ? PathUtils.parent(defaultDir) : defaultDir
+				);
+			}
+			return;
+		}
+		
+		var additionalText = '';
+		if (Zotero.isWin) {
+			try {
+				let numItems = await Zotero.DB.valueQueryAsync(
+					"SELECT COUNT(*) FROM itemAttachments WHERE linkMode IN (?, ?)",
+					[Zotero.Attachments.LINK_MODE_IMPORTED_FILE, Zotero.Attachments.LINK_MODE_IMPORTED_URL]
+				);
+				if (numItems > 100) {
+					additionalText = '\n\n' + Zotero.getString(
+						'zotero.preferences.advanced.migrateDataDir.manualMigration',
+						[Zotero.appName, defaultDir, ZOTERO_CONFIG.CLIENT_NAME]
+					);
+				}
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
+		}
+		
+		// Prompt to restart
+		var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
+					+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
+		var index = ps.confirmEx(window,
+			Zotero.getString('zotero.preferences.advanced.migrateDataDir.title'),
+			Zotero.getString(
+				'zotero.preferences.advanced.migrateDataDir.directoryWillBeMoved',
+				[ZOTERO_CONFIG.CLIENT_NAME, defaultDir]
+			) + '\n\n'
+			+ Zotero.getString(
+				'zotero.preferences.advanced.migrateDataDir.appMustBeRestarted', Zotero.appName
+			) + additionalText,
+			buttonFlags,
+			Zotero.getString('general.continue'),
+			null, null, null, {}
+		);
+		
+		if (index == 0) {
+			await Zotero.DataDirectory.markForMigration(currentDir);
+			Zotero.Utilities.Internal.quitZotero(true);
+		}
+	},
+	
+	
+onDataDirLoad() {
+		var currentDir = Zotero.DataDirectory.dir;
+		
+		if (Zotero.forceDataDir) {
+			document.getElementById('command-line-data-dir-path').textContent = currentDir;
+			document.getElementById('command-line-data-dir').hidden = false;
+		}
+		
+		document.getElementById('migrate-data-dir').setAttribute(
+			'hidden', !Zotero.DataDirectory.canMigrate()
+		);
+
+		let changeDataDir = document.getElementById("change-data-dir");
+		changeDataDir.hidden = this._usingDefaultDataDir();
+
+		let customDataDir = document.getElementById("custom-data-dir");
+		customDataDir.hidden = !this._usingDefaultDataDir();
+
+		let revertToDefaultDir = document.getElementById("reset-data-dir");
+		let revertToDefaultDirLabel = document.getElementById("default-data-dir");
+		revertToDefaultDir.hidden = this._usingDefaultDataDir();
+		revertToDefaultDirLabel.hidden = this._usingDefaultDataDir();
+		document.l10n.setArgs(revertToDefaultDirLabel, { directory: Zotero.DataDirectory.defaultDir });
+		this.setDataDirInput();
+	},
+	
+	
+async dataDirUpdate(isCustomSelection) {
+		if (!isCustomSelection && this._usingDefaultDataDir()) return;
+		
+		// This call shows a filepicker if needed, forces a restart if required, and does nothing if
+		// cancel was pressed or value hasn't changed
+		await Zotero.DataDirectory.choose(true, !isCustomSelection);
+	},
+	
+	
+async setDataDirInput() {
+		var filefield = document.getElementById('data-dir-path');
+		var path = Zotero.Prefs.get('dataDir');
+		if (path && (await IOUtils.exists(path))) {
+			filefield.style.backgroundImage = 'url(moz-icon://' + Zotero.File.pathToFileURI(path) + '?size=16)';
+			filefield.value = path;
+		}
+		else {
+			filefield.value = '';
+		}
+	},
+	
+	
+getDataDirPath() {
+		// TEMP: lastDataDir can be removed once old persistent descriptors have been
+		// converted, which they are in getZoteroDirectory() in 5.0
+		var prefValue = Zotero.Prefs.get('lastDataDir') || Zotero.Prefs.get('dataDir');
+		
+		// Don't show path if the default
+		if (prefValue == Zotero.DataDirectory.defaultDir) {
+			return '';
+		}
+		
+		return prefValue || '';
+	},
+	
+	
+_usingDefaultDataDir() {
+		// Legacy profile directory location
+		if (!Zotero.Prefs.get('useDataDir')) {
+			return true;
+		}
+		
+		var dataDir = Zotero.Prefs.get('lastDataDir') || Zotero.Prefs.get('dataDir');
+		// Default home directory location
+		if (dataDir == Zotero.DataDirectory.defaultDir) {
+			return true;
+		}
+		
+		return false;
 	}
 };
