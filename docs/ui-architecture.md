@@ -106,3 +106,154 @@ an out-of-process UI. Record the schema decision before the next section moves, 
 being five-edit changes.
 
 *For the full documentation index, see [../README.md](../README.md).*
+
+## Proposed plan (awaiting approval)
+
+**Status:** proposed 2026-11-27. No code until this is accepted. The four shape decisions are
+settled: entries exist for groups and for the controls inside them; new semantic ids with today's
+element ids kept as aliases; every label the book renders moves to Fluent, one item at a time;
+actions live in the same book as preference controls.
+
+The order below is the result of an adversarial pass. Its main correction was that migrating 55
+controls and 8 locales before a renderer has mounted anything is the step that fails first, and
+that the legacy label must not be deleted until the pilot proves parity.
+
+### P0 — Freeze and inventory
+
+Freeze every settings change, placement and copy. Derive one read-only placement inventory from the
+current pane XHTML, `panes.json`, the CSS anchors and the pane-named ids, and reconcile it against
+the rendered DOM: every one of the 55 controls, every section title and every action appears exactly
+once, with its current pane, order, label key and behaviour.
+
+**Gate G1:** the inventory count matches the DOM; nothing is unaccounted for. No behaviour changes.
+
+### P1 — Schema, validator, aliases, resolver
+
+Define the catalog format (panes, groups, controls, actions, aliases, label keys, visibility) and a
+validator that enforces: one placement per item, one label per item, one binding per control, unique
+ids, no orphan sections. Add a read-only resolver so a label key can be found in Fluent, in
+`.properties` or in DTD while the migration is in flight, and a test that each key resolves in
+exactly one system.
+
+**Gate G2:** a dry-run renders the catalog into a skeleton page and every pane, section and control
+resolves; deep links and search still find the current panes.
+
+### P2 — Pilot A1: placement, Browser Connector
+
+Mount the connector group from the catalog into Integrations, delete its hand-written markup, and
+keep the existing `.properties` labels through the resolver. Its old element id becomes an alias.
+Prove: identical rendering, deep link, search, theme, focus, keyboard and accessible name.
+
+### P3 — Pilot A2: labels, Browser Connector
+
+Move the connector's four labels to Fluent, copying the existing translations into all eight
+locales, and keep the old keys until parity is confirmed. Then delete the old keys in the same
+change that proves the new ones.
+
+**Gate G3:** no visual or accessibility difference; the locale test passes in all eight languages;
+no item uses two label systems at once.
+
+### P4 — Pilot B: Local API
+
+The hardest group: a preference checkbox, a computed value, two actions, and visibility rules. Add
+its initializer to the central registry rather than the pane script. Prove pref reads and writes,
+dependent UI, and that no initializer runs twice.
+
+### P5 — Pilot C: actions, Database Maintenance
+
+Two actions with no preference. Bind them through the central action registry, add a test that every
+catalog action has a live handler (a registered action that does nothing is the silent failure),
+and run the acceptance test: change only the `pane` field, assert the group renders in the new pane,
+with its labels, aliases and deep link intact.
+
+**Gate G4:** moving a group is a one-field edit plus a test run.
+
+### P6 — Bulk label migration
+
+Only after the pilots: migrate the remaining items' labels per item, copy the translations, delete
+the legacy key, and extend the locale completeness test. No item keeps both systems.
+
+### P7 — Rollout and cleanup
+
+Migrate the remaining sections pane by pane; generate `settings.md` from the catalog; delete an alias
+when a search finds no test, deep link or document still using it.
+
+**Gate G5:** the generated settings page matches the catalog; no alias remains in use.
+
+### Rollback and kill criteria
+
+Each pilot is one group: reverting it is restoring its markup and removing one catalog entry. Old
+label keys survive until parity is proven; aliases survive until no consumer remains.
+
+Stop the program if a migrated HTML control cannot keep the theme, focus ring, keyboard behaviour
+and accessible name of the XUL control it replaced, or if mounting is not deterministic. Those are
+structural, not cosmetic, and no amount of catalog design fixes them.
+
+### Scope boundary
+
+The book covers labels and descriptions it renders, not runtime messages such as the integrity-check
+dialogs. Those strings are not placed by the book and can migrate separately. Dropping XUL or Gecko,
+and moving menu actions into the same book, are separate decisions after this plan.
+
+## Worked entries
+
+Three real items, in the proposed format:
+
+```yaml
+- id: browser-connector
+  kind: content
+  placement: { pane: integrations, order: 10 }
+  title: connector.section.title
+  body: [connector.section.body1, connector.section.body2]
+  button: { label: connector.section.download, opens: connector-download-page }
+
+- id: local-api
+  kind: group
+  placement: { pane: agent-access, order: 30 }
+  title: preferences-local-api-title
+  description: preferences-local-api-description
+  controls:
+    - id: local-api-enabled
+      kind: setting
+      control: checkbox
+      pref: extensions.zotero.httpServer.localAPI.enabled
+      label: preferences-local-api-enabled
+    - id: local-api-url
+      kind: display
+      label: preferences-local-api-available
+      value: local-server-url
+      visible-when: local-api-enabled
+    - id: local-api-clear
+      kind: action
+      action: clear-local-api-authorizations
+      label: preferences-local-api-clear-authorizations
+      visible-when: local-api-enabled
+    - id: local-api-enable-server
+      kind: action
+      action: enable-http-server
+      label: preferences-local-api-enable-server
+      visible-when: server-disabled
+
+- id: database-maintenance
+  kind: group
+  placement: { pane: advanced, order: 20 }
+  title: preferences-database-maintenance
+  controls:
+    - id: check-integrity
+      kind: action
+      action: check-database-integrity
+      label: preferences-database-integrity-check
+    - id: reset-translators
+      kind: action
+      action: reset-translators
+      label: preferences-database-reset-translators
+
+- id: agent-access
+  kind: pane
+  title: preferences-pane-agent
+  order: 70
+```
+
+The Local API entry shows the two current defects the book exposes: the group has no translatable
+title or description today, and its existing label keys still say `advanced` although the group
+lives in Agent access.
