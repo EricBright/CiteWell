@@ -241,6 +241,12 @@ verb names in English for the same reason; the sentence around them is translate
 Its labels are Fluent drafts in eight locales, and the token and audit paths use Fluent messages with
 the path as an argument instead of hardcoded prefixes.
 
+### Library & Files (in progress)
+
+Current library, Locations and File renaming are catalog components. The file-renaming button keeps
+its Fluent labels and its search aliases. Still hand-written: the attachment base directory, the
+data directory and its migration states, and Locate/OpenURL.
+
 ### One list (done 2026-11-27)
 
 The generated-section list (`simpleSections`) is retired. Its eight sections — Language & Region,

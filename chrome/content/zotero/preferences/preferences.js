@@ -127,6 +127,22 @@ async function resetTranslators() {
 }
 
 const CATALOG_COMPONENTS = {
+	'library-file-renaming': groupbox => {
+		const HTML = 'http://www.w3.org/1999/xhtml';
+		let intro = document.createElementNS(HTML, 'label');
+		Zotero_Preferences._applyText(intro, 'preferences-file-renaming-intro');
+		let separator = document.createXULElement('separator');
+		separator.classList.add('thin');
+		let button = document.createXULElement('button');
+		button.id = 'file-renaming-configure-button';
+		Zotero_Preferences._applyLabel(button, 'preferences-file-renaming-configure-button');
+		button.addEventListener('command', () => CATALOG_ACTIONS['open-file-renaming']());
+		let box = document.createXULElement('vbox');
+		box.setAttribute('align', 'start');
+		box.append(intro, separator, button);
+		groupbox.append(box);
+	},
+
 	'library-current': groupbox => {
 		const HTML = 'http://www.w3.org/1999/xhtml';
 		let path = document.createXULElement('description');
@@ -648,6 +664,7 @@ const CATALOG_ACTIONS = {
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
 	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
+	'open-file-renaming': () => Zotero_Preferences.General.openFileRenamingDialog(),
 	'open-library': () => Zotero_Preferences.Library.openLibrary(),
 	'move-library': () => Zotero_Preferences.Library.moveLibrary(),
 	'copy-skill-link': () => Zotero_Preferences.Agent.copySkillLink(),

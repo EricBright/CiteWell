@@ -699,6 +699,19 @@
       "paneId": "zotero-prefpane-library",
       "order": 10,
       "titleKey": "library-current-title"
+    },
+    {
+      "id": "library-file-renaming",
+      "kind": "component",
+      "component": "library-file-renaming",
+      "paneId": "zotero-prefpane-library",
+      "order": 20,
+      "titleKey": "preferences-file-renaming-title",
+      "searchAliases": [
+        "file-renaming-format-title",
+        "file-renaming-format-template",
+        "file-renaming-auto-rename-files"
+      ]
     }
   ]
 }

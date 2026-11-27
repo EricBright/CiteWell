@@ -513,6 +513,8 @@ describe("Settings manifest navigation", function () {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
 			assert.ok(win.document.getElementById("file-handling"));
 			assert.ok(win.document.getElementById("library-current-title"));
+			assert.ok(win.document.getElementById("file-renaming-configure-button"));
+			assert.ok(win.document.getElementById("library-file-renaming-title"));
 			assert.ok(win.document.getElementById("library-open"));
 			assert.ok(win.document.getElementById("library-locations"));
 			assert.ok(win.document.getElementById("file-auto-recognize"));
