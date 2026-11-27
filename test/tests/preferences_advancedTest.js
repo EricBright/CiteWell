@@ -204,9 +204,15 @@ describe("Settings manifest navigation", function () {
 		});
 		try {
 			await win.Zotero_Preferences.waitForFirstPaneLoad();
-			assert.ok(win.document.getElementById("simple-section-translator-updates"));
+			assert.ok(win.document.getElementById("translator-updates"));
 			assert.ok(win.document.getElementById("translator-auto-update"));
 			assert.ok(win.document.getElementById("update-translators"));
+			assert.isAbove(
+				win.document.getElementById("translator-updates-title")
+					.textContent.trim().length,
+				0,
+				"the catalog title was not translated"
+			);
 		}
 		finally {
 			win.close();

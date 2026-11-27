@@ -209,8 +209,10 @@ The Advanced pane is the forced case because it contains one of each remaining s
 - **Ordering rule.** While hand-written content remains in a pane, a section may use `before` or
   `after` as a transition anchor. Once a pane is fully catalog-owned, only `order` decides. Anchors
   are therefore temporary, not a second map.
-- **Still hand-written in Advanced:** Feeds and the full-text index panel, plus the generated
-  Translator updates section. They are the next targets.
+- **Translator updates moved too.** The generated section became a catalog group, so the last
+  manifest-generated section in Advanced is now catalog data.
+- **Still hand-written in Advanced:** Feeds and the full-text index panel. Both become components;
+  they are the last two sections in the pane.
 
 ### P6 — Bulk text migration
 

@@ -177,6 +177,7 @@ const CATALOG_ACTIONS = {
 	'open-connector-page': () => Zotero.launchURL(Zotero.CONNECTORS_URL),
 	'check-database-integrity': checkDatabaseIntegrity,
 	'apply-dns-resolver': value => Zotero_Preferences.DNS.choose(value),
+	'update-translators': () => Zotero_Preferences.Advanced.updateTranslators(),
 	'reset-translators': resetTranslators,
 	'clear-local-api-authorizations': async () => {
 		await Zotero.Server.LocalAPI.clearAuthorizations();
