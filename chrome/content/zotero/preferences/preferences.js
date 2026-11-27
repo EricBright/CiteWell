@@ -25,6 +25,10 @@
 
 "use strict";
 
+const CATALOG_ACTIONS = {
+	'open-connector-page': () => Zotero.launchURL(Zotero.CONNECTORS_URL),
+};
+
 var Zotero_Preferences = {
 	panes: new Map(),
 	
@@ -373,6 +377,8 @@ var Zotero_Preferences = {
 				pane.container.prepend(heading);
 			}
 
+			this._renderCatalogSections(pane.id, pane.container);
+
 			await document.l10n.ready;
 			try {
 				await document.l10n.translateFragment(pane.container);
@@ -391,22 +397,98 @@ var Zotero_Preferences = {
 		await pane.loadPromise;
 	},
 
+	/**
+	 * Apply a localization key to a XUL attribute, preferring the legacy
+	 * string table and falling back to Fluent. Shared by generated sections and
+	 * catalog sections so both resolve text the same way while P6 migrates them.
+	 */
+	_applyLabel(element, key, attribute = 'label') {
+		let text = null;
+		try {
+			text = Zotero.getString(key);
+		}
+		catch (e) {
+			// Attribute-only Fluent messages have no value to fetch this way.
+		}
+		if (text && text !== key) {
+			element.setAttribute(attribute, text);
+			return;
+		}
+		element.setAttribute('data-l10n-id', key);
+		element.setAttribute('data-l10n-attrs', attribute);
+	},
+
+	/**
+	 * Render the settings catalog's sections for a pane. The catalog is data: a
+	 * section that moves to another pane is mounted there with no markup move.
+	 * Only the item kinds the pilot needs are supported; anything else throws
+	 * rather than rendering half a section.
+	 */
+	_renderCatalogSections(paneId, container) {
+		let sections = Zotero.PreferencePanes.sections
+			.filter(section => section.paneId === paneId)
+			.sort((a, b) => (a.order || 0) - (b.order || 0));
+		for (let section of sections) {
+			let groupbox = document.createXULElement('groupbox');
+			groupbox.id = section.id;
+			groupbox.classList.add('main-section');
+			if (section.aliases && section.aliases.length) {
+				groupbox.setAttribute('data-aliases', section.aliases.join(','));
+			}
+			let heading = document.createXULElement('label');
+			let h2 = document.createElementNS('http://www.w3.org/1999/xhtml', 'h2');
+			h2.id = section.id + '-title';
+			h2.textContent = Zotero.getString(section.titleKey);
+			heading.append(h2);
+			groupbox.append(heading);
+			groupbox.setAttribute('aria-labelledby', h2.id);
+
+			for (let item of section.items || []) {
+				if (item.kind === 'text') {
+					let description = document.createXULElement('description');
+					description.textContent = Zotero.getString(item.textKey);
+					groupbox.append(description);
+				}
+				else if (item.kind === 'action') {
+					let button = document.createXULElement('button');
+					button.id = item.id;
+					this._applyLabel(button, item.labelKey);
+					let action = CATALOG_ACTIONS[item.command];
+					if (!action) {
+						throw new Error('Unknown catalog action: ' + item.command);
+					}
+					button.addEventListener('command', action);
+					groupbox.append(button);
+				}
+				else if (item.kind === 'setting' && item.control === 'checkbox') {
+					let checkbox = document.createXULElement('checkbox');
+					checkbox.id = item.id;
+					checkbox.setAttribute('preference', item.pref);
+					checkbox.setAttribute('native', 'true');
+					this._applyLabel(checkbox, item.labelKey);
+					groupbox.append(checkbox);
+				}
+				else {
+					throw new Error(
+						`Unsupported catalog item ${item.id}: ${item.kind}/${item.control}`
+					);
+				}
+			}
+			// Place inside the pane document, not beside it. `after` is the
+			// pilot's placement rule; ordering is a catalog field, not code.
+			let root = container.firstElementChild || container;
+			let anchor = section.after && root.querySelector(section.after);
+			if (anchor && anchor.parentNode) {
+				anchor.parentNode.insertBefore(groupbox, anchor.nextSibling);
+			}
+			else {
+				root.append(groupbox);
+			}
+		}
+	},
+
 	_renderSimpleSections(paneId, container) {
-		let applyLabel = (element, key, attribute = 'label') => {
-			let text = null;
-			try {
-				text = Zotero.getString(key);
-			}
-			catch (e) {
-				// Attribute-only Fluent messages have no value to fetch this way.
-			}
-			if (text && text !== key) {
-				element.setAttribute(attribute, text);
-				return;
-			}
-			element.setAttribute('data-l10n-id', key);
-			element.setAttribute('data-l10n-attrs', attribute);
-		};
+		let applyLabel = this._applyLabel.bind(this);
 		let sections = Zotero.PreferencePanes.simpleSections
 			.filter(section => section.paneId === paneId)
 			.sort((a, b) => (a.order || 0) - (b.order || 0));

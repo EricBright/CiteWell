@@ -152,11 +152,20 @@ describe("UI copy", function () {
 			Zotero.CONNECTORS_URL,
 			"https://www.zotero.org/download/connectors"
 		);
+		let manifest = JSON.parse(await readLocale("resource/settings/panes.json"));
+		let section = (manifest.sections || []).find(
+			entry => entry.id === "browser-connector"
+		);
+		assert.ok(section, "the connector section is missing from the catalog");
+		assert.equal(section.paneId, "zotero-prefpane-integrations");
+		let itemIDs = (section.items || []).map(item => item.id);
+		assert.include(itemIDs, "browser-connector-body1");
+		assert.include(itemIDs, "browser-connector-download");
 		let pane = await readLocale(
 			"chrome/content/zotero/preferences/preferences_integrations.xhtml"
 		);
-		assert.include(pane, 'id="zotero-prefpane-integrations-connector"');
-		assert.include(pane, 'id="connector-download"');
+		assert.notInclude(pane, "connector-download");
+		assert.notInclude(pane, "zotero-prefpane-integrations-connector");
 		let advanced = await readLocale(
 			"chrome/content/zotero/preferences/preferences_advanced.xhtml"
 		);

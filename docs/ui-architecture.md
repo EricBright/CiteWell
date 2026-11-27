@@ -153,9 +153,12 @@ the live manifest still validates unchanged.
 
 ### P2 — Pilot A1: placement, Browser Connector
 
-Mount the connector group from the catalog into Integrations, delete its hand-written markup, and
-keep the existing `.properties` labels through the resolver. Its old element id becomes an alias.
-Prove: identical rendering, deep link, search, theme, focus, keyboard and accessible name.
+**Done 2026-11-27.** The connector is the first catalog section: `sections[]` names its pane, order,
+title and items, the renderer mounts it, and the Integrations pane no longer contains its markup.
+Its old element id is recorded as an alias. `preferences_advancedTest` proves the section renders in
+the integrations pane at its declared position, and a second test changes only `paneId` and asserts
+it renders in Agent access instead. The labels are still the existing `.properties` strings, so P3
+is unchanged text on a new mounting path.
 
 ### P3 — Pilot A2: labels, Browser Connector
 

@@ -434,5 +434,36 @@
         "scraper"
       ]
     }
+  ],
+  "sections": [
+    {
+      "id": "browser-connector",
+      "kind": "content",
+      "paneId": "zotero-prefpane-integrations",
+      "order": 10,
+      "titleKey": "connector.section.title",
+      "aliases": [
+        "zotero-prefpane-integrations-connector"
+      ],
+      "items": [
+        {
+          "id": "browser-connector-body1",
+          "kind": "text",
+          "textKey": "connector.section.body1"
+        },
+        {
+          "id": "browser-connector-body2",
+          "kind": "text",
+          "textKey": "connector.section.body2"
+        },
+        {
+          "id": "browser-connector-download",
+          "kind": "action",
+          "command": "open-connector-page",
+          "labelKey": "connector.section.download"
+        }
+      ],
+      "after": ".main-section"
+    }
   ]
 }

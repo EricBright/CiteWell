@@ -43,6 +43,8 @@ Zotero.PreferencePanes = {
 
 	simpleSections: [],
 
+	sections: [],
+
 	/**
 	 * Load pane structure from the versioned settings manifest. Pane content is
 	 * still a custom fragment in Phase 1; later phases can add section metadata
@@ -89,6 +91,7 @@ Zotero.PreferencePanes = {
 			this.builtInPanes = Object.freeze(panes);
 			this.retired = Object.freeze(manifest.retired || []);
 			this.simpleSections = Object.freeze(manifest.simpleSections || []);
+			this.sections = Object.freeze(manifest.sections || []);
 			return this.builtInPanes;
 		})();
 		return this.builtInPanesPromise;

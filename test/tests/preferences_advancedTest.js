@@ -222,8 +222,44 @@ describe("Settings manifest navigation", function () {
 			assert.ok(win.document.getElementById("zotero-prefpane-integrations"));
 			assert.ok(win.document.getElementById("citewell-lo-install"));
 			assert.ok(win.document.getElementById("citewell-integration-repair"));
+			assert.ok(win.document.getElementById("browser-connector"));
+			assert.ok(win.document.getElementById("browser-connector-download"));
+			assert.equal(
+				win.document.querySelectorAll("#zotero-prefpane-integrations .main-section")[1].id,
+				"browser-connector",
+				"the catalog section did not take its declared position"
+			);
 		}
 		finally {
+			win.close();
+		}
+	});
+
+	it("places a catalog section in the pane the catalog names", async function () {
+		let win = await loadWindow("chrome://zotero/content/preferences/preferences.xhtml", {
+			pane: "zotero-prefpane-integrations"
+		});
+		let original = win.Zotero.PreferencePanes.sections;
+		try {
+			await win.Zotero_Preferences.waitForFirstPaneLoad();
+			// The only change is the pane name: this is the move the catalog exists for.
+			win.Zotero.PreferencePanes.sections = original.map(section =>
+				section.id === "browser-connector"
+					? { ...section, paneId: "zotero-prefpane-agent", before: null }
+					: section
+			);
+			let container = win.document.createElement("vbox");
+			win.Zotero_Preferences._renderCatalogSections(
+				"zotero-prefpane-agent", container
+			);
+			assert.ok(
+				container.querySelector("#browser-connector"),
+				"the moved section did not render in the named pane"
+			);
+			assert.isNull(container.querySelector("#citewell-lo-install"));
+		}
+		finally {
+			win.Zotero.PreferencePanes.sections = original;
 			win.close();
 		}
 	});
