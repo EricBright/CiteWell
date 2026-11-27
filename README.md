@@ -64,20 +64,21 @@ after source changes. Tests run in a built app: `test/runtests.sh`. Output lands
 | `docs/branding.md` | on-demand | titles, icons, installer, channel | Where each piece of branding lives |
 | `docs/decisions.md` | on-demand | asking why something is | Decision records and dead ends |
 | `docs/ublock-spike.md` | on-demand | Browse content blocking | R38 spike |
-| `docs/rust.md` | on-demand | choosing a language or dependency | Where Rust may land, crates, UI exemption |
-| `docs/packaging.md` | on-demand | building or shipping a release | Linux AppImage pipeline, prerequisites, limits |
+| `docs/rust.md` | on-demand | choosing a language or dependency | Where Rust may land, crates |
+| `docs/packaging.md` | on-demand | building or shipping a release | AppImage pipeline, prerequisites |
 | `docs/connectors.md` | on-demand | the retired browser connector | Retirement record, 23119 listener |
-| `docs/export.md` | on-demand | planning a vault export | Obsidian/Markdown export design and safety rules |
+| `docs/export.md` | on-demand | planning a vault export | Obsidian/Markdown export design |
 | `docs/cli.md` | on-demand | agents and scripting | `citewell` CLI, local API, write authorization |
-| `docs/agent.md` | on-demand | the agent bridge and MCP tools | `/agent/v1`, verb surface, token model, phases |
+| `docs/agent.md` | on-demand | the agent bridge and MCP tools | `/agent/v1`, verb surface, token model |
 | `docs/libreoffice.md` | on-demand | working on LibreOffice integration | OXT, protocol, citation, Flatpak safety |
-| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol, invariants |
-| `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and honest trade-offs |
-| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation, tests |
-| `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge rules |
-| `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes and migration |
+| `docs/libreoffice-parity.md` | on-demand | building or repairing the LibreOffice adapter | Parity scope, protocol |
+| `docs/why-citewell.md` | on-demand | deciding whether CiteWell fits | Selling points and trade-offs |
+| `docs/attention.md` | on-demand | changing dialogs, activation, or notifications | Attention contract, escalation |
+| `docs/import.md` | on-demand | importing a Zotero library or changing data paths | Isolation, adopt-copy, merge |
+| `docs/notes.md` | on-demand | changing notes or the editor | File-backed Markdown notes |
 | `docs/settings.md` | on-demand | reorganizing settings or adding a pane | Inventory, target tabs, registry rules |
 | `docs/ui.md` | on-demand | UI copy, layout, interaction | Rules and their tests |
+| `docs/ui-architecture.md` | on-demand | UI structure decisions | Settings schema, toolkit limits |
 | `docs/kde-hig-audit.md` | on-demand | UI polish decisions | HIG conformance |
 | `CLAUDE.md` | on-demand | needing upstream architecture detail | Zotero's own guide, kept verbatim |
 
