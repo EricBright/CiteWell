@@ -41,8 +41,6 @@ Zotero.PreferencePanes = {
 
 	retired: [],
 
-	simpleSections: [],
-
 	sections: [],
 
 	/** Old element id → catalog section id, for deep links written before a move. */
@@ -73,7 +71,6 @@ Zotero.PreferencePanes = {
 				throw new Error('Invalid settings pane manifest');
 			}
 			let panes = manifest.panes
-				.filter(pane => ZOTERO_CONFIG.ONLINE_SYNC || !pane.requiresOnlineSync)
 				.sort((a, b) => a.order - b.order)
 				.map(pane => {
 					if (!pane.id || (!pane.label && !pane.rawLabel)) {
@@ -101,7 +98,6 @@ Zotero.PreferencePanes = {
 				});
 			this.builtInPanes = Object.freeze(panes);
 			this.retired = Object.freeze(manifest.retired || []);
-			this.simpleSections = Object.freeze(manifest.simpleSections || []);
 			this.sections = Object.freeze(manifest.sections || []);
 			return this.builtInPanes;
 		})();

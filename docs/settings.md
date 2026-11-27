@@ -151,7 +151,7 @@ First slice:
   and the no-resolver prompt now names Library & Files instead of General.
 - Language & Region, Notes → Note behaviour, General → Groups, Cite → Citation Dialog, Cite →
   Citation Options, Library & Files → File Handling and Library & Files → Attachment Titles are now
-  registry descriptors (`simpleSections`) rendered by the preferences shell. The renderer supports
+  catalog sections rendered by the preferences shell. The renderer supports
   checkbox and radio controls, ordered insertion, and labels through the existing DTD/FTL string
   path; controls still use the existing preference binding.
 

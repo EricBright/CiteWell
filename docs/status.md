@@ -58,8 +58,8 @@ binding, and a renderer mounts it. The plan, decisions and open questions are in
 
 **Done.**
 
-- **One list.** `resource/settings/panes.json` holds `sections` only; `simpleSections` is retired and
-  its renderer deleted. The validator checks unique ids, known panes, one binding per item, unique
+- **One list.** `resource/settings/panes.json` holds `sections` only; the manifest, validator and
+  renderer paths for `simpleSections` are all removed. The validator checks unique ids, known panes, one binding per item, unique
   preferences, labels, radio options and number label pairs, with unit tests.
 - **Renderer capabilities:** content sections, groups, components (registered factories), checkbox,
   radio and number settings, display and text items, actions, named conditions, section initializers,

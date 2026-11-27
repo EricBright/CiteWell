@@ -325,23 +325,22 @@ with `#styles`. The real routing is covered by `settingsTabTest`.
 The generated-section list (`simpleSections`) is retired. Its eight sections — Language & Region,
 Groups, Behaviour, the citation-dialog mode, file handling, attachment titles and Note behaviour —
 are ordinary catalog sections now, with the number control added for the trash-retention field.
-`panes.json` no longer contains a second structure list, and the generated-section renderer is
-gone.
+`panes.json` no longer contains a second structure list, and nothing reads one any more: the
+generated-section renderer, the `simpleSections` property and the validator branch are all gone.
 
 A duplicate copy of the catalog renderer, found while doing this, was removed; both copies were
 identical, so no behavior changed, but the duplication would have hidden a future edit to the dead
 copy.
 
-### General pane (in progress)
+### General pane (done)
 
 The Appearance section is a catalog component: the colour scheme radios, the bibliography locale
 menu, the item-pane header menu and its dependent style and locale menus. The menu ids and their
 handlers are unchanged, so the General module still initializes them. The locale label moved from
 DTD to Fluent.
 
-The rest of General is still the generated-section mechanism (`simpleSections`): Language & Region,
-Groups and Behaviour. Those are already data, but in a second list. Converting them to the same
-catalog is the next step, and it needs the number control the Behaviour section uses.
+Language & Region, Groups and Behaviour are ordinary catalog sections now, using the number
+control for the trash-retention field. No second structure list remains.
 
 ### Notes pane (done)
 
