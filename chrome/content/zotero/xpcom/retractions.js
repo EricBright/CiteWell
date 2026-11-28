@@ -966,8 +966,8 @@ Zotero.Retractions = {
 	},
 	
 	_loadCacheFile: async function () {
-		var cacheFile = OS.Path.join(Zotero.Profile.dir, 'retractions.json');
-		if (!(await OS.File.exists(cacheFile))) {
+		var cacheFile = PathUtils.join(Zotero.Profile.dir, 'retractions.json');
+		if (!(await Zotero.File.exists(cacheFile))) {
 			return;
 		}
 		var data = JSON.parse(await Zotero.File.getContentsAsync(cacheFile));
@@ -1000,7 +1000,7 @@ Zotero.Retractions = {
 	 * Cache prefix list in profile directory
 	 */
 	_saveCacheFile: async function (data, etag, doiPrefixLength, pmidPrefixLength) {
-		var cacheFile = OS.Path.join(Zotero.Profile.dir, 'retractions.json');
+		var cacheFile = PathUtils.join(Zotero.Profile.dir, 'retractions.json');
 		var cacheJSON = {
 			version: this._version,
 			etag,
@@ -1039,8 +1039,8 @@ Zotero.Retractions = {
 			}
 			await this._removeAllEntries();
 			this._resetState();
-			let cacheFile = OS.Path.join(Zotero.Profile.dir, 'retractions.json');
-			await OS.File.remove(cacheFile);
+			let cacheFile = PathUtils.join(Zotero.Profile.dir, 'retractions.json');
+			await Zotero.File.removeIfExists(cacheFile);
 		}
 	},
 	

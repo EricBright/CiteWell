@@ -24,6 +24,7 @@ Gates:
 cargo run --quiet --manifest-path tools/docs-check/Cargo.toml
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-agent
+cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-plumbing
 ```
 
 ## Repository map

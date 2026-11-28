@@ -52,8 +52,8 @@ Zotero.Dictionaries = new function () {
 	 * @return {Promise}
 	 */
 	this.init = async function () {
-		let dictionariesDir = OS.Path.join(Zotero.Profile.dir, 'dictionaries');
-		if (!(await OS.File.exists(dictionariesDir))) {
+		let dictionariesDir = PathUtils.join(Zotero.Profile.dir, 'dictionaries');
+		if (!(await Zotero.File.exists(dictionariesDir))) {
 			return;
 		}
 		
@@ -100,8 +100,8 @@ Zotero.Dictionaries = new function () {
 		await this.remove(id);
 		Zotero.debug("Installing dictionaries from " + id);
 		let url = this.baseURL + id + '-' + version + '.xpi';
-		let xpiPath = OS.Path.join(Zotero.getTempDirectory().path, id);
-		let dir = OS.Path.join(Zotero.Profile.dir, 'dictionaries', id);
+		let xpiPath = PathUtils.join(Zotero.getTempDirectory().path, id);
+		let dir = PathUtils.join(Zotero.Profile.dir, 'dictionaries', id);
 		let zipReader = Components.classes['@mozilla.org/libjar/zip-reader;1']
 			.createInstance(Components.interfaces.nsIZipReader);
 		try {
@@ -114,7 +114,7 @@ Zotero.Dictionaries = new function () {
 			let entries = zipReader.findEntries('*/');
 			while (entries.hasMore()) {
 				let entry = entries.getNext();
-				let destPath = OS.Path.join(dir, ...entry.split(/\//));
+				let destPath = PathUtils.join(dir, ...entry.split(/\//));
 				await Zotero.File.createDirectoryIfMissingAsync(destPath, { from: Zotero.Profile.dir });
 			}
 
@@ -126,7 +126,7 @@ Zotero.Dictionaries = new function () {
 					continue;
 				}
 				Zotero.debug("Extracting " + entry);
-				let destPath = OS.Path.join(dir, ...entry.split(/\//));
+				let destPath = PathUtils.join(dir, ...entry.split(/\//));
 				zipReader.extract(entry, Zotero.File.pathToFile(destPath));
 			}
 
@@ -137,8 +137,8 @@ Zotero.Dictionaries = new function () {
 		}
 		catch (e) {
 			try {
-				if (await OS.File.exists(dir)) {
-					await OS.File.removeDir(dir);
+				if (await Zotero.File.exists(dir)) {
+					await Zotero.File.removeDir(dir);
 				}
 			}
 			catch (e) {
@@ -151,8 +151,8 @@ Zotero.Dictionaries = new function () {
 			// Note: In same cases, on Windows, it can't be removed
 			// because something is keeping it open
 			try {
-				if (await OS.File.exists(xpiPath)) {
-					await OS.File.remove(xpiPath);
+				if (await Zotero.File.exists(xpiPath)) {
+					await Zotero.File.removeIfExists(xpiPath);
 				}
 			}
 			catch (e) {
@@ -174,12 +174,12 @@ Zotero.Dictionaries = new function () {
 			return;
 		}
 		try {
-			let manifestPath = OS.Path.join(dictionary.dir, 'manifest.json');
+			let manifestPath = PathUtils.join(dictionary.dir, 'manifest.json');
 			let manifest = await Zotero.File.getContentsAsync(manifestPath);
 			manifest = JSON.parse(manifest);
 			for (let locale in manifest.dictionaries) {
 				let dicPath = manifest.dictionaries[locale];
-				let affPath = OS.Path.join(dictionary.dir, ...dicPath.split(/\//)).slice(0, -3) + 'aff';
+				let affPath = PathUtils.join(dictionary.dir, ...dicPath.split(/\//)).slice(0, -3) + 'aff';
 				Zotero.debug(`Removing ${locale} dictionary`);
 				let file = new FileUtils.File(affPath);
 				_spellChecker.removeDictionary(locale, Services.io.newFileURI(file));
@@ -188,7 +188,7 @@ Zotero.Dictionaries = new function () {
 		catch (e) {
 			Zotero.logError(e);
 		}
-		await OS.File.removeDir(dictionary.dir);
+		await Zotero.File.removeDir(dictionary.dir);
 		// Technically there can be more than one dictionary provided by the same extension id,
 		// so remove all that match
 		_dictionaries = _dictionaries.filter(x => x.id != id);
@@ -285,7 +285,7 @@ Zotero.Dictionaries = new function () {
 	 * @return {Promise}
 	 */
 	async function _loadDirectory(dir) {
-		let manifestPath = OS.Path.join(dir, 'manifest.json');
+		let manifestPath = PathUtils.join(dir, 'manifest.json');
 		let manifest = await Zotero.File.getContentsAsync(manifestPath);
 		manifest = JSON.parse(manifest);
 		let id;
@@ -300,7 +300,7 @@ Zotero.Dictionaries = new function () {
 		for (let locale in manifest.dictionaries) {
 			locales.push(locale);
 			let dicPath = manifest.dictionaries[locale];
-			let affPath = OS.Path.join(dir, ...dicPath.split(/\//)).slice(0, -3) + 'aff';
+			let affPath = PathUtils.join(dir, ...dicPath.split(/\//)).slice(0, -3) + 'aff';
 			let file = new FileUtils.File(affPath);
 			_spellChecker.addDictionary(locale, Services.io.newFileURI(file));
 			_dictionaries.push({ id, locale, version, dir });

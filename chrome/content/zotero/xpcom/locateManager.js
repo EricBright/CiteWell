@@ -38,7 +38,7 @@ Zotero.LocateManager = new function () {
 		_jsonFile = _getLocateFile();
 		
 		try {
-			if (await OS.File.exists(_jsonFile)) {
+			if (await Zotero.File.exists(_jsonFile)) {
 				_locateEngines = JSON.parse(await Zotero.File.getContentsAsync(_jsonFile))
 					.map(engine => new LocateEngine(engine));
 			}
@@ -136,10 +136,10 @@ Zotero.LocateManager = new function () {
 		var locateDir = _getLocateDirectory();
 		
 		// remove old locate dir
-		await OS.File.removeDir(locateDir, { ignoreAbsent: true, ignorePermissions: true });
+		await Zotero.File.removeDir(locateDir);
 		
 		// create new locate dir
-		await OS.File.makeDir(locateDir, { unixMode: 0o755 });
+		await Zotero.File.makeDirectory(locateDir, { permissions: 0o755 });
 		
 		// copy default file to new locate dir
 		await Zotero.File.putContentsAsync(
@@ -188,14 +188,14 @@ Zotero.LocateManager = new function () {
 	 * Gets the JSON file containing engine info
 	 */
 	function _getLocateFile() {
-		return OS.Path.join(_getLocateDirectory(), LOCATE_FILE_NAME);
+		return PathUtils.join(_getLocateDirectory(), LOCATE_FILE_NAME);
 	}
 	
 	/**
 	 * Gets the dir containing the JSON file and engine icons
 	 */
 	function _getLocateDirectory() {
-		return OS.Path.join(Zotero.DataDirectory.dir, LOCATE_DIR_NAME);
+		return PathUtils.join(Zotero.DataDirectory.dir, LOCATE_DIR_NAME);
 	}
 	
 	/**
@@ -483,7 +483,7 @@ Zotero.LocateManager = new function () {
 				return;
 			}
 			
-			var tmpPath = OS.Path.join(Zotero.getTempDirectory().path, Zotero.Utilities.randomString());
+			var tmpPath = PathUtils.join(Zotero.getTempDirectory().path, Zotero.Utilities.randomString());
 			await Zotero.File.download(this._iconSourceURI, tmpPath);
 			
 			var sample = await Zotero.File.getSample(tmpPath);
@@ -497,18 +497,18 @@ Zotero.LocateManager = new function () {
 			
 			// Find a good place to put the icon file
 			var sanitizedAlias = this.name.replace(/[^\w _]/g, "");
-			var iconFile = OS.Path.join(_getLocateDirectory(), sanitizedAlias + "." + extension);
-			if (await OS.File.exists(iconFile)) {
-				for (let i = 0; await OS.File.exists(iconFile); i++) {
-					iconFile = OS.Path.join(
+			var iconFile = PathUtils.join(_getLocateDirectory(), sanitizedAlias + "." + extension);
+			if (await Zotero.File.exists(iconFile)) {
+				for (let i = 0; await Zotero.File.exists(iconFile); i++) {
+					iconFile = PathUtils.join(
 						PathUtils.parent(iconFile),
 						sanitizedAlias + "_" + i + "." + extension
 					);
 				}
 			}
 			
-			await OS.File.move(tmpPath, iconFile);
-			this.icon = OS.Path.toFileURI(iconFile);
+			await Zotero.File.move(tmpPath, iconFile);
+			this.icon = PathUtils.toFileURI(iconFile);
 		}
 	}
 	

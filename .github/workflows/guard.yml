@@ -22,6 +22,9 @@ jobs:
       - name: Validate the agent verb manifest
         run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-agent
 
+      - name: Check the file-plumbing ceiling
+        run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-plumbing
+
       - name: Reject package, lockfile, and node_modules changes
         run: |
           set -eu

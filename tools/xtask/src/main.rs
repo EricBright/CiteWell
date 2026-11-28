@@ -34,6 +34,7 @@ commands:
   validate-settings  validate resource/settings/panes.json and its generated block
   agent-docs         write the generated verb table in docs/agent.md
   validate-agent     validate resource/agent/verbs.json and its generated block
+  validate-plumbing  check that OS.File/OS.Path use has not grown
   help        show this message
 ";
 
@@ -47,6 +48,7 @@ fn main() -> ExitCode {
         Some("validate-settings") => validate_settings(),
         Some("agent-docs") => agent_docs(),
         Some("validate-agent") => validate_agent(),
+        Some("validate-plumbing") => validate_plumbing(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
             ExitCode::SUCCESS
@@ -140,6 +142,69 @@ fn collect_scss_entries(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String
     Ok(())
 }
 
+
+fn collect_app_js(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else { return };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if path.is_dir() {
+            if matches!(name, "translate" | "utilities" | "ace" | "vs") {
+                continue;
+            }
+            collect_app_js(&path, out);
+        }
+        else if matches!(path.extension().and_then(|e| e.to_str()), Some("js") | Some("mjs"))
+            && name != "citeproc.js"
+        {
+            out.push(path);
+        }
+    }
+}
+
+fn validate_plumbing() -> ExitCode {
+    let root = repo_root();
+    let mut files = Vec::new();
+    collect_app_js(&root.join("chrome/content/zotero"), &mut files);
+    let mut os_file = 0usize;
+    let mut os_path = 0usize;
+    for file in &files {
+        let Ok(text) = fs::read_to_string(file) else { continue };
+        os_file += text.matches("OS.File").count();
+        os_path += text.matches("OS.Path").count();
+    }
+    let baseline_path = root.join("tools/file-plumbing.json");
+    let baseline: serde_json::Value = match fs::read_to_string(&baseline_path)
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+    {
+        Some(value) => value,
+        None => {
+            eprintln!("xtask: cannot read {}", baseline_path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let max_file = baseline.get("OS.File").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let max_path = baseline.get("OS.Path").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let mut failed = false;
+    if os_file > max_file {
+        eprintln!(
+            "xtask: file plumbing grew: OS.File {os_file} > {max_file}; use a Zotero.File wrapper"
+        );
+        failed = true;
+    }
+    if os_path > max_path {
+        eprintln!(
+            "xtask: file plumbing grew: OS.Path {os_path} > {max_path}; use PathUtils instead"
+        );
+        failed = true;
+    }
+    if failed {
+        return ExitCode::FAILURE;
+    }
+    println!("file plumbing: OS.File {os_file}/{max_file}, OS.Path {os_path}/{max_path}");
+    ExitCode::SUCCESS
+}
 
 const AGENT_BEGIN: &str = "<!-- BEGIN AGENT VERBS -->";
 const AGENT_END: &str = "<!-- END AGENT VERBS -->";

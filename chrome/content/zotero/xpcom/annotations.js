@@ -60,12 +60,12 @@ Zotero.Annotations = new function () {
 	
 	this.getCacheImagePath = function ({ libraryID, key }) {
 		var file = this._getLibraryCacheDirectory(libraryID);
-		return OS.Path.join(file, key + '.png');
+		return PathUtils.join(file, key + '.png');
 	};
 
 
 	this.hasCacheImage = async function (item) {
-		return OS.File.exists(this.getCacheImagePath(item));
+		return Zotero.File.exists(this.getCacheImagePath(item));
 	};
 	
 	
@@ -82,7 +82,7 @@ Zotero.Annotations = new function () {
 		var file = this._getLibraryCacheDirectory(item.libraryID);
 		await Zotero.File.createDirectoryIfMissingAsync(file, { from: cacheDir });
 		
-		file = OS.Path.join(file, item.key + '.png');
+		file = PathUtils.join(file, item.key + '.png');
 		Zotero.debug("Creating annotation cache file " + file);
 		await Zotero.File.putContentsAsync(file, blob);
 		await Zotero.File.setNormalFilePermissions(file);
@@ -94,7 +94,7 @@ Zotero.Annotations = new function () {
 	this.removeCacheImage = async function ({ libraryID, key }) {
 		var path = this.getCacheImagePath({ libraryID, key });
 		Zotero.debug("Deleting annotation cache file " + path);
-		await OS.File.remove(path, { ignoreAbsent: true });
+		await Zotero.File.removeIfExists(path);
 	};
 	
 	
@@ -111,7 +111,7 @@ Zotero.Annotations = new function () {
 	 */
 	this.removeLibraryCacheFiles = async function (libraryID) {
 		var path = this._getLibraryCacheDirectory(libraryID);
-		await OS.File.removeDir(path, { ignoreAbsent: true, ignorePermissions: true });
+		await Zotero.File.removeDir(path);
 	};
 	
 	
@@ -127,7 +127,7 @@ Zotero.Annotations = new function () {
 		else {
 			throw new Error(`Unexpected library type '${library.libraryType}'`);
 		}
-		return OS.Path.join(...parts);
+		return PathUtils.join(...parts);
 	};
 	
 	
@@ -198,7 +198,7 @@ Zotero.Annotations = new function () {
 		var o = this.toJSONSync(item);
 		if (['image', 'ink'].includes(o.type)) {
 			let file = this.getCacheImagePath(item);
-			if (await OS.File.exists(file)) {
+			if (await Zotero.File.exists(file)) {
 				o.image = await Zotero.File.generateDataURI(file, 'image/png');
 			}
 		}

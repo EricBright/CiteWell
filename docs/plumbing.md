@@ -51,7 +51,7 @@ test asserts that manifest, handlers and capabilities agree. Commit `0942ffc56`.
 **Estimate:** one session. **Risk:** cross-language generation; keep the JSON the only source and
 generate rather than hand-edit.
 
-## A2 — File plumbing (second)
+## A2 — File plumbing (second) — wave 1 shipped 2026-11-28
 
 **The cost today.** Five APIs touch files: `Zotero.File` (376 calls), `IOUtils` (266), `OS.File`
 (245), `PathUtils` (256), `OS.Path` (149). A repair in path handling, atomic writes or trash has five
@@ -66,6 +66,13 @@ test-covered; the old API disappears gradually.
 
 The first wave confirms what `Zotero.File` already wraps; if it is a thin alias, the wrapping
 functions land before any call site moves.
+
+**Wave 1 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir` and `move` over
+`IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js` and `locateManager.js` now use those
+wrappers and `PathUtils`, with no `OS.File`/`OS.Path` left in them. `validate-plumbing` runs in the
+commit hook and CI and fails if the app-wide counts grow above `tools/file-plumbing.json` (currently
+212 `OS.File`, 115 `OS.Path`). Tests: file, retractions, dictionaries, annotations and sidecars
+81/81.
 
 **Estimate:** two to three sessions in waves. **Risk:** large mechanical churn; do it after the
 agent manifest and never mix it with a behaviour change.

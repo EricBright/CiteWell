@@ -669,6 +669,44 @@ Zotero.File = new function () {
 	
 	
 	/**
+	 * Whether a path exists. Callers use this instead of OS.File directly.
+	 */
+	this.exists = function (path) {
+		return IOUtils.exists(path);
+	}
+	
+	
+	/**
+	 * Create a directory, with ancestors and without failing if it is already there.
+	 */
+	this.makeDirectory = function (path, options = {}) {
+		return IOUtils.makeDirectory(path, Object.assign({
+			createAncestors: true,
+			ignoreExisting: true
+		}, options));
+	}
+	
+	
+	/**
+	 * Remove a directory and its contents, ignoring a missing directory by default.
+	 */
+	this.removeDir = function (path, options = {}) {
+		return IOUtils.remove(path, Object.assign({
+			recursive: true,
+			ignoreAbsent: true
+		}, options));
+	}
+	
+	
+	/**
+	 * Move or rename a file or directory.
+	 */
+	this.move = function (source, dest, options = {}) {
+		return IOUtils.move(source, dest, options);
+	}
+	
+	
+	/**
 	 * Delete a file if it exists, asynchronously
 	 *
 	 * @return {Promise<Boolean>} A promise for TRUE if file was deleted, FALSE if missing
