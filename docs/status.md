@@ -47,9 +47,9 @@ Stage 0 baseline and the eight full-text failures it recorded are in Appendix A 
 
 1. Screenshots for the README (`.webp` under `docs/images/readme/`), then README polish.
 2. The follow-on plumbing charter ([plumbing.md](plumbing.md)): the agent verb manifest is shipped
-   (`0942ffc56`), and file-plumbing wave 1 is shipped (four leaf modules plus the ratchet gate);
-   the next wave takes the data paths (`dataDirectory.js`, `attachments.js`) and the remaining
-   `xpcom` modules.
+   (`0942ffc56`), and file-plumbing waves 1–2 are shipped (five modules plus the ratchet gate, now
+   185 `OS.File` / 80 `OS.Path`); the next wave takes `attachments.js` and the remaining `xpcom`
+   modules (`profile`, `style`, `repositoryUpdates`, `fulltext`, `db`, `item`).
 3. Accessibility stays priority-deferred; native review stays opportunistic (D68).
 
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)

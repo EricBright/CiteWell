@@ -212,8 +212,8 @@ describe("Zotero.DataDirectory", function () {
 			return function* () {
 				yield populateDataDirectory(oldDir, null, automatic);
 				
-				let origFunc = OS.File.move;
-				let fileMoveStub = sinon.stub(OS.File, "move").callsFake(function () {
+				let origFunc = Zotero.File.move;
+				let fileMoveStub = sinon.stub(Zotero.File, "move").callsFake(function () {
 					if (OS.Path.basename(arguments[0]) == storageFile1) {
 						return Promise.reject(new Error("Error"));
 					}
@@ -257,8 +257,8 @@ describe("Zotero.DataDirectory", function () {
 			return function* () {
 				yield populateDataDirectory(oldDir, null, automatic);
 				
-				let origFunc = OS.File.move;
-				let stub1 = sinon.stub(OS.File, "move").callsFake(function () {
+				let origFunc = Zotero.File.move;
+				let stub1 = sinon.stub(Zotero.File, "move").callsFake(function () {
 					if (OS.Path.basename(arguments[0]) == dbFilename) {
 						return Promise.reject(new Error("Error"));
 					}
@@ -386,8 +386,8 @@ describe("Zotero.DataDirectory", function () {
 			it("should handle partial failure", async function () {
 				await populateDataDirectory(oldDir);
 				
-				let origFunc = OS.File.move;
-				let stub1 = sinon.stub(OS.File, "move").callsFake(function () {
+				let origFunc = Zotero.File.move;
+				let stub1 = sinon.stub(Zotero.File, "move").callsFake(function () {
 					if (OS.Path.basename(arguments[0]) == storageFile1) {
 						return Promise.reject(new Error("Error"));
 					}

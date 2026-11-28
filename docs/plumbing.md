@@ -67,12 +67,15 @@ test-covered; the old API disappears gradually.
 The first wave confirms what `Zotero.File` already wraps; if it is a thin alias, the wrapping
 functions land before any call site moves.
 
-**Wave 1 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir` and `move` over
-`IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js` and `locateManager.js` now use those
-wrappers and `PathUtils`, with no `OS.File`/`OS.Path` left in them. `validate-plumbing` runs in the
-commit hook and CI and fails if the app-wide counts grow above `tools/file-plumbing.json` (currently
-212 `OS.File`, 115 `OS.Path`). Tests: file, retractions, dictionaries, annotations and sidecars
-81/81.
+**Waves 1–2 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir`,
+`removeEmptyDir` and `move` over `IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js`,
+`locateManager.js` and `dataDirectory.js` now use those wrappers and `PathUtils`, with no
+`OS.File`/`OS.Path` left in any of them except the one cross-device probe in
+`dataDirectory.js` (it needs `OS.File.move`'s errno to tell a different filesystem from a real
+failure). `validate-plumbing` runs in the commit hook and CI and fails if the app-wide counts grow
+above `tools/file-plumbing.json` (now **185 `OS.File`, 80 `OS.Path`**). Tests: file, retractions,
+dictionaries, annotations, sidecars and data directory 81/81 + 16/16; import and file renaming
+40/40 after the data-directory move.
 
 **Estimate:** two to three sessions in waves. **Risk:** large mechanical churn; do it after the
 agent manifest and never mix it with a behaviour change.

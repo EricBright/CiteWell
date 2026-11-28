@@ -688,6 +688,17 @@ Zotero.File = new function () {
 	
 	
 	/**
+	 * Remove a directory only if it is empty, ignoring a missing directory.
+	 */
+	this.removeEmptyDir = function (path) {
+		return IOUtils.remove(path, {
+			recursive: false,
+			ignoreAbsent: true
+		});
+	}
+	
+	
+	/**
 	 * Remove a directory and its contents, ignoring a missing directory by default.
 	 */
 	this.removeDir = function (path, options = {}) {
@@ -854,7 +865,7 @@ Zotero.File = new function () {
 				// Move files in directory
 				if (!entry.isDir) {
 					try {
-						await OS.File.move(
+						await Zotero.File.move(
 							entry.path,
 							dest,
 							{
