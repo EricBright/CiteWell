@@ -46,8 +46,8 @@ Stage 0 baseline and the eight full-text failures it recorded are in Appendix A 
 **Next.**
 
 1. Screenshots for the README (`.webp` under `docs/images/readme/`), then README polish.
-2. The follow-on plumbing charter ([plumbing.md](plumbing.md)): the agent verb manifest first,
-   then file plumbing in waves.
+2. The follow-on plumbing charter ([plumbing.md](plumbing.md)): the agent verb manifest is shipped
+   (commit `0942ffc56`); next is the file plumbing in waves.
 3. Accessibility stays priority-deferred; native review stays opportunistic (D68).
 
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)

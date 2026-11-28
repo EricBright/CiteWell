@@ -23,7 +23,7 @@ not a framework.
 The test for every item: deleting the module should scatter its complexity across callers. If it
 disappears cleanly, it was a pass-through and should not exist.
 
-## A1 — Agent verb manifest (first)
+## A1 — Agent verb manifest (first) — shipped 2026-11-28
 
 **The cost today.** The agent surface is described three times: 18 capabilities in the JS dispatcher
 (`server_agent.js`), 17 tools with schemas in Rust (`tools/cli/src/mcp.rs`), and a third list in
@@ -43,6 +43,10 @@ description, input schema, and whether it mutates. Three consumers:
 
 A parity test asserts three things: every manifest verb has a handler, every handler is in the
 manifest, and the MCP tool list matches. Adding a verb becomes one JSON entry plus one handler.
+
+**Shipped:** `resource/agent/verbs.json` feeds the JS dispatcher, the Rust MCP tools and the
+generated table in `docs/agent.md`; `validate-agent` runs in the commit hook and CI, and the agent
+test asserts that manifest, handlers and capabilities agree. Commit `0942ffc56`.
 
 **Estimate:** one session. **Risk:** cross-language generation; keep the JSON the only source and
 generate rather than hand-edit.
