@@ -482,20 +482,6 @@ describe("Zotero.DataObject", function () {
 			}
 		})
 		
-		it("should delete object versions from sync cache", async function () {
-			for (let type of types) {
-				let obj = await createDataObject(type);
-				let libraryID = obj.libraryID;
-				let key = obj.key;
-				let json = obj.toJSON();
-				await Zotero.Sync.Data.Local.saveCacheObjects(type, libraryID, [json]);
-				await obj.eraseTx();
-				let versions = await Zotero.Sync.Data.Local.getCacheObjectVersions(
-					type, libraryID, key
-				);
-				assert.lengthOf(versions, 0);
-			}
-		})
 	})
 	
 	describe("#updateVersion()", function () {

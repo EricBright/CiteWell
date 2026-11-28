@@ -1365,11 +1365,6 @@ describe("Zotero.Item", function () {
 			var path = await item.getFilePathAsync();
 			assert.equal(OS.Path.basename(path), newName)
 			await OS.File.exists(path);
-			
-			// File should be flagged for upload
-			// DEBUG: Is this necessary?
-			assert.equal(item.attachmentSyncState, Zotero.Sync.Storage.Local.SYNC_STATE_TO_UPLOAD);
-			assert.isNull(item.attachmentSyncedHash);
 		});
 		
 		// Only relevant on a case-insensitive filesystem
@@ -2549,28 +2544,6 @@ describe("Zotero.Item", function () {
 			})
 			
 			describe("Attachments", function () {
-				it.skip("should output attachment fields from file", function* () {
-					var file = getTestDataDirectory();
-					file.append('test.png');
-					var item = yield Zotero.Attachments.importFromFile({ file });
-					
-					yield Zotero.DB.executeTransaction(function* () {
-						yield Zotero.Sync.Storage.Local.setSyncedModificationTime(
-							item.id, new Date().getTime()
-						);
-						yield Zotero.Sync.Storage.Local.setSyncedHash(
-							item.id, 'b32e33f529942d73bea4ed112310f804'
-						);
-					});
-					
-					var json = item.toJSON();
-					assert.equal(json.linkMode, 'imported_file');
-					assert.equal(json.filename, 'test.png');
-					assert.isUndefined(json.path);
-					assert.equal(json.mtime, (yield item.attachmentModificationTime));
-					assert.equal(json.md5, (yield item.attachmentHash));
-				})
-				
 				it("should omit storage values with .skipStorageProperties", async function () {
 					var file = getTestDataDirectory();
 					file.append('test.png');

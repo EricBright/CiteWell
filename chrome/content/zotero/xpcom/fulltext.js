@@ -333,7 +333,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			Zotero.addShutdownListener(this.unregisterSyncContentProcessor.bind(this));
 			
 			// Start/stop content processor with full-text content syncing pref
-			Zotero.Prefs.registerObserver('sync.fulltext.enabled', (enabled) => {
+			Zotero.Prefs.registerObserver('fulltext.processQueuedContent', (enabled) => {
 				if (enabled) {
 					this.registerSyncContentProcessor();
 				}
@@ -1147,7 +1147,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 	this.registerSyncContentProcessor = function () {
 		// Don't start idle observer during tests
 		if (Zotero.test) return;
-		if (!Zotero.Prefs.get('sync.fulltext.enabled')) return;
+		if (!Zotero.Prefs.get('fulltext.processQueuedContent')) return;
 		
 		if (!_idleObserverIsRegistered) {
 			Zotero.debug("Starting full-text content processor");

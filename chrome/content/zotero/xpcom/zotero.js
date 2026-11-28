@@ -210,9 +210,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 		this.uiReadyPromise.then(() => {
 			Zotero.debug("User interface ready in " + (new Date() - _startupTime) + " ms");
 		});
-		this.startupSyncDeferred = Zotero.Promise.defer();
-		this.startupSyncPromise = this.startupSyncDeferred.promise;
-		
 		if (options) {
 			let opts = [
 				'openPane',
@@ -484,76 +481,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 		
 		Zotero.VersionHeader.init();
 		
-		// Check for data reset/restore
-		var dataDir = Zotero.DataDirectory.dir;
-		var restoreFile = OS.Path.join(dataDir, 'restore-from-server');
-		var resetDataDirFile = OS.Path.join(dataDir, 'reset-data-directory');
-		
-		var result = await Promise.all([OS.File.exists(restoreFile), OS.File.exists(resetDataDirFile)]);
-		if (result.some(r => r)) {
-			[Zotero.restoreFromServer, Zotero.resetDataDir] = result;
-			try {
-				await Zotero.DB.closeDatabase();
-				
-				// TODO: better error handling
-				
-				// TODO: prompt for location
-				// TODO: Back up database
-				// TODO: Reset translators and styles
-				
-				
-				
-				if (Zotero.restoreFromServer) {
-					let dbfile = Zotero.DataDirectory.getDatabase();
-					Zotero.debug("Deleting " + dbfile);
-					await OS.File.remove(dbfile, { ignoreAbsent: true });
-					let storageDir = OS.Path.join(dataDir, 'storage');
-					Zotero.debug("Deleting " + storageDir.path);
-					OS.File.removeDir(storageDir, { ignoreAbsent: true }),
-					await OS.File.remove(restoreFile);
-					Zotero.restoreFromServer = true;
-				}
-				else if (Zotero.resetDataDir) {
-					// Clear data directory
-					Zotero.debug("Deleting data directory files");
-					let lastError;
-					// Delete all files in directory rather than removing directory, in case it's
-					// a symlink
-					await Zotero.File.iterateDirectory(dataDir, async function (entry) {
-						// Don't delete some files
-						if (entry.name == 'pipes') {
-							return;
-						}
-						Zotero.debug("Deleting " + entry.path);
-						try {
-							if (entry.isDir) {
-								await OS.File.removeDir(entry.path);
-							}
-							else {
-								await OS.File.remove(entry.path);
-							}
-						}
-						// Keep trying to delete as much as we can
-						catch (e) {
-							lastError = e;
-							Zotero.logError(e);
-						}
-					});
-					if (lastError) {
-						throw lastError;
-					}
-				}
-				Zotero.debug("Done with reset");
-				
-				if (!((await _initDB()))) return false;
-			}
-			catch (e) {
-				// Restore from backup?
-				alert(e);
-				return false;
-			}
-		}
-		
 		try {
 			let { CertRevocations } = ChromeUtils.importESModule("chrome://zotero/content/modules/certRevocations.mjs");
 			await CertRevocations.update();
@@ -753,14 +680,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			);
 			registerAutoRenameFileFromParent();
 			
-			await Zotero.Sync.Data.Local.init();
-			await Zotero.Sync.Data.Utilities.init();
-			Zotero.Sync.Storage.Local.init();
-			Zotero.Sync.Storage.FileChangeWatcher.init();
-			Zotero.Sync.Runner = new Zotero.Sync.Runner_Module;
-			if (ZOTERO_CONFIG.ONLINE_SYNC) {
-				Zotero.Sync.EventListeners.init();
-			}
 			Zotero.Streamer = new Zotero.Streamer_Module;
 			Zotero.Streamer.init();
 			
@@ -809,7 +728,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			// By default this won't run until after the initial auto-sync, to allow the same
 			// changes from elsewhere to be synced down. To test migration after the online library
 			// has been updated by a previous run, disable auto-sync.
-			Zotero.startupSyncPromise.then(async () => {
+			Promise.resolve().then(async () => {
 				let progressWin;
 				let itemProgress;
 				// Feed updates (e.g., deleting old items) can interfere with this, so pause them
@@ -863,7 +782,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			// stays responsive on large ones, and search degrades gracefully until it finishes --
 			// so it runs silently, without a progress window of its own (the full-text content
 			// index shows one for the slower, more visible pass).
-			Zotero.startupSyncPromise.then(async () => {
+			Promise.resolve().then(async () => {
 				if (Zotero.test) return;
 				try {
 					await Zotero.Schema.populateNormalizedSearchColumns();

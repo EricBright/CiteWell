@@ -50,7 +50,7 @@ moves **before** deletion, while its callers are being touched anyway.
 | `sync.*` preference defaults and migrations | delete | no producer or reader remains |
 | Sync strings in eight locales | prune | no UI references them |
 | `recognizeDocument.js` API client | rewire | one `Zotero.HTTP.request`, as the same file already does for `report` |
-| full-text sync processor in `fulltext.js` | delete | idle/queue path for downloaded content and the `sync.fulltext.enabled` gate; `setItemContent` indexes directly and the local API's flush stays |
+| full-text content processor in `fulltext.js` | keep, rename gate | the local API's full-text writes still queue content for it; the pref becomes `fulltext.processQueuedContent`, the function names stay for now |
 | 7 sync suites + 5 storage suites | delete | listed under Verification |
 | `synced` / `version` columns, `syncedSettings` table | keep | core data model; no migration |
 | `syncCache`, `syncDeleteLog`, `syncQueue`, `syncObjectTypes` tables | keep, stop using | no rows converted or dropped |
@@ -154,11 +154,14 @@ nothing that still references the engine is removed while the engine exists. Ver
 Stage 0 baseline: the only new-looking failures are four Mendeley annotation cases that also fail
 without this change (PDF annotation import was removed earlier); 210/231 in the affected batch.
 
-**Stage 3 — Delete the engine and everything that still names it (one atomic commit).** Remove
-`xpcom/sync/`, `sync.js`, `storage.js`, `xpcom/storage/`, `osKeyStore.js`, the twelve suites, the
-loader entries and the platform watcher selection, plus `sync.*` defaults and migrations. In the
-same commit remove the startup initialization in `zotero.js`, the sync toolbar, menu, status,
-reminder and keyboard code in `zoteroPane.js` and `zoteroPane.xhtml`, and trim the streamer. The streamer trim and the
+**Stage 3 — Delete the engine and everything that still names it (done 2026-11-28, one commit).**
+Removed `xpcom/sync/`, `sync.js`, `storage.js`, `xpcom/storage/`, `osKeyStore.js`, the twelve
+suites, the loader entries and the platform watcher selection, plus `sync.*` defaults and the sync
+migrations. The same commit removes the startup initialization in `zotero.js`, the sync toolbar,
+menu, status, reminder and keyboard code in `zoteroPane.js` and `zoteroPane.xhtml`, and trims the
+streamer to a transport. The one remaining `sync.` key is the old name of the full-text pref, read
+once to migrate it. Verified: `schemaTest` 25/25, preferences/settings/agent/feed/file-renaming
+83/83, and schema plus preferences 49/49 after the final rebuild. The streamer trim and the
 `syncRunner` deletion are in the same commit, so there is no build in which the module is gone and
 its consumer still calls it. Grep gates must return zero `Zotero.Sync` references.
 
@@ -216,7 +219,8 @@ rows, so the rename cannot orphan data; reverting stage 1 restores the schema mo
 ## Exit criteria
 
 - `Zotero.Sync` and `ONLINE_SYNC` do not appear in shipped code or tests.
-- No `sync.` preference has a producer or reader.
+- No `sync.` preference has a producer or reader, except the one-time migration of the old
+  full-text key.
 - `LibrarySettings` and `RepositoryUpdates` have interface tests and no sync-only API.
 - Full suite and smoke pass; import and attachments unaffected.
 - A release ships with no user-visible change; R19 is closed in the roadmap and status.

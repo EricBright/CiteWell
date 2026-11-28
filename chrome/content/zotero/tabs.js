@@ -1171,7 +1171,7 @@ var Zotero_Tabs = new function () {
 	 * e.g. shift-tab from the first focusable element.
 	 */
 	this.focusBack = function () {
-		document.getElementById("zotero-tb-sync").focus();
+		document.getElementById("zotero-tb-tabs-menu").focus();
 	};
 
 	/**

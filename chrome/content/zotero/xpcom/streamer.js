@@ -29,16 +29,6 @@
 // Initialized as Zotero.Streamer in zotero.js
 Zotero.Streamer_Module = function (options = {}) {
 	this.url = options.url;
-	this.apiKey = options.apiKey;
-	
-	let observer = {
-		notify: (event, type) => {
-			if (event == 'modify' || event == 'delete') {
-				this._update();
-			}
-		}
-	};
-	this._observerID = Zotero.Notifier.registerObserver(observer, ['api-key'], 'streamer');
 };
 
 Zotero.Streamer_Module.prototype = {
@@ -55,7 +45,6 @@ Zotero.Streamer_Module.prototype = {
 	init: function () {
 		Zotero.Prefs.registerObserver('streaming.enabled', (val) => this._update());
 		Zotero.Prefs.registerObserver('automaticScraperUpdates', (val) => this._update());
-		Zotero.Prefs.registerObserver('sync.autoSync', (val) => this._update());
 		Zotero.uiReadyPromise.then(() => this._update());
 	},
 
@@ -102,28 +91,6 @@ Zotero.Streamer_Module.prototype = {
 	},
 
 
-	/**
-	 * Remove the API key subscription before the key is deleted
-	 */
-	removeSyncSubscription: async function () {
-		if (!this._subscriptions.has('sync')) {
-			return;
-		}
-		let apiKey = this.apiKey || (await Zotero.Sync.Data.Local.getAPIKey());
-		if (!apiKey || !this._socket || this._socket.readyState !== this._socket.OPEN) {
-			this._subscriptions.delete('sync');
-			return;
-		}
-		let data = JSON.stringify({
-			action: 'deleteSubscriptions',
-			subscriptions: [{ apiKey }]
-		});
-		Zotero.debug("WebSocket message send: " + this._hideAPIKey(data));
-		this._socket.send(data);
-		this._subscriptions.delete('sync');
-	},
-
-
 	_sendSubscriptions: function (topics) {
 		let data = JSON.stringify({
 			action: "createSubscriptions",
@@ -150,27 +117,8 @@ Zotero.Streamer_Module.prototype = {
 			return;
 		}
 		
-		var apiKey = this.apiKey || (await Zotero.Sync.Data.Local.getAPIKey());
-		
 		var subscriptionsToAdd = [];
 		var subscriptionsToRemove = [];
-		
-		if (Zotero.Prefs.get('sync.autoSync') && Zotero.Sync.Runner.enabled) {
-			if (!this._subscriptions.has('sync')) {
-				// Subscribe to all topics accessible to the API key
-				subscriptionsToAdd.push({ apiKey });
-			}
-		}
-		else if (this._subscriptions.has('sync')) {
-			if (apiKey) {
-				subscriptionsToRemove.push({ apiKey });
-			}
-			else {
-				// API key was cleared -- just remove local tracking.
-				// The server will clean up on reconnect.
-				this._subscriptions.delete('sync');
-			}
-		}
 		
 		if (Zotero.Prefs.get('automaticScraperUpdates')) {
 			if (!this._subscriptions.has('bundled-files')) {
@@ -197,7 +145,7 @@ Zotero.Streamer_Module.prototype = {
 				action: 'createSubscriptions',
 				subscriptions: subscriptionsToAdd
 			});
-			Zotero.debug("WebSocket message send: " + this._hideAPIKey(data));
+			Zotero.debug("WebSocket message send: " + data);
 			this._socket.send(data);
 		}
 		if (subscriptionsToRemove.length) {
@@ -205,7 +153,7 @@ Zotero.Streamer_Module.prototype = {
 				action: 'deleteSubscriptions',
 				subscriptions: subscriptionsToRemove
 			});
-			Zotero.debug("WebSocket message send: " + this._hideAPIKey(data));
+			Zotero.debug("WebSocket message send: " + data);
 			this._socket.send(data);
 		}
 
@@ -218,9 +166,7 @@ Zotero.Streamer_Module.prototype = {
 	
 	_isEnabled: function () {
 		return Zotero.Prefs.get('streaming.enabled')
-			// Only connect if either auto-sync or automatic style/translator updates are enabled
-			&& ((Zotero.Prefs.get('sync.autoSync') && Zotero.Sync.Runner.enabled)
-				|| Zotero.Prefs.get('automaticScraperUpdates'));
+			&& Zotero.Prefs.get('automaticScraperUpdates');
 	},
 	
 	
@@ -248,7 +194,7 @@ Zotero.Streamer_Module.prototype = {
 		};
 		
 		this._socket.onmessage = async function (event) {
-			Zotero.debug("WebSocket message: " + this._hideAPIKey(event.data));
+			Zotero.debug("WebSocket message: " + event.data);
 			
 			let data = JSON.parse(event.data);
 			
@@ -261,61 +207,26 @@ Zotero.Streamer_Module.prototype = {
 				
 				if (data.event == "subscriptionsCreated") {
 					for (let s of data.subscriptions) {
-						if (s.apiKey) {
-							this._subscriptions.add('sync');
-						}
-						else if (s.topics && s.topics.includes('styles')) {
+						if (s.topics && s.topics.includes('styles')) {
 							this._subscriptions.add('bundled-files');
 						}
 					}
 					
 					for (let error of data.errors) {
-						Zotero.logError(this._hideAPIKey(JSON.stringify(error)));
+						Zotero.logError(JSON.stringify(error));
 					}
 				}
 				else if (data.event == "subscriptionsDeleted") {
 					for (let s of data.subscriptions) {
-						if (s.apiKey) {
-							this._subscriptions.delete('sync');
-						}
-						else if (s.topics && s.topics.includes('styles')) {
+						if (s.topics && s.topics.includes('styles')) {
 							this._subscriptions.delete('bundled-files');
 						}
 					}
 				}
-				// Library added or removed
-				else if (data.event == 'topicAdded' || data.event == 'topicRemoved') {
-					await Zotero.Sync.Runner.sync({
-						background: true
-					});
-				}
-				// Library modified
-				else if (data.event == 'topicUpdated') {
-					// Update translators and styles
-					if (data.topic == 'translators' || data.topic == 'styles') {
-						await Zotero.RepositoryUpdates.notify(data.delay);
-					}
-					// Auto-sync
-					else {
-						let library = Zotero.URI.getPathLibrary(data.topic);
-						if (library) {
-							// Ignore if skipped library
-							if (!Zotero.Sync.Data.Local.filterSkippedLibraries([library]).length) {
-								Zotero.debug("Library not selected for syncing -- skipping");
-								return;
-							}
-							
-							if (data.version && data.version == library.libraryVersion) {
-								Zotero.debug("Library is already up to date");
-								return;
-							}
-							
-							await Zotero.Sync.Runner.sync({
-								background: true,
-								libraries: [library.libraryID]
-							});
-						}
-					}
+				// Translator or style update
+				else if (data.event == 'topicUpdated'
+						&& (data.topic == 'translators' || data.topic == 'styles')) {
+					await Zotero.RepositoryUpdates.notify(data.delay);
 				}
 				// Topic-specific listener
 				else if (data.topic && this._topicListeners.has(data.topic)) {
@@ -375,9 +286,7 @@ Zotero.Streamer_Module.prototype = {
 	},
 	
 	
-	_hideAPIKey: function (str) {
-		return str.replace(/(apiKey":\s*")[^"]+"/, '$1********"');
-	},
+
 	
 	
 	_disconnect: function () {

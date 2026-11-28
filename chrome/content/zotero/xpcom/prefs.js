@@ -42,6 +42,14 @@ Zotero.Prefs = new function () {
 			Zotero.addShutdownListener(this.unregister.bind(this));
 		}
 		
+		// The full-text content processor is local; drop its sync-era name
+		if (this.prefHasUserValue('sync.fulltext.enabled')) {
+			if (!this.prefHasUserValue('fulltext.processQueuedContent')) {
+				this.set('fulltext.processQueuedContent', this.get('sync.fulltext.enabled'));
+			}
+			this.clear('sync.fulltext.enabled');
+		}
+		
 		this._checkUserJS();
 
 		// Process pref version updates
@@ -53,20 +61,6 @@ Zotero.Prefs = new function () {
 		else if (fromVersion < toVersion) {
 			for (var i = fromVersion + 1; i <= toVersion; i++) {
 				switch (i) {
-					case 1:
-						// If a sync username is entered and ZFS is enabled, turn
-						// on-demand downloading off to maintain current behavior
-						if (this.get('sync.server.username')) {
-							if (this.get('sync.storage.enabled')
-									&& this.get('sync.storage.protocol') == 'zotero') {
-								this.set('sync.storage.downloadMode.personal', 'on-sync');
-							}
-							if (this.get('sync.storage.groups.enabled')) {
-								this.set('sync.storage.downloadMode.groups', 'on-sync');
-							}
-						}
-						break;
-					
 					case 2:
 						// Re-show saveButton guidance panel (and clear old saveIcon pref).
 						// The saveButton guidance panel initially could auto-hide too easily.

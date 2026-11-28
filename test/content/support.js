@@ -845,9 +845,9 @@ async function resetData() {
 			await Zotero.SyncedSettings.clear(userLibraryID, setting, { skipDeleteLog: true });
 		}
 
-		// Clear sync-specific tables
-		await Zotero.Sync.Data.Local.clearCacheForLibrary(userLibraryID);
-		await Zotero.Sync.Data.Local.clearQueueForLibrary(userLibraryID);
+		// Clear the retired sync cache tables
+		await Zotero.DB.queryAsync("DELETE FROM syncCache WHERE libraryID=?", userLibraryID);
+		await Zotero.DB.queryAsync("DELETE FROM syncQueue WHERE libraryID=?", userLibraryID);
 
 		// Clear fulltext and last-sync version entries
 		await Zotero.DB.queryAsync(
@@ -872,8 +872,8 @@ async function resetData() {
 		);
 	});
 
-	// Clear delete logs
-	await Zotero.Sync.Data.Local.clearDeleteLogForLibrary(userLibraryID);
+	// Clear the retired delete logs
+	await Zotero.DB.queryAsync("DELETE FROM syncDeleteLog WHERE libraryID=?", userLibraryID);
 	await Zotero.DB.queryAsync("DELETE FROM storageDeleteLog WHERE libraryID=?", userLibraryID);
 
 	// Reload caches from DB
@@ -882,7 +882,6 @@ async function resetData() {
 	await Zotero.Tags.init();
 	await Zotero.Creators.init();
 	await Zotero.SyncedSettings.loadAll(userLibraryID);
-	await Zotero.Sync.Data.Local.init();
 }
 
 /**

@@ -913,31 +913,6 @@
 			<hbox id="zotero-pq-buttons">
 			</hbox>
 
-			<toolbarbutton tabindex="-1" id="zotero-tb-sync-error" hidden="true" style="-moz-user-focus: normal;" />
-			
-			<!--
-				We put this here, but it can be used wherever
-				Zotero.Sync.Runner.updateErrorPanel() puts it
-			-->
-			<panel id="zotero-sync-error-panel" type="arrow" animate="false" onpopupshown="
-			const buttons = this.getElementsByTagName('button');
-			if (buttons[0]) {
-				buttons[0].focus();
-			}" />
-			
-			<toolbarbutton id="zotero-tb-sync" tabindex="-1" class="zotero-tb-button" tooltip="_child"
-					oncommand="ZoteroPane.sync()">
-				<tooltip
-						id="zotero-tb-sync-tooltip"
-						onpopupshowing="Zotero.Sync.Runner.registerSyncStatus(this)"
-						onpopuphiding="Zotero.Sync.Runner.registerSyncStatus()"
-						noautohide="true">
-					<label id="zotero-tb-sync-label"/>
-					<label id="zotero-tb-sync-status" class="sync-button-tooltip-status" hidden="true"/>
-					<label id="zotero-tb-sync-last-sync" class="sync-button-tooltip-last-sync"/>
-					<div xmlns="http://www.w3.org/1999/xhtml" class="sync-button-tooltip-messages"/>
-				</tooltip>
-			</toolbarbutton>
 		</hbox>
 	</hbox>
 	
@@ -948,8 +923,6 @@
 		<menupopup id="zotero-collectionmenu"
 				oncommand="ZoteroPane.onCollectionContextMenuSelect(event)">
 			<!-- Keep order in sync with buildCollectionContextMenu, which adds additional attributes -->
-			<menuitem class="zotero-menuitem-sync"/>
-			<menuseparator/>
 			<menuitem class="zotero-menuitem-new-collection" data-l10n-id="menu-new-collection"/>
 			<menuitem class="zotero-menuitem-new-collection" label="&zotero.toolbar.newSubcollection.label;"/>
 			<menuitem class="zotero-menuitem-refresh-feed"/>
@@ -1108,20 +1081,6 @@
 							onkeyup="ZoteroPane_Local.handleKeyUp(event, this.id)"
 							onkeypress="ZoteroPane_Local.handleKeyPress(event)">
 							
-							<vbox id="sync-reminder-container" class="banner-container"  collapsed="true" role="status">
-								<html:div id="sync-reminder-banner" class="banner">
-									<html:div id="sync-reminder-message" class="message"/>
-									<html:a id="sync-reminder-action" class="link"/>
-									<html:a id="sync-reminder-learn-more" class="link"/>
-									<html:div class="spacer"/>
-									<html:a id="sync-reminder-disable" class="link"/>
-									<html:a id="sync-reminder-remind" class="link"/>
-									<html:div role="button" id="sync-reminder-close" class="close-btn" data-l10n-id="banner-close-button">
-										<html:span class="icon" />
-									</html:div>
-								</html:div>
-							</vbox>
-							
 							<vbox id="mac-word-plugin-install-container" class="banner-container" collapsed="true" role="status">
 								<html:div id="mac-word-plugin-install-banner" class="banner">
 									<html:div class="message" data-l10n-id="mac-word-plugin-install-message" />
@@ -1188,10 +1147,6 @@
 											</html:div>
 										</hbox>									
 									</toolbar>
-									<!-- This is used for positioning the sync error icon panel
-											under specific tree cells, which don't exist as
-											elements on their own -->
-									<box id="zotero-collections-tree-shim"/>
 									<!-- This extra vbox prevents the toolbar from getting compressed when resizing
 											the tag selector to max height -->
 									<vbox id="zotero-collections-tree-container" class="virtualized-table-container" flex="1" clickthrough="never">

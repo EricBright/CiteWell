@@ -145,29 +145,6 @@ var ZoteroPane = new function () {
 			document.getElementById('zotero-pane-stack').setAttribute('platform', 'win');
 		}
 		
-		if (ZOTERO_CONFIG.ONLINE_SYNC) {
-			// Set the sync tooltip label
-			let syncLabel = document.getElementById('zotero-tb-sync-label');
-			syncLabel.value = Zotero.getString('sync.syncWith', ZOTERO_CONFIG.DOMAIN_NAME);
-			let syncButton = document.querySelector("#zotero-tb-sync");
-			syncButton.setAttribute("aria-label", syncLabel.value);
-			// Update the aria-description on focus
-			syncButton.addEventListener("focus", function (_) {
-				Zotero.Sync.Runner.registerSyncStatus(this.firstChild);
-				let lastSync = document.querySelector("#zotero-tb-sync-last-sync").value;
-				this.setAttribute("aria-description", lastSync || "");
-			});
-		}
-		else {
-			// CiteWell: online sync is disabled, so remove every entry point.
-			for (let id of ['zotero-tb-sync', 'zotero-tb-sync-error']) {
-				document.getElementById(id)?.setAttribute('hidden', 'true');
-			}
-			for (let item of document.querySelectorAll('.zotero-menuitem-sync')) {
-				item.setAttribute('hidden', 'true');
-			}
-		}
-		
 		// register an observer for Zotero reload
 		observerService = Components.classes["@mozilla.org/observer-service;1"]
 					.getService(Components.interfaces.nsIObserverService);
@@ -274,29 +251,13 @@ var ZoteroPane = new function () {
 				'zotero-tb-tabs-menu': {
 					ArrowNext: () => null,
 					ArrowPrevious: () => null,
-					Tab: () => document.getElementById('zotero-tb-sync-error'),
-					ShiftTab: () => {
-						Zotero_Tabs.moveFocus("current");
-					},
-				},
-				'zotero-tb-sync': {
-					ArrowNext: () => null,
-					ArrowPrevious: () => null,
 					Tab: () => {
 						Zotero_Tabs.focusFirst();
 						return null;
 					},
-					ShiftTab: () => document.getElementById('zotero-tb-sync-error')
-				},
-				'zotero-tb-sync-error': {
-					ArrowNext: () => null,
-					ArrowPrevious: () => null,
-					Tab: () => document.getElementById('zotero-tb-sync'),
-					ShiftTab: () => document.getElementById('zotero-tb-tabs-menu'),
-					Enter: () => document.getElementById("zotero-tb-sync-error")
-						.dispatchEvent(new MouseEvent("click", { target: event.target })),
-					' ': () => document.getElementById("zotero-tb-sync-error")
-						.dispatchEvent(new MouseEvent("click", { target: event.target }))
+					ShiftTab: () => {
+						Zotero_Tabs.moveFocus("current");
+					},
 				},
 				tab: {
 					// keyboard navigation for tabs. 'tab' is the class, not the id
@@ -363,7 +324,7 @@ var ZoteroPane = new function () {
 					ArrowNext: () => null,
 					ArrowPrevious: () => null,
 					Tab: () => document.getElementById('zotero-tb-collections-search').click(),
-					ShiftTab: () => document.getElementById('zotero-tb-sync')
+					ShiftTab: () => document.getElementById('zotero-tb-tabs-menu')
 				},
 				'zotero-collections-search': {
 					Tab: focusCollectionTree,
@@ -383,7 +344,7 @@ var ZoteroPane = new function () {
 					Tab: () => document.getElementById("zotero-tb-search").focus(),
 					ShiftTab: () => {
 						if (collectionsPane.hasAttribute("collapsed")) {
-							return document.getElementById('zotero-tb-sync');
+							return document.getElementById('zotero-tb-tabs-menu');
 						}
 						if (tagContainer.hasAttribute('collapsed')) {
 							return focusCollectionTree();
@@ -599,62 +560,8 @@ var ZoteroPane = new function () {
 		
 		Zotero.Keys.windowInit(document);
 		
-		if (Zotero.restoreFromServer) {
-			Zotero.restoreFromServer = false;
-			
-			setTimeout(function () {
-				var ps = Services.prompt;
-				var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
-									+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
-				var index = ps.confirmEx(
-					null,
-					"Zotero Restore",
-					"The local Zotero database has been cleared."
-						+ " "
-						+ "Would you like to restore from the Zotero server now?",
-					buttonFlags,
-					"Sync Now",
-					null, null, null, {}
-				);
-				
-				if (index == 0) {
-					Zotero.Sync.Server.sync({
-						onSuccess: function () {
-							Zotero.Sync.Runner.updateIcons([]);
-							
-							ps.alert(
-								null,
-								"Restore Completed",
-								"The local Zotero database has been successfully restored."
-							);
-						},
-						
-						onError: function (msg) {
-							ps.alert(
-								null,
-								"Restore Failed",
-								"An error occurred while restoring from the server:\n\n"
-									+ msg
-							);
-							
-							Zotero.Sync.Runner.error(msg);
-						}
-					});
-				}
-			}, 1000);
-		}
-		// If the database was initialized or there are no sync credentials and
-		// Zotero hasn't been run before in this profile, display the start page
-		// -- this way the page won't be displayed when they sync their DB to
-		// another profile or if the DB is initialized erroneously (e.g. while
-		// switching data directory locations)
-		else if (Zotero.Prefs.get('firstRun2')) {
-			if (ZOTERO_CONFIG.ONLINE_SYNC
-					&& (Zotero.Schema.dbInitialized || !Zotero.Sync.Server.enabled)) {
-				setTimeout(function () {
-					ZoteroPane_Local.loadURI(ZOTERO_CONFIG.START_URL);
-				}, 400);
-			}
+		// Clear the first-run markers once, so an old profile does not keep them
+		if (Zotero.Prefs.get('firstRun2')) {
 			Zotero.Prefs.set('firstRun2', false);
 			try {
 				Zotero.Prefs.clear('firstRun');
@@ -674,7 +581,6 @@ var ZoteroPane = new function () {
 			ZoteroPane.showRetractionBanner();
 			ZoteroPane.showArchitectureWarning();
 			ZoteroPane.showFileRenamingBanner();
-			ZoteroPane.initSyncReminders(true);
 		});
 		
 		// TEMP: Clean up extra files from Mendeley imports <5.0.51
@@ -787,10 +693,6 @@ var ZoteroPane = new function () {
 
 		if(this.collectionsView) this.collectionsView.unregister();
 		if(this.itemsView) this.itemsView.unregister();
-		if (_syncRemindersObserverID) {
-			Zotero.Notifier.unregisterObserver(_syncRemindersObserverID);
-		}
-		
 		this.uninitContainers();
 		
 		observerService.removeObserver(_reloadObserver, "zotero-reloaded");
@@ -843,52 +745,6 @@ var ZoteroPane = new function () {
 			searchBar.searchTextbox.select();
 		}, 1);
 		
-		if (Zotero.proxyFailure) {
-			try {
-				Zotero.Sync.Runner.updateIcons(Zotero.proxyFailure);
-			}
-			catch (e) {
-				Zotero.logError(e);
-			}
-		}
-		
-		// Auto-sync on pane open or if new account
-		let startupSync = false;
-		if (Zotero.Prefs.get('sync.autoSync') || Zotero.initAutoSync) {
-			await Zotero.proxyAuthComplete;
-			await Zotero.uiReadyPromise;
-			
-			if (!Zotero.Sync.Runner.enabled) {
-				Zotero.debug('Sync not enabled -- skipping auto-sync', 4);
-			}
-			else if (Zotero.Sync.Runner.syncInProgress) {
-				Zotero.debug('Sync already running -- skipping auto-sync', 4);
-			}
-			else if (Zotero.Sync.Server.manualSyncRequired) {
-				Zotero.debug('Manual sync required -- skipping auto-sync', 4);
-			}
-			else {
-				startupSync = true;
-				Zotero.Sync.Runner.sync({
-					background: true
-				})
-				.then(() => {
-					Zotero.initAutoSync = false;
-					Zotero.startupSyncDeferred.resolve();
-				});
-			}
-		}
-		if (!startupSync) {
-			Zotero.startupSyncDeferred.resolve();
-		}
-		
-		// Set sync icon to spinning if there's an existing sync
-		//
-		// We don't bother setting an existing error state at open
-		if (Zotero.Sync.Runner.syncInProgress) {
-			Zotero.Sync.Runner.updateIcons('animate');
-		}
-
 		return true;
 	};
 	
@@ -1369,9 +1225,6 @@ var ZoteroPane = new function () {
 					}
 					// Use key that's not the modifier as the popup toggle
 					ZoteroPane_Local.newNote(event.altKey, parentKey);
-					break;
-				case 'sync':
-					Zotero.Sync.Runner.sync();
 					break;
 				case 'saveToZotero':
 					var collectionTreeRows = this.getCollectionTreeRows();
@@ -3216,222 +3069,6 @@ var ZoteroPane = new function () {
 	};
 	
 	
-	this.sync = function () {
-		if (!ZOTERO_CONFIG.ONLINE_SYNC) return;
-		if (Zotero.Sync.Runner.syncInProgress) {
-			Zotero.Sync.Runner.stop();
-		}
-		else {
-			this.hideSyncReminder();
-
-			Zotero.Sync.Server.canAutoResetClient = true;
-			Zotero.Sync.Server.manualSyncRequired = false;
-			Zotero.Sync.Runner.sync();
-		}
-	};
-
-
-	var _syncRemindersObserverID = null;
-	this.initSyncReminders = function (startup) {
-		// CiteWell never syncs, so the "Set up syncing" and "Enable auto-sync" banners would
-		// only advertise a feature that is hidden everywhere else
-		if (!ZOTERO_CONFIG.ONLINE_SYNC) {
-			return;
-		}
-
-		if (startup) {
-			Zotero.Notifier.registerObserver(
-				{
-					notify: (event) => {
-						// When the API Key is deleted we need to add an observer
-						if (event === 'delete') {
-							Zotero.Prefs.set('sync.reminder.setUp.enabled', true);
-							Zotero.Prefs.set('sync.reminder.setUp.lastDisplayed', Math.round(Date.now() / 1000));
-							ZoteroPane.initSyncReminders(false);
-						}
-						// When API Key is added we can remove the observer
-						else if (event === 'add') {
-							ZoteroPane.initSyncReminders(false);
-						}
-					}
-				},
-				'api-key');
-		}
-
-		// If both reminders are disabled, we don't need an observer
-		if (!Zotero.Prefs.get('sync.reminder.setUp.enabled')
-				&& !Zotero.Prefs.get('sync.reminder.autoSync.enabled')) {
-			if (_syncRemindersObserverID) {
-				Zotero.Notifier.unregisterObserver(_syncRemindersObserverID);
-				_syncRemindersObserverID = null;
-			}
-			return;
-		}
-
-		// If we are syncing and auto-syncing then no need for observer
-		if (Zotero.Sync.Runner.enabled && Zotero.Prefs.get('sync.autoSync')) {
-			if (_syncRemindersObserverID) {
-				Zotero.Notifier.unregisterObserver(_syncRemindersObserverID);
-				_syncRemindersObserverID = null;
-			}
-			return;
-		}
-
-		// If we already have an observer don't add another one
-		if (_syncRemindersObserverID) {
-			return;
-		}
-
-		const eventTypes = ['add', 'modify', 'delete'];
-		_syncRemindersObserverID = Zotero.Notifier.registerObserver(
-			{
-				notify: (event) => {
-					if (!eventTypes.includes(event)) {
-						return;
-					}
-					setTimeout(() => {
-						this.showSetUpSyncReminder();
-						this.showAutoSyncReminder();
-					}, 5000);
-				}
-			},
-			'item',
-			'syncReminder');
-	};
-
-	this.showSetUpSyncReminder = function () {
-		const sevenDays = 60 * 60 * 24 * 7;
-
-		// Reasons not to show reminder:
-		// - User turned reminder off
-		// - Sync is enabled
-		if (!Zotero.Prefs.get('sync.reminder.setUp.enabled')
-				|| Zotero.Sync.Runner.enabled) {
-			return;
-		}
-
-		// Check lastDisplayed was 7+ days ago
-		let lastDisplayed = Zotero.Prefs.get('sync.reminder.setUp.lastDisplayed');
-		if (lastDisplayed > Math.round(Date.now() / 1000) - sevenDays) {
-			return;
-		}
-
-		this.showSyncReminder('setUp', { learnMoreURL: ZOTERO_CONFIG.SYNC_INFO_URL });
-	};
-
-
-	this.showAutoSyncReminder = function () {
-		const sevenDays = 60 * 60 * 24 * 7;
-
-		// Reasons not to show reminder:
-		// - User turned reminder off
-		// - Sync is not enabled
-		// - Auto-Sync is enabled
-		// - Last sync for all libraries was within 7 days
-		if (!Zotero.Prefs.get('sync.reminder.autoSync.enabled')
-				|| !Zotero.Sync.Runner.enabled
-				|| Zotero.Prefs.get('sync.autoSync')
-				|| Zotero.Libraries.getAll()
-					.every(library => !library.syncable
-						|| (library.lastSync
-							&& library.lastSync.getTime() > Date.now() - 1000 * sevenDays))) {
-			return;
-		}
-
-		// Check lastDisplayed was 7+ days ago
-		let lastDisplayed = Zotero.Prefs.get('sync.reminder.autoSync.lastDisplayed');
-		if (lastDisplayed > Math.round(Date.now() / 1000) - sevenDays) {
-			return;
-		}
-		
-		this.showSyncReminder('autoSync');
-	};
-
-
-	/**
-	 * Configure the UI and show the sync reminder panel for a given type of reminder
-	 *
-	 * @param {String} reminderType - Possible values: 'setUp' or 'autoSync'
-	 * @param {Object} [options]
-	 * @param {String} [options.learnMoreURL] - Show "Learn More" link to this URL
-	 */
-	this.showSyncReminder = function (reminderType, options = {}) {
-		if (!ZOTERO_CONFIG.ONLINE_SYNC) {
-			return;
-		}
-
-		if (!['setUp', 'autoSync'].includes(reminderType)) {
-			throw new Error(`Invalid reminder type: ${reminderType}`);
-		}
-
-		let panel = document.getElementById('sync-reminder-container');
-		panel.setAttribute('data-reminder-type', reminderType);
-
-		let message = document.getElementById('sync-reminder-message');
-		message.textContent = Zotero.getString(`sync.reminder.${reminderType}.message`, Zotero.appName);
-
-		let actionLink = document.getElementById('sync-reminder-action');
-		switch (reminderType) {
-			case 'autoSync':
-				var actionStr = Zotero.getString('general.enable');
-				break;
-			
-			default:
-				var actionStr = Zotero.getString(`sync.reminder.${reminderType}.action`);
-				break;
-		}
-		actionLink.textContent = actionStr;
-		actionLink.onclick = () => {
-			this.hideSyncReminder();
-
-			switch (reminderType) {
-				case 'autoSync':
-					Zotero.Prefs.set(`sync.autoSync`, true);
-					break;
-			}
-		};
-
-		let learnMoreLink = document.getElementById('sync-reminder-learn-more');
-		learnMoreLink.textContent = Zotero.getString('general.learnMore');
-		learnMoreLink.hidden = !options.learnMoreURL;
-		learnMoreLink.onclick = () => Zotero.launchURL(options.learnMoreURL);
-		
-		let dontShowAgainLink = document.getElementById('sync-reminder-disable');
-		dontShowAgainLink.textContent = Zotero.getString('general.dontAskAgain');
-		dontShowAgainLink.onclick = () => {
-			this.hideSyncReminder();
-			Zotero.Prefs.set(`sync.reminder.${reminderType}.enabled`, false);
-			// Check if we no longer need to observe item modifications
-			ZoteroPane.initSyncReminders(false);
-		};
-
-		let remindMeLink = document.getElementById('sync-reminder-remind');
-		remindMeLink.textContent = Zotero.getString('general.remindMeLater');
-		remindMeLink.onclick = () => this.hideSyncReminder();
-
-		let closeButton = document.getElementById('sync-reminder-close');
-		closeButton.onclick = () => this.hideSyncReminder();
-
-		panel.removeAttribute('collapsed');
-	};
-
-
-	/**
-	 * Hide the currently displayed sync reminder and update its associated
-	 * lastDisplayed time.
-	 */
-	this.hideSyncReminder = function () {
-		let panel = document.getElementById('sync-reminder-container');
-		let reminderType = panel.getAttribute('data-reminder-type');
-		panel.setAttribute('collapsed', true);
-		panel.removeAttribute('data-reminder-type');
-
-		if (['setUp', 'autoSync'].includes(reminderType)) {
-			Zotero.Prefs.set(`sync.reminder.${reminderType}.lastDisplayed`, Math.round(Date.now() / 1000));
-		}
-	};
-
-
 	this.selectItem = async function (itemID, options) {
 		if (!itemID) {
 			return false;
@@ -3706,15 +3343,6 @@ var ZoteroPane = new function () {
 	// entirely in JS, but various localized strings are only in zotero.dtd, and they're used in
 	// standalone.xul as well, so for now they have to remain as XML entities.
 	var _collectionContextMenuOptions = [
-		{
-			id: "sync",
-			label: Zotero.getString('sync.sync'),
-			oncommand: () => {
-				Zotero.Sync.Runner.sync({
-					libraries: [this.getSelectedLibraryIDs()[0]],
-				});
-			}
-		},
 		{
 			id: "sep1",
 		},
@@ -5645,35 +5273,7 @@ var ZoteroPane = new function () {
 				}
 			}
 			
-			let fileSyncingEnabled = Zotero.Sync.Storage.Local.getEnabledForLibrary(item.libraryID);
-			let redownload = false;
-			
-			// TEMP: If file is queued for download, download first. Starting in 5.0.85, files
-			// modified remotely get marked as SYNC_STATE_FORCE_DOWNLOAD, causing them to get
-			// downloaded at sync time even in download-as-needed mode, but this causes files
-			// modified previously to be downloaded on open.
-			if (fileExists
-					&& !isLinkedFile
-					&& fileSyncingEnabled
-					&& ([
-							Zotero.Sync.Storage.Local.SYNC_STATE_TO_DOWNLOAD,
-							Zotero.Sync.Storage.Local.SYNC_STATE_FORCE_DOWNLOAD
-					].includes(item.attachmentSyncState))) {
-				Zotero.debug("File exists but is queued for download -- re-downloading");
-				redownload = true;
-			}
-			
-			if (fileExists && !redownload) {
-				Zotero.debug("Opening " + path);
-				await launchFile(path, item);
-				// Trigger after launchFile(), which may save a content-type fix
-				// to the item -- 'open' observers save changes to the item
-				// (e.g., lastRead), which could discard an in-flight change
-				Zotero.Notifier.trigger('open', 'file', item.id);
-				continue;
-			}
-			
-			if (isLinkedFile || !fileSyncingEnabled) {
+			if (!fileExists) {
 				this.showAttachmentNotFoundDialog(
 					item,
 					path,
@@ -5681,31 +5281,6 @@ var ZoteroPane = new function () {
 						noLocate: noLocateOnMissing,
 						notOnServer: false,
 						linkedFile: isLinkedFile
-					}
-				);
-				return;
-			}
-			
-			try {
-				let results = await Zotero.Sync.Runner.downloadFile(item);
-				if (!results || !results.localChanges) {
-					Zotero.debug("Download failed -- opening existing file");
-				}
-			}
-			catch (e) {
-				// TODO: show error somewhere else
-				Zotero.logError(e);
-				Zotero.Sync.Runner.alert(e);
-				return;
-			}
-			
-			if (!(await item.getFilePathAsync())) {
-				ZoteroPane_Local.showAttachmentNotFoundDialog(
-					item,
-					path,
-					{
-						noLocate: noLocateOnMissing,
-						notOnServer: true
 					}
 				);
 				return;

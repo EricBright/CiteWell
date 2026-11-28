@@ -3720,6 +3720,15 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentPath', {
 });
 
 
+const ATTACHMENT_SYNC_STATES = {
+	to_upload: 0,
+	to_download: 1,
+	in_sync: 2,
+	force_upload: 3,
+	force_download: 4,
+	in_conflict: 5
+};
+
 Zotero.defineProperty(Zotero.Item.prototype, 'attachmentSyncState', {
 	get: function () {
 		if (!this.isAttachment()) {
@@ -3733,7 +3742,7 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentSyncState', {
 		}
 		
 		if (typeof val == 'string') {
-			val = Zotero.Sync.Storage.Local["SYNC_STATE_" + val.toUpperCase()];
+			val = ATTACHMENT_SYNC_STATES[val];
 		}
 		
 		if (!this.isStoredFileAttachment()) {
@@ -3741,12 +3750,12 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentSyncState', {
 		}
 		
 		switch (val) {
-			case Zotero.Sync.Storage.Local.SYNC_STATE_TO_UPLOAD:
-			case Zotero.Sync.Storage.Local.SYNC_STATE_TO_DOWNLOAD:
-			case Zotero.Sync.Storage.Local.SYNC_STATE_IN_SYNC:
-			case Zotero.Sync.Storage.Local.SYNC_STATE_FORCE_UPLOAD:
-			case Zotero.Sync.Storage.Local.SYNC_STATE_FORCE_DOWNLOAD:
-			case Zotero.Sync.Storage.Local.SYNC_STATE_IN_CONFLICT:
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
 				break;
 				
 			default:

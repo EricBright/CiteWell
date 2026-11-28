@@ -116,7 +116,6 @@ const xpcomFilesLocal = [
 	'notifier',
 	'undoHistory',
 	'fileHandlers',
-	'osKeyStore',
 	'plugins',
 	'pluginAPI/menuManager',
 	'pluginAPI/itemPaneManager',
@@ -142,24 +141,6 @@ const xpcomFilesLocal = [
 	'session',
 	'streamer',
 	'style',
-	'sync',
-	'sync/syncAPIClient',
-	'sync/syncEngine',
-	'sync/syncExceptions',
-	'sync/syncEventListeners',
-	'sync/syncFullTextEngine',
-	'sync/syncLocal',
-	'sync/syncRunner',
-	'sync/syncUtilities',
-	'storage',
-	'storage/storageEngine',
-	'storage/storageLocal',
-	'storage/fileChangeWatcher',
-	'storage/storageRequest',
-	'storage/storageResult',
-	'storage/storageUtilities',
-	'storage/zfs',
-	'storage/webdav',
 	'syncedSettings',
 	'uri',
 	'users',
@@ -296,27 +277,6 @@ function makeZoteroContext() {
 			dump(e + "\n\n");
 			Components.utils.reportError("Error loading " + xpcomFile + ".js");
 			throw (e);
-		}
-	}
-	
-	// Load platform-specific FileChangeWatcher backend
-	{
-		let os = Services.appinfo.OS;
-		let backendFile = os == "Darwin" ? "storage/fileChangeWatcher_fsevents"
-			: os == "WINNT" ? "storage/fileChangeWatcher_rdcw"
-			: os == "Linux" ? "storage/fileChangeWatcher_inotify"
-			: null;
-		if (backendFile) {
-			try {
-				subscriptLoader.loadSubScript(
-					"chrome://zotero/content/xpcom/" + backendFile + ".js", zContext, "utf-8"
-				);
-			}
-			catch (e) {
-				dump("Error loading " + backendFile + ".js\n\n");
-				dump(e + "\n\n");
-				Components.utils.reportError("Error loading " + backendFile + ".js");
-			}
 		}
 	}
 

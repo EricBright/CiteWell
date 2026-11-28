@@ -182,27 +182,7 @@ pref("extensions.zotero.zeroconf.server.enabled", false);
 pref("extensions.zotero.streaming.enabled", true);
 
 // Sync
-pref("extensions.zotero.sync.autoSync", true);
-pref("extensions.zotero.sync.server.username", "");
-pref("extensions.zotero.sync.server.compressData", true);
-pref("extensions.zotero.sync.storage.enabled", true);
-pref("extensions.zotero.sync.storage.protocol", "zotero");
-pref("extensions.zotero.sync.storage.verified", false);
-pref("extensions.zotero.sync.storage.scheme", "https");
-pref("extensions.zotero.sync.storage.url", "");
-pref("extensions.zotero.sync.storage.username", "");
-pref("extensions.zotero.sync.storage.maxDownloads", 4);
-pref("extensions.zotero.sync.storage.maxUploads", 2);
-pref("extensions.zotero.sync.storage.deleteDelayDays", 30);
-pref("extensions.zotero.sync.storage.groups.enabled", true);
-pref("extensions.zotero.sync.storage.downloadMode.personal", "on-sync");
-pref("extensions.zotero.sync.storage.downloadMode.groups", "on-sync");
-pref("extensions.zotero.sync.fulltext.enabled", true);
-pref("extensions.zotero.sync.reminder.setUp.enabled", true);
-pref("extensions.zotero.sync.reminder.setUp.lastDisplayed", 0);
-pref("extensions.zotero.sync.reminder.autoSync.enabled", true);
-pref("extensions.zotero.sync.reminder.autoSync.lastDisplayed", 0);
-pref("extensions.zotero.sync.keyStoreMigrateAlertLastShown", 0);
+pref("extensions.zotero.fulltext.processQueuedContent", true);
 
 // Proxy
 pref("extensions.zotero.proxies.autoRecognize", true);
