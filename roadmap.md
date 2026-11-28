@@ -10,6 +10,7 @@ upstream merges are not roadmap items.
 |---|---|---|---|
 | R8 | Update channel decision: no Mozilla channel; the AppImage updates itself ([packaging.md](docs/packaging.md#updates)) | A fork must not point its updater at Zotero's servers | **Done 2026-11-25.** `[AppUpdate]` removed, `app.update.auto=false`, manual/details point at our releases, Check for Updates tells the truth and offers the releases page instead of the Mozilla wizard (D53). The in-app self-updater itself ships with R11/R21, when a release host exists |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
+| R19 | Remove the online-sync and file-sync subsystems, leaving `LibrarySettings` and `RepositoryUpdates` ([plan](docs/r19-sync-removal.md)) | The switch hides them; the code is dead weight and the two local services need honest names | No sync code remains; no dead paths; tests and smoke pass; a release changes nothing visible |
 
 ## Done
 
@@ -43,7 +44,6 @@ Completed outcomes, kept for context.
 |---|---|---|---|
 | R11 | Distribution decision: publish Linux builds or stay source-only | Requires a source-offer plan and a signing story | Either published artifacts, or an explicit "source only" note |
 | R16 | Rust services: sidecars or WASM for a first real workload | Needs S3 groundwork in [docs/rust.md](docs/rust.md) | One service runs in production behind a versioned protocol |
-| R19 | Remove the sync subsystem: `xpcom/sync`, `preferences_account`, WebDAV storage, connector online code | The switch hides it now; deletion should be deliberate | No sync code remains and the build has no dead paths |
 | R20 | Obsidian/Markdown export: one-way first, design in [docs/export.md](docs/export.md) | Portability without giving up SQLite; becomes mostly a copy of the `.md` attachments | 10k-item export under a minute, vault opens with working links, second run changes nothing |
 | R21 | Update metadata: SHA-256 checksums and `.zsync` files beside the AppImage | Gear Lever/AppImageUpdate need a checksum and a zsync file | A release publishes `.AppImage`, `.sha256` and `.zsync`; Gear Lever offers the update |
 | R31 | Translator safeguards without freezing updates (D33) | **Parked 2026-11-22 by owner**: Zotero's translator integration risk is accepted for now; revisit only if the threat model changes | Updates install/roll back; Firefox and Google Docs insertion tested; permissions/sandbox documented |

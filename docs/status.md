@@ -13,6 +13,22 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
+## Handoff 2026-11-28 (R19 started)
+
+R19 is the current work: remove the online-sync and file-sync subsystems and extract
+`Zotero.RepositoryUpdates` and `Zotero.LibrarySettings`. The approved plan is
+[r19-sync-removal.md](r19-sync-removal.md); the follow-on plumbing charter is
+[plumbing.md](plumbing.md). Screenshots and the next release are deliberately deferred until R19
+ships; they are surface work.
+
+Decisions already taken: Recognize Document stays (plain HTTP request); `RepositoryUpdates` is
+extracted inside R19; the unused `sync*` tables and `synced`/`version` columns stay; R19 runs now.
+
+**Stage status.** Stage 0 (inventory and baseline) is the starting point. Stage 1 moves
+`RepositoryUpdates` out of `schema.js`; stage 2 unwires the engine; stage 3 deletes it atomically and
+trims the streamer; stage 4 renames/shrinks `SyncedSettings` and prunes; stage 5 verifies and
+releases.
+
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)
 
 Compaction anchor. Code commit `c6d60b8c`; docs commits follow. Release `v2026.11.27.006` is latest,
@@ -56,10 +72,8 @@ D5 was amended. Commits `b6d15f3b5`, `6b2294c61`.
 
 1. Read [README.md](../README.md), then [AGENTS.md](../AGENTS.md), then
    [agent-context.md](agent-context.md), then [index.md](index.md).
-2. Add the screenshots: `.webp`, under `docs/images/readme/`, referenced from the README with alt
-   text. This was deferred to the next session by decision.
-3. Consider a release once the screenshots and any README polish are in; there is no code change
-   pending, so releasing is optional.
+2. Screenshots (`.webp`, under `docs/images/readme/`) are deferred until after R19.
+3. A release follows R19, not before it.
 4. A fresh-session dry run should confirm the README top redirect leads to the agent context without
    being told the path.
 

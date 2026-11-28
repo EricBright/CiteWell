@@ -24,10 +24,12 @@ new; start with the agent context if you are working in the repository.
 | `docs/rust.md` | choosing a language or dependency | Where Rust may land, crates |
 | `docs/sync.md` | relating CiteWell to upstream | Branch model; upstream is reference only |
 | `docs/decisions.md` | asking why something is | Decision records and dead ends |
+| `docs/plumbing.md` | planning post-R19 refactors | Agent manifest, file plumbing, rules |
 | `docs/naming.md` | touching a name, id, path, or URL | What is CiteWell, what must stay `zotero` |
 | `docs/branding.md` | titles, icons, installer, channel | Where each piece of branding lives |
 | `docs/ui.md` | UI copy, layout, interaction | Rules and their tests |
 | `docs/ui-architecture.md` | UI structure decisions | Settings schema, toolkit limits |
+| `docs/r19-sync-removal.md` | starting the sync-removal program | Staged deletion, seams, verification |
 | `docs/settings.md` | reorganizing settings or adding a pane | Inventory, registry rules, tests |
 | `docs/kde-hig-audit.md` | UI polish decisions | HIG conformance |
 | `docs/ublock-spike.md` | Browse content blocking | R38 spike |
