@@ -355,7 +355,7 @@ var Zotero_File_Interface = new function () {
 		var dbs = [];
 		try {
 			var dir = this.getMendeleyDirectory();
-			if (!(await OS.File.exists(dir))) {
+			if (!(await Zotero.File.exists(dir))) {
 				Zotero.debug(`${dir} does not exist`);
 				return dbs;
 			}
@@ -372,8 +372,8 @@ var Zotero_File_Interface = new function () {
 				}
 			});
 			for (let i = 0; i < dbs.length; i++) {
-				let dbPath = OS.Path.join(dir, dbs[i].name);
-				let info = await OS.File.stat(dbPath);
+				let dbPath = PathUtils.join(dir, dbs[i].name);
+				let info = await Zotero.File.stat(dbPath);
 				dbs[i].size = info.size;
 				dbs[i].lastModified = info.lastModificationDate;
 			}
@@ -709,7 +709,7 @@ var Zotero_File_Interface = new function () {
 				FileUtils,
 			} = ChromeUtils.importESModule("resource://gre/modules/FileUtils.sys.mjs");
 			let file = FileUtils.getDir("Home", []);
-			file = OS.Path.join(
+			file = PathUtils.join(
 				file.path,
 				"zotero-client",
 				"chrome",
@@ -719,7 +719,7 @@ var Zotero_File_Interface = new function () {
 				"mendeley",
 				"mendeleyImport.mjs",
 			);
-			let fileURI = OS.Path.toFileURI(file);
+			let fileURI = PathUtils.toFileURI(file);
 			({
 				Zotero_Import_Mendeley,
 			} = ChromeUtils.importESModule(fileURI));

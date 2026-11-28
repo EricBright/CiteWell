@@ -277,7 +277,7 @@ Zotero_Import_Mendeley.prototype.translate = async function (options = {}) {
 				let pdfURLs = docURLs.filter(x => x.includes('pdf'));
 				if (pdfFiles.length == 1
 						&& pdfURLs.length == 1
-						&& await this._getRealFilePath(OS.Path.fromFileURI(pdfFiles[0].fileURL))) {
+						&& await this._getRealFilePath(Zotero.File.fromFileURI(pdfFiles[0].fileURL))) {
 					// Add URL to PDF attachment
 					docFiles.forEach((x) => {
 						if (x.fileURL.endsWith('.pdf')) {
@@ -845,12 +845,12 @@ Zotero_Import_Mendeley.prototype._getDocumentFilesAPI = async function (document
 			let fileName = Zotero.File.truncateFileName(Zotero.File.getValidFileName(file.file_name || 'file'), 255);
 			let ext = fileName.includes('.') ? fileName.split('.').pop() : '';
 			let fileBaseName = ext === '' ? fileName : fileName.slice(0, -ext.length - 1);
-			let tmpFile = OS.Path.join(Zotero.getTempDirectory().path, `m-api-${file.id}.${ext}`);
+			let tmpFile = PathUtils.join(Zotero.getTempDirectory().path, `m-api-${file.id}.${ext}`);
 			
 			this._tmpFilesToDelete.push(tmpFile);
 			this._caller.add(this._fetchFile.bind(this, file.id, tmpFile));
 			files.push({
-				fileURL: OS.Path.toFileURI(tmpFile),
+				fileURL: PathUtils.toFileURI(tmpFile),
 				title: file.file_name || '',
 				contentType: file.mime_type || '',
 				hash: file.filehash,
@@ -1577,7 +1577,7 @@ Zotero_Import_Mendeley.prototype._saveFilesAndAnnotations = async function (file
 		try {
 			if (!file.fileURL) continue;
 			
-			let path = OS.Path.fromFileURI(file.fileURL);
+			let path = Zotero.File.fromFileURI(file.fileURL);
 			let realPath = await this._getRealFilePath(path);
 			
 			let attachment;
@@ -1660,14 +1660,14 @@ Zotero_Import_Mendeley.prototype._findExistingFile = function (parentItemID, fil
 
 Zotero_Import_Mendeley.prototype._isDownloadedFile = function (path) {
 	var parentDir = PathUtils.parent(path);
-	return parentDir.endsWith(OS.Path.join('Application Support', 'Mendeley Desktop', 'Downloaded'))
-		|| parentDir.endsWith(OS.Path.join('Local', 'Mendeley Ltd', 'Mendeley Desktop', 'Downloaded'))
-		|| parentDir.endsWith(OS.Path.join('Local', 'Mendeley Ltd.', 'Mendeley Desktop', 'Downloaded'))
-		|| parentDir.endsWith(OS.Path.join('data', 'Mendeley Ltd.', 'Mendeley Desktop', 'Downloaded'));
+	return parentDir.endsWith(PathUtils.join('Application Support', 'Mendeley Desktop', 'Downloaded'))
+		|| parentDir.endsWith(PathUtils.join('Local', 'Mendeley Ltd', 'Mendeley Desktop', 'Downloaded'))
+		|| parentDir.endsWith(PathUtils.join('Local', 'Mendeley Ltd.', 'Mendeley Desktop', 'Downloaded'))
+		|| parentDir.endsWith(PathUtils.join('data', 'Mendeley Ltd.', 'Mendeley Desktop', 'Downloaded'));
 };
 
 Zotero_Import_Mendeley.prototype._isTempDownloadedFile = function (path) {
-	return path.startsWith(OS.Path.join(Zotero.getTempDirectory().path, 'm-api'));
+	return path.startsWith(PathUtils.join(Zotero.getTempDirectory().path, 'm-api'));
 };
 
 /**
@@ -1679,7 +1679,7 @@ Zotero_Import_Mendeley.prototype._isTempDownloadedFile = function (path) {
  * @return {String|false}
  */
 Zotero_Import_Mendeley.prototype._getRealFilePath = async function (path) {
-	if (await OS.File.exists(path)) {
+	if (await Zotero.File.exists(path)) {
 		return path;
 	}
 	var isDownloadedFile = this._isDownloadedFile(path);
@@ -1689,8 +1689,8 @@ Zotero_Import_Mendeley.prototype._getRealFilePath = async function (path) {
 	// For file paths in Downloaded folder, try relative to database if not found at the
 	// absolute location, in case this is a DB backup
 	var dataDir = PathUtils.parent(this._file);
-	var altPath = OS.Path.join(dataDir, 'Downloaded', PathUtils.filename(path));
-	if (altPath != path && await OS.File.exists(altPath)) {
+	var altPath = PathUtils.join(dataDir, 'Downloaded', PathUtils.filename(path));
+	if (altPath != path && await Zotero.File.exists(altPath)) {
 		return altPath;
 	}
 	return false;
@@ -1883,7 +1883,7 @@ Zotero_Import_Mendeley.prototype.deleteNonPrimaryFiles = async function () {
 			}
 			Zotero.debug(`Deleting ${entry.path}`);
 			try {
-				await OS.File.remove(entry.path);
+				await Zotero.File.removeIfExists(entry.path);
 			}
 			catch (e) {
 				Zotero.logError(e);

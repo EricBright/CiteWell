@@ -1,5 +1,5 @@
 {
   "_note": "Ceiling for OS.File/OS.Path use in app-owned JavaScript. It may only go down; use Zotero.File wrappers or PathUtils instead. Update this file when a wave removes call sites.",
-  "OS.File": 87,
-  "OS.Path": 51
+  "OS.File": 82,
+  "OS.Path": 39
 }

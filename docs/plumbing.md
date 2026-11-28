@@ -67,17 +67,18 @@ test-covered; the old API disappears gradually.
 The first wave confirms what `Zotero.File` already wraps; if it is a thin alias, the wrapping
 functions land before any call site moves.
 
-**Waves 1–4 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir`,
-`removeEmptyDir`, `move`, `stat`, `setModificationTime`, `normalizePath` and `readBinary` over
-`IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js`, `locateManager.js`,
-`dataDirectory.js`, `attachments.js`, `profile.js`, `style.js`, `fulltext.js`, `data/item.js` and
-`db.js` now use those wrappers and `PathUtils`, with no `OS.File`/`OS.Path` left in them except the
-one cross-device probe in `dataDirectory.js` (it needs `OS.File.move`'s errno to tell a different
-filesystem from a real failure). `validate-plumbing` runs in the commit hook and CI and fails if the
-app-wide counts grow above `tools/file-plumbing.json` (now **87 `OS.File`, 51 `OS.Path`**). Tests:
-file, retractions, dictionaries, annotations, sidecars and data directory 81/81 + 16/16; import
-24/24; profile, style and bibliography 24/24; database 67/67; item 238/246 and attachments 108/115
-with the same inherited annotation, bidi, notifier-helper, formatting and linked-file failures as
+**Waves 1–5 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir`,
+`removeEmptyDir`, `move`, `stat`, `setModificationTime`, `normalizePath`, `readBinary` and
+`fromFileURI` over `IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js`,
+`locateManager.js`, `dataDirectory.js`, `attachments.js`, `profile.js`, `style.js`, `fulltext.js`,
+`data/item.js`, `db.js`, `fileInterface.js` and the Mendeley importer now use those wrappers and
+`PathUtils`, with no `OS.File`/`OS.Path` left in them except the one cross-device probe in
+`dataDirectory.js` (it needs `OS.File.move`'s errno to tell a different filesystem from a real
+failure). `validate-plumbing` runs in the commit hook and CI and fails if the app-wide counts grow
+above `tools/file-plumbing.json` (now **82 `OS.File`, 39 `OS.Path`**). Tests: file, retractions,
+dictionaries, annotations, sidecars and data directory 81/81 + 16/16; import 24/24; profile, style
+and bibliography 24/24; database 67/67; file interface and Mendeley 16/21 with the five inherited
+Citavi/annotation failures; item 238/246 and attachments 108/115 with the same inherited failures as
 the Stage 0 baseline.
 
 **Estimate:** two to three sessions in waves. **Risk:** large mechanical churn; do it after the

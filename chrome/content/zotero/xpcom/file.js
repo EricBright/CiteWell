@@ -736,6 +736,14 @@ Zotero.File = new function () {
 	
 	
 	/**
+	 * Convert a file: URI to a path, including a Windows-style URI on a non-Windows host.
+	 */
+	this.fromFileURI = function (uri) {
+		return OS.Path.fromFileURI(uri);
+	}
+	
+	
+	/**
 	 * Read a file as bytes.
 	 */
 	this.readBinary = function (path) {
