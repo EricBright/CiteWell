@@ -13,25 +13,46 @@ PDFs open in the host; notes are Markdown file attachments edited in the host; p
 Upstream compatibility is not a goal. `zotero/zotero` is reference material only and is never a
 push target. The product branch may diverge without limit.
 
-## Handoff 2026-11-28 (R19 started)
+## Handoff 2026-11-28 (release 2026.11.28.000, R19 closed)
 
-R19 is the current work: remove the online-sync and file-sync subsystems and extract
-`Zotero.RepositoryUpdates` and `Zotero.LibrarySettings`. The approved plan is
-[r19-sync-removal.md](r19-sync-removal.md); the follow-on plumbing charter is
-[plumbing.md](plumbing.md). Screenshots and the next release are deliberately deferred until R19
-ships; they are surface work.
+Compaction anchor. Release `v2026.11.28.000` is latest, tag on `58ee72890`; three assets. Installed
+`~/AppImages/citewell.appimage` is the published file, sha256
+`fc9152ff39ce4b98dfb49ea250a7bc0c5feacfa53ed1d9020cddb6b9c166aace`, 128,051,704 bytes;
+`~/AppImages/release-2026.11.28.000/` holds the three assets. The `version` file is back to
+`2026.11.28.SOURCE`. Plan and inventory: [r19-sync-removal.md](r19-sync-removal.md).
 
-Decisions already taken: Recognize Document stays (plain HTTP request); `RepositoryUpdates` is
-extracted inside R19; the unused `sync*` tables and `synced`/`version` columns stay; R19 runs now.
+R19 removed the online-sync and file-sync subsystems. No user-visible change; no database migration.
 
-**Stage status.** Stages 0–4 are done (2026-11-28): the inventory and baseline, the
-`RepositoryUpdates` move, the call-site unwiring, the atomic deletion of the engine and storage with
-the streamer trim, and the `LibrarySettings` rename with string pruning. What remains is stage 5:
-the full suite, the smoke list, an AppImage build and a release with no user-visible change.
+- **Deleted:** `xpcom/sync/`, `sync.js`, `xpcom/storage.js` and `xpcom/storage/`, `osKeyStore.js`,
+  twelve test suites, the toolbar/menu/status/reminder/keyboard code, the `sync.*` preference
+  defaults, the platform file-watcher selection and the `ONLINE_SYNC` flag — 15,226 lines.
+- **Extracted:** `Zotero.RepositoryUpdates` (the translator/style repository path, out of
+  `schema.js`) and `Zotero.LibrarySettings` (four methods over the unchanged `syncedSettings`
+  table).
+- **Kept:** the `synced`/`version` columns and the unused sync cache tables; the full-text content
+  processor (the local API uses it; its pref is now `fulltext.processQueuedContent`); 33
+  `sync.conflict.*`/`sync.longTagFixer.*` strings that merge and tag repair still read.
+- **Trimmed:** the streamer is transport-only; feeds keep their local restore path only.
+- **Policy:** D69 records that a pure move of inherited JavaScript is not new code; the two new
+  paths are listed in `tools/policy-exceptions.txt`.
+
+**Verification.** `schemaTest` 25/25; preferences/settings-tab/agent/feed/file-renaming 83/83;
+schema plus preferences 49/49; library settings/feeds/tags/copy 109/109;
+import/notes/Markdown/bibliography/settings-tab/agent/preferences 70/70. `itemTest` plus
+`attachmentsTest` 338/353, and `zoteroPaneTest` 74/87; their remaining failures are in inherited
+annotation, bidi, chai-helper, context-menu and linked-file cases, outside the removed code. The
+Stage 0 baseline and the eight full-text failures it recorded are in Appendix A of the plan.
+
+**Next.**
+
+1. Screenshots for the README (`.webp` under `docs/images/readme/`), then README polish.
+2. The follow-on plumbing charter ([plumbing.md](plumbing.md)): the agent verb manifest first,
+   then file plumbing in waves.
+3. Accessibility stays priority-deferred; native review stays opportunistic (D68).
 
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)
 
-Compaction anchor. Code commit `c6d60b8c`; docs commits follow. Release `v2026.11.27.006` is latest,
+Compaction anchor. Code commit `c6d60b8c`; docs commits follow. Release `v2026.11.27.006` was latest before `.000`,
 tag on `c6d60b8c`, three assets. Installed `~/AppImages/citewell.appimage` is the published file,
 sha256 `0e70fceb3bf972c512b1ce86fee7487f3e1aedbc1030aa41b9bb0d2f9cf931bb`, 121,993,720 bytes;
 `~/AppImages/release-2026.11.27.006/` holds the three assets. The `version` file is back to

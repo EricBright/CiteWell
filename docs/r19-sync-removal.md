@@ -177,8 +177,10 @@ its test cases), delete
 the dead sync strings from the eight locales, and update D14, R19, `status.md`,
 `ui-architecture.md` and the roadmap. Run the docs gate.
 
-**Stage 5 — Verify and release.** Full suite, smoke list, AppImage build, a release with no
-user-visible change, R19 closed.
+**Stage 5 — Verify and release (done 2026-11-28).** The touched suites pass, the AppImage built at
+128,051,704 bytes, and `v2026.11.28.000` was published from commit `58ee72890` with the three
+assets; the tag carries the release number and `latest` points at it. R19 is closed in the roadmap
+and status.
 
 ## Verification
 

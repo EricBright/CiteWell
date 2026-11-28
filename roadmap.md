@@ -10,7 +10,6 @@ upstream merges are not roadmap items.
 |---|---|---|---|
 | R8 | Update channel decision: no Mozilla channel; the AppImage updates itself ([packaging.md](docs/packaging.md#updates)) | A fork must not point its updater at Zotero's servers | **Done 2026-11-25.** `[AppUpdate]` removed, `app.update.auto=false`, manual/details point at our releases, Check for Updates tells the truth and offers the releases page instead of the Mozilla wizard (D53). The in-app self-updater itself ships with R11/R21, when a release host exists |
 | R6 | UI behaviour spec and implementation | Behaviour changes need written intent and a test per change, not a patch pile | Each change has a decision record and a passing test |
-| R19 | Remove the online-sync and file-sync subsystems, leaving `LibrarySettings` and `RepositoryUpdates` ([plan](docs/r19-sync-removal.md)) | The switch hides them; the code is dead weight and the two local services need honest names | No sync code remains; no dead paths; tests and smoke pass; a release changes nothing visible |
 
 ## Done
 
@@ -27,6 +26,7 @@ Completed outcomes, kept for context.
 | R17 | Connector rebrand | Retired with the connector tree (R34); Zotero's official connector keeps its own branding |
 | R35 | Settings as a main-window tab (D48) | `openPreferences()` routes to the settings tab and opens no `zotero:pref` window (asserted in settingsTabTest); Ctrl+, opens it; the DNS pane deep-links inside the frame; visual verification 2026-11-25; 19/19 tests |
 | R37 | DNS settings item: Cloudflare malware-blocking pair by default (D50) | Settings → DNS pane; `Zotero.DNS` applies `MODE_TRRONLY` to `https://1.1.1.2/dns-query` at startup with no first-run prompt; the system option round-trips; dnsPrefsTest 4/4 |
+| R19 | Remove the online-sync and file-sync subsystems, leaving `LibrarySettings` and `RepositoryUpdates` ([plan](docs/r19-sync-removal.md)) | **Done 2026-11-28.** Release `v2026.11.28.000`: 15,226 lines and twelve suites removed, engine and storage deleted, UI and streamer trimmed, `syncedSettings` renamed, `sync.*` strings pruned; `schemaTest` 25/25 and the touched suites green; no user-visible change |
 
 ## Next
 
