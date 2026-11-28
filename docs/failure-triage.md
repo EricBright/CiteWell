@@ -181,3 +181,15 @@ The reader, PDF-annotation and PDF-metadata cases are D30 fallout. The item-pane
 the three negative `joinMode=ANY` searches and the two collection-ordering tests need the same
 classification pass as the original 51. The shutdown abort is a test-teardown defect: failed
 tests leave database connections open.
+
+### Second full run (after assertion helpers)
+
+Adding `notExists`, `sameOrderedMembers` and `notIncludeMembers` made `itemPaneTest`, `searchTest`
+and `collectionsTest` pass **208/208** in isolation. A full run then reached **2609/2690**, but
+modal integration dialogs ("A word processor integration command is already running") blocked part
+of the run and were dismissed by hand; the **81 failures** from that run are not a clean baseline.
+The remaining clusters are the D30 reader/merge/PDF cases, seven `undoHistoryTest` cases, four
+`settingsTabTest`, four `zoteroPaneTest`, and the integration dialog fallout.
+
+A trustworthy full run needs the integration lock cleared before the suite starts, and the
+reader/merge suites retired or rewritten under D30.
