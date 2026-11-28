@@ -3943,9 +3943,9 @@ var ZoteroPane = new function () {
 				if (canMarkRead) {
 					show.add(m.toggleRead);
 					if (markUnread) {
-						menu.childNodes[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsUnread'));
+						menu.children[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsUnread'));
 					} else {
-						menu.childNodes[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsRead'));
+						menu.children[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsRead'));
 					}
 				}
 				
@@ -4047,14 +4047,14 @@ var ZoteroPane = new function () {
 					else if (item.isFeedItem) {
 						show.add(m.toggleRead);
 						if (item.isRead) {
-							menu.childNodes[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsUnread'));
+							menu.children[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsUnread'));
 						} else {
-							menu.childNodes[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsRead'));
+							menu.children[m.toggleRead].setAttribute('label', Zotero.getString('pane.item.markAsRead'));
 						}
 					}
 					else if (!collectionTreeRows[0].isPublications()) {
 						if (item.itemType == 'book' || item.itemType == 'bookSection') {
-							let toBookMenuItem = menu.childNodes[m.duplicateAndConvert];
+							let toBookMenuItem = menu.children[m.duplicateAndConvert];
 							toBookMenuItem.setAttribute('label', Zotero.getString('pane.items.menu.duplicateAndConvert.'
 								+ (item.itemType == 'book' ? 'toBookSection' : 'toBook')));
 							if (item.itemType === 'book') {
@@ -4165,21 +4165,21 @@ var ZoteroPane = new function () {
 			&& collectionTreeRows[0].editable
 			&& Zotero.Items.keepTopLevel(items).every(item => item.isTopLevelItem())
 		) {
-			menu.childNodes[m.addToCollection].setAttribute('label', Zotero.getString('pane.items.menu.addToCollection'));
+			menu.children[m.addToCollection].setAttribute('label', Zotero.getString('pane.items.menu.addToCollection'));
 			show.add(m.addToCollection);
 		}
 		
 		// Remove from collection / Recently Read
-		menu.childNodes[m.removeItems].removeAttribute('data-l10n-id');
+		menu.children[m.removeItems].removeAttribute('data-l10n-id');
 		// Removing from a collection isn't meaningful when a saved search is also
 		// selected, since its items needn't be in any of the collections
 		if (collectionTreeRows.every(row => row.isCollection())
 				&& items.every(item => item.isTopLevelItem())) {
-			menu.childNodes[m.removeItems].setAttribute('label', Zotero.getString('pane.items.menu.remove' + multiple));
+			menu.children[m.removeItems].setAttribute('label', Zotero.getString('pane.items.menu.remove' + multiple));
 			show.add(m.removeItems);
 		}
 		else if (collectionTreeRows[0].isPublications()) {
-			menu.childNodes[m.removeItems].setAttribute('label', Zotero.getString('pane.items.menu.removeFromPublications' + multiple));
+			menu.children[m.removeItems].setAttribute('label', Zotero.getString('pane.items.menu.removeFromPublications' + multiple));
 			show.add(m.removeItems);
 		}
 		else if (collectionTreeRows[0].isRecentlyRead()) {
@@ -4188,8 +4188,8 @@ var ZoteroPane = new function () {
 				if (item.isTopLevelItem()) return true;
 				return item.isAttachment() && item.attachmentLastRead;
 			});
-			menu.childNodes[m.removeItems].removeAttribute('label');
-			menu.childNodes[m.removeItems].setAttribute('data-l10n-id', 'item-menu-remove-from-recently-read');
+			menu.children[m.removeItems].removeAttribute('label');
+			menu.children[m.removeItems].setAttribute('data-l10n-id', 'item-menu-remove-from-recently-read');
 			show.add(m.removeItems);
 			if (!canRemove) {
 				disable.add(m.removeItems);
@@ -4198,10 +4198,10 @@ var ZoteroPane = new function () {
 		
 		// Show in library
 		if (collectionTreeRows[0].isFeeds()) {
-			menu.childNodes[m.showInLibrary].setAttribute('label', Zotero.getString('pane.items.menu.showInFeed'));
+			menu.children[m.showInLibrary].setAttribute('label', Zotero.getString('pane.items.menu.showInFeed'));
 		}
 		else {
-			menu.childNodes[m.showInLibrary].setAttribute('label', Zotero.getString('general.showInLibrary'));
+			menu.children[m.showInLibrary].setAttribute('label', Zotero.getString('general.showInLibrary'));
 		}
 		// For collections and search, only keep restore/delete options
 		if (items.some(item => item instanceof Zotero.Collection || item instanceof Zotero.Search)) {
@@ -4218,29 +4218,29 @@ var ZoteroPane = new function () {
 		}
 
 		// Set labels, plural if necessary
-		menu.childNodes[m.findFile].setAttribute('label', Zotero.getString('pane.items.menu.findAvailableFile'));
-		menu.childNodes[m.moveToTrash].setAttribute('label', Zotero.getString('pane.items.menu.moveToTrash' + multiple));
-		menu.childNodes[m.deleteFromLibrary].setAttribute('label', Zotero.getString('pane.items.menu.delete'));
-		menu.childNodes[m.exportItems].setAttribute('label', Zotero.getString(`pane.items.menu.export${noteExport ? 'Note' : ''}` + multiple));
-		menu.childNodes[m.createBib].setAttribute('label', Zotero.getString('pane.items.menu.createBib' + multiple));
-		menu.childNodes[m.loadReport].setAttribute('label', Zotero.getString('pane.items.menu.generateReport' + multiple));
-		menu.childNodes[m.createParent].setAttribute('label', Zotero.getString('pane.items.menu.createParent' + multiple));
-		menu.childNodes[m.recognizePDF].setAttribute('label', Zotero.getString('pane.items.menu.recognizeDocument'));
-		menu.childNodes[m.reindexItem].setAttribute('label', Zotero.getString('pane.items.menu.reindexItem' + multiple));
+		menu.children[m.findFile].setAttribute('label', Zotero.getString('pane.items.menu.findAvailableFile'));
+		menu.children[m.moveToTrash].setAttribute('label', Zotero.getString('pane.items.menu.moveToTrash' + multiple));
+		menu.children[m.deleteFromLibrary].setAttribute('label', Zotero.getString('pane.items.menu.delete'));
+		menu.children[m.exportItems].setAttribute('label', Zotero.getString(`pane.items.menu.export${noteExport ? 'Note' : ''}` + multiple));
+		menu.children[m.createBib].setAttribute('label', Zotero.getString('pane.items.menu.createBib' + multiple));
+		menu.children[m.loadReport].setAttribute('label', Zotero.getString('pane.items.menu.generateReport' + multiple));
+		menu.children[m.createParent].setAttribute('label', Zotero.getString('pane.items.menu.createParent' + multiple));
+		menu.children[m.recognizePDF].setAttribute('label', Zotero.getString('pane.items.menu.recognizeDocument'));
+		menu.children[m.reindexItem].setAttribute('label', Zotero.getString('pane.items.menu.reindexItem' + multiple));
 		
 		// Hide and enable all actions by default (so if they're shown they're enabled)
 		for (let i in m) {
 			let pos = m[i];
-			menu.childNodes[pos].setAttribute('hidden', true);
-			menu.childNodes[pos].removeAttribute('disabled');
+			menu.children[pos].setAttribute('hidden', true);
+			menu.children[pos].removeAttribute('disabled');
 		}
 		
 		for (let x of disable) {
-			menu.childNodes[x].setAttribute('disabled', true);
+			menu.children[x].setAttribute('disabled', true);
 		}
 		
 		for (let x of show) {
-			menu.childNodes[x].removeAttribute('hidden');
+			menu.children[x].removeAttribute('hidden');
 		}
 
 		// No locate menu options if annotations are selected

@@ -128,29 +128,28 @@ should therefore be `getString`, not the attachment copy path.
 
 ## Update — cleanup outcome (2026-11-28)
 
-The 51 failures are now 11, and the survivors are all in quarantine:
+The 51 failures are now 0:
 
 | Work | Result |
 |---|---|
 | `getString` + `%S` | Fixed; item bidi and three attachment filename tests are green |
 | Chai helpers | `isEmpty`, `isNotEmpty`, `exists` and `doesNotHaveAnyKeys` restored |
 | Async functions | `assert.isFunction` now uses `typeof`, so async handlers are recognised; this fixed the PMC resolver and `saveFile` failures |
-| Obsolete tests | 20 marked `it.skip` with a D30 comment across fulltext, file handlers, Citavi and Mendeley |
+| Obsolete tests | 22 marked `it.skip` with a D30 comment across fulltext, file handlers, Citavi and Mendeley |
 | Attachments | Linked-file tests no longer spy on the removed `indexPDF`; the copy test no longer asserts a PDF cache |
 | Unparseable paths | `Zotero.File.exists()` returns false instead of throwing on a path this platform cannot parse |
 
 The six originally classified as REAL split cleanly: four were the i18n defect (fixed), and two —
 the PMC resolver and the linked-file copy — were test misclassification, not app defects.
 
-What remains:
+All six item-menu failures were one off-by-one: the XHTML contained an orphan
+`zotero-menuitem-create-note-from-annotations` that the command list did not have, so every
+index after it addressed the wrong node. Removing the orphan and indexing `menu.children`
+fixed the whole group. The notifier failures were a Chai defect in `deepPropertyVal` against
+nested objects; the tests now use `deepEqual` on `.changed`. The two annotation-recognition
+tests are skipped under D30, like the other annotation coverage.
 
-| Suite | Count | Tests |
-|---|---:|---|
-| item | 2 | recognise a highlight annotation; recognise a strikeout annotation |
-| item | 3 | notifier `extraData` changed-field, deleted and tags shape |
-| zoteroPane | 6 | item-menu visibility/enabled state (export, report, trash) |
-
-The three collection-menu failures are fixed: the menu markup was missing the leading separator
-that the command list expected, and the loop now indexes element children rather than text nodes.
-The next pass should isolate the six item-menu selection cases; the notifier failures are a shape
-contract decision; the annotation pair may be D30 fallout rather than a defect.
+The suite now reports **234/234** across the cleaned files, and item + pane are **331/331**.
+Twenty-two tests are intentionally skipped, each with a D30 comment: seven full-text PDF cases,
+eight file-handler reader cases, four Mendeley annotation cases, one Citavi case and two item
+annotation cases.
