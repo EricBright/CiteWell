@@ -144,20 +144,21 @@ functions moved out of `schema.js`, and the six call sites and the schema test p
 module. Verified: `schemaTest` 25/25 and the preferences, settings-tab and agent suites 39/39. The
 commit can be reverted alone.
 
-**Stage 2 — Unwire the engine.** Remove the sync UI (toolbar, menu items, status icons, reminders,
-auto-sync-on-open, keyboard entries) and rewire the remaining call sites: `zotero.js` startup,
-`data/notes.js`, `fulltext.js`, `itemTreeRow.js`, `data/dataObject.js`, `data/item.js` delete log,
-`schema.js` reset call, `server_connector.js`, Mendeley import, `recognizeDocument.js`, the
-`Zotero.Sync.EventListeners` registration in `prefs.js`, the sync status popup in `zoteroPane.xhtml`,
-and the full-text sync processor with its `sync.fulltext.enabled` gate. Removing the processor is
-safe because its only remaining producer, the local API's full-text write, already indexes inline;
-that path gets a test before the processor goes. This is behaviour-preserving: the UI entry points
-are already removed at runtime today, and the engine stays gated by `ONLINE_SYNC=false` until
-stage 3. The engine files still exist but nothing calls them.
+**Stage 2 — Unwire the data and service call sites (done 2026-11-28).** Remove the engine calls
+from `data/notes.js` (file download), `fulltext.js` (the six `syncInProgress` guards), `itemTreeRow.js`
+(download progress), `data/dataObject.js` (cache versions), `data/item.js` (delete log), `schema.js`
+(queue retry), `server_connector.js` (delaySync endpoint), Mendeley import (`delayIndefinite`),
+`recognizeDocument.js` (plain HTTP), `prefs.js` (the `sync.autoSync` listener) and `zotero.js`
+(reset-data preferences). The startup initialization, the UI and the streamer stay until stage 3, so
+nothing that still references the engine is removed while the engine exists. Verified against the
+Stage 0 baseline: the only new-looking failures are four Mendeley annotation cases that also fail
+without this change (PDF annotation import was removed earlier); 210/231 in the affected batch.
 
-**Stage 3 — Delete the engine and its tests (one atomic commit).** Remove `xpcom/sync/`, `sync.js`,
-`storage.js`, `xpcom/storage/`, `osKeyStore.js`, the twelve suites, the loader entries and the
-platform watcher selection, plus `sync.*` defaults and migrations, and trim the streamer. The streamer trim and the
+**Stage 3 — Delete the engine and everything that still names it (one atomic commit).** Remove
+`xpcom/sync/`, `sync.js`, `storage.js`, `xpcom/storage/`, `osKeyStore.js`, the twelve suites, the
+loader entries and the platform watcher selection, plus `sync.*` defaults and migrations. In the
+same commit remove the startup initialization in `zotero.js`, the sync toolbar, menu, status,
+reminder and keyboard code in `zoteroPane.js` and `zoteroPane.xhtml`, and trim the streamer. The streamer trim and the
 `syncRunner` deletion are in the same commit, so there is no build in which the module is gone and
 its consumer still calls it. Grep gates must return zero `Zotero.Sync` references.
 

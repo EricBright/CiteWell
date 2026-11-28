@@ -110,9 +110,6 @@ Zotero_Import_Mendeley.prototype.translate = async function (options = {}) {
 	
 	const mendeleyGroupID = 0;
 	
-	// Disable syncing while we're importing
-	var resumeSync = Zotero.Sync.Runner.delayIndefinite();
-	
 	if (this._file) {
 		this._db = new Zotero.DBConnection(this._file);
 	}
@@ -401,8 +398,6 @@ Zotero_Import_Mendeley.prototype.translate = async function (options = {}) {
 		catch (e) {
 			Zotero.logError(e);
 		}
-		
-		resumeSync();
 	}
 };
 

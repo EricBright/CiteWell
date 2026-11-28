@@ -369,18 +369,6 @@ class ZoteroItemTreeRow extends ItemTreeRow {
 		}
 
 		const item = this.ref;
-		if ((!this.isContainer() || !this.isContainerOpen())) {
-			let progressValue = Zotero.Sync.Storage.getItemDownloadProgress(item);
-			if (progressValue) {
-				let progress = document.createElement('progress');
-				progress.value = progressValue;
-				progress.max = 100;
-				progress.style.setProperty('--progress', `${progressValue}%`);
-				progress.className = 'attachment-progress';
-				span.append(progress);
-				return span;
-			}
-		}
 
 		const attachmentState = this.getBestAttachmentStateCached();
 		if (!attachmentState) {

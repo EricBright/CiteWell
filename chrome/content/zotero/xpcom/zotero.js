@@ -514,14 +514,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 					Zotero.restoreFromServer = true;
 				}
 				else if (Zotero.resetDataDir) {
-					Zotero.initAutoSync = true;
-					
-					// Clear some user prefs
-					[
-						'sync.server.username',
-						'sync.storage.username'
-					].forEach(p => Zotero.Prefs.clear(p));
-					
 					// Clear data directory
 					Zotero.debug("Deleting data directory files");
 					let lastError;
@@ -2389,7 +2381,6 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			'[JavaScript Error: "Image corrupt or truncated:',
 			'[JavaScript Error: "The character encoding of the',
 			'nsLivemarkService.js',
-			'Sync.Engine.Tabs',
 			'content-sessionStore.js',
 			'org.mozilla.appSessions',
 			'bad script XDR magic number',

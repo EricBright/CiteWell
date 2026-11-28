@@ -371,8 +371,7 @@ Zotero.RecognizeDocument = new function () {
 	
 	async function _query(json) {
 		var uri = _getBaseURL() + 'recognize';
-		let client = Zotero.Sync.Runner.getAPIClient();
-		let req = await client.makeRequest(
+		let req = await Zotero.HTTP.request(
 			'POST',
 			uri,
 			{
@@ -380,8 +379,7 @@ Zotero.RecognizeDocument = new function () {
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(json),
-				noAPIKey: true
+				body: JSON.stringify(json)
 			}
 		);
 		return JSON.parse(req.responseText);

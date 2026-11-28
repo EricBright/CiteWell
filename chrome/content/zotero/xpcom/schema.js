@@ -1686,9 +1686,6 @@ Zotero.Schema = new function () {
 			
 			Zotero.debug(`Client version has changed from ${lastVersion} to ${currentVersion}`);
 			
-			// Retry all queued objects immediately on upgrade
-			await Zotero.Sync.Data.Local.resetSyncQueueTries();
-			
 			// Update version
 			await _updateLastClientVersion();
 			

@@ -859,27 +859,9 @@ Zotero.Notes = new function () {
 			for (let attachment of attachments) {
 				let path = await attachment.getFilePathAsync();
 				if (!path) {
-					Zotero.debug(`Image file not found for item ${attachment.key}. Trying to download`);
-					let fileSyncingEnabled = Zotero.Sync.Storage.Local.getEnabledForLibrary(item.libraryID);
-					if (!fileSyncingEnabled) {
-						Zotero.debug('File sync is disabled');
-						resolvePromise();
-						return false;
-					}
-
-					try {
-						let results = await Zotero.Sync.Runner.downloadFile(attachment);
-						if (!results || !results.localChanges) {
-							Zotero.debug('Download failed');
-							resolvePromise();
-							return false;
-						}
-					}
-					catch (e) {
-						Zotero.debug(e);
-						resolvePromise();
-						return false;
-					}
+					Zotero.debug(`Image file not found for item ${attachment.key}`);
+					resolvePromise();
+					return false;
 				}
 			}
 		}

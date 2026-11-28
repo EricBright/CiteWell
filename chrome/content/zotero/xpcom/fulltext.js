@@ -1271,10 +1271,6 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 					+ Zotero.Utilities.pluralize(itemIDs.length, 'item') + " of synced full-text content");
 			}
 			for (let itemID of itemIDs) {
-				// A new sync started -- leave the rest to it and the idle observer
-				if (Zotero.Sync.Runner.syncInProgress) {
-					break;
-				}
 				await this.indexSyncedContent(itemID);
 			}
 		}
@@ -1347,11 +1343,6 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		let processed = 0;
 		try {
 			while (true) {
-				// Don't compete with syncing -- especially full-text content downloads, which would
-				// otherwise race with re-extraction here. Resume on a later idle once sync is done.
-				if (Zotero.Sync.Runner.syncInProgress) {
-					return processed;
-				}
 				if (checkIdle && !_canDrainIndex()) {
 					return processed;
 				}
@@ -1507,9 +1498,6 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 				return processed;
 			}
 			while (true) {
-				if (Zotero.Sync.Runner.syncInProgress) {
-					return processed;
-				}
 				let itemIDs = await Zotero.DB.columnQueryAsync(
 					sql + " AND itemID>? ORDER BY itemID LIMIT 50", ['text/%', _attachmentExtractionQueueCursor]
 				);
@@ -1650,9 +1638,6 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		let processed = 0;
 		try {
 			while (true) {
-				if (Zotero.Sync.Runner.syncInProgress) {
-					return processed;
-				}
 				if (checkIdle && !_canDrainIndex()) {
 					return processed;
 				}
@@ -1778,10 +1763,6 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			let stalledPasses = 0;
 			let stalled = false;
 			while (true) {
-				if (Zotero.Sync.Runner.syncInProgress) {
-					await Zotero.Promise.delay(5000);
-					continue;
-				}
 				let remaining = await queueCount();
 				if (remaining == 0) {
 					break;
@@ -2022,7 +2003,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			_queueDrainTimerID = null;
 			let self = Zotero.FullText;
 			try {
-				if (!_canDrainIndex() || Zotero.Sync.Runner.syncInProgress) {
+				if (!_canDrainIndex()) {
 					_scheduleQueueDrain(_drainIdleDelay * 1000);
 					return;
 				}

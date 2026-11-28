@@ -387,25 +387,6 @@ Zotero.Prefs = new function () {
 				Zotero.Prefs.set('note.tabFontSize', 11);
 			}
 		}],
-		[ "sync.autoSync", function (val) {
-			if (val) {
-				Zotero.Sync.EventListeners.AutoSyncListener.register();
-				Zotero.Sync.EventListeners.IdleListener.register();
-			}
-			else {
-				Zotero.Sync.EventListeners.AutoSyncListener.unregister();
-				Zotero.Sync.EventListeners.IdleListener.unregister();
-				Zotero.Prefs.set('sync.reminder.autoSync.enabled', true);
-				// We don't want to immediately display reminder so bump this value
-				Zotero.Prefs.set('sync.reminder.autoSync.lastDisplayed', Math.round(Date.now() / 1000));
-			}
-			try {
-				Zotero.getActiveZoteroPane().initSyncReminders(false);
-			}
-			catch (e) {
-				Zotero.logError(e);
-			}
-		}],
 		[ "search.quicksearch-mode", function (val) {
 			var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 						.getService(Components.interfaces.nsIWindowMediator);

@@ -5582,8 +5582,6 @@ Zotero.Item.prototype._eraseData = async function (env) {
 			}
 		}
 		
-		// Zotero.Sync.EventListeners.ChangeListener needs to know if this was a storage file
-		env.notifierData[this.id].storageDeleteLog = this.isStoredFileAttachment();
 	}
 	// Delete cached file for image and ink annotations
 	else if (this.isAnnotation()) {
@@ -5604,11 +5602,6 @@ Zotero.Item.prototype._eraseData = async function (env) {
 				skipEditCheck: env.options.skipEditCheck
 			});
 		}
-	}
-	
-	// Don't add non-syncing items to delete log
-	if (!Zotero.Sync.Data.Local.isSyncItem(this)) {
-		env.options.skipDeleteLog = true;
 	}
 	
 	// Remove related-item relations pointing to this item

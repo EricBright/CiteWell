@@ -1464,13 +1464,6 @@ Zotero.DataObject.prototype._initErase = function (env) {
 Zotero.DataObject.prototype._finalizeErase = async function (env) {
 	await this.library.incrementClientVersion();
 	
-	// Delete versions from sync cache
-	if (this._objectType != 'feedItem') {
-		await Zotero.Sync.Data.Local.deleteCacheObjectVersions(
-			this.objectType, this._libraryID, this._key
-		);
-	}
-	
 	Zotero.DB.addCurrentCallback("commit", function () {
 		this.ObjectsClass.unload(env.deletedObjectIDs || this.id);
 	}.bind(this));
