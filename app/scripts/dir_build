@@ -143,6 +143,21 @@ build_cmd=("$APP_ROOT_DIR/build.sh" -d "$build_dir" -p "$platform" -c "$CHANNEL"
 
 "${build_cmd[@]}"
 
+# Move tests that no longer exist in the source tree out of the staged test
+# directory. Incremental updates only copy changed files, so a deleted test
+# suite would otherwise keep running from the previous build.
+for stage_root in "$STAGE_DIR"/Zotero_*; do
+	[[ -d "$stage_root/tests" ]] || continue
+	for staged_test in "$stage_root/tests"/*.js; do
+		[[ -e "$staged_test" ]] || continue
+		test_name="$(basename "$staged_test")"
+		if [[ ! -f "$ROOT_DIR/test/tests/$test_name" ]]; then
+			mkdir -p "$stage_root/tests/.stale"
+			mv "$staged_test" "$stage_root/tests/.stale/$test_name"
+		fi
+	done
+done
+
 # Save manifest for future incremental updates
 if [ -n "$manifest_tmp" ]; then
 	if [[ -z "${ZOTERO_TEST:-}" ]] || [[ "${ZOTERO_TEST:-}" == "0" ]]; then

@@ -153,3 +153,31 @@ The suite now reports **234/234** across the cleaned files, and item + pane are 
 Twenty-two tests are intentionally skipped, each with a D30 comment: seven full-text PDF cases,
 eight file-handler reader cases, four Mendeley annotation cases, one Citavi case and two item
 annotation cases.
+
+## Full-suite baseline (2026-11-28)
+
+The first complete run was misleading: 247 failures, 179 of them from nine sync suites that R19
+deleted from `test/tests/` but that still existed in `app/staging/.../tests/`. Incremental staging
+only copies changed files, so deleted suites kept running forever.
+
+`dir_build` now moves a staged test that no longer exists in `test/tests/` into `tests/.stale/`
+before writing the build manifest. That is a move, not a deletion, and the runner does not scan
+the subdirectory.
+
+With stale suites excluded:
+
+| Measure | Result |
+|---|---|
+| Tests | **2657/2729 passed** |
+| Failures | **72** |
+| Shutdown | aborts on three open `test.sqlite` connections left by failed tests |
+
+Failure clusters: `itemPaneTest` 12, `readerTest` 9, `mergeItemsTest` 9,
+`collectionViewItemTreeTest` 4, `searchTest` 3, `collectionsTest` 2, plus small groups in tabs,
+import, debug, certificates and utilities. `itemPaneTest`, `searchTest` and `collectionsTest`
+also fail when run alone, so this is not only full-run pollution.
+
+The reader, PDF-annotation and PDF-metadata cases are D30 fallout. The item-pane creator tests,
+the three negative `joinMode=ANY` searches and the two collection-ordering tests need the same
+classification pass as the original 51. The shutdown abort is a test-teardown defect: failed
+tests leave database connections open.
