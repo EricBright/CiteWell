@@ -225,7 +225,7 @@ describe("Zotero.Library", function () {
 		
 		it("should initialize library after creation", async function () {
 			let library = await createGroup({});
-			Zotero.SyncedSettings.get(library.libraryID, "tagColors");
+			Zotero.LibrarySettings.get(library.libraryID, "tagColors");
 		});
 	});
 	describe("#erase()", function () {

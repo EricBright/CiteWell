@@ -2364,12 +2364,12 @@ describe("Zotero.Attachments", function () {
 			const { DEFAULT_ATTACHMENT_RENAME_TEMPLATE } = ChromeUtils.importESModule("chrome://zotero/content/renameFiles.mjs");
 			let libraryID = Zotero.Libraries.userLibraryID;
 			let expected = Zotero.Attachments.getFileBaseNameFromItem(item, { formatString: DEFAULT_ATTACHMENT_RENAME_TEMPLATE });
-			await Zotero.SyncedSettings.set(libraryID, 'attachmentRenameTemplate', '{{ title');
+			await Zotero.LibrarySettings.set(libraryID, 'attachmentRenameTemplate', '{{ title');
 			try {
 				assert.equal(Zotero.Attachments.getFileBaseNameFromItem(item), expected);
 			}
 			finally {
-				await Zotero.SyncedSettings.clear(libraryID, 'attachmentRenameTemplate');
+				await Zotero.LibrarySettings.clear(libraryID, 'attachmentRenameTemplate');
 			}
 		});
 
@@ -2378,7 +2378,7 @@ describe("Zotero.Attachments", function () {
 			let libraryID = Zotero.Libraries.userLibraryID;
 			let expected = Zotero.Attachments.getFileBaseNameFromItem(item, { formatString: DEFAULT_ATTACHMENT_RENAME_TEMPLATE });
 			for (let empty of ['', '   ', '\n\t']) {
-				await Zotero.SyncedSettings.set(libraryID, 'attachmentRenameTemplate', empty);
+				await Zotero.LibrarySettings.set(libraryID, 'attachmentRenameTemplate', empty);
 				try {
 					assert.equal(
 						Zotero.Attachments.getAttachmentRenameTemplate(libraryID),
@@ -2389,7 +2389,7 @@ describe("Zotero.Attachments", function () {
 					assert.equal(Zotero.Attachments.getFileBaseNameFromItem(item), expected);
 				}
 				finally {
-					await Zotero.SyncedSettings.clear(libraryID, 'attachmentRenameTemplate');
+					await Zotero.LibrarySettings.clear(libraryID, 'attachmentRenameTemplate');
 				}
 			}
 		});
@@ -2398,12 +2398,12 @@ describe("Zotero.Attachments", function () {
 			// The engine strips newlines before rendering, so a newline inside a tag (here splitting
 			// `endif`) must be validated against the stripped form and not force the default template
 			let libraryID = Zotero.Libraries.userLibraryID;
-			await Zotero.SyncedSettings.set(libraryID, 'attachmentRenameTemplate', '{{if title}}a{{end\nif}}');
+			await Zotero.LibrarySettings.set(libraryID, 'attachmentRenameTemplate', '{{if title}}a{{end\nif}}');
 			try {
 				assert.equal(Zotero.Attachments.getFileBaseNameFromItem(item), 'a');
 			}
 			finally {
-				await Zotero.SyncedSettings.clear(libraryID, 'attachmentRenameTemplate');
+				await Zotero.LibrarySettings.clear(libraryID, 'attachmentRenameTemplate');
 			}
 		});
 	});
@@ -3024,7 +3024,7 @@ describe("Zotero.Attachments", function () {
 			let libraryID = Zotero.Libraries.userLibraryID;
 			// Use a template that depends on the item type so that changing the
 			// type alone is enough to change the derived file name
-			await Zotero.SyncedSettings.set(
+			await Zotero.LibrarySettings.set(
 				libraryID, 'attachmentRenameTemplate', '{{ itemType suffix=" - " }}{{ title truncate="100" }}'
 			);
 			let item, attachment1;
@@ -3045,7 +3045,7 @@ describe("Zotero.Attachments", function () {
 				assert.equal(attachment1.attachmentFilename, 'journalArticle - Lorem.pdf');
 			}
 			finally {
-				await Zotero.SyncedSettings.clear(libraryID, 'attachmentRenameTemplate');
+				await Zotero.LibrarySettings.clear(libraryID, 'attachmentRenameTemplate');
 				if (attachment1) {
 					await attachment1.eraseTx();
 				}

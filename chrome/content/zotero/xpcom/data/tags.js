@@ -647,7 +647,7 @@ Zotero.Tags = new function () {
 			return _libraryColorsByName[libraryID];
 		}
 		
-		var tagColors = Zotero.SyncedSettings.get(libraryID, 'tagColors') || [];
+		var tagColors = Zotero.LibrarySettings.get(libraryID, 'tagColors') || [];
 		// Normalize tags from DB, which might not have been normalized properly previously
 		tagColors.forEach(x => x.name = x.name.normalize());
 		_libraryColors[libraryID] = tagColors;
@@ -727,10 +727,10 @@ Zotero.Tags = new function () {
 		}
 		
 		if (tagColors.length) {
-			return Zotero.SyncedSettings.set(libraryID, 'tagColors', tagColors);
+			return Zotero.LibrarySettings.set(libraryID, 'tagColors', tagColors);
 		}
 		else {
-			return Zotero.SyncedSettings.clear(libraryID, 'tagColors');
+			return Zotero.LibrarySettings.clear(libraryID, 'tagColors');
 		}
 	};
 	
@@ -757,7 +757,7 @@ Zotero.Tags = new function () {
 			delete _libraryColorsByName[libraryID];
 			
 			// Get the tag colors for each library in which they were modified
-			let tagColors = Zotero.SyncedSettings.get(libraryID, 'tagColors');
+			let tagColors = Zotero.LibrarySettings.get(libraryID, 'tagColors');
 			if (!tagColors) {
 				tagColors = [];
 			}

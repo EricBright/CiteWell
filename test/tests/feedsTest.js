@@ -44,69 +44,6 @@ describe("Zotero.Feeds", function () {
 		});
 	});
 	
-	describe("#restoreFromJSON", function () {
-		var json, expiredFeedURL, existingFeedURL;
-		
-		beforeEach(function* () {
-			yield clearFeeds();
-		
-			json = {};
-			for (let i = 0; i < 2; i++) {
-				let url = "http://" + Zotero.Utilities.randomString(10, 'abcdefgh') + ".com/feed.rss";
-				json[url] = {
-					url,
-					name: Zotero.Utilities.randomString(),
-					refreshInterval: 5,
-					cleanupReadAfter: 3,
-					cleanupUnreadAfter: 30,
-				};
-				if (i == 0) {
-					existingFeedURL = url;
-					yield createFeed({url});
-				}
-			}
-			expiredFeedURL = (yield createFeed()).url;
-		});
-		
-		it("restores correctly when merge is true", async function () {
-			let feeds = Zotero.Feeds.getAll();
-			assert.equal(feeds.length, 2);
-			
-			await Zotero.Feeds.restoreFromJSON(json, true);
-			feeds = Zotero.Feeds.getAll();
-			
-			for (let url in json) {
-				let feed = Zotero.Feeds.getByURL(url);
-				assert.ok(feed, "new feed created");
-			}	
-			
-			let expiredFeed = Zotero.Feeds.getByURL(expiredFeedURL);
-			assert.ok(expiredFeed, "does not remove feeds not in JSON");
-
-			let existingFeed = Zotero.Feeds.getByURL(existingFeedURL);
-			assert.ok(existingFeed, "does not remove feeds in database and JSON");
-		});
-		
-		it("restores correctly when merge is false", async function () {
-			let feeds = Zotero.Feeds.getAll();
-			assert.equal(feeds.length, 2);
-			
-			await Zotero.Feeds.restoreFromJSON(json);
-			feeds = Zotero.Feeds.getAll();
-			
-			for (let url in json) {
-				let feed = Zotero.Feeds.getByURL(url);
-				assert.ok(feed, "new feed created");
-			}	
-			
-			let expiredFeed = Zotero.Feeds.getByURL(expiredFeedURL);
-			assert.notOk(expiredFeed, "removes feeds not in JSON");
-
-			let existingFeed = Zotero.Feeds.getByURL(existingFeedURL);
-			assert.ok(existingFeed, "does not remove feeds in database and JSON");
-		});
-	});
-
 	describe("#haveFeeds()", function () {
 		it("should return false for a DB without feeds", async function () {
 			await clearFeeds();

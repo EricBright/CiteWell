@@ -316,12 +316,12 @@ Zotero.Feed.prototype._finalizeSave = async function (env) {
 		// Re-register library if URL changed
 		Zotero.Feeds.unregister(this.libraryID);
 		
-		let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
+		let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
 		delete syncedFeeds[this._previousURL];
-		await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
+		await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
 	}
 	if (syncedDataChanged || env.isNew || this._previousURL) {
-		await this.storeSyncedSettings();
+		await this.storeLibrarySettings();
 		if (env.isNew || this._previousURL) {
 			Zotero.Feeds.register(this);
 		}
@@ -338,12 +338,12 @@ Zotero.Feed.prototype._finalizeErase = async function (env) {
 	Zotero.Notifier.queue('delete', 'feed', this.id, notifierData, env.options.notifierQueue);
 	Zotero.Feeds.unregister(this.libraryID);
 
-	let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
+	let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
 	delete syncedFeeds[this.url];
 	if (Object.keys(syncedFeeds).length == 0) {
-		await Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, 'feeds');
+		await Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, 'feeds');
 	} else {
-		await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
+		await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
 	}
 	
 	return Zotero.Feed._super.prototype._finalizeErase.apply(this, arguments);
@@ -356,10 +356,10 @@ Zotero.Feed.prototype.erase = async function (options = {}) {
 	await Zotero.Feed._super.prototype.erase.call(this, options);
 };
 
-Zotero.Feed.prototype.storeSyncedSettings = async function () {
-	let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
+Zotero.Feed.prototype.storeLibrarySettings = async function () {
+	let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds') || {};
 	syncedFeeds[this.url] = [this.name, this.cleanupReadAfter, this.cleanupUnreadAfter, this.refreshInterval];
-	return Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
+	return Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedFeeds);
 };
 
 Zotero.Feed.prototype.getExpiredFeedItemIDs = async function () {

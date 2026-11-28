@@ -706,7 +706,7 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			// Load all library data except for items, which are loaded when libraries are first
 			// clicked on or if otherwise necessary
 			await Array.fromAsync(Zotero.Libraries.getAll(), async (library) => {
-				await Zotero.SyncedSettings.loadAll(library.libraryID);
+				await Zotero.LibrarySettings.loadAll(library.libraryID);
 				if (library.libraryType != 'feed') {
 					await Zotero.Collections.loadAll(library.libraryID);
 					await Zotero.Searches.loadAll(library.libraryID);

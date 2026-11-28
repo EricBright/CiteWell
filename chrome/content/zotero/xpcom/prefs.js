@@ -153,7 +153,7 @@ Zotero.Prefs = new function () {
 							let readerCustomThemes = JSON.parse(this.get('reader.customThemes') ?? '[]');
 							if (readerCustomThemes?.length) {
 								Zotero.initializationPromise.then(() => {
-									Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'readerCustomThemes', readerCustomThemes);
+									Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'readerCustomThemes', readerCustomThemes);
 								});
 							}
 						}
@@ -195,7 +195,7 @@ Zotero.Prefs = new function () {
 						if (this.prefHasUserValue('attachmentRenameTemplate')) {
 							// If the user has a custom template, reset `autoRenameFiles.done` so that the "Rename Files Now" button appears in preferences
 							Zotero.initializationPromise.then(() => {
-								Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate', attachmentRenameTemplate);
+								Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate', attachmentRenameTemplate);
 								this.set('autoRenameFiles.done', false);
 							});
 						}

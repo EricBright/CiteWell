@@ -2352,7 +2352,7 @@ Zotero.Attachments = new function () {
 	 */
 	this.getAttachmentRenameTemplate = function (libraryID) {
 		const { DEFAULT_ATTACHMENT_RENAME_TEMPLATE } = ChromeUtils.importESModule("chrome://zotero/content/renameFiles.mjs");
-		let formatString = Zotero.SyncedSettings.get(libraryID, 'attachmentRenameTemplate') ?? DEFAULT_ATTACHMENT_RENAME_TEMPLATE;
+		let formatString = Zotero.LibrarySettings.get(libraryID, 'attachmentRenameTemplate') ?? DEFAULT_ATTACHMENT_RENAME_TEMPLATE;
 		let normalized = typeof formatString === 'string' ? this.normalizeRenameTemplate(formatString) : '';
 		if (!normalized) {
 			formatString = DEFAULT_ATTACHMENT_RENAME_TEMPLATE;
@@ -2687,7 +2687,7 @@ Zotero.Attachments = new function () {
 			return Zotero.Prefs.get('autoRenameFiles');
 		}
 		// For other libraries, check synced setting
-		const syncedSettingValue = Zotero.SyncedSettings.get(libraryID, 'autoRenameFiles');
+		const syncedSettingValue = Zotero.LibrarySettings.get(libraryID, 'autoRenameFiles');
 		
 		// To preserve automatic file renaming ON by default in 8.0, where it is controlled by a synced setting, return true if the synced setting is unset
 		if (syncedSettingValue === null) {
@@ -2735,7 +2735,7 @@ Zotero.Attachments = new function () {
 		}
 		else {
 			try {
-				typePrefixes = Zotero.SyncedSettings.get(libraryID, 'autoRenameFilesFileTypes')
+				typePrefixes = Zotero.LibrarySettings.get(libraryID, 'autoRenameFilesFileTypes')
 					.split(',')
 					.filter(Boolean);
 			}

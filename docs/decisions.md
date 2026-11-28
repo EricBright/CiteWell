@@ -162,7 +162,11 @@ Rejected: deleting `app/win` and `app/mac` — guaranteed conflicts on every ups
 
 ## D14 — Zotero's online sync is disabled and hidden
 
-**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** yes (re-enable the switch)
+**Date:** 2026-11-20 · **Status:** accepted · **Reversible:** with effort (the code was removed in R19)
+
+> **R19 completed the removal on 2026-11-28.** The engine, the WebDAV/ZFS storage layer, the sync
+> UI and the `ONLINE_SYNC` flag are gone; the database tables and columns listed below remain inert.
+> The plan and its verification are in [r19-sync-removal.md](r19-sync-removal.md).
 
 Zotero's code is AGPLv3; its sync service is not part of that grant. The Terms of Service govern
 zotero.org, and the sync protocol is internal rather than the documented Web API. Syncing a

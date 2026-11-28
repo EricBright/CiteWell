@@ -139,7 +139,7 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 			autoRenameEnabled = Zotero.Prefs.get('autoRenameFiles');
 			fileTypes = Zotero.Prefs.get('autoRenameFiles.fileTypes');
 			renameLinked = Zotero.Prefs.get('autoRenameFiles.linked');
-			formatTemplate = Zotero.SyncedSettings.get(libraryID, 'attachmentRenameTemplate')
+			formatTemplate = Zotero.LibrarySettings.get(libraryID, 'attachmentRenameTemplate')
 				?? this.DEFAULT_ATTACHMENT_RENAME_TEMPLATE;
 
 			let library = Zotero.Libraries.get(libraryID);
@@ -151,9 +151,9 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 		}
 		else {
 			autoRenameEnabled = Zotero.Attachments.isAutoRenameFilesEnabledForLibrary(libraryID);
-			fileTypes = Zotero.SyncedSettings.get(libraryID, 'autoRenameFilesFileTypes')
+			fileTypes = Zotero.LibrarySettings.get(libraryID, 'autoRenameFilesFileTypes')
 				?? this.DEFAULT_AUTO_RENAME_FILE_TYPES;
-			formatTemplate = Zotero.SyncedSettings.get(libraryID, 'attachmentRenameTemplate')
+			formatTemplate = Zotero.LibrarySettings.get(libraryID, 'attachmentRenameTemplate')
 				?? this.DEFAULT_ATTACHMENT_RENAME_TEMPLATE;
 
 			let isAdmin = Zotero.Libraries.get(libraryID).isAdmin;
@@ -219,10 +219,10 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 
 			// Handle template changes; never push an invalid template to sync
 			if (formatTemplate.replace(/\s/g, '') === '') {
-				Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate');
+				Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate');
 			}
 			else if (this.settingsEl.templateValid) {
-				Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate', formatTemplate);
+				Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate', formatTemplate);
 			}
 
 			let settingsMatch = autoRenameEnabled === base.autoRenameEnabled
@@ -236,15 +236,15 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 			this._settingsChanged = !settingsMatch;
 		}
 		else {
-			Zotero.SyncedSettings.set(this.libraryID, 'autoRenameFiles', autoRenameEnabled);
-			Zotero.SyncedSettings.set(this.libraryID, 'autoRenameFilesFileTypes', enabledFileTypes);
+			Zotero.LibrarySettings.set(this.libraryID, 'autoRenameFiles', autoRenameEnabled);
+			Zotero.LibrarySettings.set(this.libraryID, 'autoRenameFilesFileTypes', enabledFileTypes);
 
 			// Handle template changes; never push an empty or invalid template to sync
 			if (formatTemplate.replace(/\s/g, '') === '') {
-				Zotero.SyncedSettings.clear(this.libraryID, 'attachmentRenameTemplate');
+				Zotero.LibrarySettings.clear(this.libraryID, 'attachmentRenameTemplate');
 			}
 			else if (this.settingsEl.templateValid) {
-				Zotero.SyncedSettings.set(this.libraryID, 'attachmentRenameTemplate', formatTemplate);
+				Zotero.LibrarySettings.set(this.libraryID, 'attachmentRenameTemplate', formatTemplate);
 			}
 
 			this._settingsChanged = autoRenameEnabled !== base.autoRenameEnabled
@@ -329,7 +329,7 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 	},
 
 	_resetTemplateToDefault: async function (libraryID) {
-		await Zotero.SyncedSettings.clear(libraryID, 'attachmentRenameTemplate');
+		await Zotero.LibrarySettings.clear(libraryID, 'attachmentRenameTemplate');
 		// Recompute the pending-changes state against the baseline, since handleSettingsChange()
 		// skips the update while the template is invalid
 		let isUserLib = libraryID === Zotero.Libraries.userLibraryID;
@@ -379,7 +379,7 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 			this._baselineSettings = {
 				autoRenameEnabled: Zotero.Prefs.get('autoRenameFiles'),
 				fileTypes: Zotero.Prefs.get('autoRenameFiles.fileTypes'),
-				formatTemplate: Zotero.SyncedSettings.get(
+				formatTemplate: Zotero.LibrarySettings.get(
 					Zotero.Libraries.userLibraryID, 'attachmentRenameTemplate'
 				) ?? this.DEFAULT_ATTACHMENT_RENAME_TEMPLATE,
 				renameLinked: Zotero.Prefs.get('autoRenameFiles.linked'),
@@ -388,9 +388,9 @@ var FileRenamingDialog = { // eslint-disable-line no-unused-vars
 		else {
 			this._baselineSettings = {
 				autoRenameEnabled: Zotero.Attachments.isAutoRenameFilesEnabledForLibrary(libraryID),
-				fileTypes: Zotero.SyncedSettings.get(libraryID, 'autoRenameFilesFileTypes')
+				fileTypes: Zotero.LibrarySettings.get(libraryID, 'autoRenameFilesFileTypes')
 					?? this.DEFAULT_AUTO_RENAME_FILE_TYPES,
-				formatTemplate: Zotero.SyncedSettings.get(libraryID, 'attachmentRenameTemplate')
+				formatTemplate: Zotero.LibrarySettings.get(libraryID, 'attachmentRenameTemplate')
 					?? this.DEFAULT_ATTACHMENT_RENAME_TEMPLATE,
 			};
 		}

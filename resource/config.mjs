@@ -2,9 +2,6 @@ export var ZOTERO_CONFIG = {
 	GUID: 'zotero@zotero.org',
 	ID: 'zotero', // used for db filename, etc.
 	CLIENT_NAME: 'CiteWell',
-	// Personal builds keep Zotero's online sync. A distributed build must set this
-	// to false once the enforcement in roadmap R18 exists.
-	ONLINE_SYNC: false,
 	// Plugin loading is parked until a deliberate decision re-enables it (D31).
 	PLUGINS_ENABLED: false,
 	// The inherited Zotero LibreOffice OXT is not shipped; a CiteWell-owned
@@ -30,7 +27,6 @@ export var ZOTERO_CONFIG = {
 	QUICK_START_URL: "https://github.com/EricBright/CiteWell",
 	PDF_TOOLS_URL: "https://www.zotero.org/download/xpdf/",
 	SUPPORT_URL: "https://www.zotero.org/support/",
-	SYNC_INFO_URL: "https://www.zotero.org/support/sync",
 	TROUBLESHOOTING_URL: "https://www.zotero.org/support/getting_help",
 	FEEDBACK_URL: "https://forums.zotero.org/",
 	// CiteWell ships no connector of its own (D47); this is Zotero's official one, which

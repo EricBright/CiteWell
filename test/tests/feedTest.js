@@ -157,47 +157,30 @@ describe("Zotero.Feed", function () {
 		it("should add a new synced setting after creation", async function () {
 			let url = 'http://' + Zotero.Utilities.randomString(10, 'abcde') + '.com/feed.rss';
 			
-			let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.notOk(syncedFeeds[url]);
 			
 			await createFeed({url});
 			
-			syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.ok(syncedFeeds[url]);
 		});
 		it("should remove previous feed and add a new one if url changed", async function () {
 			let feed = await createFeed();
 			
-			let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.ok(syncedFeeds[feed.url]);
 
 			let oldUrl = feed.url;
 			feed.url = 'http://' + Zotero.Utilities.randomString(10, 'abcde') + '.com/feed.rss';
 			await feed.saveTx();
 
-			syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.notOk(syncedFeeds[oldUrl]);
 			assert.ok(syncedFeeds[feed.url]);
 		});
-		it('should update syncedSettings if `name`, `url`, `refreshInterval` or `cleanupUnreadAfter` was modified', async function () {
-			let feed = await createFeed();
-			let syncedSetting = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedSetting, 0, true);
-			
-			feed.name = "New name";
-			await feed.saveTx();
-			assert.isFalse(Zotero.SyncedSettings.getMetadata(Zotero.Libraries.userLibraryID, 'feeds').synced)
-		});
-		it('should not update syncedSettings if `name`, `url`, `refreshInterval` or `cleanupUnreadAfter` were not modified', async function () {
-			let feed = await createFeed();
-			let syncedSetting = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', syncedSetting, 0, true);
-
-			feed._set('_feedLastCheck', Zotero.Date.dateToSQL(new Date(), true));
-			await feed.saveTx();
-			assert.isTrue(Zotero.SyncedSettings.getMetadata(Zotero.Libraries.userLibraryID, 'feeds').synced)
-		});
 	});
+	
 	describe("#erase()", function () {
 		it("should erase a saved feed", async function () {
 			let feed = await createFeed();
@@ -226,18 +209,18 @@ describe("Zotero.Feed", function () {
 			let url = 'http://' + Zotero.Utilities.randomString(10, 'abcde') + '.com/feed.rss';
 			let feed = await createFeed({url});
 			
-			let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.ok(syncedFeeds[feed.url]);
 			
 			await feed.eraseTx();
 			
-			syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.notOk(syncedFeeds[url]);
 
 		});
 	});
 	
-	describe("#storeSyncedSettings", function () {
+	describe("#storeLibrarySettings", function () {
 		it("should store settings for feed in compact format", async function () {
 			let url = 'http://' + Zotero.Utilities.randomString().toLowerCase() + '.com/feed.rss';
 			let settings = [Zotero.Utilities.randomString(), 1, 30, 1];
@@ -249,7 +232,7 @@ describe("Zotero.Feed", function () {
 				refreshInterval: settings[3]
 			});
 			
-			let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
+			let syncedFeeds = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, 'feeds');
 			assert.deepEqual(syncedFeeds[url], settings);
 		});
 	});

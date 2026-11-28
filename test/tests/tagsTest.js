@@ -249,7 +249,7 @@ describe("Zotero.Tags", function () {
 			assert.equal(o.color, bColor);
 			assert.equal(o.position, 1);
 			
-			var o = Zotero.SyncedSettings.get(libraryID, 'tagColors');
+			var o = Zotero.LibrarySettings.get(libraryID, 'tagColors');
 			assert.isArray(o);
 			assert.lengthOf(o, 2);
 			assert.sameMembers(o.map(c => c.color), [aColor, bColor]);
@@ -266,7 +266,7 @@ describe("Zotero.Tags", function () {
 			assert.equal(Zotero.Tags.getColors(libraryID).size, 0);
 			assert.isFalse(Zotero.Tags.getColor(libraryID, "A"));
 			
-			var o = Zotero.SyncedSettings.get(libraryID, 'tagColors');
+			var o = Zotero.LibrarySettings.get(libraryID, 'tagColors');
 			assert.isNull(o);
 		});
 	});

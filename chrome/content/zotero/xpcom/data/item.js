@@ -2232,10 +2232,10 @@ Zotero.Item.prototype._saveData = async function (env) {
 		if (libraryType == 'group' && lastRead !== undefined) {
 			let id = this._getLastReadSettingKey();
 			if (lastRead === null) {
-				await Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, id);
+				await Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, id);
 			}
 			else {
-				await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, id, lastRead);
+				await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, id, lastRead);
 			}
 		}
 	}
@@ -3953,7 +3953,7 @@ Zotero.Item.prototype.getAttachmentLastPageIndex = function () {
 	}
 	
 	var id = this._getLastPageIndexSettingKey();
-	var val = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id);
+	var val = Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id);
 	if (this.isPDFAttachment() && val !== null && (typeof val != 'number' || val != parseInt(val))) {
 		Zotero.logError(`Setting contains an invalid attachment page index ('${val}') -- discarding`);
 		return null;
@@ -3973,9 +3973,9 @@ Zotero.Item.prototype.setAttachmentLastPageIndex = async function (val) {
 	
 	var id = this._getLastPageIndexSettingKey();
 	if (val === null) {
-		return Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, id);
+		return Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, id);
 	}
-	return Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, id, val);
+	return Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, id, val);
 };
 
 
@@ -3985,7 +3985,7 @@ Zotero.Item.prototype.getAttachmentLastReadAloudPosition = function () {
 	}
 
 	var id = this._getLastReadAloudPositionSettingKey();
-	return Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id);
+	return Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id);
 };
 
 Zotero.Item.prototype.setAttachmentLastReadAloudPosition = async function (val) {
@@ -3995,9 +3995,9 @@ Zotero.Item.prototype.setAttachmentLastReadAloudPosition = async function (val) 
 
 	var id = this._getLastReadAloudPositionSettingKey();
 	if (val === null) {
-		return Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, id);
+		return Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, id);
 	}
-	return Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, id, val);
+	return Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, id, val);
 };
 
 
@@ -5587,7 +5587,7 @@ Zotero.Item.prototype._eraseData = async function (env) {
 				if (!id) {
 					continue;
 				}
-				await Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, id);
+				await Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, id);
 			}
 		}
 		

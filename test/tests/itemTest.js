@@ -1602,7 +1602,7 @@ describe("Zotero.Item", function () {
 			it("should discard invalid page index", async function () {
 				var attachment = await importFileAttachment('test.pdf');
 				var id = attachment._getLastPageIndexSettingKey();
-				await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, id, '"1"');
+				await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, id, '"1"');
 				assert.isNull(attachment.getAttachmentLastPageIndex());
 			});
 		});
@@ -1611,9 +1611,9 @@ describe("Zotero.Item", function () {
 			var attachment = await importFileAttachment('test.pdf');
 			await attachment.setAttachmentLastPageIndex(2);
 			var id = attachment._getLastPageIndexSettingKey();
-			assert.equal(2, Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id));
+			assert.equal(2, Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id));
 			await attachment.eraseTx();
-			assert.isNull(Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id));
+			assert.isNull(Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id));
 		});
 	});
 	
@@ -1648,9 +1648,9 @@ describe("Zotero.Item", function () {
 			var attachment = await importFileAttachment('test.pdf');
 			await attachment.setAttachmentLastReadAloudPosition({ pageIndex: 7 });
 			var id = attachment._getLastReadAloudPositionSettingKey();
-			assert.deepEqual({ pageIndex: 7 }, Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id));
+			assert.deepEqual({ pageIndex: 7 }, Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id));
 			await attachment.eraseTx();
-			assert.isNull(Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, id));
+			assert.isNull(Zotero.LibrarySettings.get(Zotero.Libraries.userLibraryID, id));
 		});
 	});
 

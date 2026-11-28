@@ -1926,14 +1926,14 @@ describe("CollectionViewItemTree", function () {
 					let attachment = await importPDFAttachment(item);
 					let key = attachment._getLastReadSettingKey();
 
-					await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, key, Math.round(Date.now() / 1000));
+					await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, key, Math.round(Date.now() / 1000));
 
 					await zp.setVirtual(groupLibraryID, 'recentlyRead', true, true);
 					await waitForItemsLoad(win);
 					assert.isNumber(zp.itemsView.getRowIndexByID(item.id));
 
 					// Simulate clearing via sync (as if another device removed it)
-					await Zotero.SyncedSettings.clear(Zotero.Libraries.userLibraryID, key, { skipDeleteLog: true });
+					await Zotero.LibrarySettings.clear(Zotero.Libraries.userLibraryID, key, { skipDeleteLog: true });
 
 					// Wait for the notify to propagate and the view to refresh
 					await zp.itemsView._refreshPromise;

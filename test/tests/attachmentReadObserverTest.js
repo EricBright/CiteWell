@@ -102,11 +102,11 @@ describe("Zotero.AttachmentReadObserver", function () {
 			let key = attachment._getLastReadSettingKey();
 
 			let firstValue = 1674668000;
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, key, firstValue);
+			await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, key, firstValue);
 			assert.equal(attachment.attachmentLastRead, firstValue);
 
 			let secondValue = 1674668123;
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, key, secondValue);
+			await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, key, secondValue);
 			assert.equal(attachment.attachmentLastRead, secondValue);
 		});
 
@@ -121,7 +121,7 @@ describe("Zotero.AttachmentReadObserver", function () {
 			await group.saveTx();
 
 			let value = 1674668000;
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, key, value);
+			await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, key, value);
 			assert.equal(attachment.attachmentLastRead, value);
 			// Verify persisted to DB, not just set in memory
 			let dbVal = await Zotero.DB.valueQueryAsync(
@@ -142,7 +142,7 @@ describe("Zotero.AttachmentReadObserver", function () {
 			assert.isTrue(attachment.synced);
 
 			let value = 1674668000;
-			await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, key, value);
+			await Zotero.LibrarySettings.set(Zotero.Libraries.userLibraryID, key, value);
 			assert.equal(attachment.attachmentLastRead, value);
 			// Verify item is still synced
 			await attachment.reload();

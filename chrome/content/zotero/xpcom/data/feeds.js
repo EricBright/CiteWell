@@ -46,29 +46,6 @@ Zotero.Feeds = new function () {
 		})
 		.then(() => _initPromise = null);
 		
-		Zotero.SyncedSettings.onSyncDownload.addListener(Zotero.Libraries.userLibraryID, 'feeds', 
-			(oldValue, newValue, conflict) => { 
-				Zotero.Feeds.restoreFromJSON(newValue, conflict);
-			}
-		);
-		
-		Zotero.Notifier.registerObserver(
-			{
-				notify: async function (event) {
-					if (event == 'finish') {
-						// Don't update during tests, since the database will have been closed
-						if (Zotero.test) return;
-						
-						if (_initPromise) {
-							await _initPromise;
-						}
-						await Zotero.Feeds.updateFeeds();
-					}
-				},
-			},
-			['sync'],
-			'feedsUpdate'
-		);
 	};
 	
 	this.pause = async function () {
@@ -213,57 +190,6 @@ Zotero.Feeds = new function () {
 		// Finally, update
 		await Zotero.Feeds.updateFeeds();
 		return true;
-	};
-	
-	this.restoreFromJSON = async function (json, merge=false) {
-		Zotero.debug("Restoring feeds from remote JSON");
-		Zotero.debug(json);
-		if (merge) {
-			let syncedFeeds = Zotero.SyncedSettings.get(Zotero.Libraries.userLibraryID, 'feeds');
-			// Overwrite with remote values for names, etc.
-			for (let url in json) {
-				syncedFeeds[url] = json[url];
-			}
-			// But keep all local feeds
-			json = syncedFeeds;
-		}
-		json = this._compactifyFeedJSON(json);
-		await Zotero.SyncedSettings.set(Zotero.Libraries.userLibraryID, 'feeds', json);
-		let feeds = Zotero.Feeds.getAll();
-		for (let feed of feeds) {
-			if (json[feed.url]) {
-				Zotero.debug("Feed " + feed.url + " exists remotely and locally");
-				feed.name = json[feed.url][0];
-				feed.cleanupReadAfter = json[feed.url][1];
-				// TEMP after adding cleanupUnreadAfter for unread items
-				if (json[feed.url].length == 4) {
-					feed.cleanupUnreadAfter = json[feed.url][2];
-				}
-				feed.refreshInterval = json[feed.url][json[feed.url].length-1];
-				delete json[feed.url];
-			} else {
-				Zotero.debug("Feed " + feed.url + " does not exist in remote JSON. Deleting");
-				await feed.erase();
-			}
-		}
-		// Because existing json[feed.url] got deleted, `json` now only contains new feeds
-		for (let url in json) {
-			Zotero.debug("Feed " + url + " exists remotely but not locally. Creating");
-			let obj = {
-				url, 
-				name: json[url][0], 
-				cleanupReadAfter: json[url][1], 
-				refreshInterval: json[url][json[url].length-1]
-			};
-			// TEMP after adding cleanupUnreadAfter for unread items
-			if (json[url].length == 4) {
-				obj.cleanupUnreadAfter = json[url][2];
-			}
-			let feed = new Zotero.Feed(obj);
-			await feed.saveTx({
-				skipSelect: true
-			});
-		}
 	};
 	
 	this.getByURL = function (urls) {

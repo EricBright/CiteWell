@@ -14,7 +14,7 @@ describe("FileRenamingDialog", function () {
 	});
 
 	describe("#handleSettingsChange()", function () {
-		// Drives handleSettingsChange for a given library/template with SyncedSettings.set stubbed,
+		// Drives handleSettingsChange for a given library/template with LibrarySettings.set stubbed,
 		// returning the values the template setting would have been synced with
 		function collectTemplateSyncs(libraryID, template) {
 			let dialog = win.FileRenamingDialog;
@@ -24,8 +24,8 @@ describe("FileRenamingDialog", function () {
 			dialog.settingsEl.formatTemplate = template;
 
 			let sandbox = sinon.createSandbox();
-			let setStub = sandbox.stub(Zotero.SyncedSettings, "set").resolves();
-			let clearStub = sandbox.stub(Zotero.SyncedSettings, "clear").resolves();
+			let setStub = sandbox.stub(Zotero.LibrarySettings, "set").resolves();
+			let clearStub = sandbox.stub(Zotero.LibrarySettings, "clear").resolves();
 			sandbox.stub(Zotero.Prefs, "set");
 			try {
 				dialog.handleSettingsChange({
@@ -101,8 +101,8 @@ describe("FileRenamingDialog", function () {
 
 		function setupStubs(sandbox, confirmIndex) {
 			return {
-				set: sandbox.stub(Zotero.SyncedSettings, 'set').resolves(),
-				clear: sandbox.stub(Zotero.SyncedSettings, 'clear').resolves(),
+				set: sandbox.stub(Zotero.LibrarySettings, 'set').resolves(),
+				clear: sandbox.stub(Zotero.LibrarySettings, 'clear').resolves(),
 				prefSet: sandbox.stub(Zotero.Prefs, 'set'),
 				confirm: sandbox.stub(Zotero.Prompt, 'confirm').returns(confirmIndex)
 			};
@@ -190,9 +190,9 @@ describe("FileRenamingDialog", function () {
 		it("should clear the user library's template setting and recompute the done pref on reset", async function () {
 			let userLibraryID = Zotero.Libraries.userLibraryID;
 			// Make the baseline deterministic: default template stored, no rename pending
-			let origTemplate = Zotero.SyncedSettings.get(userLibraryID, 'attachmentRenameTemplate');
+			let origTemplate = Zotero.LibrarySettings.get(userLibraryID, 'attachmentRenameTemplate');
 			let origDone = Zotero.Prefs.get('autoRenameFiles.done');
-			await Zotero.SyncedSettings.clear(userLibraryID, 'attachmentRenameTemplate');
+			await Zotero.LibrarySettings.clear(userLibraryID, 'attachmentRenameTemplate');
 			Zotero.Prefs.set('autoRenameFiles.done', true);
 
 			let sandbox = sinon.createSandbox();
@@ -223,7 +223,7 @@ describe("FileRenamingDialog", function () {
 				win.close = origClose;
 				sandbox.restore();
 				if (origTemplate) {
-					await Zotero.SyncedSettings.set(userLibraryID, 'attachmentRenameTemplate', origTemplate);
+					await Zotero.LibrarySettings.set(userLibraryID, 'attachmentRenameTemplate', origTemplate);
 				}
 				Zotero.Prefs.set('autoRenameFiles.done', origDone);
 				restoreDialog();
@@ -295,7 +295,7 @@ describe("FileRenamingDialog", function () {
 		});
 
 		it("should prompt to rename files after resetting the template on Done and skip the preview when declined", async function () {
-			await Zotero.SyncedSettings.set(group.libraryID, 'attachmentRenameTemplate', '{{ title }}-baseline');
+			await Zotero.LibrarySettings.set(group.libraryID, 'attachmentRenameTemplate', '{{ title }}-baseline');
 			let sandbox = sinon.createSandbox();
 			let stubs = setupStubs(sandbox, 0);
 			stubs.confirm.onSecondCall().returns(1);
@@ -317,13 +317,13 @@ describe("FileRenamingDialog", function () {
 			finally {
 				win.close = origClose;
 				sandbox.restore();
-				await Zotero.SyncedSettings.clear(group.libraryID, 'attachmentRenameTemplate');
+				await Zotero.LibrarySettings.clear(group.libraryID, 'attachmentRenameTemplate');
 				restoreDialog();
 			}
 		});
 
 		it("should prompt to rename files after resetting the template when switching libraries", async function () {
-			await Zotero.SyncedSettings.set(group.libraryID, 'attachmentRenameTemplate', '{{ title }}-baseline');
+			await Zotero.LibrarySettings.set(group.libraryID, 'attachmentRenameTemplate', '{{ title }}-baseline');
 			let sandbox = sinon.createSandbox();
 			let stubs = setupStubs(sandbox, 0);
 			let dialog = win.FileRenamingDialog;
@@ -340,7 +340,7 @@ describe("FileRenamingDialog", function () {
 			}
 			finally {
 				sandbox.restore();
-				await Zotero.SyncedSettings.clear(group.libraryID, 'attachmentRenameTemplate');
+				await Zotero.LibrarySettings.clear(group.libraryID, 'attachmentRenameTemplate');
 				restoreDialog();
 			}
 		});
@@ -373,8 +373,8 @@ describe("FileRenamingDialog", function () {
 			let preview = settingsEl.querySelector('#file-renaming-format-preview');
 			let libraryID = dialog._currentLibraryID;
 			let sandbox = sinon.createSandbox();
-			sandbox.stub(Zotero.SyncedSettings, 'set').resolves();
-			sandbox.stub(Zotero.SyncedSettings, 'clear').resolves();
+			sandbox.stub(Zotero.LibrarySettings, 'set').resolves();
+			sandbox.stub(Zotero.LibrarySettings, 'clear').resolves();
 			sandbox.stub(Zotero.Prefs, 'set');
 			try {
 				settingsEl.formatTemplate = '{{ title }}';
@@ -432,8 +432,8 @@ describe("FileRenamingDialog", function () {
 			settingsEl.formatTemplate = '{{ title }}{{ year }}';
 			let sandbox = sinon.createSandbox();
 			// Stub persistence so the change handler runs without touching settings
-			sandbox.stub(Zotero.SyncedSettings, 'set').resolves();
-			sandbox.stub(Zotero.SyncedSettings, 'clear').resolves();
+			sandbox.stub(Zotero.LibrarySettings, 'set').resolves();
+			sandbox.stub(Zotero.LibrarySettings, 'clear').resolves();
 			sandbox.stub(Zotero.Prefs, 'set');
 			let spy = sandbox.spy(settingsEl, '_validateTemplate');
 			try {

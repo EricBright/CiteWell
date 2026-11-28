@@ -24,10 +24,10 @@ ships; they are surface work.
 Decisions already taken: Recognize Document stays (plain HTTP request); `RepositoryUpdates` is
 extracted inside R19; the unused `sync*` tables and `synced`/`version` columns stay; R19 runs now.
 
-**Stage status.** Stage 0 (inventory and baseline) is the starting point. Stage 1 moves
-`RepositoryUpdates` out of `schema.js`; stage 2 unwires the engine; stage 3 deletes it atomically and
-trims the streamer; stage 4 renames/shrinks `SyncedSettings` and prunes; stage 5 verifies and
-releases.
+**Stage status.** Stages 0–4 are done (2026-11-28): the inventory and baseline, the
+`RepositoryUpdates` move, the call-site unwiring, the atomic deletion of the engine and storage with
+the streamer trim, and the `LibrarySettings` rename with string pruning. What remains is stage 5:
+the full suite, the smoke list, an AppImage build and a release with no user-visible change.
 
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)
 

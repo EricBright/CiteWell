@@ -398,7 +398,7 @@ Zotero.Library.prototype._reloadFromDB = async function () {
  * Load object data in this library
  */
 Zotero.Library.prototype.loadAllDataTypes = async function () {
-	await Zotero.SyncedSettings.loadAll(this.libraryID);
+	await Zotero.LibrarySettings.loadAll(this.libraryID);
 	await Zotero.Collections.loadAll(this.libraryID);
 	await Zotero.Searches.loadAll(this.libraryID);
 	await Zotero.Items.loadAll(this.libraryID);

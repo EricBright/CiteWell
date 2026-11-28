@@ -161,7 +161,13 @@ migrations. The same commit removes the startup initialization in `zotero.js`, t
 menu, status, reminder and keyboard code in `zoteroPane.js` and `zoteroPane.xhtml`, and trims the
 streamer to a transport. The one remaining `sync.` key is the old name of the full-text pref, read
 once to migrate it. Verified: `schemaTest` 25/25, preferences/settings/agent/feed/file-renaming
-83/83, and schema plus preferences 49/49 after the final rebuild. The streamer trim and the
+83/83, and schema plus preferences 49/49 after the final rebuild.
+
+**Stage 4 — Rename and prune (done 2026-11-28).** `SyncedSettings` became `LibrarySettings` with the
+four-method interface; the feeds sync listener, `restoreFromJSON`, the full-text upload helpers and
+their tests are gone; the `sync.*` strings that no code reads were pruned from the eight locales
+(33 conflict/long-tag-fixer strings stay because merge and tag repair still use them). `ONLINE_SYNC`
+left `resource/config.mjs`. Verified: library settings, feeds, file renaming, tags and copy 109/109. The streamer trim and the
 `syncRunner` deletion are in the same commit, so there is no build in which the module is gone and
 its consumer still calls it. Grep gates must return zero `Zotero.Sync` references.
 

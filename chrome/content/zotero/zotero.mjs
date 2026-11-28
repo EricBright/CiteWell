@@ -141,7 +141,7 @@ const xpcomFilesLocal = [
 	'session',
 	'streamer',
 	'style',
-	'syncedSettings',
+	'librarySettings',
 	'uri',
 	'users',
 	'translation/translate_item',

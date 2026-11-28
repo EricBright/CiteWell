@@ -842,7 +842,7 @@ async function resetData() {
 		let sql = "SELECT setting FROM syncedSettings WHERE libraryID=?";
 		let settings = await Zotero.DB.columnQueryAsync(sql, userLibraryID);
 		for (let setting of settings) {
-			await Zotero.SyncedSettings.clear(userLibraryID, setting, { skipDeleteLog: true });
+			await Zotero.LibrarySettings.clear(userLibraryID, setting);
 		}
 
 		// Clear the retired sync cache tables
@@ -881,7 +881,7 @@ async function resetData() {
 	await Zotero.Users.init();
 	await Zotero.Tags.init();
 	await Zotero.Creators.init();
-	await Zotero.SyncedSettings.loadAll(userLibraryID);
+	await Zotero.LibrarySettings.loadAll(userLibraryID);
 }
 
 /**

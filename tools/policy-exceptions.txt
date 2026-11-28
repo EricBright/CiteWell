@@ -38,3 +38,5 @@ D55 test/tests/browsePickerTest.js
 D59 test/tests/versionTest.js
 D60 test/tests/selfUpdateTest.js
 D69 chrome/content/zotero/xpcom/repositoryUpdates.js
+D69 chrome/content/zotero/xpcom/librarySettings.js
+D69 test/tests/librarySettingsTest.js
