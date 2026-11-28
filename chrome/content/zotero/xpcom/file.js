@@ -736,6 +736,14 @@ Zotero.File = new function () {
 	
 	
 	/**
+	 * Read a file as bytes.
+	 */
+	this.readBinary = function (path) {
+		return IOUtils.read(path);
+	}
+	
+	
+	/**
 	 * Set a file's modification time.
 	 */
 	this.setModificationTime = function (path, date) {

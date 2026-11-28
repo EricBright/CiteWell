@@ -2943,8 +2943,8 @@ Zotero.Item.prototype.getFilePath = function () {
 			return false;
 		}
 		
-		return OS.Path.join(
-			OS.Path.normalize(Zotero.Attachments.getStorageDirectory(this).path), path
+		return PathUtils.join(
+			Zotero.File.normalizePath(Zotero.Attachments.getStorageDirectory(this).path), path
 		);
 	}
 	
@@ -3045,11 +3045,11 @@ Zotero.Item.prototype.getFilePathAsync = async function () {
 			return false;
 		}
 		
-		path = OS.Path.join(
-			OS.Path.normalize(Zotero.Attachments.getStorageDirectory(this).path), path
+		path = PathUtils.join(
+			Zotero.File.normalizePath(Zotero.Attachments.getStorageDirectory(this).path), path
 		);
 		
-		if (!((await OS.File.exists(path)))) {
+		if (!((await Zotero.File.exists(path)))) {
 			Zotero.debug("Attachment file '" + path + "' not found", 2);
 			this._updateAttachmentStates(false);
 			return false;
@@ -3067,7 +3067,7 @@ Zotero.Item.prototype.getFilePathAsync = async function () {
 			this._updateAttachmentStates(false);
 			return false;
 		}
-		if (!((await OS.File.exists(path)))) {
+		if (!((await Zotero.File.exists(path)))) {
 			Zotero.debug("Attachment file '" + path + "' not found", 2);
 			this._updateAttachmentStates(false);
 			return false;
@@ -3098,7 +3098,7 @@ Zotero.Item.prototype.getFilePathAsync = async function () {
 			[file.leafName, this._id]
 		);
 		
-		if (!((await OS.File.exists(file.path)))) {
+		if (!((await Zotero.File.exists(file.path)))) {
 			Zotero.debug("Attachment file '" + file.path + "' not found", 2);
 			this._updateAttachmentStates(false);
 			return false;
@@ -3110,7 +3110,7 @@ Zotero.Item.prototype.getFilePathAsync = async function () {
 	}
 	
 	// NOTE: Test for platform slashes before changing to IOUtils.exists()
-	if (!((await OS.File.exists(path)))) {
+	if (!((await Zotero.File.exists(path)))) {
 		Zotero.debug("Attachment file '" + path + "' not found", 2);
 		this._updateAttachmentStates(false);
 		return false;
@@ -3256,7 +3256,7 @@ Zotero.Item.prototype.renameAttachmentFile = async function (newName, options = 
 		if (newName === false) {
 			return -1;
 		}
-		let destPath = OS.Path.join(PathUtils.parent(origPath), newName);
+		let destPath = PathUtils.join(PathUtils.parent(origPath), newName);
 		
 		await this.relinkAttachmentFile(destPath);
 		
@@ -3316,17 +3316,17 @@ Zotero.Item.prototype.relinkAttachmentFile = async function (path, skipItemUpdat
 	// copy it in and use that one instead
 	var storageDir = Zotero.Attachments.getStorageDirectory(this).path;
 	if (this.isStoredFileAttachment() && PathUtils.parent(path) != storageDir) {
-		newPath = OS.Path.join(storageDir, newName);
+		newPath = PathUtils.join(storageDir, newName);
 		
 		// If file with same name already exists in the storage directory,
 		// move it out of the way
 		let backupCreated = false;
-		if (await OS.File.exists(newPath)) {
+		if (await Zotero.File.exists(newPath)) {
 			backupCreated = true;
-			await OS.File.move(newPath, newPath + ".bak");
+			await Zotero.File.move(newPath, newPath + ".bak");
 		}
 		// Create storage directory if necessary
-		else if (!((await OS.File.exists(storageDir)))) {
+		else if (!((await Zotero.File.exists(storageDir)))) {
 			await Zotero.Attachments.createDirectoryForItem(this);
 		}
 		
@@ -3337,7 +3337,7 @@ Zotero.Item.prototype.relinkAttachmentFile = async function (path, skipItemUpdat
 		catch (e) {
 			// Restore backup file if copying failed
 			if (backupCreated) {
-				await OS.File.move(newPath + ".bak", newPath);
+				await Zotero.File.move(newPath + ".bak", newPath);
 			}
 			throw e;
 		}
@@ -3345,11 +3345,11 @@ Zotero.Item.prototype.relinkAttachmentFile = async function (path, skipItemUpdat
 		
 		// Delete backup file
 		if (backupCreated) {
-			await OS.File.remove(newPath + ".bak");
+			await Zotero.File.removeIfExists(newPath + ".bak");
 		}
 	}
 	else {
-		newPath = OS.Path.join(PathUtils.parent(path), newName);
+		newPath = PathUtils.join(PathUtils.parent(path), newName);
 		
 		// Rename file to filtered name if necessary
 		if (fileName != newName) {
@@ -4192,7 +4192,7 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentText', {
 			if (!cacheFile.exists() || !(await Zotero.FullText.isFullyIndexed(this))) {
 				// Use processor cache file if it exists
 				let processorCacheFile = Zotero.FullText.getSyncedContentCacheFile(this).path;
-				if (await OS.File.exists(processorCacheFile)) {
+				if (await Zotero.File.exists(processorCacheFile)) {
 					let json = await Zotero.File.getContentsAsync(processorCacheFile);
 					let data = JSON.parse(json);
 					str = data.text;
@@ -4236,10 +4236,10 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentDataURI', {
 			throw new Error("'attachmentDataURI' is only valid for attachments");
 		}
 		let path = await this.getFilePathAsync();
-		if (!path || !(await OS.File.exists(path))) {
+		if (!path || !(await Zotero.File.exists(path))) {
 			return '';
 		}
-		let buf = await OS.File.read(path, {});
+		let buf = await Zotero.File.readBinary(path);
 		buf = new Uint8Array(buf).buffer;
 		return new Promise((resolve, reject) => {
 			let blob = new Blob([buf], { type: this.attachmentContentType });
@@ -5547,10 +5547,7 @@ Zotero.Item.prototype._eraseData = async function (env) {
 		if (linkMode != Zotero.Attachments.LINK_MODE_LINKED_URL) {
 			try {
 				let file = Zotero.Attachments.getStorageDirectory(this);
-				await OS.File.removeDir(file.path, {
-					ignoreAbsent: true,
-					ignorePermissions: true
-				});
+				await Zotero.File.removeDir(file.path);
 			}
 			catch (e) {
 				Zotero.debug(e, 2);

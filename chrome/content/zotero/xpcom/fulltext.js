@@ -636,7 +636,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		var parentDirPath = linkMode == Zotero.Attachments.LINK_MODE_LINKED_FILE
 			? Zotero.Attachments.getStorageDirectory(item).path
 			: PathUtils.parent(filePath);
-		var cacheFilePath = OS.Path.join(parentDirPath, this.fulltextCacheFile);
+		var cacheFilePath = PathUtils.join(parentDirPath, this.fulltextCacheFile);
 		if (linkMode == Zotero.Attachments.LINK_MODE_LINKED_FILE) {
 			// Create only if missing -- don't use createDirectoryForItem(),
 			// which deletes and recreates the directory and would destroy
@@ -750,7 +750,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			
 			// If there's a processor cache file from syncing, use it
 			let processorCacheFile = this.getSyncedContentCacheFile(item).path;
-			if (await OS.File.exists(processorCacheFile)) {
+			if (await Zotero.File.exists(processorCacheFile)) {
 				let indexed = await Zotero.Fulltext.indexSyncedContent(itemID);
 				if (indexed) {
 					continue;
@@ -779,7 +779,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 	
 	
 	var indexItem = async function (item, path, complete) {
-		if (!(await OS.File.exists(path))) {
+		if (!(await Zotero.File.exists(path))) {
 			Zotero.debug(`${path} does not exist in indexItem()`, 2);
 			return false;
 		}
@@ -937,14 +937,14 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		var itemCacheFile = this.getItemCacheFile(item).path; // .zotero-ft-cache
 		
 		// If a storage directory doesn't exist, create it
-		if (!((await OS.File.exists(PathUtils.parent(processorCacheFile))))) {
+		if (!((await Zotero.File.exists(PathUtils.parent(processorCacheFile))))) {
 			await Zotero.Attachments.createDirectoryForItem(item);
 		}
 		
 		// If indexed previously and the existing extracted text matches the new text,
 		// just update the version
 		if (currentVersion !== false
-				&& ((await OS.File.exists(itemCacheFile)))
+				&& ((await Zotero.File.exists(itemCacheFile)))
 				&& ((await Zotero.File.getContentsAsync(itemCacheFile))) == data.content) {
 			Zotero.debug("Current full-text content matches remote for item "
 				+ libraryKey + " -- updating version");
@@ -1413,7 +1413,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 				// read from the file itself -- same sources findTextInItems() uses
 				if (Zotero.FullText.isCachedMIMEType(mimeType)) {
 					let cacheFile = Zotero.FullText.getItemCacheFile(item).path;
-					if (await OS.File.exists(cacheFile)) {
+					if (await Zotero.File.exists(cacheFile)) {
 						return await Zotero.File.getContentsAsync(cacheFile, 'utf-8', maxLength);
 					}
 					else if (await item.getFilePathAsync()) {
@@ -1901,7 +1901,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		try {
 			var item = await Zotero.Items.getAsync(itemID);
 			var cacheFile = this.getSyncedContentCacheFile(item).path;
-			if (!((await OS.File.exists(cacheFile))))  {
+			if (!((await Zotero.File.exists(cacheFile))))  {
 				Zotero.debug("Full-text content processor cache file doesn't exist for item " + itemID);
 				await Zotero.DB.queryAsync(
 					"UPDATE fulltextItems SET synced=? WHERE itemID=?",
@@ -2529,7 +2529,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			
 			if (this.isCachedMIMEType(mimeType)) {
 				let file = this.getItemCacheFile(item).path;
-				if (!((await OS.File.exists(file)))) {
+				if (!((await Zotero.File.exists(file)))) {
 					Zotero.debug("No cache file at " + file, 2);
 					// TODO: Index on-demand?
 					// What about a cleared full-text index?
@@ -2571,9 +2571,9 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		
 		// Copy cache file if it exists
 		var cacheFile = this.getItemCacheFile(fromItem).path;
-		if (await OS.File.exists(cacheFile)) {
+		if (await Zotero.File.exists(cacheFile)) {
 			try {
-				await OS.File.move(cacheFile, this.getItemCacheFile(toItem).path);
+				await Zotero.File.move(cacheFile, this.getItemCacheFile(toItem).path);
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -2649,11 +2649,11 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		var item = await Zotero.Items.getAsync(itemID);
 		switch (item.attachmentContentType) {
 			case 'application/pdf':
-				var file = OS.Path.join(
+				var file = PathUtils.join(
 					Zotero.Attachments.getStorageDirectory(item).path,
 					this.fulltextCacheFile
 				);
-				if (!((await OS.File.exists(file)))) {
+				if (!((await Zotero.File.exists(file)))) {
 					return false;
 				}
 				break;
@@ -2748,7 +2748,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 			if (!stats.total && !stats.indexed) {
 				let queued = false;
 				try {
-					queued = await OS.File.exists(this.getSyncedContentCacheFile(item).path);
+					queued = await Zotero.File.exists(this.getSyncedContentCacheFile(item).path);
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -2895,7 +2895,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 				let item = await Zotero.Items.getAsync(itemID);
 				let cacheFile = this.getSyncedContentCacheFile(item).path;
 				try {
-					await OS.File.remove(cacheFile, { ignoreAbsent: true });
+					await Zotero.File.removeIfExists(cacheFile);
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -3039,7 +3039,7 @@ Zotero.Fulltext = Zotero.FullText = new function () {
 		}
 		var cacheFile = this.getItemCacheFile(item).path;
 		Zotero.debug("Writing converted full-text content to " + cacheFile);
-		if (!(await OS.File.exists(PathUtils.parent(cacheFile)))) {
+		if (!(await Zotero.File.exists(PathUtils.parent(cacheFile)))) {
 			await Zotero.Attachments.createDirectoryForItem(item);
 		}
 		try {

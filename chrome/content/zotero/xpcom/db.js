@@ -1387,9 +1387,9 @@ Zotero.DBConnection.prototype.backUpDatabase = async function ({ force, suffix, 
 		// For standard backup, make sure last backup is old enough to replace
 		if (!suffix && !force) {
 			let backupFile = this._dbPath + '.bak';
-			if (await OS.File.exists(backupFile)) {
-				let currentDBTime = (await OS.File.stat(file)).lastModificationDate;
-				let lastBackupTime = (await OS.File.stat(backupFile)).lastModificationDate;
+			if (await Zotero.File.exists(backupFile)) {
+				let currentDBTime = (await Zotero.File.stat(file)).lastModificationDate;
+				let lastBackupTime = (await Zotero.File.stat(backupFile)).lastModificationDate;
 				// In WAL mode the database file's mtime advances only when the WAL is
 				// checkpointed, so changes still in the WAL leave it matching the backup
 				if (currentDBTime.getTime() == lastBackupTime.getTime()
@@ -1414,9 +1414,9 @@ Zotero.DBConnection.prototype.backUpDatabase = async function ({ force, suffix, 
 		// Copy via a temporary file so we don't run into disk space issues
 		// after deleting the old backup file
 		var tmpFile = this._dbPath + '.tmp';
-		if (await OS.File.exists(tmpFile)) {
+		if (await Zotero.File.exists(tmpFile)) {
 			try {
-				await OS.File.remove(tmpFile);
+				await Zotero.File.removeIfExists(tmpFile);
 			}
 			catch (e) {
 				if (e.name == 'NS_ERROR_FILE_ACCESS_DENIED') {
@@ -1452,8 +1452,8 @@ Zotero.DBConnection.prototype.backUpDatabase = async function ({ force, suffix, 
 		catch (e) {
 			Zotero.logError(e);
 			this._debug("Database file '" + PathUtils.filename(tmpFile) + "' can't be opened -- skipping backup");
-			if (await OS.File.exists(tmpFile)) {
-				await OS.File.remove(tmpFile);
+			if (await Zotero.File.exists(tmpFile)) {
+				await Zotero.File.removeIfExists(tmpFile);
 			}
 			return false;
 		}
@@ -1473,8 +1473,8 @@ Zotero.DBConnection.prototype.backUpDatabase = async function ({ force, suffix, 
 		if (!suffix && numBackups > 1) {
 			// Remove oldest backup file
 			let targetFile = this._dbPath + '.' + (numBackups - 1) + '.bak';
-			if (await OS.File.exists(targetFile)) {
-				await OS.File.remove(targetFile);
+			if (await Zotero.File.exists(targetFile)) {
+				await Zotero.File.removeIfExists(targetFile);
 			}
 			
 			// Shift old versions up
@@ -1485,24 +1485,24 @@ Zotero.DBConnection.prototype.backUpDatabase = async function ({ force, suffix, 
 				let targetFile = this._dbPath + '.' + targetNum + '.bak';
 				let sourceFile = this._dbPath + '.' + (sourceNum ? sourceNum + '.bak' : 'bak');
 				
-				if (!(await OS.File.exists(sourceFile))) {
+				if (!(await Zotero.File.exists(sourceFile))) {
 					continue;
 				}
 				
 				Zotero.debug("Moving " + PathUtils.filename(sourceFile)
 					+ " to " + PathUtils.filename(targetFile));
-				await OS.File.move(sourceFile, targetFile);
+				await Zotero.File.move(sourceFile, targetFile);
 			}
 		}
 		
 		let backupFile = this._dbPath + '.' + (suffix ? suffix + '.' : '') + 'bak';
 		
 		// Remove old backup file
-		if (await OS.File.exists(backupFile)) {
-			OS.File.remove(backupFile);
+		if (await Zotero.File.exists(backupFile)) {
+			await Zotero.File.removeIfExists(backupFile);
 		}
 		
-		await OS.File.move(tmpFile, backupFile);
+		await Zotero.File.move(tmpFile, backupFile);
 		
 		// A copy preserves the database file's mtime, and the backup interval is measured from
 		// the backup file's mtime, so a forced backup of a long-idle database could be rotated
@@ -1627,7 +1627,7 @@ Zotero.DBConnection.prototype._openConnectionAsync = async function () {
 	}
 	
 	try {
-		if (await OS.File.exists(corruptMarker)) {
+		if (await Zotero.File.exists(corruptMarker)) {
 			throw new Error(this.DB_CORRUPTION_STRINGS[0]);
 		}
 		// A database in WAL mode on a filesystem that can't use WAL has to be converted
@@ -2084,7 +2084,7 @@ Zotero.DBConnection.prototype._checkException = async function (e, { mainConfirm
 	var backupDate = null;
 	var backupTime = null;
 	try {
-		let info = await OS.File.stat(this._dbPath + '.bak');
+		let info = await Zotero.File.stat(this._dbPath + '.bak');
 		backupDate = info.lastModificationDate.toLocaleDateString();
 		backupTime = info.lastModificationDate.toLocaleTimeString();
 		Zotero.debug(`Found ${this._dbPath} with date of ${backupDate}`);
@@ -2530,20 +2530,20 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 			openNotExclusive: Zotero.isMac
 		}));
 		this._debug('Database recovered from stale journal files', 1);
-		if (await OS.File.exists(corruptMarker)) {
-			await OS.File.remove(corruptMarker);
+		if (await Zotero.File.exists(corruptMarker)) {
+			await Zotero.File.removeIfExists(corruptMarker);
 		}
 		return;
 	}
 	
 	// No backup file! Eek!
-	if (!(await OS.File.exists(backupFile))) {
+	if (!(await Zotero.File.exists(backupFile))) {
 		this._debug("No backup file for DB '" + this._dbName + "' exists", 1);
 		
 		let damagedFile;
 		
 		// If database file exists, move it to .damaged
-		if (await OS.File.exists(file)) {
+		if (await Zotero.File.exists(file)) {
 			this._debug('Saving damaged DB file with .damaged extension', 1);
 			damagedFile = this._dbPath + '.damaged';
 			damagedFile = await Zotero.File.moveToUnique(file, damagedFile);
@@ -2566,8 +2566,8 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 			openNotExclusive: Zotero.isMac
 		}));
 		
-		if (await OS.File.exists(corruptMarker)) {
-			await OS.File.remove(corruptMarker);
+		if (await Zotero.File.exists(corruptMarker)) {
+			await Zotero.File.removeIfExists(corruptMarker);
 		}
 		
 		if (damagedFile) {
@@ -2585,7 +2585,7 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 	
 	// Save damaged file, unless it was already moved by an interrupted earlier recovery
 	var damagedFile = this._dbPath + '.damaged';
-	if (await OS.File.exists(file)) {
+	if (await Zotero.File.exists(file)) {
 		this._debug('Saving damaged DB file with .damaged extension', 1);
 		damagedFile = await Zotero.File.moveToUnique(file, damagedFile);
 		await this._moveJournalFiles(file, damagedFile);
@@ -2641,8 +2641,8 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 			)
 		);
 		
-		if (await OS.File.exists(corruptMarker)) {
-			await OS.File.remove(corruptMarker);
+		if (await Zotero.File.exists(corruptMarker)) {
+			await Zotero.File.removeIfExists(corruptMarker);
 		}
 		
 		return;
@@ -2682,7 +2682,7 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 	let backupDate = '';
 	let backupTime = '';
 	try {
-		let info = await OS.File.stat(backupFile);
+		let info = await Zotero.File.stat(backupFile);
 		backupDate = info.lastModificationDate.toLocaleDateString();
 		backupTime = info.lastModificationDate.toLocaleTimeString();
 	}
@@ -2699,8 +2699,8 @@ Zotero.DBConnection.prototype._handleCorruptionMarker = async function () {
 		+ Zotero.getString('db.dbRestored.cloudStorage')
 	);
 	
-	if (await OS.File.exists(corruptMarker)) {
-		await OS.File.remove(corruptMarker);
+	if (await Zotero.File.exists(corruptMarker)) {
+		await Zotero.File.removeIfExists(corruptMarker);
 	}
 };
 

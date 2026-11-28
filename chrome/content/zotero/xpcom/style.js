@@ -99,8 +99,8 @@ Zotero.Styles = new function () {
 		var num = await _readStylesFromDirectory(dir, false);
 		
 		// hidden dir
-		var hiddenDir = OS.Path.join(dir, 'hidden');
-		if (await OS.File.exists(hiddenDir)) {
+		var hiddenDir = PathUtils.join(dir, 'hidden');
+		if (await Zotero.File.exists(hiddenDir)) {
 			num += await _readStylesFromDirectory(hiddenDir, true);
 		}
 
@@ -117,7 +117,7 @@ Zotero.Styles = new function () {
 			if (_styles[oldID] && _styles[newID]) {
 				Zotero.debug("Deleting renamed style '" + oldID + "'");
 				try {
-					await OS.File.remove(_styles[oldID].path);
+					await Zotero.File.removeIfExists(_styles[oldID].path);
 					delete _styles[oldID];
 				}
 				catch (e) {
@@ -181,48 +181,38 @@ Zotero.Styles = new function () {
 	var _readStylesFromDirectory = async function (dir, hidden) {
 		var numCached = 0;
 		
-		var iterator = new OS.File.DirectoryIterator(dir);
-		try {
-			while (true) {
-				let entries = await iterator.nextBatch(10); // TODO: adjust as necessary
-				if (!entries.length) break;
-				
-				for (let i = 0; i < entries.length; i++) {
-					let entry = entries[i];
-					let path = entry.path;
-					let fileName = entry.name;
-					if (!fileName || fileName[0] === "."
-							|| fileName.substr(-4).toLowerCase() !== ".csl"
-							|| entry.isDir) continue;
-					
-					try {
-						let code = await Zotero.File.getContentsAsync(path);
-						var style = new Zotero.Style(code, path);
-					}
-					catch (e) {
-						Components.utils.reportError(e);
-						Zotero.debug(e, 1);
-						continue;
-					}
-					if(style.styleID) {
-						// same style is already cached
-						if (_styles[style.styleID]) {
-							Components.utils.reportError('Style with ID ' + style.styleID
-								+ ' already loaded from ' + _styles[style.styleID].fileName);
-						} else {
-							// add to cache
-							_styles[style.styleID] = style;
-							_styles[style.styleID].hidden = hidden;
-							if(!hidden) _visibleStyles.push(style);
-						}
-					}
-					numCached++;
+		await Zotero.File.iterateDirectory(dir, async function (entry) {
+			let path = entry.path;
+			let fileName = entry.name;
+			if (!fileName || fileName[0] === "."
+					|| fileName.substr(-4).toLowerCase() !== ".csl"
+					|| entry.isDir) return;
+			
+			let style;
+			try {
+				let code = await Zotero.File.getContentsAsync(path);
+				style = new Zotero.Style(code, path);
+			}
+			catch (e) {
+				Components.utils.reportError(e);
+				Zotero.debug(e, 1);
+				return;
+			}
+			if (style.styleID) {
+				// same style is already cached
+				if (_styles[style.styleID]) {
+					Components.utils.reportError('Style with ID ' + style.styleID
+						+ ' already loaded from ' + _styles[style.styleID].fileName);
+				}
+				else {
+					// add to cache
+					_styles[style.styleID] = style;
+					_styles[style.styleID].hidden = hidden;
+					if (!hidden) _visibleStyles.push(style);
 				}
 			}
-		}
-		finally {
-			iterator.close();
-		}
+			numCached++;
+		});
 		return numCached;
 	};
 	
@@ -1052,12 +1042,12 @@ Zotero.Style.prototype.remove = async function () {
 	
 	if(dependentStyles) {
 		// copy dependent styles to hidden directory
-		let hiddenDir = OS.Path.join(Zotero.getStylesDirectory().path, 'hidden');
+		let hiddenDir = PathUtils.join(Zotero.getStylesDirectory().path, 'hidden');
 		await Zotero.File.createDirectoryIfMissingAsync(hiddenDir);
-		await OS.File.move(this.path, OS.Path.join(hiddenDir, PathUtils.filename(this.path)));
+		await Zotero.File.move(this.path, PathUtils.join(hiddenDir, PathUtils.filename(this.path)));
 	} else {
 		// remove defunct files
-		await OS.File.remove(this.path);
+		await Zotero.File.removeIfExists(this.path);
 	}
 	
 	// check to see if this style depended on a hidden one

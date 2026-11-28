@@ -30,7 +30,7 @@ Zotero.Profile = {
 	dir: OS.Constants.Path.profileDir,
 	
 	getDefaultInProfilesDir: async function (profilesDir) {
-		var profilesIni = OS.Path.join(profilesDir, "profiles.ini");
+		var profilesIni = PathUtils.join(profilesDir, "profiles.ini");
 		
 		try {
 			var iniContents = await Zotero.File.getContentsAsync(profilesIni);
@@ -66,20 +66,18 @@ Zotero.Profile = {
 		if (!defaultSection || !defaultSection.Path) return false;
 		
 		var defaultProfile = defaultSection.IsRelative === "1"
-			? OS.Path.join(profilesDir, ...defaultSection.Path.split("/"))
+			? PathUtils.join(profilesDir, ...defaultSection.Path.split("/"))
 			: defaultSection.Path;
 		
 		try {
 			// Note: exists() returns false on no access, so use stat() instead
-			await OS.File.stat(defaultProfile);
+			await Zotero.File.stat(defaultProfile);
 		}
 		catch (e) {
-			if (e instanceof OS.File.Error) {
-				if (e.becauseNoSuchFile) {
-					return false;
-				}
-				throw e;
+			if (e.name == 'NotFoundError') {
+				return false;
 			}
+			throw e;
 		}
 		return [defaultProfile, nSections > 1];
 	},
@@ -103,7 +101,7 @@ Zotero.Profile = {
 
 		for (let i = 0; i < otherProfiles.length; i++) {
 			let dir = otherProfiles[i];
-			let prefs = await Zotero.File.getContentsAsync(OS.Path.join(dir, "prefs.js"));
+			let prefs = await Zotero.File.getContentsAsync(PathUtils.join(dir, "prefs.js"));
 			prefs = prefs.trim().split(/(?:\r\n|\r|\n)/);
 
 			let keep = prefs.some(line => line.includes("extensions.zotero.useDataDir") && line.includes("true"))
@@ -127,8 +125,7 @@ Zotero.Profile = {
 	
 	
 	updateProfileDataDirectory: async function (profileDir, oldDir, newDir) {
-		let prefsFile = OS.Path.join(profileDir, "prefs.js");
-		let prefsFileTmp = OS.Path.join(profileDir, "prefs.js.tmp");
+		let prefsFile = PathUtils.join(profileDir, "prefs.js");
 		Zotero.debug("Updating " + prefsFile + " to point to new data directory");
 		let contents = await Zotero.File.getContentsAsync(prefsFile);
 		contents = contents
@@ -145,14 +142,7 @@ Zotero.Profile = {
 		);
 		let lineSep = Zotero.isWin ? "\r\n" : "\n";
 		contents = contents.join(lineSep) + lineSep;
-		await OS.File.writeAtomic(
-			prefsFile,
-			contents,
-			{
-				tmpPath: prefsFileTmp,
-				encoding: 'utf-8'
-			}
-		);
+		await Zotero.File.putContentsAsync(prefsFile, contents);
 	},
 	
 	
@@ -169,11 +159,11 @@ Zotero.Profile = {
 		var dirs = [];
 		await Zotero.File.iterateDirectory(profilesDir, async function (entry) {
 			// entry.isDir can be false for some reason on Travis, causing spurious test failures
-			if (Zotero.automatedTest && !entry.isDir && (await OS.File.stat(entry.path)).isDir) {
+			if (Zotero.automatedTest && !entry.isDir && (await Zotero.File.stat(entry.path)).isDir) {
 				Zotero.debug("Overriding isDir for " + entry.path);
 				entry.isDir = true;
 			}
-			if (entry.isDir && (await OS.File.exists(OS.Path.join(entry.path, "prefs.js")))) {
+			if (entry.isDir && (await Zotero.File.exists(PathUtils.join(entry.path, "prefs.js")))) {
 				dirs.push(entry.path);
 			}
 		});
