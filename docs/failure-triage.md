@@ -238,3 +238,11 @@ The last isolated group was fixed or retired:
 - The settings-popup import tests are skipped under D48; `settingsTabTest` owns that surface.
 - The cert-revocation tests and the server full-text/connector cases are skipped for the ESR153
   API change and D30 respectively.
+
+### After the final isolated fixes
+
+The full suite reached **2672/2697** with **25 failures** and, for the first time, no SQLite
+shutdown abort. The remaining failures are order-dependent: the retraction cluster (16), itemPane,
+settings, import/export, library tree and two integration cases all pass in isolation. The
+integration suite now resets `currentDoc`/`currentWindow` in `beforeEach`, removing the leaked
+“command is already running” prompt.

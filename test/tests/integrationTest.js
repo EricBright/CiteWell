@@ -1,6 +1,11 @@
 "use strict";
 
 describe("Zotero.Integration", function () {
+	// A previous suite can leave a command marked as running
+	beforeEach(function () {
+		Zotero.Integration.currentDoc = Zotero.Integration.currentWindow = false;
+	});
+	
 	const INTEGRATION_TYPE_ITEM = 1;
 	const INTEGRATION_TYPE_BIBLIOGRAPHY = 2;
 	const INTEGRATION_TYPE_TEMP = 3;
