@@ -128,7 +128,7 @@ should therefore be `getString`, not the attachment copy path.
 
 ## Update — cleanup outcome (2026-11-28)
 
-The 51 failures are now 14, and the survivors are all in quarantine:
+The 51 failures are now 11, and the survivors are all in quarantine:
 
 | Work | Result |
 |---|---|
@@ -148,9 +148,9 @@ What remains:
 |---|---:|---|
 | item | 2 | recognise a highlight annotation; recognise a strikeout annotation |
 | item | 3 | notifier `extraData` changed-field, deleted and tags shape |
-| zoteroPane | 3 | collection-menu build crashes on `menuitem` undefined |
 | zoteroPane | 6 | item-menu visibility/enabled state (export, report, trash) |
 
-The next pass should isolate these. The menu crash is a strong candidate for `menu.childNodes[i]`
-versus `menu.children[i]` in `buildCollectionContextMenu()`; the notifier failures are a shape
+The three collection-menu failures are fixed: the menu markup was missing the leading separator
+that the command list expected, and the loop now indexes element children rather than text nodes.
+The next pass should isolate the six item-menu selection cases; the notifier failures are a shape
 contract decision; the annotation pair may be D30 fallout rather than a defect.
