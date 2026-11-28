@@ -315,7 +315,7 @@ agent-mcp-note =
 agent-capabilities-title =
     Ce que les agents peuvent faire
 agent-capabilities-description =
-    Dans cette version : ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save pour DOI/ISBN/PMID/URL, annotation.list/create et export.note pour Markdown, collection.list/create/addItems, et ui.status/select/open/notify.
+    Dans cette version : ping, search, item.get/create/update/addNote, item.attachFile/attachURL, translate.save pour DOI/ISBN/PMID/URL, export.note pour Markdown, collection.list/create/addItems, et ui.status/select/open/notify.
 agent-protocol-note =
     La liste complète des verbes et le protocole se trouvent dans docs/agent.md.
 agent-setup-step1 = Installer la CLI depuis une copie des sources de CiteWell

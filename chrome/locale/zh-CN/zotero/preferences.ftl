@@ -313,7 +313,7 @@ agent-mcp-note =
 agent-capabilities-title =
     智能体可以做什么
 agent-capabilities-description =
-    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用于 DOI/ISBN/PMID/URL 的 translate.save、用于 Markdown 的 annotation.list/create 和 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
+    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用于 DOI/ISBN/PMID/URL 的 translate.save、用于 Markdown 的 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
 agent-protocol-note =
     完整的 verb 列表和协议位于 docs/agent.md。
 agent-setup-step1 = 从 CiteWell 源代码检出安装 CLI

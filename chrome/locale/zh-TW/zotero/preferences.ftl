@@ -314,7 +314,7 @@ agent-mcp-note =
 agent-capabilities-title =
     代理程式可以做什麼
 agent-capabilities-description =
-    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用於 DOI/ISBN/PMID/URL 的 translate.save、用於 Markdown 的 annotation.list/create 與 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
+    此版本中：ping、search、item.get/create/update/addNote、item.attachFile/attachURL、用於 DOI/ISBN/PMID/URL 的 translate.save、用於 Markdown 的 export.note、collection.list/create/addItems，以及 ui.status/select/open/notify。
 agent-protocol-note =
     完整的 verb 清單與協定位於 docs/agent.md。
 agent-setup-step1 = 從 CiteWell 原始碼檢出安裝 CLI

@@ -313,7 +313,7 @@ agent-mcp-note =
 agent-capabilities-title =
     エージェントにできること
 agent-capabilities-description =
-    このビルドでは: ping、search、item.get/create/update/addNote、item.attachFile/attachURL、DOI/ISBN/PMID/URL の translate.save、Markdown の annotation.list/create と export.note、collection.list/create/addItems、ui.status/select/open/notify。
+    このビルドでは: ping、search、item.get/create/update/addNote、item.attachFile/attachURL、DOI/ISBN/PMID/URL の translate.save、Markdown の export.note、collection.list/create/addItems、ui.status/select/open/notify。
 agent-protocol-note =
     verb の完全な一覧とプロトコルは docs/agent.md にあります。
 agent-setup-step1 = CiteWell のソースチェックアウトから CLI をインストール

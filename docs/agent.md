@@ -150,7 +150,7 @@ Reading collection, and show me."
 | 1 **built** | `/agent/v1` with token, audit, `ping/search/item/collection/ui` and `item.create/update/addNote`; Preferences → Agent access | A script creates an item, adds a note, selects and opens it; the app shows it; log has entries |
 | 2 **built** | `translate.save`, `attachFile`, `attachURL` | DOI → item with PDF, from one command, no manual metadata entry |
 | 3 **built** | `citewell mcp` with tool schemas | An MCP client lists tools and completes the worked example end to end |
-| 4 **built** | Reader annotations and export verbs | An agent highlights a page and exports the item's note to Markdown |
+| 4 **withdrawn (D30)** | Reader-annotation verbs, removed with the PDF layer; `export.note` remains available | An agent exports an item's note to Markdown |
 
 ## Non-goals
 
