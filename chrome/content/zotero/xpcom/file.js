@@ -671,8 +671,18 @@ Zotero.File = new function () {
 	/**
 	 * Whether a path exists. Callers use this instead of OS.File directly.
 	 */
-	this.exists = function (path) {
-		return IOUtils.exists(path);
+	this.exists = async function (path) {
+		try {
+			return await IOUtils.exists(path);
+		}
+		catch (e) {
+			// A path that can't be parsed on this platform can't exist here
+			if (e.name == 'NS_ERROR_FILE_UNRECOGNIZED_PATH'
+					|| (e.message && e.message.includes('NS_ERROR_FILE_UNRECOGNIZED_PATH'))) {
+				return false;
+			}
+			throw e;
+		}
 	}
 	
 	

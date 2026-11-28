@@ -2,6 +2,24 @@
 
 describe("Zotero.Intl", function () {
 	describe("#getString()", function () {
+		it("should substitute legacy %S placeholders in Fluent strings", function () {
+			if (Zotero.locale != 'en-US') {
+				this.skip();
+			}
+			assert.equal(
+				Zotero.getString('general.andJoiner', ['Foo', 'Bar']),
+				'Foo and Bar'
+			);
+			assert.equal(
+				Zotero.getString('general.pleaseRestart', 'CiteWell'),
+				'Please restart CiteWell.'
+			);
+			assert.equal(
+				Zotero.getString('general.quitApp', 'CiteWell'),
+				'Quit CiteWell'
+			);
+		});
+		
 		it("should return the right plural form", async function () {
 			if (Zotero.locale != 'en-US') {
 				this.skip();

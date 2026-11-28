@@ -222,6 +222,31 @@ afterEach(function () {
 var assert = chai.assert,
     expect = chai.expect;
 
+// Compatibility helpers used by inherited tests, written for a newer Chai.
+function _isEmpty(value) {
+	if (value == null) return true;
+	if (typeof value == 'string' || Array.isArray(value)) return value.length == 0;
+	if (value instanceof Map || value instanceof Set) return value.size == 0;
+	if (typeof value == 'object') return Object.keys(value).length == 0;
+	return false;
+}
+assert.isEmpty = function (value, msg) {
+	assert.isTrue(_isEmpty(value), msg);
+};
+assert.isNotEmpty = function (value, msg) {
+	assert.isFalse(_isEmpty(value), msg);
+};
+assert.exists = function (value, msg) {
+	assert.isTrue(value !== null && value !== undefined, msg);
+};
+assert.doesNotHaveAnyKeys = function (value, keys, msg) {
+	if (keys === undefined) {
+		assert.isTrue(Object.keys(value).length == 0, msg);
+		return;
+	}
+	assert.isFalse(keys.some(key => Object.prototype.hasOwnProperty.call(value, key)), msg);
+};
+
 // Set up tests to run
 var run = TestOptions.runTests;
 if (run && TestOptions.tests) {

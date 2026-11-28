@@ -123,6 +123,31 @@ Zotero.Intl = new function () {
 
 
 	/**
+	 * Substitute legacy `%S` placeholders left in a Fluent message.
+	 *
+	 * Fluent messages with names like `arg1` do not interpolate a bare `%S`, and the
+	 * legacy bundle is not consulted when a Fluent message exists. A handful of
+	 * strings still use the old form, so fill them from the supplied params.
+	 */
+	function substituteLegacyParams(str, params) {
+		if (params == undefined || !str.includes('%S')) {
+			return str;
+		}
+		if (typeof params == 'object' && !Array.isArray(params)) {
+			return str;
+		}
+		let values = Array.isArray(params) ? params : [params];
+		let index = 0;
+		return str.replace(/%S/g, () => {
+			if (index >= values.length) {
+				return '%S';
+			}
+			return values[index++];
+		});
+	}
+	
+	
+	/**
 	 * @param {String} name
 	 * @param {String[]} [params=[]] - Strings to substitute for placeholders
 	 * @param {Number} [num] - Number (also appearing in `params`) to use when determining which plural
@@ -151,7 +176,7 @@ Zotero.Intl = new function () {
 						? ftl.formatValueSync(ftlName)
 						: ftl.formatValueSync(ftlName, ftlParams);
 					if (ftlString) {
-						return ftlString;
+						return substituteLegacyParams(ftlString, params);
 					}
 				}
 				catch (e) {

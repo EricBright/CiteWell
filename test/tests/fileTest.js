@@ -1,4 +1,13 @@
 describe("Zotero.File", function () {
+	describe("#exists()", function () {
+		it("should return false for a path this platform can't parse", async function () {
+			if (Zotero.isWin) {
+				this.skip();
+			}
+			assert.isFalse(await Zotero.File.exists('C:\\test\\test.pdf'));
+		});
+	});
+	
 	describe("#getContentsAsync()", function () {
 		it("should handle an empty file", async function () {
 			var path = OS.Path.join(getTestDataDirectory().path, "empty");
