@@ -1,0 +1,127 @@
+# Failure triage
+
+**Date:** 2026-11-28 · **Scope:** the 51 failures observed in the current test logs across eight
+suites · **Status:** classified, not fixed
+
+The point of this pass is to separate three things that look identical in a red run: a test for a
+feature CiteWell deliberately removed, a broken test harness, and a real defect. The classes below
+are based on the failure text, the test body, the code at the failure site and the decisions in
+[decisions.md](decisions.md). No behaviour was changed.
+
+## Summary
+
+| Class | Count | Meaning |
+|---|---:|---|
+| OBSOLETE | 17 | The test asserts a feature removed by D30 (PDF renderer, PDF annotations, PDF full-text index) |
+| TEST DEBT | 12 | The test calls a Chai assertion that does not exist here, or leaks a stub into the next test |
+| REAL | 6 | The failure survives the decision record and points at live code |
+| QUARANTINE | 16 | Cannot be classified until the harness and obsolete tests stop cascading; rerun in isolation |
+
+## The one confirmed core defect
+
+**Fluent messages with legacy `%S` placeholders do not substitute their arguments.**
+`Zotero.Intl.getString()` returns the Fluent value as soon as it is truthy
+(`chrome/content/zotero/xpcom/intl.js:133`), but eight en-US Fluent strings still use `%S`
+instead of Fluent placeholders — for example `general.andJoiner` in
+`chrome/locale/en-US/zotero/preferences.ftl:536`. The result is literal `%S and %S` in
+`firstCreator` and in attachment filenames. This accounts for four failures (bidi in
+`itemTest`, two filename-template tests and `attachmentTitle` in `attachmentsTest`) and can
+surface in any UI string that takes parameters. This is live code, not a stale test.
+
+## OBSOLETE — 17
+
+These assert behaviour D30 removed. Rewrite or delete them; do not restore the feature to make
+them green.
+
+| Suite | Test | Why |
+|---|---|---|
+| fulltext | re-extract a queued item whose cache file is missing | PDF full-text index removed |
+| fulltext | not repeatedly re-extract a queued item with no extractable text | PDF index removed |
+| fulltext | index a PDF by default | PDF index removed |
+| fulltext | create cache files for linked attachments in storage directory | PDF index removed |
+| fulltext | preserve the SDT cache when reindexing a linked attachment | PDF index removed |
+| fulltext | ignore queued full-text content in non-indexedOnly mode | PDF index removed |
+| fulltext | not clear indexed items with missing file and no stats | PDF index removed |
+| fileHandlers | open a PDF internally when no handler is set | No in-app reader (D30) |
+| fileHandlers | open an EPUB internally when no handler is set | No in-app reader (D30) |
+| fileHandlers | open a snapshot internally when no handler is set | No in-app reader (D30) |
+| fileHandlers | use matching handler | Test asserts the removed reader path |
+| attachments | link to a file using a relative path within the base directory | Expects a call to the removed `indexPDF` |
+| fileInterface | import Citavi | `Zotero.PDFWorker.processCitaviAnnotations()` is a null stub (`xpcom/pdfWorker/manager.js:50`) |
+| mendeley | import collections, items, attachments & annotations | Annotation pipeline is stubbed out |
+| mendeley | translate a notebook content into Zotero note content | Annotation pipeline is stubbed out |
+| mendeley | import a notebook from Mendeley | Annotation pipeline is stubbed out |
+| mendeley | handle incorrect annotations | Annotation pipeline is stubbed out |
+
+The full-text suites should keep one test for a supported type (text/HTML), so the removal of
+PDF cases does not also remove coverage of the queued-content path that still exists.
+
+## TEST DEBT — 12
+
+| Suite | Test | Cause |
+|---|---|---|
+| zoteroPane | should not copy abstracts | `assert.isEmpty` is not a function |
+| zoteroPane | should not copy DOIs | `assert.isEmpty` is not a function |
+| zoteroPane | should duplicate top-level collection | `assert.exists` is not a function |
+| zoteroPane | should not allow copying between libraries if there is a linked collection | `assert.exists` is not a function |
+| item | shouldn't copy linked-item relation | `assert.isEmpty` is not a function |
+| item | should output highlight annotation | `assert.doesNotHaveAnyKeys` is not a function |
+| fulltext | should start each table's merge with a negative page count | `assert.isNotEmpty` is not a function |
+| fileHandlers | open a PDF in a new window … | `assert.isNotEmpty` is not a function plus reader removal |
+| fileHandlers | infer PDF page number when annotationID is passed | `open` still wrapped from the previous failure |
+| fileHandlers | fall back to fallback handler when location is passed | `open` still wrapped from the previous failure |
+| fileHandlers | fall back when handler is set to system … | `open` still wrapped from the previous failure |
+| attachments | link to a nonexistent file using a relative path … | `indexPDF` still wrapped from the previous failure |
+
+The missing assertion helpers are a test-bootstrap mismatch, not twelve independent defects. The
+stub leaks are a missing `finally`/restore in the test, not app behaviour. Fixing the helper and
+the restores should turn most of these green without touching application code.
+
+## REAL — 6
+
+| Suite | Test | Evidence | Next step |
+|---|---|---|---|
+| item | strip bidi isolates from firstCreator when unformatted = true | Expected value is `%S and %S`; root cause is the Fluent substitution above | Fix `getString`; add a unit test for `%S` + params |
+| attachments | accept basic formatting options | Same `%S` root cause | Same fix |
+| attachments | trim whitespaces from a value | Same `%S` root cause | Same fix |
+| attachments | be possible to test attachmentTitle | Same `%S` root cause | Same fix |
+| attachments | include a PubMed Central resolver after DOI OA resolvers | First resolver is not a function; the DOI branch did not run | Reproduce with a DOI-only item, then a DOI+PMCID item |
+| attachments | copy a linked file to a stored file | New attachment exists but `fileExists()` is false | Isolate with one attachment and trace storage path creation |
+
+## QUARANTINE — 16
+
+These are plausible cascades or contract drift. Do not classify until the test-debt fixes above
+land; rerun each in isolation.
+
+| Suite | Count | Tests |
+|---|---:|---|
+| zoteroPane | 6 | export/bibliography for multiple attachments; report across libraries; Remove from Collection alongside a saved search; Export Note; Delete Item in trash; Restore to Library |
+| zoteroPane | 3 | New Subcollection/Rename for multiple collections; cross-library report; Delete Collection label restore — all crash on `menuitem` undefined at `zoteroPane.js:3508` |
+| item | 2 | recognize a highlight annotation; recognize a strikeout annotation |
+| item | 3 | notifier `extraData` changed-field, changed-deleted and changed-tags shape |
+| translate | 1 | stored file has `saveFile` — the function exists only on one export branch |
+| recognizeDocument | 1 | standalone PDF by ISBN times out |
+
+The three menu crashes all occur after the two `assert.isEmpty` failures in the same suite, which
+makes test pollution at least as likely as a real menu bug. The notifier failures are contract
+drift: the implementation returns `{ title, extra }` while the test expects
+`{ changed: { title, extra } }`; one of the two is wrong, and no other caller currently reads
+`.changed`.
+
+## What this changes
+
+The fragility map said “attachments first.” The triage refines that: the attachments suite is
+mostly obsolete coverage and one test-harness leak, plus **one real cross-cutting defect** — the
+Fluent `%S` substitution, which reaches item display and attachment filenames. The first code fix
+should therefore be `getString`, not the attachment copy path.
+
+## Recommended order
+
+1. Fix `Zotero.Intl.getString()` so a Fluent message that still contains `%S` substitutes the
+   supplied params; add a focused test. This closes four failures and a user-visible bug.
+2. Fix the test bootstrap's missing Chai helpers and the stub restores; delete the 17 obsolete
+   tests (keeping supported-type coverage).
+3. Rerun the 16 quarantined tests in isolation; promote the real ones, dismiss the cascades.
+4. Only then take the PubMed resolver and linked-file copy failures, one at a time.
+
+*For the full documentation index, see [index.md](index.md).*
