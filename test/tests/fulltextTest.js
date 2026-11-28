@@ -149,7 +149,8 @@ describe("Zotero.FullText", function () {
 			assert.equal(version, 1);
 		});
 
-		it("should re-extract a queued item whose cache file is missing", async function () {
+		// D30: PDF full-text indexing was removed
+		it.skip("should re-extract a queued item whose cache file is missing", async function () {
 			let item = await importFileAttachment('test.pdf');
 			let cacheFile = Zotero.FullText.getItemCacheFile(item).path;
 			// Grab a real word from the extracted text to search for after re-extraction
@@ -168,7 +169,8 @@ describe("Zotero.FullText", function () {
 			assert.include(await contentSearch(item, word), item.id);
 		});
 
-		it("should not repeatedly re-extract a queued item with no extractable text", async function () {
+		// D30: PDF full-text indexing was removed
+		it.skip("should not repeatedly re-extract a queued item with no extractable text", async function () {
 			let item = await importFileAttachment('test.pdf');
 			let cacheFile = Zotero.FullText.getItemCacheFile(item).path;
 			await OS.File.remove(cacheFile);
@@ -505,7 +507,8 @@ describe("Zotero.FullText", function () {
 				);
 			})
 			
-			it("should index a PDF by default", async function () {
+			// D30: PDF full-text indexing was removed
+		it.skip("should index a PDF by default", async function () {
 				var item = await importFileAttachment('test.pdf');
 				assert.equal(
 					((await Zotero.Fulltext.getIndexedState(item))),
@@ -585,7 +588,8 @@ describe("Zotero.FullText", function () {
 		});
 		
 		describe("#indexPDF()", function () {
-			it("should create cache files for linked attachments in storage directory", async function () {
+			// D30: PDF full-text indexing was removed
+		it.skip("should create cache files for linked attachments in storage directory", async function () {
 				var filename = 'test.pdf';
 				var file = OS.Path.join(getTestDataDirectory().path, filename);
 				var tempDir = await getTempDirectory();
@@ -599,7 +603,8 @@ describe("Zotero.FullText", function () {
 				assert.isFalse(await OS.File.exists(OS.Path.join(storageDir, filename)));
 			});
 
-			it("should preserve the SDT cache when reindexing a linked attachment", async function () {
+			// D30: PDF full-text indexing was removed
+		it.skip("should preserve the SDT cache when reindexing a linked attachment", async function () {
 				var file = OS.Path.join(getTestDataDirectory().path, 'test.pdf');
 				var linkedFile = OS.Path.join(await getTempDirectory(), 'test.pdf');
 				await OS.File.copy(file, linkedFile);
@@ -774,7 +779,8 @@ describe("Zotero.FullText", function () {
 			assert.equal(total, 4);
 		});
 		
-		it("should ignore queued full-text content in non-indexedOnly mode", async function () {
+		// D30: PDF full-text indexing was removed
+		it.skip("should ignore queued full-text content in non-indexedOnly mode", async function () {
 			Zotero.Prefs.set('fulltext.pdfMaxPages', 0);
 			var item = await importFileAttachment('test.pdf');
 			Zotero.Prefs.clear('fulltext.pdfMaxPages');
@@ -819,7 +825,8 @@ describe("Zotero.FullText", function () {
 		});
 		
 		// This shouldn't happen, but before 5.0.85 items reindexed elsewhere could clear local stats
-		it("shouldn't clear indexed items with missing file and no stats", async function () {
+		// D30: PDF full-text indexing was removed
+		it.skip("shouldn't clear indexed items with missing file and no stats", async function () {
 			Zotero.Prefs.set('fulltext.pdfMaxPages', 1);
 			var item = await importFileAttachment('test.pdf');
 			Zotero.Prefs.clear('fulltext.pdfMaxPages');

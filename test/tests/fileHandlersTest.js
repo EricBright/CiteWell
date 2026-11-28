@@ -26,7 +26,8 @@ describe("Zotero.FileHandlers", () => {
 			win.close();
 		});
 		
-		it("should open a PDF internally when no handler is set", async function () {
+		// D30: no in-app reader
+		it.skip("should open a PDF internally when no handler is set", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			await Zotero.FileHandlers.open(pdf, {
 				location: { pageIndex: 2 }
@@ -42,7 +43,8 @@ describe("Zotero.FileHandlers", () => {
 			// assert.equal(reader._internalReader._state.primaryViewStats.pageIndex, 2);
 		});
 
-		it("should open an EPUB internally when no handler is set", async function () {
+		// D30: no in-app reader
+		it.skip("should open an EPUB internally when no handler is set", async function () {
 			let epub = await importFileAttachment('recognizeEPUB_test_content.epub');
 			let annotation = await createAnnotation('highlight', epub);
 			await Zotero.FileHandlers.open(epub, {
@@ -53,7 +55,8 @@ describe("Zotero.FileHandlers", () => {
 			await reader._waitForReader();
 		});
 
-		it("should open a snapshot internally when no handler is set", async function () {
+		// D30: no in-app reader
+		it.skip("should open a snapshot internally when no handler is set", async function () {
 			let snapshot = await importFileAttachment('test.html');
 			let annotation = await createAnnotation('highlight', snapshot);
 			await Zotero.FileHandlers.open(snapshot, {
@@ -64,7 +67,8 @@ describe("Zotero.FileHandlers", () => {
 			await reader._waitForReader();
 		});
 
-		it("should open a PDF in a new window when no handler is set and openInWindow is passed", async function () {
+		// D30: no in-app reader
+		it.skip("should open a PDF in a new window when no handler is set and openInWindow is passed", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			await Zotero.FileHandlers.open(pdf, {
 				location: { pageIndex: 2 },
@@ -74,7 +78,8 @@ describe("Zotero.FileHandlers", () => {
 			assert.isNotEmpty(Zotero.Reader.getWindowStates());
 		});
 		
-		it("should use matching handler", async function () {
+		// D30: no in-app reader
+		it.skip("should use matching handler", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			let wasRun = false;
 			let readerOpenSpy = sinon.spy(Zotero.Reader, 'open');
@@ -99,7 +104,8 @@ describe("Zotero.FileHandlers", () => {
 			readerOpenSpy.restore();
 		});
 
-		it("should infer PDF page number when annotationID is passed", async function () {
+		// D30: PDF annotations are not imported
+		it.skip("should infer PDF page number when annotationID is passed", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			let annotation = await createAnnotation('highlight', pdf);
 			let wasRun = false;
@@ -126,7 +132,8 @@ describe("Zotero.FileHandlers", () => {
 			readerOpenSpy.restore();
 		});
 
-		it("should fall back to fallback handler when location is passed", async function () {
+		// D30: FileHandlers.open() always hands off to the host
+		it.skip("should fall back to fallback handler when location is passed", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			let wasRun = false;
 			let readerOpenSpy = sinon.spy(Zotero.Reader, 'open');
@@ -159,7 +166,8 @@ describe("Zotero.FileHandlers", () => {
 			getSystemHandlerStub.restore();
 		});
 
-		it("should fall back when handler is set to system and we can't retrieve the system handler", async function () {
+		// D30: FileHandlers.open() always hands off to the host
+		it.skip("should fall back when handler is set to system and we can't retrieve the system handler", async function () {
 			let pdf = await importFileAttachment('wonderland_short.pdf');
 			let wasRun = false;
 			let readerOpenSpy = sinon.spy(Zotero.Reader, 'open');

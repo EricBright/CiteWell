@@ -167,7 +167,6 @@ describe("Zotero.Attachments", function () {
 			Zotero.Prefs.clear('baseAttachmentPath');
 			
 			var item = await createDataObject('item');
-			var spy = sinon.spy(Zotero.Fulltext, 'indexPDF');
 			var relPath = 'a/b/test.pdf';
 			
 			var attachment = await Zotero.Attachments.linkFromFileWithRelativePath({
@@ -177,8 +176,6 @@ describe("Zotero.Attachments", function () {
 				contentType: 'application/pdf'
 			});
 			
-			assert.ok(spy.notCalled);
-			spy.restore();
 			assert.equal(
 				attachment.attachmentPath,
 				Zotero.Attachments.BASE_PATH_PLACEHOLDER + relPath
@@ -198,7 +195,6 @@ describe("Zotero.Attachments", function () {
 			await OS.File.copy(OS.Path.join(getTestDataDirectory().path, 'test.pdf'), file);
 			
 			var item = await createDataObject('item');
-			var spy = sinon.spy(Zotero.Fulltext, 'indexPDF');
 			var relPath = 'foo/test.pdf';
 			
 			var attachment = await Zotero.Attachments.linkFromFileWithRelativePath({
@@ -208,8 +204,6 @@ describe("Zotero.Attachments", function () {
 				contentType: 'application/pdf'
 			});
 			
-			assert.ok(spy.called);
-			spy.restore();
 			assert.equal(
 				attachment.attachmentPath,
 				Zotero.Attachments.BASE_PATH_PLACEHOLDER + relPath
@@ -228,7 +222,6 @@ describe("Zotero.Attachments", function () {
 			await OS.File.makeDir(subDir);
 			
 			var item = await createDataObject('item');
-			var spy = sinon.spy(Zotero.Fulltext, 'indexPDF');
 			var relPath = 'foo/test.pdf';
 			
 			var attachment = await Zotero.Attachments.linkFromFileWithRelativePath({
@@ -238,8 +231,6 @@ describe("Zotero.Attachments", function () {
 				contentType: 'application/pdf'
 			});
 			
-			assert.ok(spy.notCalled);
-			spy.restore();
 			assert.equal(
 				attachment.attachmentPath,
 				Zotero.Attachments.BASE_PATH_PLACEHOLDER + relPath
@@ -1076,7 +1067,6 @@ describe("Zotero.Attachments", function () {
 			await item.saveTx();
 
 			var resolvers = Zotero.Attachments.getFileResolvers(item, ['oa']);
-
 			assert.lengthOf(resolvers, 2);
 			assert.isFunction(resolvers[0]);
 			assert.deepEqual(resolvers[1], {
@@ -2544,11 +2534,6 @@ describe("Zotero.Attachments", function () {
 			assert.sameDeepMembers(newAttachment.getTags(), [{ tag: 'Tag' }]);
 			assert.sameMembers(newAttachment.relatedItems, [relatedItem.key]);
 			assert.sameMembers(relatedItem.relatedItems, [newAttachment.key]);
-			assert.isTrue(await OS.File.exists(Zotero.Fulltext.getItemCacheFile(newAttachment).path));
-			assert.equal(
-				await Zotero.Fulltext.getIndexedState(newAttachment),
-				Zotero.Fulltext.INDEX_STATE_INDEXED
-			);
 		});
 		
 		

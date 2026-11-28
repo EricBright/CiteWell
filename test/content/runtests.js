@@ -239,6 +239,13 @@ assert.isNotEmpty = function (value, msg) {
 assert.exists = function (value, msg) {
 	assert.isTrue(value !== null && value !== undefined, msg);
 };
+// Chai 3's type check predates async functions and reports them as "asyncfunction"
+assert.isFunction = function (value, msg) {
+	assert.isTrue(typeof value == 'function', msg);
+};
+assert.isNotFunction = function (value, msg) {
+	assert.isFalse(typeof value == 'function', msg);
+};
 assert.doesNotHaveAnyKeys = function (value, keys, msg) {
 	if (keys === undefined) {
 		assert.isTrue(Object.keys(value).length == 0, msg);
