@@ -81,7 +81,7 @@ compatibility shim) and the one cross-device probe in `dataDirectory.js`, which 
 **Estimate:** two to three sessions in waves. **Risk:** large mechanical churn; do it after the
 agent manifest and never mix it with a behaviour change.
 
-## A3 — Dependency rules (continuous)
+## A3 — Dependency rules (continuous) — gates added 2026-11-28
 
 Three rules, enforced by a grep gate with a checked-in baseline that may only shrink:
 
@@ -93,6 +93,12 @@ Three rules, enforced by a grep gate with a checked-in baseline that may only sh
    callers.
 
 The first run records the current count; each later change lowers it. No mass rewrite.
+
+**Shipped:** `validate-dependencies` reads `tools/dependency-baseline.json` and fails if the
+`zotero.mjs` loader grows past **119 entries** or UI code grows past **40 `Zotero.DB.` calls**. It
+runs in the commit hook and CI. The path rule is already held by the file-plumbing ceiling; the
+no-new-globals rule is enforced by the loader count plus D69 (a new JavaScript file needs a recorded
+move-only justification).
 
 ## Explicitly not doing
 

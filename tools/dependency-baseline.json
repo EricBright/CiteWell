@@ -1,0 +1,5 @@
+{
+  "_note": "A3 ceilings. They may only go down: new modules are ES modules rather than loader globals, and UI code does not issue SQL. Lower a number when a change removes entries.",
+  "loaderEntries": 119,
+  "uiDbReferences": 40
+}

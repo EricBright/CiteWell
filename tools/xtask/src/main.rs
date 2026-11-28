@@ -35,6 +35,7 @@ commands:
   agent-docs         write the generated verb table in docs/agent.md
   validate-agent     validate resource/agent/verbs.json and its generated block
   validate-plumbing  check that OS.File/OS.Path use has not grown
+  validate-dependencies  check the loader and UI-SQL ceilings (A3)
   help        show this message
 ";
 
@@ -49,6 +50,7 @@ fn main() -> ExitCode {
         Some("agent-docs") => agent_docs(),
         Some("validate-agent") => validate_agent(),
         Some("validate-plumbing") => validate_plumbing(),
+        Some("validate-dependencies") => validate_dependencies(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
             ExitCode::SUCCESS
@@ -142,6 +144,74 @@ fn collect_scss_entries(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String
     Ok(())
 }
 
+
+fn validate_dependencies() -> ExitCode {
+    let root = repo_root();
+    let loader_path = root.join("chrome/content/zotero/zotero.mjs");
+    let loader = match fs::read_to_string(&loader_path) {
+        Ok(text) => text,
+        Err(e) => {
+            eprintln!("xtask: reading {}: {e}", loader_path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let loader_entries = loader
+        .lines()
+        .filter(|line| {
+            let trimmed = line.trim();
+            trimmed.starts_with('\'') && trimmed.trim_end_matches(',').ends_with('\'')
+        })
+        .count() as u64;
+
+    let mut ui_db_references = 0u64;
+    let mut scan = |dir: &Path| {
+        let Ok(entries) = fs::read_dir(dir) else { return };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("js") {
+                continue;
+            }
+            if let Ok(text) = fs::read_to_string(&path) {
+                ui_db_references += text.matches("Zotero.DB.").count() as u64;
+            }
+        }
+    };
+    scan(&root.join("chrome/content/zotero"));
+    scan(&root.join("chrome/content/zotero/preferences"));
+    scan(&root.join("chrome/content/zotero/elements"));
+
+    let baseline_path = root.join("tools/dependency-baseline.json");
+    let baseline: serde_json::Value = match fs::read_to_string(&baseline_path)
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+    {
+        Some(value) => value,
+        None => {
+            eprintln!("xtask: cannot read {}", baseline_path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let max_loader = baseline.get("loaderEntries").and_then(|v| v.as_u64()).unwrap_or(0);
+    let max_ui = baseline.get("uiDbReferences").and_then(|v| v.as_u64()).unwrap_or(0);
+    let mut failed = false;
+    if loader_entries > max_loader {
+        eprintln!(
+            "xtask: loader grew: {loader_entries} entries > {max_loader}; new code should be an ES module"
+        );
+        failed = true;
+    }
+    if ui_db_references > max_ui {
+        eprintln!(
+            "xtask: UI SQL grew: {ui_db_references} queries > {max_ui}; put queries in the data layer"
+        );
+        failed = true;
+    }
+    if failed {
+        return ExitCode::FAILURE;
+    }
+    println!("dependencies: loader {loader_entries}/{max_loader}, UI SQL {ui_db_references}/{max_ui}");
+    ExitCode::SUCCESS
+}
 
 fn collect_app_js(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
     let Ok(entries) = fs::read_dir(dir) else { return };

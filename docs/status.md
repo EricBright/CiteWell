@@ -46,10 +46,10 @@ Stage 0 baseline and the eight full-text failures it recorded are in Appendix A 
 **Next.**
 
 1. Screenshots for the README (`.webp` under `docs/images/readme/`), then README polish.
-2. The follow-on plumbing charter ([plumbing.md](plumbing.md)): the agent verb manifest is shipped
-   (`0942ffc56`) and A2 file plumbing is complete (waves 1–6, ceiling now 37 `OS.File` / 13
-   `OS.Path`, all in the adapter, the shim and the cross-device probe). A3 — no new globals, no SQL
-   in UI, one path owner — is the continuous rule; screenshots remain the surface item.
+2. The follow-on plumbing charter ([plumbing.md](plumbing.md)) is complete: the agent verb manifest
+   (`0942ffc56`), A2 file plumbing (waves 1–6, 37 `OS.File` / 13 `OS.Path`, all in the adapter, the
+   shim and the cross-device probe), and A3's gates (`validate-dependencies`: 119 loader entries, 40
+   UI SQL calls). Screenshots remain the surface item.
 3. Accessibility stays priority-deferred; native review stays opportunistic (D68).
 
 ## Handoff 2026-11-27 (release 2026.11.27.006, program closed)

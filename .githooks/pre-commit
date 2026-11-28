@@ -4,3 +4,4 @@ cargo run --quiet --manifest-path tools/Cargo.toml -p repo-guard -- --staged || 
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings || exit 1
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-agent || exit 1
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-plumbing || exit 1
+cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-dependencies || exit 1

@@ -25,6 +25,9 @@ jobs:
       - name: Check the file-plumbing ceiling
         run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-plumbing
 
+      - name: Check the loader and UI-SQL ceilings
+        run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-dependencies
+
       - name: Reject package, lockfile, and node_modules changes
         run: |
           set -eu
