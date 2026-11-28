@@ -2701,7 +2701,7 @@ Zotero.VersionHeader = {
 	update: function (ua, { mode = 'full' } = {}) {
 		var info = Services.appinfo;
 		if (!this._uaAppSuffixRe) {
-			this._uaAppSuffixRe = new RegExp(`\\s*${info.name}/\\S+`);
+			this._uaAppSuffixRe = new RegExp(`\\s*${Zotero.clientName}/\\S+`);
 			this._uaFirefoxComponent = `Firefox/${info.platformVersion.match(/^\d+/)[0]}.0`;
 		}
 		if (mode === 'plain') {
@@ -2711,7 +2711,7 @@ Zotero.VersionHeader = {
 			}
 		}
 		else {
-			let pos = ua.indexOf(info.name + '/');
+			let pos = ua.indexOf(Zotero.clientName + '/');
 			// Default UA (not a faked UA from the connector)
 			if (pos != -1) {
 				ua = ua.substring(0, pos) + `${this._uaFirefoxComponent} ` + ua.substring(pos);

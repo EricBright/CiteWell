@@ -337,7 +337,8 @@ describe("Local API Server", function () {
 				assert.isTrue(request.getResponseHeader('Location').startsWith('file:'));
 			});
 
-			it("should return full-text data from /fulltext", async function () {
+			// D30: PDF full-text indexing removed
+		it.skip("should return full-text data from /fulltext", async function () {
 				let { response } = await apiGet(`/users/0/items/${subcollectionAttachment.key}/fulltext`);
 				assert.deepEqual(response, {
 					content: 'Zotero [zoh-TAIR-oh] is a free, easy-to-use tool to help you collect, organize, cite, and share your research sources.',
@@ -536,7 +537,8 @@ describe("Local API Server", function () {
 	});
 
 	describe("<userOrGroupPrefix>/fulltext?since=", function () {
-		it("should return items with full-text content", async function () {
+		// D30: PDF full-text indexing removed
+		it.skip("should return items with full-text content", async function () {
 			let { response } = await apiGet('/users/0/fulltext?since=0');
 			assert.deepEqual(Object.entries(response), [[subcollectionAttachment.key, subcollectionAttachment.version]]);
 		});

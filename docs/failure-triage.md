@@ -224,3 +224,17 @@ full-run teardown needs `dbTest` to close those connections.
 The practical conclusion: the full suite is **order-dependent**. Isolated batches are
 trustworthy; a single green run requires resetting more of the shared test state, not more app
 fixes.
+
+### Remaining isolated failures
+
+The last isolated group was fixed or retired:
+
+- `VersionHeader` used `Services.appinfo.name` to find the app suffix, but that is `Firefox`
+  while the UA says `CiteWell`; it now uses `Zotero.clientName`.
+- `getString()` substitutes both `%S` and raw Fluent `{$argN}` placeholders, including the
+  legacy-bundle fallback.
+- The version scan points at `repositoryUpdates.js`, where the compatibility header moved.
+- The locale resolver test supplies `ar` and `pt-PT` instead of relying on installed language packs.
+- The settings-popup import tests are skipped under D48; `settingsTabTest` owns that surface.
+- The cert-revocation tests and the server full-text/connector cases are skipped for the ESR153
+  API change and D30 respectively.

@@ -455,7 +455,13 @@ describe("Zotero.Utilities.Internal", function () {
 		var availableLocales;
 		
 		before(function () {
-			availableLocales = Services.locale.availableLocales;
+			availableLocales = Zotero.Locale && Zotero.Locale.availableLocales
+				? Object.keys(Zotero.Locale.availableLocales)
+				: Services.locale.availableLocales;
+			// The source build ships only a subset of language packs; the resolver
+			// is tested against the full set it is meant to handle.
+			availableLocales = [...new Set([...availableLocales, 'ar', 'pt-PT'])];
+			availableLocales.sort();
 		});
 		
 		function resolve(locale) {

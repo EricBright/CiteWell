@@ -27,7 +27,7 @@ describe("Version", function () {
 		// that value.
 		var sites = [
 			["xpcom/server/server.js", 'X-Zotero-Version: "+Zotero.zoteroCompatVersion'],
-			["xpcom/schema.js", "'version=' + Zotero.zoteroCompatVersion"],
+			["xpcom/repositoryUpdates.js", "'version=' + Zotero.zoteroCompatVersion"],
 			["xpcom/recognizeDocument.js", "var version = Zotero.zoteroCompatVersion;"],
 			["xpcom/integration.js", "[data.zoteroVersion, Zotero.zoteroCompatVersion]"],
 			["xpcom/integration.js", "zoteroVersion: this.zoteroVersion || Zotero.zoteroCompatVersion,"],

@@ -507,7 +507,7 @@ styles-deleteStyles =
     Are you sure you want to delete the selected styles?
 
 styles-installError =
-    "{ $arg1 }" is not a valid style file.
+    "{$arg1}" is not a valid style file.
 
 zotero-preferences-export-quickCopy-citationStyles =
     Citation Styles

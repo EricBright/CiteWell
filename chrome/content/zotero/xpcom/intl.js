@@ -130,7 +130,7 @@ Zotero.Intl = new function () {
 	 * strings still use the old form, so fill them from the supplied params.
 	 */
 	function substituteLegacyParams(str, params) {
-		if (params == undefined || !str.includes('%S')) {
+		if (params == undefined) {
 			return str;
 		}
 		if (typeof params == 'object' && !Array.isArray(params)) {
@@ -138,11 +138,17 @@ Zotero.Intl = new function () {
 		}
 		let values = Array.isArray(params) ? params : [params];
 		let index = 0;
-		return str.replace(/%S/g, () => {
+		str = str.replace(/%S/g, () => {
 			if (index >= values.length) {
 				return '%S';
 			}
 			return values[index++];
+		});
+		// Some Fluent messages still use the raw `{$arg1}` form, which
+		// formatValueSync() leaves untouched
+		return str.replace(/\{\s*\$arg(\d+)\s*\}/g, (match, number) => {
+			let value = values[number - 1];
+			return value === undefined ? match : value;
 		});
 	}
 	
@@ -234,7 +240,7 @@ Zotero.Intl = new function () {
 			Zotero.debug(msg, 1);
 			return name;
 		}
-		return l10n;
+		return substituteLegacyParams(l10n, params);
 	};
 
 	/**

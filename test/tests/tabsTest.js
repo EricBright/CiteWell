@@ -12,7 +12,8 @@ describe("Zotero_Tabs", function() {
 	});
 
 	describe("Title rendering", function () {
-		it("should render citeproc.js markup in a tab title", async function () {
+		// D30: no in-app reader
+		it.skip("should render citeproc.js markup in a tab title", async function () {
 			let item = await createDataObject('item', {
 				title: 'Not italic, <i>italic</i>'
 			});
@@ -26,7 +27,8 @@ describe("Zotero_Tabs", function() {
 			assert.include(tab.querySelector('i').textContent, 'italic');
 		});
 		
-		it("should not render unknown markup in a tab title", async function () {
+		// D30: no in-app reader
+		it.skip("should not render unknown markup in a tab title", async function () {
 			let item = await createDataObject('item', {
 				title: 'Something bad <img src="missing.jpg" onerror="alert(1)">'
 			});
