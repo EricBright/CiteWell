@@ -32,9 +32,10 @@ workspace with the tools you already use, and treats automation and repairabilit
 - The engine and SQLite schema, so an existing library can be imported.
 - Translators, with their update channel intact (D33).
 - CSL styles and locales.
-- Zotero's official browser connector and the Google Docs integration, through the unchanged
-  `/connector/*` protocol; CiteWell ships no add-on of its own (D47), and the sync-dependent parts
-  of Google Docs remain gated.
+- Zotero's official browser connector, including Google Docs citation insertion, through the
+  unchanged `/connector/*` protocol; CiteWell ships no add-on of its own (D47). Google Docs runs in
+  Firefox rather than in the app, CiteWell holds no Google session, and connector features that need
+  a Zotero account or online library are not available.
 
 ## The selling points
 
@@ -95,7 +96,8 @@ system packages, no system-wide service, no online account (D19).
 ### 8. Your data stays inspectable
 
 SQLite plus files on disk, a documented export path, and local reads that need no account. Online
-sync is off in this build; the code remains but is not a supported path ([export.md](export.md)).
+sync, accounts and cloud storage are not offered; the library stays local
+([export.md](export.md)).
 
 ### 9. Built to be repaired
 
@@ -155,7 +157,7 @@ of them. The settings catalog reduces placement to one entry in
 a renderer mounts it. The validator refuses an entry without a home, a label or exactly one binding,
 and the settings page is generated from the same file and checked for drift.
 
-Measured against the last release before the work: the eight pane documents shrank from 870 to 91
+Measured against the last release before the work: the eight pane documents shrank from 871 to 91
 lines, `preferences.dtd` from 163 to 37 entities, and `zotero.properties` lost 102 entries in the
 reference locale. Eight panes, 39 sections and 31 items are now catalog data. The three string
 systems became one for Settings and shared messages, with `Zotero.getString()` resolving Fluent
@@ -174,12 +176,10 @@ The ordinary change gets cheaper:
 - **Review the change:** the diff is placement data, not five coupled files.
 
 The costs are real and worth stating. Components keep their internals in code, so data-only tooling
-can reason about placement but not about what a component draws. Initialization now runs after
-mounting, and the first release with this architecture shipped two regressions — a heading placed
-below the sections, and an element id that repeated its section id, which let initialization wipe
-its own buttons. The renderer is central infrastructure (2,574 lines) rather than markup spread
-across panes. One plural message still lives in the old bundle because the compatibility lookup does
-not carry a plural selector.
+can reason about placement but not about what a component draws. Initialization runs after mounting,
+so component code must query the assembled tree rather than rely on markup order. The renderer is
+central infrastructure (2,574 lines) rather than markup spread across panes. One plural message still
+lives in the old bundle because the compatibility lookup does not carry a plural selector.
 
 Verification is executable: `cargo run -p xtask -- validate-settings` checks the schema and the
 generated page, and 85 tests across the settings-related suites cover placement, panes, text and the
@@ -187,7 +187,7 @@ Agent, import and bibliography surfaces that use them.
 
 ## What you give up
 
-- Sync, collaboration and mobile: not supported; the code is present but disabled.
+- Sync, collaboration and mobile: not supported.
 - PDF annotation and in-app note editing: intentionally removed.
 - Plugins: parked, not removed; they do not run.
 - Windows and macOS: not built.

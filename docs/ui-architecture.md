@@ -371,6 +371,15 @@ ids in a process-wide map and `navigateToPane` resolved a `#old-id` target throu
 for the resolver. Both were removed the same day: the aliases had existed only to bridge the move,
 and nothing external depended on them. Old pre-move ids no longer resolve; current ids do.
 
+**Rollout hazards, now guarded (2026-11-27).** Sections mount before their initializer runs, so the
+initializer sees the assembled pane; an element id inside a component must not repeat the section
+id, or the lookup returns the wrapper (the first catalog build used `agent-setup` for both, and the
+setup snippet never filled). The pane heading is inserted by the renderer, so placement must skip
+it: unordered sections were inserted before the first hand-written child — the heading — and the
+titles fell to the bottom. A raw HTML `textarea` also painted beyond its allocated height and
+overlapped its buttons; a XUL `description` with `white-space: pre-wrap` takes part in box layout.
+All three shipped in `.003` and were fixed in `.004`.
+
 ### Rollback and kill criteria
 
 Each pilot is one group: reverting it is restoring its markup and removing one catalog entry. Old
