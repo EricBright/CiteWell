@@ -193,3 +193,15 @@ The remaining clusters are the D30 reader/merge/PDF cases, seven `undoHistoryTes
 
 A trustworthy full run needs the integration lock cleared before the suite starts, and the
 reader/merge suites retired or rewritten under D30.
+
+### Retirement and teardown pass
+
+`readerTest.js` is removed, and the nine PDF/content-hash merge tests plus four PDF-metadata and
+annotation-note collection-view tests are skipped under D30. `mergeItemsTest` and
+`collectionViewItemTreeTest` now pass **164/164** with a clean exit.
+
+The test runner closes the database before quitting (`Zotero.DB.closeDatabase(true)`), so the
+SQLite shutdown blocker no longer aborts the process after a red run. `intlTest` (3/3) and
+`integrationTest` (39/39) both exit with status 0. The integration modal does not reproduce when
+`integrationTest` runs alone; the full-run prompt is test-state pollution, not an integration
+failure.

@@ -2584,7 +2584,8 @@ describe("CollectionViewItemTree", function () {
 			);
 		});
 		
-		it("should automatically retrieve metadata for top-level PDF if pref is enabled", async function () {
+		// D30: PDF metadata/annotation UI removed
+		it.skip("should automatically retrieve metadata for top-level PDF if pref is enabled", async function () {
 			Zotero.Prefs.set('autoRecognizeFiles', true);
 			
 			var view = zp.itemsView;
@@ -2639,7 +2640,8 @@ describe("CollectionViewItemTree", function () {
 			Zotero.HTTP.mock = null;
 		});
 		
-		it("should automatically retrieve metadata for multiple top-level PDFs if pref is enabled", async function () {
+		// D30: PDF metadata/annotation UI removed
+		it.skip("should automatically retrieve metadata for multiple top-level PDFs if pref is enabled", async function () {
 			Zotero.Prefs.set('autoRecognizeFiles', true);
 			
 			var view = zp.itemsView;
@@ -3606,7 +3608,8 @@ describe("CollectionViewItemTree", function () {
 			assert.isFalse(zp.itemsView.getRowIndexByID(inkID));
 		});
 
-		it("should add note from selected annotation rows of the same parent item", async () => {
+		// D30: PDF metadata/annotation UI removed
+		it.skip("should add note from selected annotation rows of the same parent item", async () => {
 			zp.itemsView.expandAllRows(true);
 
 			// make sure underline has some text, just like highlight
@@ -3627,7 +3630,8 @@ describe("CollectionViewItemTree", function () {
 			assert.equal(text.split("<p>").length - 1, 2);
 		});
 
-		it("should create note from selected annotation rows of different parent items", async () => {
+		// D30: PDF metadata/annotation UI removed
+		it.skip("should create note from selected annotation rows of different parent items", async () => {
 			let toplevelItemTwo = await createDataObject('item', { title: "Another entry" });
 			let attachmentTwo = await importFileAttachment('test.pdf', { title: 'PDF two', parentItemID: toplevelItemTwo.id });
 			let highlightTwo = await createAnnotation('highlight', attachmentTwo);

@@ -14,7 +14,15 @@ function quit(failed) {
 		IOUtils.write(PathUtils.join(FileUtils.getDir("ProfD", []).path, "success"), new Uint8Array(0));
 	}
 	if(!TestOptions.noquit) {
-		setTimeout(function () {
+		setTimeout(async function () {
+			// Close the database before quitting so SQLite's shutdown blocker
+			// doesn't abort the process after a red run
+			try {
+				await Zotero.DB.closeDatabase(true);
+			}
+			catch (e) {
+				Zotero.logError(e);
+			}
 			Components.classes['@mozilla.org/toolkit/app-startup;1']
 				.getService(Components.interfaces.nsIAppStartup)
 				.quit(Components.interfaces.nsIAppStartup.eForceQuit);

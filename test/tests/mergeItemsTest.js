@@ -240,7 +240,8 @@ describe("Item merging", function () {
 		assert.isTrue(attachment3.deleted);
 	});
 
-	it("should merge identical attachments based on content hash", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should merge identical attachments based on content hash", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importPDFAttachment(item1);
 
@@ -260,7 +261,8 @@ describe("Item merging", function () {
 		assert.isTrue(attachment2.deleted);
 	});
 
-	it("should merge identical attachments based on content hash when unindexed", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should merge identical attachments based on content hash when unindexed", async function () {
 		let item1 = await createDataObject('item');
 		let attachment1 = await importPDFAttachment(item1);
 
@@ -322,7 +324,8 @@ describe("Item merging", function () {
 		assert.isFalse(attachment2.deleted);
 	});
 
-	it("should allow small differences when hashing content", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should allow small differences when hashing content", async function () {
 		let { hashAttachmentText } = ChromeUtils.importESModule("chrome://zotero/content/mergeItems.mjs");
 
 		let item1 = await createDataObject('item', { setTitle: true });
@@ -348,7 +351,8 @@ describe("Item merging", function () {
 		assert.isTrue(attachment2.deleted);
 	});
 
-	it("should keep similar but not identical attachments separate", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should keep similar but not identical attachments separate", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('wonderland_short.pdf', { parentItemID: item1.id });
 
@@ -368,7 +372,8 @@ describe("Item merging", function () {
 		assert.isFalse(attachment2.deleted);
 	});
 
-	it("should only match attachments one-to-one", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should only match attachments one-to-one", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('wonderland_short_watermarked_1.pdf', { parentItemID: item1.id });
 
@@ -786,7 +791,8 @@ describe("Item merging", function () {
 		assert.isTrue(item2.deleted);
 	});
 
-	it("should not merge two matching PDF attachments with embedded annotations", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should not merge two matching PDF attachments with embedded annotations", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('duplicatesMerge_annotated_1.pdf', { parentID: item1.id });
 
@@ -819,7 +825,8 @@ describe("Item merging", function () {
 		assert.isTrue(attachment2.getAnnotations()[0].annotationIsExternal);
 	});
 
-	it("should merge imported annotations into PDF with remaining unimported annotations", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should merge imported annotations into PDF with remaining unimported annotations", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('duplicatesMerge_annotated_1.pdf', { parentID: item1.id });
 
@@ -855,7 +862,8 @@ describe("Item merging", function () {
 		assert.isFalse(attachment2.getAnnotations()[1].annotationIsExternal);
 	});
 
-	it("should merge a non-master PDF without embedded annotations into a master PDF with embedded annotations", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should merge a non-master PDF without embedded annotations into a master PDF with embedded annotations", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('duplicatesMerge_annotated_1.pdf', { parentID: item1.id });
 
@@ -872,7 +880,8 @@ describe("Item merging", function () {
 		assert.isTrue(attachment2.deleted);
 	});
 
-	it("should merge a master PDF without embedded annotations into a non-master PDF with embedded annotations", async function () {
+	// D30: PDF content/annotation hashing removed
+		it.skip("should merge a master PDF without embedded annotations into a non-master PDF with embedded annotations", async function () {
 		let item1 = await createDataObject('item', { setTitle: true });
 		let attachment1 = await importFileAttachment('duplicatesMerge_notAnnotated.pdf', { parentID: item1.id });
 
