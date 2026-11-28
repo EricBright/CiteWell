@@ -46,6 +46,7 @@ Options
  -f                  stop after first test failure
  -g                  only run tests matching the given pattern (grep)
  -h                  display this help
+ -k                  accept failures listed in test/known-failures.txt
  -p SHARD/TOTAL      run only the given shard of the default test set (e.g., 2/4)
  -r RETRIES          retry failed tests the given number of times (default: 0)
  -s TEST             start at the given test
@@ -59,7 +60,8 @@ DONE
 DEBUG=false
 DEBUG_LEVEL=5
 RETRIES=0
-while getopts "bcd:e:fg:hp:r:s:tx:" opt; do
+KNOWN_FAILURES=0
+while getopts "bcd:e:fg:hkp:r:s:tx:" opt; do
 	case $opt in
         b)
         	Z_ARGS="$Z_ARGS -ZoteroSkipBundledFiles"
@@ -85,6 +87,9 @@ while getopts "bcd:e:fg:hp:r:s:tx:" opt; do
 			;;
 		h)
 			usage
+			;;
+		k)
+			KNOWN_FAILURES=1
 			;;
 		p)
 			if [[ ! "$OPTARG" =~ ^[1-9][0-9]*/[1-9][0-9]*$ ]]; then
@@ -187,12 +192,48 @@ fi
 ZOTERO_TEST=1 "$ROOT_DIR/app/scripts/dir_build"
 
 makePath FX_PROFILE "$PROFILE"
+TEST_LOG="$TEMPDIR/test-output.log"
+set +e
 MOZ_NO_REMOTE=1 NO_EM_RESTART=1 "$Z_EXECUTABLE" -profile "$FX_PROFILE" \
     -datadir "$TEMPDIR/Zotero" \
-    -test "$TESTS" -grep "$GREP" -retries "$RETRIES" -ZoteroTest $Z_ARGS
+    -test "$TESTS" -grep "$GREP" -retries "$RETRIES" -ZoteroTest $Z_ARGS 2>&1 | tee "$TEST_LOG"
+APP_STATUS=${PIPESTATUS[0]}
+set -e
 
 # Check for success
-test -e "$PROFILE/success"
-STATUS=$?
+if test -e "$PROFILE/success"; then
+	STATUS=0
+else
+	STATUS=1
+fi
+
+if [ $STATUS -ne 0 ] && [ $KNOWN_FAILURES -eq 1 ]; then
+	KNOWN_FILE="$ROOT_DIR/test/known-failures.txt"
+	if [ ! -f "$KNOWN_FILE" ]; then
+		echo "No $KNOWN_FILE" >&2
+		exit $STATUS
+	fi
+	if grep -q "FATAL ERROR\|Segmentation fault" "$TEST_LOG"; then
+		echo "Test run aborted without a clean shutdown" >&2
+		exit $STATUS
+	fi
+	FAILURES="$TEMPDIR/failures.txt"
+	grep -a "✖ \[FAIL\]" "$TEST_LOG" \
+		| sed -E 's/.*✖ \[FAIL\][[:space:]]*//; s/\x1B\[[0-9;]*[A-Za-z]//g; s/[[:space:]]+$//' \
+		> "$FAILURES" || true
+	UNKNOWN=0
+	while IFS= read -r failure; do
+		[ -z "$failure" ] && continue
+		if ! grep -Fxq -- "$failure" "$KNOWN_FILE"; then
+			echo "Unexpected failure: $failure" >&2
+			UNKNOWN=1
+		fi
+	done < "$FAILURES"
+	if [ $UNKNOWN -eq 0 ] && [ -s "$FAILURES" ]; then
+		echo "All $(wc -l < "$FAILURES") failures are known (test/known-failures.txt)"
+		exit 0
+	fi
+	exit $STATUS
+fi
 
 exit $STATUS

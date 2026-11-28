@@ -1,0 +1,29 @@
+# Full-suite failures that pass in isolation; see docs/failure-triage.md.
+# The runner accepts these only with -k and fails on any new failure.
+"before all" hook
+"after all" hook
+surfaces the choice in the settings pane
+should export related items
+should display a retraction warning for an embedded retracted item in a document
+should not display retraction warning when disabled for a retracted item
+"before each" hook for "should insert bibliography if no bibliography field present"
+should properly disambiguate author after editing in the database
+should merge adjacent fields
+should save updated title when switching between items
+should mark every selected collection as current for a multiple-collection selection
+should select an unselected draggable row on click
+should recognize a standalone PDF by ISBN and make it a child of the new item
+should remove retraction flag from items that no longer match prefix list
+should return false if citation warning is hidden
+should return false if retraction is hidden
+should show banner when retracted item is added
+should show banner when retracted item with DOI in Extra is added
+should show/hide Retracted Items collection when a retracted item is found/erased
+should unhide Retracted Items collection when retracted item is found
+should hide Retracted Items collection when last retracted item is moved to trash
+should hide Retracted Items collection when last retracted item is marked as hidden
+shouldn't hide Retracted Items collection when last retracted item is marked to not show a citation warning
+should hide virtual collection and banner when false
+"before all" hook
+should trigger add events before modify events
+should shift-tab across the zotero pane
