@@ -737,7 +737,7 @@ export function ZoteroProtocolHandler() {
 					if (!path) {
 						return this._errorChannel("File not found");
 					}
-					return this.getURIInputStream(OS.Path.toFileURI(path));
+					return this.getURIInputStream(PathUtils.toFileURI(path));
 				}
 				catch (e) {
 					Zotero.debug(e, 1);

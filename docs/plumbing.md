@@ -67,19 +67,16 @@ test-covered; the old API disappears gradually.
 The first wave confirms what `Zotero.File` already wraps; if it is a thin alias, the wrapping
 functions land before any call site moves.
 
-**Waves 1–5 shipped:** `Zotero.File` gained `exists`, `makeDirectory`, `removeDir`,
-`removeEmptyDir`, `move`, `stat`, `setModificationTime`, `normalizePath`, `readBinary` and
-`fromFileURI` over `IOUtils`; `retractions.js`, `dictionaries.js`, `annotations.js`,
-`locateManager.js`, `dataDirectory.js`, `attachments.js`, `profile.js`, `style.js`, `fulltext.js`,
-`data/item.js`, `db.js`, `fileInterface.js` and the Mendeley importer now use those wrappers and
-`PathUtils`, with no `OS.File`/`OS.Path` left in them except the one cross-device probe in
-`dataDirectory.js` (it needs `OS.File.move`'s errno to tell a different filesystem from a real
-failure). `validate-plumbing` runs in the commit hook and CI and fails if the app-wide counts grow
-above `tools/file-plumbing.json` (now **82 `OS.File`, 39 `OS.Path`**). Tests: file, retractions,
-dictionaries, annotations, sidecars and data directory 81/81 + 16/16; import 24/24; profile, style
-and bibliography 24/24; database 67/67; file interface and Mendeley 16/21 with the five inherited
-Citavi/annotation failures; item 238/246 and attachments 108/115 with the same inherited failures as
-the Stage 0 baseline.
+**Waves 1–6 shipped (A2 complete):** `Zotero.File` is the app's file interface, with
+`exists`, `makeDirectory`, `removeDir`, `removeEmptyDir`, `move`, `stat`, `setModificationTime`,
+`normalizePath`, `readBinary` and `fromFileURI` over `IOUtils`. Every app module that touched files
+now goes through it and `PathUtils`: the repository updater, translator and style loaders, the
+Mendeley importer, notes, the database, library import, session, the command-line handler and the
+UI file-opening paths. `validate-plumbing` runs in the commit hook and CI and fails if the app-wide
+counts grow above `tools/file-plumbing.json`, now **37 `OS.File`, 13 `OS.Path`**. Those remaining
+references are the three legitimate homes: `file.js` itself (the adapter), `osfile.mjs` (the
+compatibility shim) and the one cross-device probe in `dataDirectory.js`, which needs
+`OS.File.move`'s errno to tell a different filesystem from a real failure.
 
 **Estimate:** two to three sessions in waves. **Risk:** large mechanical churn; do it after the
 agent manifest and never mix it with a behaviour change.

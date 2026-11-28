@@ -87,25 +87,15 @@ Zotero.Translators = new function () {
 		var numCached = 0;
 		var filesInCache = {};
 		var translatorsDir = Zotero.getTranslatorsDirectory().path;
-		var iterator = new OS.File.DirectoryIterator(translatorsDir);
-		try {
-			while (true) {
-				let entries = await iterator.nextBatch(5); // TODO: adjust as necessary
-				if (!entries.length) break;
-				for (let i = 0; i < entries.length; i++) {
-					let entry = entries[i];
+		var entries = [];
+		await Zotero.File.iterateDirectory(translatorsDir, (entry) => entries.push(entry));
+		for (let entry of entries) {
 					let path = entry.path;
 					let fileName = entry.name;
 					
 					if (!(/^[^.].*\.js$/.test(fileName))) continue;
 					
-					let lastModifiedTime;
-					if ('winLastWriteDate' in entry) {
-						lastModifiedTime = entry.winLastWriteDate.getTime();
-					}
-					else {
-						lastModifiedTime = ((await OS.File.stat(path))).lastModificationDate.getTime();
-					}
+					let lastModifiedTime = (await Zotero.File.stat(path)).lastModificationDate.getTime();
 					
 					// Check passed cache for metadata
 					let memCacheJSON = false;
@@ -153,7 +143,7 @@ Zotero.Translators = new function () {
 							// so that the translator is reinstalled the next time it's updated.
 							//
 							// TODO: Reinstall the correct translator immediately
-							await OS.File.remove(path);
+							await Zotero.File.removeIfExists(path);
 							let sql = "DELETE FROM translatorCache WHERE fileName=?";
 							await Zotero.DB.queryAsync(sql, fileName);
 							continue;
@@ -174,7 +164,7 @@ Zotero.Translators = new function () {
 							translator.logError("Deleting older translator "
 								+ existingTranslator.fileName + " with same ID as "
 								+ translator.fileName);
-							await OS.File.remove(existingTranslator.path);
+							await Zotero.File.removeIfExists(existingTranslator.path);
 							await removeFromCaches(existingTranslator);
 						}
 						// If cached translator is newer, keep it and discard this one
@@ -182,7 +172,7 @@ Zotero.Translators = new function () {
 							translator.logError("Deleting older translator "
 								+ translator.fileName + " with same ID as "
 								+ existingTranslator.fileName);
-							await OS.File.remove(translator.path);
+							await Zotero.File.removeIfExists(translator.path);
 							await removeFromDBCache(translator.fileName);
 							continue;
 						}
@@ -192,7 +182,7 @@ Zotero.Translators = new function () {
 							translator.logError("Translator " + existingTranslator.fileName
 								+ " with same ID is already loaded and matches label -- deleting "
 								+ translator.fileName);
-							await OS.File.remove(translator.path);
+							await Zotero.File.removeIfExists(translator.path);
 							await removeFromDBCache(translator.fileName);
 							continue;
 						}
@@ -201,7 +191,7 @@ Zotero.Translators = new function () {
 							translator.logError("Deleting translator " + translator.fileName
 								+ " with same ID as " + existingTranslator.fileName + " but with "
 								+ "mismatched filename");
-							await OS.File.remove(existingTranslator.path);
+							await Zotero.File.removeIfExists(existingTranslator.path);
 							await removeFromCaches(existingTranslator);
 						}
 					}
@@ -228,11 +218,6 @@ Zotero.Translators = new function () {
 					}
 					
 					numCached++;
-				}
-			}
-		}
-		finally {
-			iterator.close();
 		}
 		
 		// Remove translators from DB cache if no file
@@ -630,7 +615,7 @@ Zotero.Translators = new function () {
 		var existingTranslator = this.get(metadata.translatorID);
 		var sameFile = existingTranslator && destFile == existingTranslator.path;
 		
-		var exists = await OS.File.exists(destFile);
+		var exists = await Zotero.File.exists(destFile);
 		if (!sameFile && exists) {
 			var msg = `Overwriting translator with same filename '${PathUtils.filename(destFile)}'`;
 			Zotero.debug(msg, 1);

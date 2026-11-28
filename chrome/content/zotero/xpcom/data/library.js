@@ -682,7 +682,7 @@ Zotero.Library.prototype._eraseData = async function (env) {
 					let dir = Zotero.Attachments.getStorageDirectoryByLibraryAndKey(
 						this.libraryID, key
 					).path;
-					await OS.File.removeDir(
+					await Zotero.File.removeDir(
 						dir,
 						{
 							ignoreAbsent: true,

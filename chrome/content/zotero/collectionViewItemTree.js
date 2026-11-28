@@ -1810,7 +1810,7 @@ class CollectionViewItemTree extends ItemTree {
 						// If moving, delete original file
 						if (dropEffect == "move") {
 							try {
-								await OS.File.remove(file);
+								await Zotero.File.removeIfExists(file);
 							}
 							catch (e) {
 								Zotero.logError("Error deleting original file " + file + " after drag");

@@ -584,7 +584,7 @@ Zotero.BrowserRequest = {
 		}
 		catch (e) {
 			try {
-				await OS.File.remove(path, { ignoreAbsent: true });
+				await Zotero.File.removeIfExists(path);
 			}
 			catch (err) {
 				Zotero.logError(err);
@@ -654,7 +654,7 @@ Zotero.BrowserRequest = {
 		}
 		catch (e) {
 			try {
-				await OS.File.remove(path, { ignoreAbsent: true });
+				await Zotero.File.removeIfExists(path);
 			}
 			catch (err) {
 				Zotero.logError(err);

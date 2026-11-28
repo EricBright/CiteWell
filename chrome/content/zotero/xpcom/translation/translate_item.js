@@ -1273,7 +1273,7 @@ Zotero.Translate.ItemGetter.prototype = {
 						// files would cause a name conflict, and build a list of transfers
 						// that should be performed
 						//
-						// TODO: Change the below to use OS.File.DirectoryIterator?
+						// TODO: Change the below to use Zotero.File.iterateDirectory?
 						if (linkMode != Zotero.Attachments.LINK_MODE_LINKED_FILE
 								&& (await Zotero.Attachments.hasMultipleFiles(attachment))) {
 							var copySrcs = [];

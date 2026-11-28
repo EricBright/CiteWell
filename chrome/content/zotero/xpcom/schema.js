@@ -248,16 +248,15 @@ Zotero.Schema = new function () {
 			if (updated || updated === undefined) {
 				Zotero.getSystemInfo()
 					.then(async function (sysInfo) {
-						var logDir = OS.Path.join(Zotero.DataDirectory.dir, 'logs');
+						var logDir = PathUtils.join(Zotero.DataDirectory.dir, 'logs');
 						Zotero.File.createDirectoryIfMissing(logDir)
 						
-						await OS.Path
 						var output = Zotero.getErrors(true).join('\n\n')
 							+ "\n\n" + sysInfo + "\n\n"
 							+ "=========================================================\n\n"
 							+ logLines.join('\n\n');
 						return Zotero.File.putContentsAsync(
-							OS.Path.join(logDir, 'upgrade.log'),
+							PathUtils.join(logDir, 'upgrade.log'),
 							output
 						);
 					});
@@ -2590,7 +2589,7 @@ Zotero.Schema = new function () {
 	var _migrateUserData_80_filePaths = async function () {
 		var rows = await Zotero.DB.queryAsync("SELECT itemID, libraryID, key, linkMode, path FROM items JOIN itemAttachments USING (itemID) WHERE path != ''");
 		var tmpDirFile = Zotero.getTempDirectory();
-		var tmpFilePath = OS.Path.normalize(tmpDirFile.path)
+		var tmpFilePath = Zotero.File.normalizePath(tmpDirFile.path)
 			// Since relative paths can be applied on different platforms,
 			// just use "/" everywhere for oonsistency, and convert on use
 			.replace(/\\/g, '/');
@@ -2605,7 +2604,7 @@ Zotero.Schema = new function () {
 				let relPath = path.substr(prefix.length)
 				let file = tmpDirFile.clone();
 				file.setRelativeDescriptor(file, relPath);
-				path = OS.Path.normalize(file.path).replace(/\\/g, '/');
+				path = Zotero.File.normalizePath(file.path).replace(/\\/g, '/');
 				
 				// setRelativeDescriptor() silently uses the parent directory on Windows
 				// if the filename contains certain characters, so strip them —
@@ -2617,7 +2616,7 @@ Zotero.Schema = new function () {
 				// accidentally use the parent dir.
 				if (path == tmpFilePath) {
 					file.setRelativeDescriptor(file, Zotero.File.getValidFileName(relPath, true));
-					path = OS.Path.normalize(file.path);
+					path = Zotero.File.normalizePath(file.path);
 					if (path == tmpFilePath) {
 						Zotero.logError("Cannot fix relative descriptor for item " + libraryKey + " -- not converting path");
 						continue;

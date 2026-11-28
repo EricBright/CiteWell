@@ -295,7 +295,7 @@ Zotero.Notes = new function () {
 			if (!source) continue;
 			let leaf = PathUtils.filename(source);
 			let targetLeaf = `${image.key}-${leaf}`;
-			let target = OS.Path.join(storageDir, targetLeaf);
+			let target = PathUtils.join(storageDir, targetLeaf);
 			await IOUtils.copy(source, target);
 			let alt = image.getField('title') || 'image';
 			replacements.push(`![${alt}](<${targetLeaf}>)`);
@@ -377,7 +377,7 @@ Zotero.Notes = new function () {
 					continue;
 				}
 				let dir = Zotero.Attachments.getStorageDirectory(attachment).path;
-				let path = OS.Path.join(dir, 'annotations.md');
+				let path = PathUtils.join(dir, 'annotations.md');
 				if (await IOUtils.exists(path)) {
 					result.skipped++;
 					continue;

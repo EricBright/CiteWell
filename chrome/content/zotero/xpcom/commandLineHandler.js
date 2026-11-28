@@ -45,7 +45,7 @@ Zotero.CommandLineIngester = {
 			}
 			// See below
 			else if (uri.schemeIs("file")) {
-				fileToOpen = OS.Path.fromFileURI(uri.spec);
+				fileToOpen = Zotero.File.fromFileURI(uri.spec);
 			}
 			else {
 				Zotero.debug(`Not handling URL: ${uri.spec}\n\n`);

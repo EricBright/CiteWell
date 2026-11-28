@@ -96,7 +96,7 @@ Zotero.RepositoryUpdates = new function () {
 	var _updateBundledFilesAtLocation = async function (installLocation, mode, skipVersionUpdates) {
 		const { FileUtils } = ChromeUtils.importESModule("resource://gre/modules/FileUtils.sys.mjs");
 		
-		var isUnpacked = (await OS.File.stat(installLocation)).isDir;
+		var isUnpacked = (await Zotero.File.stat(installLocation)).isDir;
 		if(!isUnpacked) {
 			var xpiZipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
 					.createInstance(Components.interfaces.nsIZipReader);
@@ -114,7 +114,7 @@ Zotero.RepositoryUpdates = new function () {
 				var titleField = 'title';
 				var fileExt = ".csl";
 				var destDir = Zotero.getStylesDirectory().path;
-				var hiddenDir = OS.Path.join(destDir, 'hidden');
+				var hiddenDir = PathUtils.join(destDir, 'hidden');
 				break;
 			
 			default:
@@ -133,26 +133,12 @@ Zotero.RepositoryUpdates = new function () {
 		
 		// If directory is empty, force reinstall
 		var forceReinstall = true;
-		let iterator = new OS.File.DirectoryIterator(destDir);
-		try {
-			outer:
-			while (true) {
-				let entries = await iterator.nextBatch(10);
-				if (!entries.length) break;
-				for (let i = 0; i < entries.length; i++) {
-					let entry = entries[i];
-					if (!entry.name.match(fileNameRE) || entry.isDir) {
-						continue;
-					}
-					// Not empty
-					forceReinstall = false;
-					break outer;
-				}
+		await Zotero.File.iterateDirectory(destDir, (entry) => {
+			if (entry.name.match(fileNameRE) && !entry.isDir) {
+				// Not empty
+				forceReinstall = false;
 			}
-		}
-		finally {
-			iterator.close();
-		}
+		});
 		
 		//
 		// Delete obsolete files
@@ -161,11 +147,11 @@ Zotero.RepositoryUpdates = new function () {
 		var lastVersion = await Zotero.DB.valueQueryAsync(sql);
 		
 		if(isUnpacked) {
-			var deleted = OS.Path.join(installLocation, 'deleted.txt');
+			var deleted = PathUtils.join(installLocation, 'deleted.txt');
 			// In source builds, deleted.txt is in the translators directory
-			if (!(await OS.File.exists(deleted))) {
-				deleted = OS.Path.join(installLocation, 'translators', 'deleted.txt');
-				if (!(await OS.File.exists(deleted))) {
+			if (!(await Zotero.File.exists(deleted))) {
+				deleted = PathUtils.join(installLocation, 'translators', 'deleted.txt');
+				if (!(await Zotero.File.exists(deleted))) {
 					deleted = false;
 				}
 			}
@@ -182,19 +168,13 @@ Zotero.RepositoryUpdates = new function () {
 		
 		if (!lastVersion || lastVersion < deletedVersion) {
 			var toDelete = [];
-			let iterator = new OS.File.DirectoryIterator(destDir);
-			try {
-				while (true) {
-					let entries = await iterator.nextBatch(10);
-					if (!entries.length) break;
-					for (let i = 0; i < entries.length; i++) {
-						let entry = entries[i];
-						
-						if ((entry.isSymLink && !(await OS.File.exists(entry.path))) // symlink to non-existent file
-								|| entry.isDir) {
-							continue;
-						}
-						
+			let entries = [];
+			await Zotero.File.iterateDirectory(destDir, (entry) => entries.push(entry));
+			for (let entry of entries) {
+				if (entry.isDir) {
+					continue;
+				}
+				
 						if (mode == 'styles') {
 							switch (entry.name) {
 								// Remove update script (included with 3.0 accidentally)
@@ -231,18 +211,13 @@ Zotero.RepositoryUpdates = new function () {
 							}
 							toDelete.push(entry.path);
 						}
-					}
-				}
-			}
-			finally {
-				iterator.close();
 			}
 			
 			for (let i = 0; i < toDelete.length; i++) {
 				let path = toDelete[i];
 				Zotero.debug("Deleting " + path);
 				try {
-					await OS.File.remove(path);
+					await Zotero.File.removeIfExists(path);
 				}
 				catch (e) {
 					Components.utils.reportError(e);
@@ -270,7 +245,7 @@ Zotero.RepositoryUpdates = new function () {
 		// XPI installation
 		if (!isUnpacked) {
 			var modTime = Math.round(
-				(await OS.File.stat(installLocation)).lastModificationDate.getTime() / 1000
+				(await Zotero.File.stat(installLocation)).lastModificationDate.getTime() / 1000
 			);
 			
 			if (!forceReinstall && lastModTime && modTime <= lastModTime) {
@@ -328,7 +303,7 @@ Zotero.RepositoryUpdates = new function () {
 						continue;
 					}
 					
-					let tmpFile = OS.Path.join(tmpDir, entry.fileName)
+					let tmpFile = PathUtils.join(tmpDir, entry.fileName)
 					await Zotero.File.removeIfExists(tmpFile);
 					xpiZipReader.extract("translators/" + entry.fileName, new FileUtils.File(tmpFile));
 					
@@ -341,23 +316,13 @@ Zotero.RepositoryUpdates = new function () {
 						await Zotero.File.removeIfExists(existingObj.path);
 					}
 					
-					let destFile = OS.Path.join(destDir, entry.fileName);
-					try {
-						await OS.File.move(tmpFile, destFile, {
-							noOverwrite: true
-						});
+					let destFile = PathUtils.join(destDir, entry.fileName);
+					if (await Zotero.File.exists(destFile)) {
+						// Could overwrite automatically, but we want to log this
+						Zotero.warn("Overwriting translator with same filename '"
+							+ entry.fileName + "'");
 					}
-					catch (e) {
-						if (e instanceof OS.File.Error && e.becauseExists) {
-							// Could overwrite automatically, but we want to log this
-							Zotero.warn("Overwriting translator with same filename '"
-								+ entry.fileName + "'");
-							await OS.File.move(tmpFile, destFile);
-						}
-						else {
-							throw e;
-						}
-					}
+					await Zotero.File.move(tmpFile, destFile);
 				}
 			}
 			// Styles
@@ -367,7 +332,7 @@ Zotero.RepositoryUpdates = new function () {
 					let entry = entries.getNext();
 					let fileName = entry.substr(7); // strip 'styles/'
 					
-					let tmpFile = OS.Path.join(tmpDir, fileName);
+					let tmpFile = PathUtils.join(tmpDir, fileName);
 					await Zotero.File.removeIfExists(tmpFile);
 					xpiZipReader.extract(entry, new FileUtils.File(tmpFile));
 					let code = await Zotero.File.getContentsAsync(tmpFile);
@@ -385,10 +350,10 @@ Zotero.RepositoryUpdates = new function () {
 					}
 					
 					if (!existingObj || !existingObj.hidden) {
-						await OS.File.move(tmpFile, OS.Path.join(destDir, fileName));
+						await Zotero.File.move(tmpFile, PathUtils.join(destDir, fileName));
 					}
 					else {
-						await OS.File.move(tmpFile, OS.Path.join(hiddenDir, fileName));
+						await Zotero.File.move(tmpFile, PathUtils.join(hiddenDir, fileName));
 					}
 				}
 			}
@@ -397,16 +362,17 @@ Zotero.RepositoryUpdates = new function () {
 		}
 		// Source installation
 		else {
-			let sourceDir = OS.Path.join(installLocation, mode);
+			let sourceDir = PathUtils.join(installLocation, mode);
 			
 			var modTime = 0;
 			let sourceFilesExist = false;
-			let iterator;
+			let entries;
 			try {
-				iterator = new OS.File.DirectoryIterator(sourceDir);
+				entries = [];
+				await Zotero.File.iterateDirectory(sourceDir, (entry) => entries.push(entry));
 			}
 			catch (e) {
-				if (e instanceof OS.File.Error && e.becauseNoSuchFile) {
+				if (e.name == 'NotFoundError') {
 					let msg = "No " + mode + " directory";
 					Zotero.debug(msg, 1);
 					Components.utils.reportError(msg);
@@ -414,32 +380,16 @@ Zotero.RepositoryUpdates = new function () {
 				}
 				throw e;
 			}
-			try {
-				while (true) {
-					let entries = await iterator.nextBatch(10); // TODO: adjust as necessary
-					if (!entries.length) break;
-					for (let i = 0; i < entries.length; i++) {
-						let entry = entries[i];
+			for (let entry of entries) {
 						if (!entry.name.match(fileNameRE) || entry.isDir) {
 							continue;
 						}
 						sourceFilesExist = true;
-						let d;
-						if ('winLastWriteDate' in entry) {
-							d = entry.winLastWriteDate;
-						}
-						else {
-							d = (await OS.File.stat(entry.path)).lastModificationDate;
-						}
+						let d = (await Zotero.File.stat(entry.path)).lastModificationDate;
 						let fileModTime = Math.round(d.getTime() / 1000);
 						if (fileModTime > modTime) {
 							modTime = fileModTime;
 						}
-					}
-				}
-			}
-			finally {
-				iterator.close();
 			}
 			
 			// Don't attempt installation for source build with missing styles
@@ -455,17 +405,12 @@ Zotero.RepositoryUpdates = new function () {
 			
 			Zotero.debug("Updating installed " + mode + " from " + mode + " directory");
 			
-			iterator = new OS.File.DirectoryIterator(sourceDir);
-			try {
-				while (true) {
-					let entries = await iterator.nextBatch(10); // TODO: adjust as necessary
-					if (!entries.length) break;
-					
-					for (let i = 0; i < entries.length; i++) {
-						let entry = entries[i];
-						if (!entry.name.match(fileNameRE) || entry.isDir) {
-							continue;
-						}
+			entries = [];
+			await Zotero.File.iterateDirectory(sourceDir, (entry) => entries.push(entry));
+			for (let entry of entries) {
+				if (!entry.name.match(fileNameRE) || entry.isDir) {
+					continue;
+				}
 						let newObj;
 						if (mode == 'styles') {
 							let code = await Zotero.File.getContentsAsync(entry.path);
@@ -501,26 +446,18 @@ Zotero.RepositoryUpdates = new function () {
 						try {
 							let destFile;
 							if (!existingObj || !existingObj.hidden) {
-								destFile = OS.Path.join(destDir, fileName);
+								destFile = PathUtils.join(destDir, fileName);
 							}
 							else {
-								destFile = OS.Path.join(hiddenDir, fileName)
+								destFile = PathUtils.join(hiddenDir, fileName)
 							}
 							
-							try {
-								await OS.File.copy(entry.path, destFile, { noOverwrite: true });
+							if (await Zotero.File.exists(destFile)) {
+								// Could overwrite automatically, but we want to log this
+								Zotero.warn("Overwriting " + modeType + " with same filename "
+									+ "'" + fileName + "'", 1);
 							}
-							catch (e) {
-								if (e instanceof OS.File.Error && e.becauseExists) {
-									// Could overwrite automatically, but we want to log this
-									Zotero.warn("Overwriting " + modeType + " with same filename "
-										+ "'" + fileName + "'", 1);
-									await OS.File.copy(entry.path, destFile);
-								}
-								else {
-									throw e;
-								}
-							}
+							await Zotero.File.copyFile(entry.path, destFile);
 							
 							if (mode == 'translators') {
 								cache[fileName] = newObj.metadata;
@@ -529,11 +466,6 @@ Zotero.RepositoryUpdates = new function () {
 						catch (e) {
 							Components.utils.reportError("Error copying file " + fileName + ": " + e);
 						}
-					}
-				}
-			}
-			finally {
-				iterator.close();
 			}
 		}
 		
@@ -1112,9 +1044,9 @@ Zotero.RepositoryUpdates = new function () {
 		
 		// Delete local version of remote translators with priority 0
 		if (xmlnode.getElementsByTagName('priority')[0].firstChild.nodeValue === "0") {
-			if (translator && (await OS.File.exists(translator.path))) {
+			if (translator && (await Zotero.File.exists(translator.path))) {
 				Zotero.debug("Deleting translator '" + translator.label + "'");
-				await OS.File.remove(translator.path);
+				await Zotero.File.removeIfExists(translator.path);
 			}
 			return false;
 		}
@@ -1183,7 +1115,7 @@ Zotero.RepositoryUpdates = new function () {
 		if (!xmlnode.firstChild) {
 			var style = Zotero.Styles.get(uri);
 			if (style) {
-				await OS.File.remove(style.path);
+				await Zotero.File.removeIfExists(style.path);
 			}
 			return;
 		}
@@ -1192,9 +1124,9 @@ Zotero.RepositoryUpdates = new function () {
 		var oldID = xmlnode.getAttribute('oldID');
 		if (oldID) {
 			var style = Zotero.Styles.get(oldID, true);
-			if (style && (await OS.File.exists(style.path))) {
+			if (style && (await Zotero.File.exists(style.path))) {
 				Zotero.debug("Deleting renamed style '" + oldID + "'");
-				await OS.File.remove(style.path);
+				await Zotero.File.removeIfExists(style.path);
 			}
 		}
 		
@@ -1210,11 +1142,11 @@ Zotero.RepositoryUpdates = new function () {
 			if (!matches) {
 				throw ("Invalid style URI '" + uri + "' from repository");
 			}
-			var destFile = OS.Path.join(
+			var destFile = PathUtils.join(
 				Zotero.getStylesDirectory().path,
 				matches[1] + ".csl"
 			);
-			if (await OS.File.exists(destFile)) {
+			if (await Zotero.File.exists(destFile)) {
 				throw new Error("Different style with filename '" + matches[1]
 					+ "' already exists");
 			}

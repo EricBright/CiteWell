@@ -293,9 +293,9 @@ const { CommandLineOptions } = ChromeUtils.importESModule("chrome://zotero/conte
 			if (e.name == 'NotFoundError') {
 				let foundInDefault = false;
 				try {
-					foundInDefault = (await OS.File.exists(Zotero.DataDirectory.defaultDir))
-						&& (await OS.File.exists(
-							OS.Path.join(
+					foundInDefault = (await Zotero.File.exists(Zotero.DataDirectory.defaultDir))
+						&& (await Zotero.File.exists(
+							PathUtils.join(
 								Zotero.DataDirectory.defaultDir,
 								Zotero.DataDirectory.getDatabaseFilename()
 							)

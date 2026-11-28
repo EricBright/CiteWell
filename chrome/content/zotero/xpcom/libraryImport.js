@@ -2407,7 +2407,7 @@ Zotero.LibraryImport = {
 		catch (e) {
 			// No earlier checkpoint for this session yet.
 		}
-		// putContentsAsync writes through OS.File.writeAtomic, so a crash leaves either the
+		// putContentsAsync writes atomically, so a crash leaves either the
 		// previous checkpoint or the new one; a half-written file would be skipped by
 		// _findIncompleteMerge and silently start a second full merge.
 		await Zotero.File.putContentsAsync(

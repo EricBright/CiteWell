@@ -40,7 +40,7 @@ Zotero.Session = new function () {
 
 	this.init = async function () {
 		try {
-			let sessionFile = OS.Path.join(Zotero.Profile.dir, SESSION_FILE_NAME);
+			let sessionFile = PathUtils.join(Zotero.Profile.dir, SESSION_FILE_NAME);
 			let state = await Zotero.File.getContentsAsync(sessionFile);
 			_state = JSON.parse(state);
 		}
@@ -79,7 +79,7 @@ Zotero.Session = new function () {
 				_state.windows = _state.windows.filter(x => x.type != 'reader');
 				_state.windows = [..._state.windows, ...readers];
 			}
-			let sessionFile = OS.Path.join(Zotero.Profile.dir, SESSION_FILE_NAME);
+			let sessionFile = PathUtils.join(Zotero.Profile.dir, SESSION_FILE_NAME);
 			await Zotero.File.putContentsAsync(sessionFile, JSON.stringify(_state));
 		}
 		catch (e) {

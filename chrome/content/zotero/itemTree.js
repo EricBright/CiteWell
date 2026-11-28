@@ -55,7 +55,7 @@ const {
  */
 
 const CHILD_INDENT = 16;
-const COLUMN_PREFS_FILEPATH = OS.Path.join(Zotero.Profile.dir, "treePrefs.json");
+const COLUMN_PREFS_FILEPATH = PathUtils.join(Zotero.Profile.dir, "treePrefs.json");
 
 // Migrate unsuffixed `<id>` keys back to `<id>-default`. Earlier 10.0 betas dropped the `-default`
 // suffix from main-library tree IDs, stranding 9.0.x prefs and breaking version switching.
