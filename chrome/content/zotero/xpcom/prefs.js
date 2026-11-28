@@ -362,10 +362,10 @@ Zotero.Prefs = new function () {
 	var _handlers = [
 		[ "automaticScraperUpdates", function (val) {
 			if (val){
-				Zotero.Schema.updateFromRepository(1);
+				Zotero.RepositoryUpdates.check(1);
 			}
 			else {
-				Zotero.Schema.stopRepositoryTimer();
+				Zotero.RepositoryUpdates.stopTimer();
 			}
 		}],
 		["fontSize", function () {

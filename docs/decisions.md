@@ -1636,6 +1636,24 @@ not by native speakers, and the owner has no native speaker available to review 
 - **Enforcement:** the release notes and `docs/status.md` describe the translations as drafts.
   `uiCopyTest` keeps checking locale completeness.
 
+## D69 — A pure move of inherited JavaScript into a named module is not new code
+
+**Date:** 2026-11-28 · **Status:** accepted · **Reversible:** yes
+
+D4 makes Rust the default for new code, and D12 lists the exceptions. R19 moves existing Zotero
+JavaScript out of `schema.js` and `syncedSettings.js` into named modules; the code, the runtime and
+the behaviour are unchanged. Treating a move as new code would forbid the only reasonable home for
+code that must run in the Gecko/XUL process and already exists there.
+
+- The exemption covers a move, not new behaviour: the diff is deletions from an existing JavaScript
+  file plus a new file, with no logic added.
+- Each path is listed in `tools/policy-exceptions.txt` under this decision.
+- A genuinely new feature still follows D4: Rust, or an argued exception with its own record.
+- Rejected: leaving the code in `schema.js` to avoid the guard, which keeps the misleading home;
+  and rewriting Gecko-integrated code in Rust, which is not possible without replacing the shell.
+
+**Enforcement:** repo-guard accepts only the listed paths.
+
 ## Dead ends
 
 Failed experiments and abandoned approaches go here, each with *why* it was abandoned, so it is

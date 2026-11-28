@@ -115,7 +115,7 @@ async function resetTranslators() {
 			let button = document.getElementById('reset-translators');
 			button.disabled = true;
 			try {
-				await Zotero.Schema.resetTranslators();
+				await Zotero.RepositoryUpdates.resetTranslators();
 				if (Zotero_Preferences.Export) {
 					Zotero_Preferences.Export.populateQuickCopyList();
 				}

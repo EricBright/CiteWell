@@ -656,7 +656,7 @@ Zotero_Preferences.Cite = {
 			let button = document.getElementById("reset-styles-button");
 			button.disabled = true;
 			try {
-				await Zotero.Schema.resetStyles();
+				await Zotero.RepositoryUpdates.resetStyles();
 				if (Zotero_Preferences.Export) {
 					Zotero_Preferences.Export.populateQuickCopyList();
 				}

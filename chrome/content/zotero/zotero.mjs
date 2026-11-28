@@ -130,6 +130,7 @@ const xpcomFilesLocal = [
 	'report',
 	'retractions',
 	'router',
+	'repositoryUpdates',
 	'schema',
 	'server/server',
 	'server/server_integration',

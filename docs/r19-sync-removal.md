@@ -28,7 +28,8 @@ Deleting alone would leave two misleading pieces of plumbing:
   sync-transaction event (`onSyncDownload`). Once the engine is gone, four methods remain.
 - `schema.js` is the database schema module, yet it also owns the whole translator/style repository
   path: bundled-file installation, periodic and notification-driven checks, reset actions and their
-  timers — about 800 lines. Update failures are therefore diagnosed inside the schema module.
+  timers — about 1,200 lines spread across three regions of the file. Update failures are therefore
+diagnosed inside the schema module.
 
 The order matters. `LibrarySettings` cannot lose its sync-only API while `syncEngine` still calls
 it, so that seam comes **after** deletion. `RepositoryUpdates` does not depend on sync at all, so it
@@ -42,7 +43,7 @@ moves **before** deletion, while its callers are being touched anyway.
 | `xpcom/sync.js` | delete | `Zotero.Sync` core and `Zotero.Sync.Server` |
 | `xpcom/storage.js`, `xpcom/storage/` (11 files, ~6.5k lines) | delete | WebDAV, ZFS, upload/download queues, conflicts, download progress, file-change watcher, requests/results |
 | `xpcom/osKeyStore.js` (234 lines) | delete | key-store encryption used only by WebDAV and the sync credentials |
-| update block in `schema.js` (~800 lines) | move | becomes `repositoryUpdates.js` → `Zotero.RepositoryUpdates` |
+| update code in `schema.js` (~1,200 lines) | move | becomes `repositoryUpdates.js` → `Zotero.RepositoryUpdates` |
 | `syncedSettings.js` (356 lines) | rename and shrink | becomes `librarySettings.js` → `Zotero.LibrarySettings`, four methods |
 | `streamer.js` (345 lines) | trim | transport only: connect, reconnect, topic callbacks; no API key, no sync subscriptions |
 | Sync toolbar, menus, status icons, reminders, auto-sync-on-open | delete | `zoteroPane.js`, `zoteroPane.xhtml` |
@@ -62,7 +63,8 @@ metadata, and removing them would be a schema migration with no user-visible res
 
 ## Seam 1 — `Zotero.RepositoryUpdates` (before deletion)
 
-Moved out of `schema.js` as one block, unchanged in behaviour. Interface:
+Moved out of `schema.js` unchanged in behaviour. The functions were spread across three regions
+of the file; the module is 1,226 lines and `schema.js` drops by 1,232. Interface:
 
 ```
 check(mode)                     // REPO_UPDATE_* constants
@@ -137,9 +139,10 @@ only when its caller, `syncRunner.js`, is deleted, so this trim belongs to the d
 - tests that use sync helpers (`test/content/support.js`, collection, data-object, storage-local,
   undo-history) have direct replacements.
 
-**Stage 1 — Move `RepositoryUpdates` (one commit, behaviour-preserving).** Add the module and its
-loader entry, move the block out of `schema.js`, point the six call sites and the moved tests at it.
-The full suite stays green; the commit can be reverted alone.
+**Stage 1 — Move `RepositoryUpdates` (done 2026-11-28).** The module and loader entry exist; the
+functions moved out of `schema.js`, and the six call sites and the schema test point at the new
+module. Verified: `schemaTest` 25/25 and the preferences, settings-tab and agent suites 39/39. The
+commit can be reverted alone.
 
 **Stage 2 — Unwire the engine.** Remove the sync UI (toolbar, menu items, status icons, reminders,
 auto-sync-on-open, keyboard entries) and rewire the remaining call sites: `zotero.js` startup,

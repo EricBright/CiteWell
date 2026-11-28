@@ -293,7 +293,7 @@ Zotero.Streamer_Module.prototype = {
 				else if (data.event == 'topicUpdated') {
 					// Update translators and styles
 					if (data.topic == 'translators' || data.topic == 'styles') {
-						await Zotero.Schema.onUpdateNotification(data.delay);
+						await Zotero.RepositoryUpdates.notify(data.delay);
 					}
 					// Auto-sync
 					else {

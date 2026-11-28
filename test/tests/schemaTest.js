@@ -372,12 +372,12 @@ describe("Zotero.Schema", function () {
 					var html = dialog.document.documentElement.outerHTML;
 					assert.include(html, "This is a warning");
 				});
-				await Zotero.Schema.updateFromRepository(3);
+				await Zotero.RepositoryUpdates.check(3);
 				await promise;
 				
 				// Don't show id-less message again for a day
 				var spy = sinon.spy(Zotero, 'debug');
-				await Zotero.Schema.updateFromRepository(3);
+				await Zotero.RepositoryUpdates.check(3);
 				assert.notEqual(spy.args.findIndex(x => {
 					return typeof x[0] == 'string' && x[0].startsWith("Not showing hidden");
 				}), -1);
@@ -391,7 +391,7 @@ describe("Zotero.Schema", function () {
 				);
 				
 				var promise = waitForDialog();
-				await Zotero.Schema.updateFromRepository(3);
+				await Zotero.RepositoryUpdates.check(3);
 				await promise;
 				
 				// Make sure notice is hidden for 1 day
@@ -426,7 +426,7 @@ describe("Zotero.Schema", function () {
 					// Check "Don't show again"
 					doc.getElementById('checkbox').click();
 				});
-				await Zotero.Schema.updateFromRepository(3);
+				await Zotero.RepositoryUpdates.check(3);
 				await promise;
 				
 				// Make sure notice is hidden for 30 days
@@ -464,7 +464,7 @@ describe("Zotero.Schema", function () {
 				
 				// Message should be hidden
 				var spy = sinon.spy(Zotero, 'debug');
-				await Zotero.Schema.updateFromRepository(3);
+				await Zotero.RepositoryUpdates.check(3);
 				assert.notEqual(spy.args.findIndex(x => {
 					return typeof x[0] == 'string' && x[0].startsWith("Not showing hidden");
 				}), -1);
@@ -493,7 +493,7 @@ describe("Zotero.Schema", function () {
 					)
 				});
 				try {
-					await Zotero.Schema.updateFromRepository(Zotero.Schema.REPO_UPDATE_MANUAL);
+					await Zotero.RepositoryUpdates.check(Zotero.RepositoryUpdates.REPO_UPDATE_MANUAL);
 					assert.include(stub.lastCall.args[1], '&mismatch=' + encodeURIComponent(mismatch));
 					assert.notOk(Zotero.Prefs.get('buildMismatch'));
 				}

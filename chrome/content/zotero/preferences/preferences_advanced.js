@@ -53,7 +53,7 @@ Zotero_Preferences.Advanced = {
 	
 	
 	updateTranslators: async function () {
-		var updated = await Zotero.Schema.updateFromRepository(Zotero.Schema.REPO_UPDATE_MANUAL);
+		var updated = await Zotero.RepositoryUpdates.check(Zotero.RepositoryUpdates.REPO_UPDATE_MANUAL);
 		var button = document.getElementById('updateButton');
 		if (button) {
 			if (updated===-1) {
