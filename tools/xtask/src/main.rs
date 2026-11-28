@@ -32,6 +32,8 @@ commands:
   sass        compile scss/ into build/ (replaces Node Sass)
   settings-docs      write the generated catalog block in docs/settings.md
   validate-settings  validate resource/settings/panes.json and its generated block
+  agent-docs         write the generated verb table in docs/agent.md
+  validate-agent     validate resource/agent/verbs.json and its generated block
   help        show this message
 ";
 
@@ -43,6 +45,8 @@ fn main() -> ExitCode {
         Some("sass") => sass(),
         Some("settings-docs") => settings_docs(),
         Some("validate-settings") => validate_settings(),
+        Some("agent-docs") => agent_docs(),
+        Some("validate-agent") => validate_agent(),
         Some("help") | Some("--help") | Some("-h") | None => {
             print!("{USAGE}");
             ExitCode::SUCCESS
@@ -136,6 +140,174 @@ fn collect_scss_entries(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String
     Ok(())
 }
 
+
+const AGENT_BEGIN: &str = "<!-- BEGIN AGENT VERBS -->";
+const AGENT_END: &str = "<!-- END AGENT VERBS -->";
+
+/// Render the verb table from the manifest shared with the app and the CLI.
+fn render_agent_verbs(value: &serde_json::Value) -> Result<String, String> {
+    let verbs = value
+        .get("verbs")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| "agent manifest is missing verbs[]".to_string())?;
+    let mut lines = vec![
+        AGENT_BEGIN.to_string(),
+        "<!-- Generated from resource/agent/verbs.json by `cargo run -p xtask -- agent-docs`. Do not edit. -->".to_string(),
+        "| Method | MCP tool | What it does | Zotero API |".to_string(),
+        "|---|---|---|---|".to_string(),
+    ];
+    for verb in verbs {
+        let name = verb.get("verb").and_then(|v| v.as_str()).unwrap_or("?");
+        let mcp = verb
+            .get("mcp")
+            .and_then(|v| v.as_str())
+            .unwrap_or("—");
+        let summary = verb.get("summary").and_then(|v| v.as_str()).unwrap_or("");
+        let api = verb.get("api").and_then(|v| v.as_str()).unwrap_or("");
+        lines.push(format!("| `{name}` | `{mcp}` | {summary} | {api} |"));
+    }
+    lines.push(AGENT_END.to_string());
+    Ok(lines.join("\n"))
+}
+
+fn replace_agent_block(docs: &str, rendered: &str) -> Result<String, String> {
+    let start = docs
+        .find(AGENT_BEGIN)
+        .ok_or_else(|| format!("docs/agent.md is missing {AGENT_BEGIN}"))?;
+    let end = docs
+        .find(AGENT_END)
+        .ok_or_else(|| format!("docs/agent.md is missing {AGENT_END}"))?
+        + AGENT_END.len();
+    Ok(format!("{}{}{}", &docs[..start], rendered, &docs[end..]))
+}
+
+fn validate_agent_manifest(value: &serde_json::Value) -> Result<usize, String> {
+    if value.get("version").and_then(|v| v.as_u64()) != Some(1) {
+        return Err("agent manifest version must be 1".to_string());
+    }
+    let verbs = value
+        .get("verbs")
+        .and_then(|v| v.as_array())
+        .ok_or_else(|| "agent manifest is missing verbs[]".to_string())?;
+    if verbs.is_empty() {
+        return Err("agent manifest has no verbs".to_string());
+    }
+    let mut seen_verbs = std::collections::BTreeSet::new();
+    let mut seen_mcp = std::collections::BTreeSet::new();
+    for verb in verbs {
+        let name = verb
+            .get("verb")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| "agent verb is missing its name".to_string())?;
+        if !seen_verbs.insert(name.to_string()) {
+            return Err(format!("duplicate agent verb {name}"));
+        }
+        if let Some(mcp) = verb.get("mcp").and_then(|v| v.as_str()) {
+            if !seen_mcp.insert(mcp.to_string()) {
+                return Err(format!("duplicate MCP tool name {mcp}"));
+            }
+        }
+        let params = verb
+            .get("params")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| format!("agent verb {name} is missing params"))?;
+        let required = verb
+            .get("required")
+            .and_then(|v| v.as_array())
+            .ok_or_else(|| format!("agent verb {name} is missing required[]"))?;
+        for field in required {
+            let field = field
+                .as_str()
+                .ok_or_else(|| format!("agent verb {name} has a non-string required entry"))?;
+            if !params.contains_key(field) {
+                return Err(format!(
+                    "agent verb {name} requires {field}, which is not in params"
+                ));
+            }
+        }
+        if verb.get("description").and_then(|v| v.as_str()).is_none() {
+            return Err(format!("agent verb {name} is missing description"));
+        }
+    }
+    Ok(verbs.len())
+}
+
+fn agent_docs() -> ExitCode {
+    let root = repo_root();
+    let path = root.join("resource/agent/verbs.json");
+    let text = match fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(e) => {
+            eprintln!("xtask: reading {}: {e}", path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let value: serde_json::Value = match serde_json::from_str(&text) {
+        Ok(value) => value,
+        Err(e) => {
+            eprintln!("xtask: parsing {}: {e}", path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let rendered = match render_agent_verbs(&value) {
+        Ok(rendered) => rendered,
+        Err(e) => {
+            eprintln!("xtask: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let docs_path = root.join("docs/agent.md");
+    let docs = match fs::read_to_string(&docs_path) {
+        Ok(docs) => docs,
+        Err(e) => {
+            eprintln!("xtask: reading {}: {e}", docs_path.display());
+            return ExitCode::FAILURE;
+        }
+    };
+    let updated = match replace_agent_block(&docs, &rendered) {
+        Ok(updated) => updated,
+        Err(e) => {
+            eprintln!("xtask: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    if let Err(e) = fs::write(&docs_path, updated) {
+        eprintln!("xtask: writing {}: {e}", docs_path.display());
+        return ExitCode::FAILURE;
+    }
+    println!("agent-docs: updated docs/agent.md");
+    ExitCode::SUCCESS
+}
+
+fn validate_agent() -> ExitCode {
+    match validate_agent_inner() {
+        Ok(count) => {
+            println!("agent: {count} verbs valid");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("xtask: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn validate_agent_inner() -> Result<usize, String> {
+    let root = repo_root();
+    let path = root.join("resource/agent/verbs.json");
+    let text = fs::read_to_string(&path).map_err(|e| format!("reading {}: {e}", path.display()))?;
+    let value: serde_json::Value =
+        serde_json::from_str(&text).map_err(|e| format!("parsing {}: {e}", path.display()))?;
+    let count = validate_agent_manifest(&value)?;
+    let rendered = render_agent_verbs(&value)?;
+    let docs_path = root.join("docs/agent.md");
+    let docs = fs::read_to_string(&docs_path)
+        .map_err(|e| format!("reading {}: {e}", docs_path.display()))?;
+    if replace_agent_block(&docs, &rendered)? != docs {
+        return Err("docs/agent.md verb table is out of date; run `cargo run -p xtask -- agent-docs`".to_string());
+    }
+    Ok(count)
+}
 
 const CATALOG_BEGIN: &str = "<!-- BEGIN SETTINGS CATALOG -->";
 const CATALOG_END: &str = "<!-- END SETTINGS CATALOG -->";

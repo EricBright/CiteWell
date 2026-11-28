@@ -92,6 +92,20 @@ fn handle(client: &Client, token: &str, message: &Value) -> Option<Value> {
     })
 }
 
+/// The single description of every agent verb, shared with the app and the docs.
+const VERBS_JSON: &str = include_str!("../../../resource/agent/verbs.json");
+
+fn manifest() -> Value {
+    serde_json::from_str(VERBS_JSON).expect("agent verb manifest is not valid JSON")
+}
+
+fn find_tool<'a>(manifest: &'a Value, name: &str) -> Option<&'a Value> {
+    manifest["verbs"]
+        .as_array()?
+        .iter()
+        .find(|verb| verb["mcp"].as_str() == Some(name))
+}
+
 fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64, String)> {
     let name = params
         .get("name")
@@ -102,83 +116,21 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
         .cloned()
         .unwrap_or_else(|| json!({}));
 
-    let (method, call_params) = match name {
-        "citewell_status" => ("ping", json!({})),
-        "search_library" => (
-            "search",
-            json!({
-                "query": arguments.get("query").cloned().unwrap_or(Value::Null),
-                "limit": arguments.get("limit").cloned().unwrap_or(json!(25))
-            }),
-        ),
-        "get_item" => ("item.get", json!({ "key": required(&arguments, "key")? })),
-        "create_item" => ("item.create", arguments),
-        "update_item" => (
-            "item.update",
-            json!({
-                "key": required(&arguments, "key")?,
-                "fields": arguments.get("fields").cloned().unwrap_or(json!({})),
-                "creators": arguments.get("creators").cloned(),
-                "tags": arguments.get("tags").cloned()
-            }),
-        ),
-        "add_note" => (
-            "item.addNote",
-            json!({
-                "key": required(&arguments, "key")?,
-                "text": required(&arguments, "text")?
-            }),
-        ),
-        "attach_file" => (
-            "item.attachFile",
-            json!({
-                "key": required(&arguments, "key")?,
-                "path": required(&arguments, "path")?,
-                "title": arguments.get("title").cloned()
-            }),
-        ),
-        "attach_url" => (
-            "item.attachURL",
-            json!({
-                "key": required(&arguments, "key")?,
-                "url": required(&arguments, "url")?,
-                "title": arguments.get("title").cloned()
-            }),
-        ),
-        "save_identifier" => ("translate.save", arguments),
-        "export_note" => (
-            "export.note",
-            json!({ "key": required(&arguments, "key")? }),
-        ),
-        "list_collections" => ("collection.list", json!({})),
-        "create_collection" => (
-            "collection.create",
-            json!({
-                "name": required(&arguments, "name")?,
-                "parentKey": arguments.get("parentKey").cloned()
-            }),
-        ),
-        "add_to_collection" => (
-            "collection.addItems",
-            json!({
-                "collectionKey": required(&arguments, "collectionKey")?,
-                "itemKeys": required(&arguments, "itemKeys")?
-            }),
-        ),
-        "get_selection" => ("ui.status", json!({})),
-        "select_items" => (
-            "ui.select",
-            json!({ "keys": required(&arguments, "keys")? }),
-        ),
-        "open_item" => ("ui.open", json!({ "key": required(&arguments, "key")? })),
-        "notify" => (
-            "ui.notify",
-            json!({ "text": required(&arguments, "text")? }),
-        ),
-        _ => return Err((-32602, format!("Unknown tool: {name}"))),
-    };
+    let manifest = manifest();
+    let entry = find_tool(&manifest, name).ok_or((-32602, format!("Unknown tool: {name}")))?;
+    if let Some(required) = entry["required"].as_array() {
+        for field in required {
+            let field = field.as_str().unwrap_or_default();
+            if arguments.get(field).is_none() {
+                return Err((-32602, format!("Missing required argument: {field}")));
+            }
+        }
+    }
+    let method = entry["verb"]
+        .as_str()
+        .ok_or((-32602, format!("Tool {name} has no verb")))?;
 
-    match client.agent_call(token, method, call_params) {
+    match client.agent_call(token, method, arguments) {
         Ok(result) => Ok(json!({
             "content": [{ "type": "text", "text": serde_json::to_string_pretty(&result).unwrap_or_default() }],
             "isError": false
@@ -190,158 +142,30 @@ fn call_tool(client: &Client, token: &str, params: &Value) -> Result<Value, (i64
     }
 }
 
-fn required(arguments: &Value, name: &str) -> Result<Value, (i64, String)> {
-    arguments
-        .get(name)
-        .cloned()
-        .ok_or((-32602, format!("Missing required argument: {name}")))
-}
-
 fn tools() -> Value {
-    json!([
-        tool(
-            "citewell_status",
-            "Check that CiteWell is running and report its version.",
-            json!({}),
-            &[]
-        ),
-        tool(
-            "search_library",
-            "Search the CiteWell library by title, creator, tag or full text.",
-            json!({
-                "query": { "type": "string" },
-                "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
-            }),
-            &["query"]
-        ),
-        tool(
-            "get_item",
-            "Fetch one item by its CiteWell key, including notes and attachments.",
-            json!({ "key": { "type": "string" } }),
-            &["key"]
-        ),
-        tool(
-            "create_item",
-            "Create an item with fields, creators and tags, optionally in collections.",
-            json!({
-                "itemType": { "type": "string" },
-                "fields": { "type": "object" },
-                "creators": { "type": "array" },
-                "tags": { "type": "array" },
-                "collections": { "type": "array" }
-            }),
-            &["itemType"]
-        ),
-        tool(
-            "update_item",
-            "Update an existing item's fields, creators or tags.",
-            json!({
-                "key": { "type": "string" },
-                "fields": { "type": "object" },
-                "creators": { "type": "array" },
-                "tags": { "type": "array" }
-            }),
-            &["key"]
-        ),
-        tool(
-            "add_note",
-            "Add a Markdown note file attachment to an item.",
-            json!({
-                "key": { "type": "string" },
-                "text": { "type": "string" }
-            }),
-            &["key", "text"]
-        ),
-        tool(
-            "attach_file",
-            "Attach a file from an absolute path to an item.",
-            json!({
-                "key": { "type": "string" },
-                "path": { "type": "string" },
-                "title": { "type": "string" }
-            }),
-            &["key", "path"]
-        ),
-        tool(
-            "attach_url",
-            "Attach a URL to an item.",
-            json!({
-                "key": { "type": "string" },
-                "url": { "type": "string" },
-                "title": { "type": "string" }
-            }),
-            &["key", "url"]
-        ),
-        tool(
-            "save_identifier",
-            "Create an item from a DOI, ISBN, PMID or page URL using Zotero translators.",
-            json!({
-                "identifier": { "type": "string" },
-                "collections": { "type": "array" },
-                "saveAttachments": { "type": "boolean" }
-            }),
-            &["identifier"]
-        ),
-        tool(
-            "export_note",
-            "Export a note as Markdown text.",
-            json!({ "key": { "type": "string" } }),
-            &["key"]
-        ),
-        tool("list_collections", "List collections.", json!({}), &[]),
-        tool(
-            "create_collection",
-            "Create a collection, optionally inside another collection.",
-            json!({ "name": { "type": "string" }, "parentKey": { "type": "string" } }),
-            &["name"]
-        ),
-        tool(
-            "add_to_collection",
-            "Add existing items to a collection.",
-            json!({
-                "collectionKey": { "type": "string" },
-                "itemKeys": { "type": "array", "items": { "type": "string" } }
-            }),
-            &["collectionKey", "itemKeys"]
-        ),
-        tool(
-            "get_selection",
-            "Show the current window selection.",
-            json!({}),
-            &[]
-        ),
-        tool(
-            "select_items",
-            "Select items in the main window.",
-            json!({ "keys": { "type": "array", "items": { "type": "string" } } }),
-            &["keys"]
-        ),
-        tool(
-            "open_item",
-            "Open an item, note or attachment in the main window.",
-            json!({ "key": { "type": "string" } }),
-            &["key"]
-        ),
-        tool(
-            "notify",
-            "Show a short message in the app so the person sees what happened.",
-            json!({ "text": { "type": "string" } }),
-            &["text"]
-        )
-    ])
-}
-
-fn tool(name: &str, description: &str, properties: Value, required: &[&str]) -> Value {
-    json!({
-        "name": name,
-        "description": description,
-        "inputSchema": {
-            "type": "object",
-            "properties": properties,
-            "required": required,
-            "additionalProperties": false
-        }
-    })
+    let manifest = manifest();
+    let tools: Vec<Value> = manifest["verbs"]
+        .as_array()
+        .map(|verbs| {
+            verbs
+                .iter()
+                .filter_map(|verb| {
+                    let name = verb["mcp"].as_str()?;
+                    Some(json!({
+                        "name": name,
+                        "description": verb["description"],
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": verb["params"].clone(),
+                            "required": verb["required"].clone(),
+                            "additionalProperties": false
+                        }
+                    }))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    json!(tools)
 }
 
 #[cfg(test)]
@@ -372,8 +196,29 @@ mod tests {
     }
 
     #[test]
-    fn requires_arguments() {
-        assert!(required(&json!({}), "key").is_err());
-        assert_eq!(required(&json!({ "key": "A" }), "key").unwrap(), "A");
+    fn every_manifest_verb_is_unique_and_has_an_mcp_name_or_null() {
+        let manifest = manifest();
+        let verbs = manifest["verbs"].as_array().unwrap();
+        let mut seen = std::collections::BTreeSet::new();
+        let mut tool_names = std::collections::BTreeSet::new();
+        for verb in verbs {
+            let name = verb["verb"].as_str().expect("verb is required");
+            assert!(seen.insert(name.to_string()), "duplicate verb {name}");
+            if let Some(tool) = verb["mcp"].as_str() {
+                assert!(tool_names.insert(tool.to_string()), "duplicate MCP name {tool}");
+            }
+        }
+        assert_eq!(seen.len(), 18);
+    }
+
+    #[test]
+    fn finds_a_tool_by_name() {
+        let manifest = manifest();
+        assert!(find_tool(&manifest, "get_item").is_some());
+        assert_eq!(
+            find_tool(&manifest, "get_item").unwrap()["verb"],
+            "item.get"
+        );
+        assert!(find_tool(&manifest, "not_a_tool").is_none());
     }
 }

@@ -15,6 +15,32 @@ describe("Agent bridge", function () {
 		assert.include(result.capabilities, "item.create");
 	});
 
+	it("should keep the manifest, handlers and capabilities in step", async function () {
+		let manifest = await Zotero.Server.Agent.getManifest();
+		let verbs = manifest.verbs.map(verb => verb.verb);
+		assert.sameMembers(verbs, Object.keys(Zotero.Server.Agent.handlers));
+
+		let ping = await Zotero.Server.Agent.dispatch("ping", {});
+		assert.sameMembers(ping.capabilities, verbs);
+
+		let mcpNames = new Set();
+		for (let verb of manifest.verbs) {
+			assert.isString(verb.description, `${verb.verb} has a description`);
+			for (let field of verb.required) {
+				assert.property(verb.params, field, `${verb.verb} requires ${field}`);
+			}
+			if (verb.mcp) {
+				assert.isFalse(mcpNames.has(verb.mcp), `${verb.mcp} is unique`);
+				mcpNames.add(verb.mcp);
+			}
+		}
+	});
+
+	it("should reject an unknown verb", async function () {
+		let e = await getPromiseError(Zotero.Server.Agent.dispatch("no.suchVerb", {}));
+		assert.equal(e.status, 404);
+	});
+
 	it("should reject a request without the agent header or token", async function () {
 		let headers = { authorization: "Bearer nope" };
 		let response = await Zotero.Server.Agent.Endpoint.prototype.init({

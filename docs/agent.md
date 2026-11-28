@@ -78,24 +78,29 @@ without a trip through the UI.
 
 ## Verb surface
 
-| Method | What it does | Zotero API |
-|---|---|---|
-| `ping` | Version, data dir, capabilities | — |
-| `search` | Full-text / field search, paged | `Zotero.Search` |
-| `item.get` | Fields, creators, tags, notes, attachments | `Zotero.Items.get` |
-| `item.create` | New item from itemType + fields + creators, optionally into collections | `new Zotero.Item`, `save` |
-| `item.update` | Change fields, creators or tags | `Zotero.Item` setters, `save` |
-| `item.addNote` | Child Markdown file attachment; no HTML, no in-app editor | `Zotero.Notes.createMarkdownAttachment` |
-| `item.attachFile` | Import a file from an absolute path | `Zotero.Attachments.importFromFile` |
-| `item.attachURL` | Linked URL / snapshot | `Zotero.Attachments.linkFromURL` |
-| `translate.save` | DOI, ISBN, PMID or URL → item(s) and optional attachments | `Zotero.Translate.Search` / `.Web` |
-| `export.note` | Markdown attachment contents | File read |
-| `citation.preview` | Formatted citation text for selected regular items (APA by default) | `Zotero.Styles`, `Zotero.Cite` |
-| `collection.list` / `create` / `addItems` | Collection tree and membership | `Zotero.Collections` |
-| `ui.status` | Active tab, collection and selection | `Zotero.getActiveZoteroPane()`, `Zotero_Tabs` |
-| `ui.select` | Select items in the main window | `ZoteroPane.selectItems` |
-| `ui.open` | Select and open an item or note | `ZoteroPane.viewItems`, `Zotero_Tabs` |
-| `ui.notify` | Short in-app message so the person sees what happened | `Zotero.ProgressWindow` |
+<!-- BEGIN AGENT VERBS -->
+<!-- Generated from resource/agent/verbs.json by `cargo run -p xtask -- agent-docs`. Do not edit. -->
+| Method | MCP tool | What it does | Zotero API |
+|---|---|---|---|
+| `ping` | `citewell_status` | Version, data dir, capabilities | — |
+| `search` | `search_library` | Full-text / field search, paged | Zotero.Search |
+| `item.get` | `get_item` | Fields, creators, tags, notes, attachments | Zotero.Items.get |
+| `item.create` | `create_item` | New item from itemType + fields + creators, optionally into collections | new Zotero.Item, save |
+| `item.update` | `update_item` | Change fields, creators or tags | Zotero.Item setters, save |
+| `item.addNote` | `add_note` | Child Markdown file attachment; no HTML, no in-app editor | Zotero.Notes.createMarkdownAttachment |
+| `item.attachFile` | `attach_file` | Import a file from an absolute path | Zotero.Attachments.importFromFile |
+| `item.attachURL` | `attach_url` | Linked URL / snapshot | Zotero.Attachments.linkFromURL |
+| `translate.save` | `save_identifier` | DOI, ISBN, PMID or URL → item(s) and optional attachments | Zotero.Translate.Search / .Web |
+| `export.note` | `export_note` | Markdown attachment contents | File read |
+| `collection.list` | `list_collections` | Collection tree | Zotero.Collections |
+| `collection.create` | `create_collection` | Create a collection, optionally nested | Zotero.Collections |
+| `collection.addItems` | `add_to_collection` | Add items to a collection | Zotero.Collections |
+| `citation.preview` | `—` | Formatted citation text for selected regular items (APA by default) | Zotero.Styles, Zotero.Cite |
+| `ui.status` | `get_selection` | Active tab, collection and selection | Zotero.getActiveZoteroPane(), Zotero_Tabs |
+| `ui.select` | `select_items` | Select items in the main window | ZoteroPane.selectItems |
+| `ui.open` | `open_item` | Select and open an item or note | ZoteroPane.viewItems, Zotero_Tabs |
+| `ui.notify` | `notify` | Short in-app message so the person sees what happened | Zotero.ProgressWindow |
+<!-- END AGENT VERBS -->
 
 `item.create` accepts the natural shape (`itemType`, `fields`, `creators`, `tags`, `collections`)
 and lets Zotero validate and save it. The bridge maps field names through
@@ -108,7 +113,9 @@ returns the created item keys plus which attachments succeeded.
 ## MCP
 
 `citewell mcp` speaks MCP over stdio (JSON-RPC, `initialize`, `tools/list`, `tools/call`) and maps
-each verb to a tool with a JSON schema. The app does not need to embed an MCP server: MCP clients
+each verb to a tool with a JSON schema. The verb list above, the app's dispatcher and the MCP tools
+all come from `resource/agent/verbs.json`; `cargo run -p xtask -- agent-docs` regenerates the table
+and `validate-agent` fails on drift. The app does not need to embed an MCP server: MCP clients
 start local processes, and the CLI already knows how to reach the app. This keeps the app free of
 protocol code and lets the same bridge serve CLI scripts, MCP agents, and a future HTTP agent.
 

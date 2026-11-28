@@ -36,8 +36,33 @@ const AGENT_TOKEN_FILENAME = "agent-token";
 const AGENT_AUDIT_FILENAME = "agent-actions.log";
 const AGENT_MAX_SEARCH_RESULTS = 100;
 
+// One handler per manifest verb. Adding a verb means one manifest entry and one method here;
+// the parity test fails if the two lists disagree.
+const AGENT_HANDLERS = {
+	ping: '_ping',
+	search: '_search',
+	'item.get': '_getItem',
+	'item.create': '_createItem',
+	'item.update': '_updateItem',
+	'item.addNote': '_addNote',
+	'item.attachFile': '_attachFile',
+	'item.attachURL': '_attachURL',
+	'translate.save': '_translateSave',
+	'export.note': '_exportNote',
+	'collection.list': '_listCollections',
+	'collection.create': '_createCollection',
+	'collection.addItems': '_addToCollection',
+	'citation.preview': '_citationPreview',
+	'ui.status': '_uiStatus',
+	'ui.select': '_uiSelect',
+	'ui.open': '_uiOpen',
+	'ui.notify': '_uiNotify'
+};
+
 Zotero.Server.Agent = {
 	_token: null,
+	_manifestPromise: null,
+	handlers: AGENT_HANDLERS,
 
 	get tokenPath() {
 		return PathUtils.join(Zotero.DataDirectory.dir, AGENT_TOKEN_FILENAME);
@@ -130,81 +155,46 @@ Zotero.Server.Agent = {
 	},
 
 	/**
+	 * Load and cache the verb manifest shared with the CLI and the docs.
+	 */
+	getManifest: function () {
+		if (!this._manifestPromise) {
+			this._manifestPromise = Zotero.File.getResourceAsync(
+				'resource://zotero/agent/verbs.json'
+			).then(JSON.parse).catch((e) => {
+				this._manifestPromise = null;
+				throw e;
+			});
+		}
+		return this._manifestPromise;
+	},
+
+	/**
 	 * Main dispatch. Returns a JSON-serializable result or throws AgentError.
 	 */
 	dispatch: async function (method, params) {
 		params = params || {};
-		switch (method) {
-			case 'ping':
-				return {
-					version: AGENT_API_VERSION,
-					app: Zotero.appName,
-					appVersion: Zotero.version,
-					dataDir: Zotero.DataDirectory.dir,
-					capabilities: [
-						'ping', 'search', 'item.get', 'item.create', 'item.update', 'item.addNote',
-						'item.attachFile', 'item.attachURL', 'translate.save',
-						'export.note',
-						'collection.list', 'collection.create', 'collection.addItems',
-						'citation.preview',
-						'ui.status', 'ui.select', 'ui.open', 'ui.notify'
-					],
-				};
-
-			case 'search':
-				return this._search(params);
-
-			case 'item.get':
-				return this._getItem(params);
-
-			case 'item.create':
-				return this._createItem(params);
-
-			case 'item.update':
-				return this._updateItem(params);
-
-			case 'item.addNote':
-				return this._addNote(params);
-
-			case 'item.attachFile':
-				return this._attachFile(params);
-
-			case 'item.attachURL':
-				return this._attachURL(params);
-
-			case 'translate.save':
-				return this._translateSave(params);
-
-			case 'export.note':
-				return this._exportNote(params);
-
-			case 'collection.list':
-				return this._listCollections();
-
-			case 'collection.create':
-				return this._createCollection(params);
-
-			case 'collection.addItems':
-				return this._addToCollection(params);
-
-			case 'citation.preview':
-				return this._citationPreview(params);
-
-			case 'ui.status':
-				return this._uiStatus();
-
-			case 'ui.select':
-				return this._uiSelect(params);
-
-			case 'ui.open':
-				return this._uiOpen(params);
-
-			case 'ui.notify':
-				return this._uiNotify(params);
-
-			default:
-				throw new AgentError(404, `Unknown method: ${method}`);
+		let manifest = await this.getManifest();
+		let entry = manifest.verbs.find(verb => verb.verb === method);
+		if (!entry) {
+			throw new AgentError(404, `Unknown method: ${method}`);
 		}
+		let handler = this.handlers[method];
+		if (!handler) {
+			throw new AgentError(500, `No handler for ${method}`);
+		}
+		return this[handler](params);
+	},
+
+	_ping: async function () {
+		let manifest = await this.getManifest();
+		return {
+			version: AGENT_API_VERSION,
+			app: Zotero.appName,
+			appVersion: Zotero.version,
+			dataDir: Zotero.DataDirectory.dir,
+			capabilities: manifest.verbs.map(verb => verb.verb),
+		};
 	},
 
 	_search: async function ({ query, limit = 25, libraryID = 1 }) {

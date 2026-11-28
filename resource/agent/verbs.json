@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "verbs": [
+    {
+      "verb": "ping",
+      "mcp": "citewell_status",
+      "description": "Check that CiteWell is running and report its version.",
+      "summary": "Version, data dir, capabilities",
+      "api": "—",
+      "mutating": false,
+      "params": {},
+      "required": []
+    },
+    {
+      "verb": "search",
+      "mcp": "search_library",
+      "description": "Search the CiteWell library by title, creator, tag or full text.",
+      "summary": "Full-text / field search, paged",
+      "api": "Zotero.Search",
+      "mutating": false,
+      "params": {
+        "query": { "type": "string" },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "required": ["query"]
+    },
+    {
+      "verb": "item.get",
+      "mcp": "get_item",
+      "description": "Fetch one item by its CiteWell key, including notes and attachments.",
+      "summary": "Fields, creators, tags, notes, attachments",
+      "api": "Zotero.Items.get",
+      "mutating": false,
+      "params": {
+        "key": { "type": "string" }
+      },
+      "required": ["key"]
+    },
+    {
+      "verb": "item.create",
+      "mcp": "create_item",
+      "description": "Create an item with fields, creators and tags, optionally in collections.",
+      "summary": "New item from itemType + fields + creators, optionally into collections",
+      "api": "new Zotero.Item, save",
+      "mutating": true,
+      "params": {
+        "itemType": { "type": "string" },
+        "fields": { "type": "object" },
+        "creators": { "type": "array" },
+        "tags": { "type": "array" },
+        "collections": { "type": "array" }
+      },
+      "required": ["itemType"]
+    },
+    {
+      "verb": "item.update",
+      "mcp": "update_item",
+      "description": "Update an existing item's fields, creators or tags.",
+      "summary": "Change fields, creators or tags",
+      "api": "Zotero.Item setters, save",
+      "mutating": true,
+      "params": {
+        "key": { "type": "string" },
+        "fields": { "type": "object" },
+        "creators": { "type": "array" },
+        "tags": { "type": "array" }
+      },
+      "required": ["key"]
+    },
+    {
+      "verb": "item.addNote",
+      "mcp": "add_note",
+      "description": "Add a Markdown note file attachment to an item.",
+      "summary": "Child Markdown file attachment; no HTML, no in-app editor",
+      "api": "Zotero.Notes.createMarkdownAttachment",
+      "mutating": true,
+      "params": {
+        "key": { "type": "string" },
+        "text": { "type": "string" }
+      },
+      "required": ["key", "text"]
+    },
+    {
+      "verb": "item.attachFile",
+      "mcp": "attach_file",
+      "description": "Attach a file from an absolute path to an item.",
+      "summary": "Import a file from an absolute path",
+      "api": "Zotero.Attachments.importFromFile",
+      "mutating": true,
+      "params": {
+        "key": { "type": "string" },
+        "path": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "required": ["key", "path"]
+    },
+    {
+      "verb": "item.attachURL",
+      "mcp": "attach_url",
+      "description": "Attach a URL to an item.",
+      "summary": "Linked URL / snapshot",
+      "api": "Zotero.Attachments.linkFromURL",
+      "mutating": true,
+      "params": {
+        "key": { "type": "string" },
+        "url": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "required": ["key", "url"]
+    },
+    {
+      "verb": "translate.save",
+      "mcp": "save_identifier",
+      "description": "Create an item from a DOI, ISBN, PMID or page URL using Zotero translators.",
+      "summary": "DOI, ISBN, PMID or URL → item(s) and optional attachments",
+      "api": "Zotero.Translate.Search / .Web",
+      "mutating": true,
+      "params": {
+        "identifier": { "type": "string" },
+        "collections": { "type": "array" },
+        "saveAttachments": { "type": "boolean" }
+      },
+      "required": ["identifier"]
+    },
+    {
+      "verb": "export.note",
+      "mcp": "export_note",
+      "description": "Export a note as Markdown text.",
+      "summary": "Markdown attachment contents",
+      "api": "File read",
+      "mutating": false,
+      "params": {
+        "key": { "type": "string" }
+      },
+      "required": ["key"]
+    },
+    {
+      "verb": "collection.list",
+      "mcp": "list_collections",
+      "description": "List collections.",
+      "summary": "Collection tree",
+      "api": "Zotero.Collections",
+      "mutating": false,
+      "params": {},
+      "required": []
+    },
+    {
+      "verb": "collection.create",
+      "mcp": "create_collection",
+      "description": "Create a collection, optionally inside another collection.",
+      "summary": "Create a collection, optionally nested",
+      "api": "Zotero.Collections",
+      "mutating": true,
+      "params": {
+        "name": { "type": "string" },
+        "parentKey": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    {
+      "verb": "collection.addItems",
+      "mcp": "add_to_collection",
+      "description": "Add existing items to a collection.",
+      "summary": "Add items to a collection",
+      "api": "Zotero.Collections",
+      "mutating": true,
+      "params": {
+        "collectionKey": { "type": "string" },
+        "itemKeys": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["collectionKey", "itemKeys"]
+    },
+    {
+      "verb": "citation.preview",
+      "mcp": null,
+      "description": "Format a citation for selected items.",
+      "summary": "Formatted citation text for selected regular items (APA by default)",
+      "api": "Zotero.Styles, Zotero.Cite",
+      "mutating": false,
+      "params": {
+        "keys": { "type": "array", "items": { "type": "string" } },
+        "style": { "type": "string" }
+      },
+      "required": []
+    },
+    {
+      "verb": "ui.status",
+      "mcp": "get_selection",
+      "description": "Show the current window selection.",
+      "summary": "Active tab, collection and selection",
+      "api": "Zotero.getActiveZoteroPane(), Zotero_Tabs",
+      "mutating": false,
+      "params": {},
+      "required": []
+    },
+    {
+      "verb": "ui.select",
+      "mcp": "select_items",
+      "description": "Select items in the main window.",
+      "summary": "Select items in the main window",
+      "api": "ZoteroPane.selectItems",
+      "mutating": true,
+      "params": {
+        "keys": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["keys"]
+    },
+    {
+      "verb": "ui.open",
+      "mcp": "open_item",
+      "description": "Open an item, note or attachment in the main window.",
+      "summary": "Select and open an item or note",
+      "api": "ZoteroPane.viewItems, Zotero_Tabs",
+      "mutating": true,
+      "params": {
+        "key": { "type": "string" }
+      },
+      "required": ["key"]
+    },
+    {
+      "verb": "ui.notify",
+      "mcp": "notify",
+      "description": "Show a short message in the app so the person sees what happened.",
+      "summary": "Short in-app message so the person sees what happened",
+      "api": "Zotero.ProgressWindow",
+      "mutating": true,
+      "params": {
+        "text": { "type": "string" }
+      },
+      "required": ["text"]
+    }
+  ]
+}

@@ -4,7 +4,7 @@ Read this after `AGENTS.md`. The README is the human front page; this page holds
 needs before touching code.
 
 CiteWell is a citation catalogue built on Zotero's engine. The branch is `citewell`; the version
-file is `2026.11.27.SOURCE` between releases. Current state and pitfalls: [status.md](status.md).
+file is `2026.11.28.SOURCE` between releases. Current state and pitfalls: [status.md](status.md).
 
 ## Commands
 
@@ -23,6 +23,7 @@ Gates:
 ```bash
 cargo run --quiet --manifest-path tools/docs-check/Cargo.toml
 cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings
+cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-agent
 ```
 
 ## Repository map
@@ -30,7 +31,7 @@ cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings
 | Path | Contents |
 |---|---|
 | `chrome/` | Application UI and XPCOM |
-| `resource/` | Bundled runtime resources, including `settings/panes.json` |
+| `resource/` | Bundled runtime resources, including `settings/panes.json` and `agent/verbs.json` |
 | `scss/` | Styles, compiled to CSS during the build |
 | `app/` | Packaging and platform runtimes |
 | `test/` | Tests and support code |

@@ -19,6 +19,9 @@ jobs:
       - name: Validate the settings manifest
         run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-settings
 
+      - name: Validate the agent verb manifest
+        run: cargo run --quiet --manifest-path tools/Cargo.toml -p xtask -- validate-agent
+
       - name: Reject package, lockfile, and node_modules changes
         run: |
           set -eu
