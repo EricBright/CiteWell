@@ -3502,7 +3502,7 @@ var ZoteroPane = new function () {
 		var m = {};
 		for (let i = 0; i < options.length; i++) {
 			let option = options[i];
-			let menuitem = menu.childNodes[i];
+			let menuitem = menu.children[i];
 			m[option.id] = menuitem;
 			
 			menuitem.id = option.id;
