@@ -120,7 +120,7 @@ Zotero.Attachments = new function () {
 				destDir = await this.createDirectoryForItem(attachmentItem);
 				
 				// Point to copied file
-				newFile = OS.Path.join(destDir, newName);
+				newFile = PathUtils.join(destDir, newName);
 				
 				// Copy or move file to unique filename, which automatically shortens long filenames
 				if (options.moveFile) {
@@ -159,8 +159,8 @@ Zotero.Attachments = new function () {
 			
 			// Clean up
 			try {
-				if (destDir && ((await OS.File.exists(destDir)))) {
-					await OS.File.removeDir(destDir);
+				if (destDir && ((await Zotero.File.exists(destDir)))) {
+					await Zotero.File.removeDir(destDir);
 				}
 			}
 			catch (e) {
@@ -272,7 +272,7 @@ Zotero.Attachments = new function () {
 		// If the file is found (which requires a base directory being set and the file existing),
 		// index it
 		var file = this.resolveRelativePath(path);
-		if (file && (await OS.File.exists(file))) {
+		if (file && (await Zotero.File.exists(file))) {
 			try {
 				await _postProcessFile(item);
 			}
@@ -343,12 +343,12 @@ Zotero.Attachments = new function () {
 				var storageDir = Zotero.getStorageDirectory();
 				destDir = this.getStorageDirectory(attachmentItem);
 				await IOUtils.remove(destDir.path, { recursive: true, ignoreAbsent: true });
-				newPath = OS.Path.join(destDir.path, fileName);
+				newPath = PathUtils.join(destDir.path, fileName);
 				// Copy single file to new directory
 				if (options.singleFile) {
 					await this.createDirectoryForItem(attachmentItem);
 					if (options.moveFile) {
-						await OS.File.move(file.path, newPath);
+						await Zotero.File.move(file.path, newPath);
 					}
 					else {
 						await Zotero.File.copyFile(file.path, newPath);
@@ -452,7 +452,7 @@ Zotero.Attachments = new function () {
 				
 				// Write blob to file in attachment directory
 				destDir = await this.createDirectoryForItem(attachmentItem);
-				let file = OS.Path.join(destDir, filename);
+				let file = PathUtils.join(destDir, filename);
 				await Zotero.File.putContentsAsync(file, blob);
 				await Zotero.File.setNormalFilePermissions(file);
 			}.bind(this));
@@ -463,7 +463,7 @@ Zotero.Attachments = new function () {
 			// Clean up
 			try {
 				if (destDir) {
-					await OS.File.removeDir(destDir, { ignoreAbsent: true });
+					await Zotero.File.removeDir(destDir, { ignoreAbsent: true });
 				}
 			}
 			catch (e) {
@@ -597,7 +597,7 @@ Zotero.Attachments = new function () {
 			// We don't use the normal temp directory because people might have 'storage'
 			// symlinked to another volume, which would make the save slower.
 			var tmpDir = (await this.createTemporaryStorageDirectory()).path;
-			var tmpFile = OS.Path.join(tmpDir, filename);
+			var tmpFile = PathUtils.join(tmpDir, filename);
 			
 			var attachmentItem;
 			
@@ -627,7 +627,7 @@ Zotero.Attachments = new function () {
 			catch (e) {
 				try {
 					if (tmpDir) {
-						await OS.File.removeDir(tmpDir, { ignoreAbsent: true });
+						await Zotero.File.removeDir(tmpDir, { ignoreAbsent: true });
 					}
 				}
 				catch (e) {
@@ -719,7 +719,7 @@ Zotero.Attachments = new function () {
 			// Move file to final location
 			let destDir = this.getStorageDirectory(attachmentItem).path;
 			try {
-				await OS.File.move(options.directory, destDir);
+				await Zotero.File.move(options.directory, destDir);
 			}
 			catch (e) {
 				await attachmentItem.eraseTx({ notifierQueue });
@@ -888,7 +888,7 @@ Zotero.Attachments = new function () {
 		var tmpDir = ((await this.createTemporaryStorageDirectory())).path;
 		try {
 			var fileName = Zotero.File.truncateFileName(this._getFileNameFromURL(url, contentType), 100);
-			var tmpFile = OS.Path.join(tmpDir, fileName);
+			var tmpFile = PathUtils.join(tmpDir, fileName);
 			
 			// If we're using the title from the document, make some adjustments
 			if (!options.title) {
@@ -951,7 +951,7 @@ Zotero.Attachments = new function () {
 				var itemID = await attachmentItem.save(saveOptions);
 				
 				destDir = this.getStorageDirectory(attachmentItem).path;
-				await OS.File.move(tmpDir, destDir);
+				await Zotero.File.move(tmpDir, destDir);
 			}.bind(this));
 			
 			await Zotero.FullText.queueItem(attachmentItem);
@@ -962,10 +962,10 @@ Zotero.Attachments = new function () {
 			// Clean up
 			try {
 				if (tmpDir) {
-					await OS.File.removeDir(tmpDir, { ignoreAbsent: true });
+					await Zotero.File.removeDir(tmpDir, { ignoreAbsent: true });
 				}
 				if (destDir) {
-					await OS.File.removeDir(destDir, { ignoreAbsent: true });
+					await Zotero.File.removeDir(destDir, { ignoreAbsent: true });
 				}
 			}
 			catch (e) {
@@ -1031,7 +1031,7 @@ Zotero.Attachments = new function () {
 		let destDirectory;
 		let attachmentItem;
 		try {
-			let tmpFile = OS.Path.join(tmpDirectory, filename);
+			let tmpFile = PathUtils.join(tmpDirectory, filename);
 			await Zotero.File.putNetworkStream(tmpFile, stream, options.byteCount);
 
 			attachmentItem = await this.createURLAttachmentFromTemporaryStorageDirectory({
@@ -1052,10 +1052,10 @@ Zotero.Attachments = new function () {
 			// Clean up
 			try {
 				if (tmpDirectory) {
-					await OS.File.removeDir(tmpDirectory, { ignoreAbsent: true });
+					await Zotero.File.removeDir(tmpDirectory, { ignoreAbsent: true });
 				}
 				if (destDirectory) {
-					await OS.File.removeDir(destDirectory, { ignoreAbsent: true });
+					await Zotero.File.removeDir(destDirectory, { ignoreAbsent: true });
 				}
 			}
 			catch (e) {
@@ -1109,7 +1109,7 @@ Zotero.Attachments = new function () {
 		let attachmentItem;
 		try {
 			let fileName = Zotero.File.truncateFileName(this._getFileNameFromURL(url, contentType), 100);
-			let tmpFile = OS.Path.join(tmpDirectory, fileName);
+			let tmpFile = PathUtils.join(tmpDirectory, fileName);
 			await Zotero.File.putContentsAsync(tmpFile, snapshotContent);
 
 			// If we're using the title from the document, make some adjustments
@@ -1136,7 +1136,7 @@ Zotero.Attachments = new function () {
 			});
 
 			destDirectory = this.getStorageDirectory(attachmentItem).path;
-			await OS.File.move(tmpDirectory, destDirectory);
+			await Zotero.File.move(tmpDirectory, destDirectory);
 			
 			await Zotero.FullText.queueItem(attachmentItem);
 		}
@@ -1146,10 +1146,10 @@ Zotero.Attachments = new function () {
 			// Clean up
 			try {
 				if (tmpDirectory) {
-					await OS.File.removeDir(tmpDirectory, { ignoreAbsent: true });
+					await Zotero.File.removeDir(tmpDirectory, { ignoreAbsent: true });
 				}
 				if (destDirectory) {
-					await OS.File.removeDir(destDirectory, { ignoreAbsent: true });
+					await Zotero.File.removeDir(destDirectory, { ignoreAbsent: true });
 				}
 			}
 			catch (e) {
@@ -1197,7 +1197,7 @@ Zotero.Attachments = new function () {
 		}
 		catch (e) {
 			try {
-				await OS.File.remove(path, { ignoreAbsent: true });
+				await Zotero.File.removeIfExists(path);
 			}
 			catch (e) {
 				Zotero.logError(e);
@@ -1875,7 +1875,7 @@ Zotero.Attachments = new function () {
 		var attachmentItem = false;
 		try {
 			tmpDir = (await this.createTemporaryStorageDirectory()).path;
-			tmpFile = OS.Path.join(tmpDir, 'file.tmp');
+			tmpFile = PathUtils.join(tmpDir, 'file.tmp');
 			let { title, mimeType, url, props } = await this.downloadFirstAvailableFile(
 				urlResolvers,
 				tmpFile,
@@ -1909,12 +1909,12 @@ Zotero.Attachments = new function () {
 				});
 			}
 			else {
-				await OS.File.removeDir(tmpDir);
+				await Zotero.File.removeDir(tmpDir);
 			}
 		}
 		catch (e) {
 			if (tmpDir) {
-				await OS.File.removeDir(tmpDir, { ignoreAbsent: true });
+				await Zotero.File.removeDir(tmpDir, { ignoreAbsent: true });
 			}
 			throw e;
 		}
@@ -2799,7 +2799,7 @@ Zotero.Attachments = new function () {
 			throw new Error("'item' must be a Zotero.Item");
 		}
 		var dir = this.getStorageDirectory(item).path;
-		// Testing for directories in OS.File, used by removeDir(), is broken on Travis, so use nsIFile
+		// Directory detection is flaky on Travis, so use nsIFile
 		if (Zotero.automatedTest) {
 			let nsIFile = Zotero.File.pathToFile(dir);
 			if (nsIFile.exists()) {
@@ -2807,7 +2807,7 @@ Zotero.Attachments = new function () {
 			}
 		}
 		else {
-			await OS.File.removeDir(dir, { ignoreAbsent: true });
+			await Zotero.File.removeDir(dir, { ignoreAbsent: true });
 		}
 		await Zotero.File.createDirectoryIfMissingAsync(dir);
 		return dir;
@@ -2853,8 +2853,8 @@ Zotero.Attachments = new function () {
 	this.createTemporaryStorageDirectory = async function () {
 		var tmpDir = Zotero.getStorageDirectory();
 		tmpDir.append("tmp-" + Zotero.Utilities.randomString(6));
-		await OS.File.makeDir(tmpDir.path, {
-			unixMode: 0o755
+		await Zotero.File.makeDirectory(tmpDir.path, {
+			permissions: 0o755
 		});
 		return tmpDir;
 	};
@@ -2877,8 +2877,8 @@ Zotero.Attachments = new function () {
 		if (Zotero.File.directoryContains(basePath, path)) {
 			// Since stored paths can be synced to other platforms, use forward slashes for consistency.
 			// resolveRelativePath() will convert to the appropriate platform-specific slash on use.
-			basePath = OS.Path.normalize(basePath).replace(/\\/g, "/");
-			path = OS.Path.normalize(path).replace(/\\/g, "/");
+			basePath = Zotero.File.normalizePath(basePath).replace(/\\/g, "/");
+			path = Zotero.File.normalizePath(path).replace(/\\/g, "/");
 			// Normalize D:\ vs. D:\foo
 			if (!basePath.endsWith('/')) {
 				basePath += '/';
@@ -2907,7 +2907,7 @@ Zotero.Attachments = new function () {
 			return false;
 		}
 		
-		basePath = this.fixPathSlashes(OS.Path.normalize(basePath));
+		basePath = this.fixPathSlashes(Zotero.File.normalizePath(basePath));
 		path = this.fixPathSlashes(path);
 		
 		return PathUtils.joinRelative(
@@ -2951,21 +2951,11 @@ Zotero.Attachments = new function () {
 		
 		var numFiles = 0;
 		var parent = PathUtils.parent(path);
-		var iterator = new OS.File.DirectoryIterator(parent);
-		try {
-			await iterator.forEach((entry) => {
-				if (entry.name.startsWith('.')) {
-					return;
-				}
+		await Zotero.File.iterateDirectory(parent, (entry) => {
+			if (!entry.name.startsWith('.')) {
 				numFiles++;
-				if (numFiles > 1) {
-					iterator.close();
-				}
-			});
-		}
-		finally {
-			iterator.close();
-		}
+			}
+		});
 		return numFiles > 1;
 	};
 	
@@ -3003,18 +2993,11 @@ Zotero.Attachments = new function () {
 		
 		var numFiles = 0;
 		var parent = PathUtils.parent(path);
-		var iterator = new OS.File.DirectoryIterator(parent);
-		try {
-			await iterator.forEach(function (entry) {
-				if (entry.name.startsWith('.')) {
-					return;
-				}
+		await Zotero.File.iterateDirectory(parent, (entry) => {
+			if (!entry.name.startsWith('.')) {
 				numFiles++;
-			})
-		}
-		finally {
-			iterator.close();
-		}
+			}
+		});
 		return numFiles;
 	};
 	
@@ -3046,37 +3029,25 @@ Zotero.Attachments = new function () {
 		}
 		
 		if (linkMode == Zotero.Attachments.LINK_MODE_LINKED_FILE) {
-			return ((await OS.File.stat(path))).size;
+			return ((await Zotero.File.stat(path))).size;
 		}
 		
 		var size = 0;
 		var parent = PathUtils.parent(path);
-		let iterator = new OS.File.DirectoryIterator(parent);
-		try {
-			await iterator.forEach(function (entry) {
-				if (skipHidden && entry.name.startsWith('.')) {
-					return;
+		await Zotero.File.iterateDirectory(parent, async (entry) => {
+			if (skipHidden && entry.name.startsWith('.')) {
+				return;
+			}
+			try {
+				size += (await Zotero.File.stat(entry.path)).size;
+			}
+			catch (e) {
+				// A symlink to a missing file is not a failure here
+				if (e.name != 'NotFoundError') {
+					throw e;
 				}
-				return OS.File.stat(entry.path)
-				.then(
-					function (info) {
-						size += info.size;
-					},
-					function (e) {
-						// Can happen if there's a symlink to a missing file
-						if (e instanceof OS.File.Error && e.becauseNoSuchFile) {
-							return;
-						}
-						else {
-							throw e;
-						}
-					}
-				);
-			})
-		}
-		finally {
-			iterator.close();
-		}
+			}
+		});
 		return size;
 	};
 	
@@ -3106,11 +3077,11 @@ Zotero.Attachments = new function () {
 		var newDir;
 		if (newAttachment.isStoredFileAttachment()) {
 			oldDir = this.getStorageDirectory(attachment).path;
-			if (await OS.File.exists(oldDir)) {
+			if (await Zotero.File.exists(oldDir)) {
 				newDir = this.getStorageDirectory(newAttachment).path;
 				// Target directory shouldn't exist, but remove it if it does
 				//
-				// Testing for directories in OS.File, used by removeDir(), is broken on Travis,
+				// Directory detection is flaky on Travis,
 				// so use nsIFile
 				if (Zotero.automatedTest) {
 					let nsIFile = Zotero.File.pathToFile(newDir);
@@ -3119,9 +3090,9 @@ Zotero.Attachments = new function () {
 					}
 				}
 				else {
-					await OS.File.removeDir(newDir, { ignoreAbsent: true });
+					await Zotero.File.removeDir(newDir, { ignoreAbsent: true });
 				}
-				await OS.File.move(oldDir, newDir);
+				await Zotero.File.move(oldDir, newDir);
 			}
 		}
 		
@@ -3132,7 +3103,7 @@ Zotero.Attachments = new function () {
 			// Move files back if old item can't be deleted
 			if (newAttachment.isStoredFileAttachment()) {
 				try {
-					await OS.File.move(newDir, oldDir);
+					await Zotero.File.move(newDir, oldDir);
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -3210,7 +3181,7 @@ Zotero.Attachments = new function () {
 		try {
 			// Transfer file
 			let destDir = await this.createDirectoryForItem(newItem);
-			newFile = OS.Path.join(destDir, json.filename);
+			newFile = PathUtils.join(destDir, json.filename);
 			if (options.move) {
 				newFile = await Zotero.File.moveToUnique(file, newFile);
 			}
@@ -3220,8 +3191,8 @@ Zotero.Attachments = new function () {
 				// TEMP: copyToUnique returns an nsIFile
 				newFile = newFile.path;
 				await Zotero.File.setNormalFilePermissions(newFile);
-				let mtime = (await OS.File.stat(file)).lastModificationDate;
-				await OS.File.setDates(newFile, null, mtime);
+				let mtime = (await Zotero.File.stat(file)).lastModificationDate;
+				await Zotero.File.setModificationTime(newFile, mtime);
 			}
 		}
 		catch (e) {

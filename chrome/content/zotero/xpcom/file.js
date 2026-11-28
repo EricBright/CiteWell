@@ -710,6 +710,40 @@ Zotero.File = new function () {
 	
 	
 	/**
+	 * File or directory metadata, with the fields callers use.
+	 */
+	this.stat = async function (path) {
+		let info = await IOUtils.stat(path);
+		return {
+			isDir: info.type == 'directory',
+			size: info.size,
+			lastModificationDate: new Date(info.lastModified)
+		};
+	}
+	
+	
+	/**
+	 * Normalize a path, including a Windows-style path on a non-Windows test host.
+	 */
+	this.normalizePath = function (path) {
+		try {
+			return PathUtils.normalize(path);
+		}
+		catch (e) {
+			return OS.Path.normalize(path);
+		}
+	}
+	
+	
+	/**
+	 * Set a file's modification time.
+	 */
+	this.setModificationTime = function (path, date) {
+		return IOUtils.setModificationTime(path, date.getTime());
+	}
+	
+	
+	/**
 	 * Move or rename a file or directory.
 	 */
 	this.move = function (source, dest, options = {}) {
