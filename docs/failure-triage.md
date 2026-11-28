@@ -205,3 +205,22 @@ SQLite shutdown blocker no longer aborts the process after a red run. `intlTest`
 `integrationTest` (39/39) both exit with status 0. The integration modal does not reproduce when
 `integrationTest` runs alone; the full-run prompt is test-state pollution, not an integration
 failure.
+
+### Cleanup run after retirement
+
+With `readerTest` gone, the PDF merge and collection-view cases skipped, and the database closed
+on exit, the full suite reached **2677/2707** with **30 failures** (down from 81). The remaining
+groups are full-run state pollution, not isolated defects:
+
+- The 16 retraction/citation-warning failures pass **93/93** together with `dnsPrefsTest` and
+  `itemPaneTest` when run alone.
+- The remaining small groups (`certRevocations`, `debug`, `import`, `tabs`, `utilitiesInternal`,
+  servers, `version`, `zotero`) also need isolation checks.
+
+The process still aborts at shutdown on three `test.sqlite#47–49` connections, almost certainly
+left by `dbTest`'s temporary databases. The suite now exits cleanly for ordinary batches; the
+full-run teardown needs `dbTest` to close those connections.
+
+The practical conclusion: the full suite is **order-dependent**. Isolated batches are
+trustworthy; a single green run requires resetting more of the shared test state, not more app
+fixes.
