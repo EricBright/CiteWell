@@ -246,6 +246,15 @@ assert.isFunction = function (value, msg) {
 assert.isNotFunction = function (value, msg) {
 	assert.isFalse(typeof value == 'function', msg);
 };
+assert.notExists = function (value, msg) {
+	assert.isTrue(value === null || value === undefined, msg);
+};
+assert.sameOrderedMembers = function (value, expected, msg) {
+	assert.deepEqual(value, expected, msg);
+};
+assert.notIncludeMembers = function (value, expected, msg) {
+	assert.isFalse(expected.some(item => value.includes(item)), msg);
+};
 assert.doesNotHaveAnyKeys = function (value, keys, msg) {
 	if (keys === undefined) {
 		assert.isTrue(Object.keys(value).length == 0, msg);
